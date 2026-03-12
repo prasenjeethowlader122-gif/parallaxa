@@ -22,7 +22,7 @@ export function TrendingSection() {
         <h2 className="text-lg font-bold text-gray-900">Trending Now</h2>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 my-2">
         {trendingArticles.map((article, index) => (
           <Link key={article.id} href={`/article/${article.id}`}>
             <div className="group cursor-pointer pb-4 border-b border-gray-200 last:border-0 last:pb-0">
