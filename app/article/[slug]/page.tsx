@@ -7,18 +7,18 @@ import { useParams } from 'next/navigation'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, getArticleById, getAllArticles } from '@/lib/news-data'
+import { NewsArticle, getArticleById, getAllArticles , getArticleBySlug} from '@/lib/news-data'
 import { Clock, User, Calendar, Eye, ArrowLeft } from 'lucide-react'
 
 export default function ArticlePage() {
   const params = useParams()
-  const id = params.id as string
+  const slug = params.slug as string
   const [article, setArticle] = useState<NewsArticle | null>(null)
   const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const foundArticle = getArticleById(id)
+    const foundArticle = getArticleBySlug(slug)
     if (foundArticle) {
       setArticle(foundArticle)
       const related = getAllArticles()
@@ -27,7 +27,7 @@ export default function ArticlePage() {
       setRelatedArticles(related)
     }
     setIsLoading(false)
-  }, [id])
+  }, [slug])
 
   if (isLoading) {
     return (

@@ -186,7 +186,12 @@ export function getArticlesByCategory(category: string): NewsArticle[] {
     .filter((article) => article.category === category)
     .sort((a, b) => b.date.getTime() - a.date.getTime())
 }
-
+export function getArticleBySlug(slug: string):NewsArticle | undefined {
+  let useSlug = (title:string)=> {
+    return title.toLocaleLowerCase().replace(' ' , '-');
+  }
+  return mockArticles.find((article)=> useSlug(article.title) === slug)
+}
 export function getArticleById(id: string): NewsArticle | undefined {
   return mockArticles.find((article) => article.id === id)
 }

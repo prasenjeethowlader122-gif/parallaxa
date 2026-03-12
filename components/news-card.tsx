@@ -17,7 +17,7 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
 
   if (variant === 'featured') {
     return (
-      <Link href={`/article/${article.id}`}>
+      <Link href={`/article/${article.title.toLocaleLowerCase().replace(' ' , '-')}`}>
         <div className="group cursor-pointer">
           <div className="relative w-full h-96 overflow-hidden rounded-lg bg-gray-200 mb-4">
             <Image
