@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next'
-import { Datatype } from 'next/font/google'
+import { Sora } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ClientSessionProvider } from '@/components/session-provider'
 import './globals.css'
 
-const sora = Datatype({ subsets: ["latin"], variable: '--font-sora' });
+const sora = Sora({ subsets: ["latin"], variable: '--font-sora' });
 
 export const metadata: Metadata = {
   title: 'Parallaxa - Breaking News & Stories',
