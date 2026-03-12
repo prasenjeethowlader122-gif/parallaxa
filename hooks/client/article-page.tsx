@@ -11,8 +11,8 @@ import { NewsArticle, getArticleById, getAllArticles , getArticleBySlug} from '@
 import { Clock, User, Calendar, Eye, ArrowLeft } from 'lucide-react'
 
 export default function ArticlePage({slug}) {
-//  const params = useParams()
- // const slug = params.slug as string
+ const params = useParams()
+  const slug = params.slug as string
   const [article, setArticle] = useState<NewsArticle | null>(null)
   const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>([])
   const [isLoading, setIsLoading] = useState(true)
