@@ -34,6 +34,6 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   };
 }
 
-export default function ArticlePage({ params }) {
+export default function ArticlePageOpen({ params }) {
   return <><ArticlePage slug = {params.slug}/></>
 }
