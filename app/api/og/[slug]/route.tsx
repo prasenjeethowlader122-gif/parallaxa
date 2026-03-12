@@ -134,7 +134,7 @@ export async function GET(request: Request) {
         
         }
       }
-      width = "100"
+      width = "150"
       alt = "profile" />
       </div>
     ),
