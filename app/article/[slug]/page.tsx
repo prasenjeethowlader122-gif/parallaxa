@@ -15,7 +15,7 @@ export async function generateMetadata({ params }): Promise < Metadata > {
   
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://v0-parallaxa.vercel.app/';
   const articleUrl = `${baseUrl}/article/${params.slug}`;
-  const ogImageUrl = `${baseUrl}/api/og?slug=${params.slug}`;
+  const ogImageUrl = `${baseUrl}/api/og/${params.slug}`;
   
   return {
     title: article.title,
