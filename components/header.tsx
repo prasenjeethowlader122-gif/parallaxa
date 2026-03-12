@@ -72,12 +72,21 @@ export function Header() {
             {/* Search Icon */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
               aria-label="Search"
             >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
-
+            <div className='hidden md:flex items-center justify-between border-2 border-black'>
+              <input type='text' placeholder='Search any news...' className='outline-none bg-none border-none flex-1'/>
+              <button
+              
+              className="p-2 transition-colors bg-black text-white"
+              aria-label="Search"
+            >
+              <Search className="w-3 h-3 text-white" />
+            </button>
+            </div>
             {/* Auth Section */}
             {session?.user ? (
               <div className="hidden sm:flex items-center gap-4">
