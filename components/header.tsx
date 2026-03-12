@@ -77,11 +77,11 @@ export function Header() {
             >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
-            <div className='hidden md:flex items-center justify-between border-2 border-black'>
+            <div className='hidden px-2 rounded-l-lg md:flex items-center justify-between border-2 border-black'>
               <input type='text' placeholder='Search any news...' className='outline-none bg-none border-none flex-1'/>
               <button
               
-              className="p-2 transition-colors bg-black text-white"
+              className="p-2 transition-colors bg-black rounded-r-lg text-white"
               aria-label="Search"
             >
               <Search className="w-3 h-3 text-white" />
