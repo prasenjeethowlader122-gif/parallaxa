@@ -10,7 +10,7 @@ import { NewsCard } from '@/components/news-card'
 import { NewsArticle, getArticleById, getAllArticles , getArticleBySlug} from '@/lib/news-data'
 import { Clock, User, Calendar, Eye, ArrowLeft } from 'lucide-react'
 
-export default function ArticlePage({slug}) {
+export default function ArticlePage() {
  const params = useParams()
   const slug = params.slug as string
   const [article, setArticle] = useState<NewsArticle | null>(null)
