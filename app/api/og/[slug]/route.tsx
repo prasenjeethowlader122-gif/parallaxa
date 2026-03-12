@@ -131,10 +131,10 @@ export async function GET(request: Request) {
           position: 'absolute',
           top: '20px',
           left: '20px',
-          borderRadius: '50%'
+        
         }
       }
-      width = "60"
+      width = "100"
       alt = "profile" />
       </div>
     ),
