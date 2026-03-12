@@ -35,7 +35,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <div className="text-2xl font-bold text-black tracking-tight">
-              <Image src = {profilePic} alt='logo x' height='100'/>
+              <Image src = {profilePic} alt='logo x' height='60'/>
             </div>
           </Link>
 
