@@ -81,7 +81,7 @@ export function Header() {
               <input type='text' placeholder='Search any news...' className='outline-none bg-none border-none flex-1'/>
               <button
               
-              className="p-2  transition-colors bg-black rounded-r-lg text-white"
+              className="p-2  transition-colors bg-black px-4 rounded-r-lg text-white"
               aria-label="Search"
             >
               <Search className="w-4 h-4 text-white" />
