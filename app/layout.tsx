@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import localfont from 'next/font/local';
+import localFont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next'
 import { ClientSessionProvider } from '@/components/session-provider'
 import './globals.css'
