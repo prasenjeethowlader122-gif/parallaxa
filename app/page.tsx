@@ -83,7 +83,7 @@ export default function Home() {
                   <div className="space-y-6">
                     {latestArticles.map((article) => (
                       <NewsCard
-                        key={article.id}
+                        key={article.id} className = 'my-2'
                         article={article}
                         variant="horizontal"
                       />
