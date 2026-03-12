@@ -124,8 +124,9 @@ export default function ArticlePage() {
           <Image
             src={article.image}
             alt={article.title}
+            
             fill
-            className="object-cover"
+            className="object-cover w-full"
             priority
           />
         </div>
