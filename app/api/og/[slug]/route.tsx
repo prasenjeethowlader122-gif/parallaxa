@@ -127,6 +127,7 @@ export async function GET(request: Request) {
           </div>
         </div> <img src = { profilePicData as any } style = {
         {
+        filter: 'invert(100%)',
           position: 'absolute',
           top: '20px',
           left: '20px',
@@ -134,7 +135,6 @@ export async function GET(request: Request) {
         }
       }
       width = "60"
-      height = "60"
       alt = "profile" />
       </div>
     ),
