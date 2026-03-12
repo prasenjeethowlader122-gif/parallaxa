@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image';
-import profilePic from '../public/logo-text.png'
+import profilePic from '../public/New Project 20 [79DB18E].png'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
