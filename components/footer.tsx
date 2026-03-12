@@ -1,5 +1,7 @@
+'use client'
 import Link from 'next/link'
-
+import Image from 'next/image';
+import profilePic from '../public/logo-text.png'
 export function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -10,7 +12,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 py-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold tracking-tight">parallaxa</h3>
+            <h3 className="text-2xl font-bold tracking-tight"><Image src = {profilePic} alt='logo x' height='40'/></h3>
             <p className="text-gray-400 text-sm leading-relaxed">
               Your trusted source for breaking news, in-depth analysis, and exclusive stories from around the world.
             </p>
