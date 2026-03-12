@@ -3,7 +3,8 @@ import { NewsArticle, getArticleById, getAllArticles, getArticleBySlug } from '@
 import ArticlePage from '@/hooks/client/article-page'
 
 export async function generateMetadata({ params }): Promise < Metadata > {
-  const article = await getArticleBySlug('championship-team-crowned-after-thrilling-final');
+  const {slug} = await params;
+  const article = await getArticleBySlug(slug);
   
   if (!article) {
     return {
@@ -14,8 +15,8 @@ export async function generateMetadata({ params }): Promise < Metadata > {
   }
   
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://v0-parallaxa.vercel.app/';
-  const articleUrl = `${baseUrl}/article/${params.slug}`;
-  const ogImageUrl = `${baseUrl}/api/og/${params.slug}`;
+  const articleUrl = `${baseUrl}/article/${slug}`;
+  const ogImageUrl = `${baseUrl}/api/og/${slug}`;
   
   return {
     title: article.title,
