@@ -1,13 +1,27 @@
 import type { Metadata, Viewport } from 'next'
-import { Datatype } from 'next/font/google';
+import localfont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next'
 import { ClientSessionProvider } from '@/components/session-provider'
 import './globals.css'
 
 
-const datatype = Datatype({
-  subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+const philosopher = localFont({
+  src: [
+  {
+    path: './local/philosopher-font/Philosopher-Regular.ttf',
+    weight: '400',
+    style: 'normal',
+  },
+  {
+    path: './local/philosopher-font/Philosopher-Italic.ttf',
+    weight: '400',
+    style: 'italic',
+  },
+  {
+    path: './/local/philosopher-font/Philosopher-Bold.ttf',
+    weight: '700',
+    style: 'normal',
+  }, ]
 });
 
 
@@ -46,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode
 } > ) {
   return (
-    <html lang="en" className={datatype.variable}>
+    <html lang="en" className={philosopher.className}>
      
       <body className="font-sans antialiased bg-white text-gray-900">
         <ClientSessionProvider>
