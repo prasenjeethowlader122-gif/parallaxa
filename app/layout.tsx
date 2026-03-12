@@ -62,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={philosopher.className}>
      
-      <body className="font-sans antialiased bg-white text-gray-900">
+      <body className="antialiased bg-white text-gray-900">
         <ClientSessionProvider>
           {children}
           <Analytics />
