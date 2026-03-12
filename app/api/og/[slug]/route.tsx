@@ -4,13 +4,15 @@ import { getArticleBySlug } from '@/lib/news-data'
 export const runtime = 'edge'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
+  const { searchParams , origin} = new URL(request.url)
   const slug = searchParams.get('slug')
   
   if (!slug) {
     return new Response('Missing slug parameter', { status: 400 })
   }
-  
+  const profilePicData = await fetch(
+    new URL('/New Project 20 [79DB18E].png', origin)
+  ).then((res) => res.arrayBuffer());
   const article = await getArticleBySlug(slug)
   
   if (!article) {
@@ -32,6 +34,7 @@ export async function GET(request: Request) {
           position: 'relative',
         }}
       >
+        
         {/* Dark overlay */}
         <div
           style={{
@@ -122,7 +125,18 @@ export async function GET(request: Request) {
               <span>{new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
             </div>
           </div>
-        </div> </div>
+        </div> <img src = { profilePicData as any } style = {
+        {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          borderRadius: '50%'
+        }
+      }
+      width = "60"
+      height = "60"
+      alt = "profile" />
+      </div>
     ),
     {
       width: 1200,
