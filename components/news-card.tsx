@@ -5,7 +5,7 @@ import { Clock, Eye } from 'lucide-react'
 
 interface NewsCardProps {
   article: NewsArticle
-  variant?: 'default' | 'featured' | 'horizontal'
+  variant ? : 'default' | 'featured' | 'horizontal'
 }
 
 export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
@@ -14,10 +14,11 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
     day: 'numeric',
     year: 'numeric',
   })
-
+  
+  
   if (variant === 'featured') {
     return (
-      <Link href={`/article/${article.title.toLocaleLowerCase().replace(' ' , '-')}`}>
+      <Link href={`/article/${article.title.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')}`}>
         <div className="group cursor-pointer">
           <div className="relative w-full h-96 overflow-hidden rounded-lg bg-gray-200 mb-4">
             <Image
@@ -45,7 +46,7 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
       </Link>
     )
   }
-
+  
   if (variant === 'horizontal') {
     return (
       <Link href={`/article/${article.id}`}>
@@ -88,7 +89,7 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
       </Link>
     )
   }
-
+  
   // Default variant
   return (
     <Link href={`/article/${article.id}`}>
