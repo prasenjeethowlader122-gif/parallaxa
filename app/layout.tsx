@@ -8,17 +8,17 @@ import './globals.css'
 const philosopher = localFont({
   src: [
   {
-    path: './local/philosopher-font/Philosopher-Regular.ttf',
+    path: '/local/philosopher-font/Philosopher-Regular.ttf',
     weight: '400',
     style: 'normal',
   },
   {
-    path: './local/philosopher-font/Philosopher-Italic.ttf',
+    path: '/local/philosopher-font/Philosopher-Italic.ttf',
     weight: '400',
     style: 'italic',
   },
   {
-    path: './/local/philosopher-font/Philosopher-Bold.ttf',
+    path: '/local/philosopher-font/Philosopher-Bold.ttf',
     weight: '700',
     style: 'normal',
   }, ]
