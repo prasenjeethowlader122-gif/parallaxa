@@ -3,7 +3,7 @@ import { NewsArticle, getArticleById, getAllArticles, getArticleBySlug } from '@
 import ArticlePage from '@/hooks/client/article-page'
 
 export async function generateMetadata({ params }): Promise < Metadata > {
-  const article = await getArticleBySlug(params.slug);
+  const article = await getArticleBySlug('championship-team-crowned-after-thrilling-final');
   
   if (!article) {
     return {
