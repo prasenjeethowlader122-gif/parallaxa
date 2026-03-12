@@ -1,10 +1,15 @@
 import type { Metadata, Viewport } from 'next'
-import { Sora } from 'next/font/google'
+import { Datatype } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next'
 import { ClientSessionProvider } from '@/components/session-provider'
 import './globals.css'
 
-const sora = Sora({ subsets: ["latin"], variable: '--font-sora' });
+
+const datatype = Datatype({
+  subsets: ['latin'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+});
+
 
 export const metadata: Metadata = {
   title: 'Parallaxa - Breaking News & Stories',
@@ -41,10 +46,8 @@ export default function RootLayout({
   children: React.ReactNode
 } > ) {
   return (
-    <html lang="en" className={sora.variable}>
-      <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet"/>
+    <html lang="en" className={datatype.variable}>
+     
       <body className="font-sans antialiased bg-white text-gray-900">
         <ClientSessionProvider>
           {children}

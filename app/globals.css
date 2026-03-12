@@ -4,9 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
 :root {
   --font-sora: 'Sora', sans-serif;
-  
+  --font-datatype: 'Datatype', sans-serif;
   /* Professional News App Colors - Light Mode Only */
   --background: #ffffff;
   --foreground: #1a1a1a;
@@ -42,9 +43,11 @@
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #000000;
 }
-
+.font-datatype {
+  font-family: 'Datatype', sans-serif;
+}
 @theme inline {
-  --font-sans: var(--font-sora), 'Sora Fallback';
+  --font-sans: var(--font-datatype);
   --font-mono: 'Sora Mono', 'Sora Mono Fallback';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
