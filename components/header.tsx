@@ -77,7 +77,7 @@ export function Header() {
             >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
-            <div className='hidden  pl-2 text-sm rounded-l-lg md:flex items-center justify-between border-2 border-black'>
+            <div className='hidden  pl-2 text-sm rounded-lg md:flex items-center justify-between border-2 border-black'>
               <input type='text' placeholder='Search any news...' className='outline-none bg-none border-none flex-1'/>
               <button
               
