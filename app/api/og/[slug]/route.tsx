@@ -127,15 +127,6 @@ export async function GET(request: Request) {
     {
       width: 1200,
       height: 630,
-      fonts: [
-      {
-        name: 'Inter',
-        data: await fetch(
-          new URL('@/public/fonts/inter-bold.ttf', import.meta.url)
-        ).then((res) => res.arrayBuffer()),
-        weight: 700,
-        style: 'normal',
-      }, ],
     }
   )
 }
