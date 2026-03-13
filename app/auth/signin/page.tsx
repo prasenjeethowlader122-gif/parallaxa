@@ -1,5 +1,8 @@
 'use client'
 
+import Image from 'next/image';
+
+import profilePic from '../public/New Project 20 [79DB18E].png'
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -60,7 +63,7 @@ export default function SignInPage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
       {/* Logo */}
       <Link href="/" className="mb-12">
-        <div className="text-3xl font-bold text-black">parallaxa</div>
+        <Image src = {profilePic} alt='logo x' height='40'/>
       </Link>
 
       {/* Sign In Card */}
@@ -93,7 +96,7 @@ export default function SignInPage() {
               className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-gray-900"
               required
             />
-            <p className="text-xs text-gray-500 mt-2">Try: demo@example.com</p>
+            
           </div>
 
           {/* Password Field */}
@@ -110,7 +113,7 @@ export default function SignInPage() {
               className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-gray-900"
               required
             />
-            <p className="text-xs text-gray-500 mt-2">Try: demo123</p>
+          
           </div>
 
           {/* Forgot Password Link */}
@@ -173,13 +176,8 @@ export default function SignInPage() {
           </button>
         </div>
 
-        {/* Demo Info */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-900 mb-2 font-medium">Demo Credentials:</p>
-          <p className="text-sm text-blue-800">Email: demo@example.com</p>
-          <p className="text-sm text-blue-800">Password: demo123</p>
-        </div>
-
+  
+        
         {/* Sign Up Link */}
         <div className="text-center mt-6">
           <p className="text-gray-600 text-sm mb-2">
