@@ -1,5 +1,8 @@
 'use client'
 import Image from 'next/image';
+
+import {Button as Btn} from '@/components/ui/button';
+
 import profilePic from '../public/New Project 20 [79DB18E].png'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -99,12 +102,8 @@ export function Header() {
                 </button>
               </div>
             ) : (
-              <Link
-                href="/auth/signin"
-                className="hidden sm:inline-block px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
-                Sign In
-              </Link>
+              
+              <Btn className = 'hidden sm:inline-block px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors'>Sign In</Btn>
             )}
 
             {/* Mobile Menu Toggle */}
