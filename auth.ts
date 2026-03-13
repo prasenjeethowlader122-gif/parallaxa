@@ -73,6 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  secret: 'I1nA2USjmBmXO/dPXMdfejRL/OdzpX7SUoV9sdc2iUYmyxaZW/felHtG9LY=',
   session: { strategy: "jwt" },
   pages: { signIn: "auth/login" },
 });
