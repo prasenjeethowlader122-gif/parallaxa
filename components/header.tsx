@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 
 import profilePic from '../public/New Project 20 [79DB18E].png'
+import placeholderPic from '../public/placeholder-user.jpg'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -92,13 +93,9 @@ export function Header() {
             {/* Auth Section */}
             {session?.user ? (
               <div className="hidden sm:flex items-center gap-4">
-                <span className="text-sm text-gray-700">{session.user.name}</span>
-                <button
-                  onClick={handleSignOut}
-                  className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-                >
-                  Sign Out
-                </button>
+                <Image 
+                alt = 'n'
+                src = {placeholderPic} height = '10' className='rounded-full'/>
               </div>
             ) : (
               
@@ -178,7 +175,7 @@ export function Header() {
             {!session?.user && (
               <Link
                 href="/auth/signin"
-                className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-6 py-3 text-sm font-bold  text-red-600 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sign In
