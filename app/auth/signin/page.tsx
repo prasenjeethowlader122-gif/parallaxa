@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image';
-import profilePic from '../../public/New Project 20 [79DB18E].png'
+import profilePic from '/New Project 20 [79DB18E].png'
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
