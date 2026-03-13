@@ -94,7 +94,7 @@ export function Header() {
               <div className="hidden sm:flex items-center gap-4">
                 <Image 
                 alt = 'n'
-                src = {'https://placehold.net/avatar-5.svg'} height = '10' className='rounded-full'/>
+                src = {'https://placehold.net/avatar-5.svg'} height = '10' width ='10' className='rounded-full'/>
               </div>
             ) : (
               

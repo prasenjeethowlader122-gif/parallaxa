@@ -62,7 +62,7 @@ export default function SignInPage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
       {/* Logo */}
       <Link href="/" className="mb-12">
-        <Image src = {'https://v0-parallaxa.vercel.app/New Project 20 [79DB18E].png'} alt='logo x' height='40'/>
+        <Image src = {'https://v0-parallaxa.vercel.app/New Project 20 [79DB18E].png'} alt='logo x' width='20'/>
       </Link>
 
       {/* Sign In Card */}
