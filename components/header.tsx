@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import profilePic from '../public/New Project 20 [79DB18E].png'
-import placeholderPic from '../public/placeholder-user.jpg'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -94,7 +94,7 @@ export function Header() {
               <div className="hidden sm:flex items-center gap-4">
                 <Image 
                 alt = 'n'
-                src = {placeholderPic} height = '10' className='rounded-full'/>
+                src = {'https://placehold.net/avatar-5.svg'} height = '10' className='rounded-full'/>
               </div>
             ) : (
               
