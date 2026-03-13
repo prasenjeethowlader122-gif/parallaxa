@@ -1,11 +1,12 @@
 import { initializeApp, getApps, cert, App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
-const serviceAccount = {
+var serviceAccount = require ('../public/chirpstream-dg7rv-firebase-adminsdk-fbsvc-f597864d77.json')
+/**const serviceAccount = {
   projectId: 'chirpstream-dg7rv',
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL || 'prasenjeethowlader066@gmail.com',
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL || 'firebase-adminsdk-fbsvc@chirpstream-dg7rv.iam.gserviceaccount.com',
   privateKey: ''?.replace(/\\n/g, "\n"),
-};
+};**/
 
 let adminApp: App;
 
