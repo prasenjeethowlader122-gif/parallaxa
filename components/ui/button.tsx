@@ -1,4 +1,4 @@
-/*import * as React from 'react'
+import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
@@ -58,17 +58,3 @@ function Button({
 }
 
 export { Button, buttonVariants }
-*/
-import React from 'react';
-
-const Button = ({ ...props }) => {
-  return (
-    <button className="relative cursor-pointer opacity-90 hover:opacity-100 transition-opacity p-[2px] bg-black rounded-[16px] bg-gradient-to-t from-[#8122b0] to-[#dc98fd] active:scale-95">
-      <span className="w-full h-full flex items-center gap-2 px-8 py-3 bg-[#B931FC] text-white rounded-[14px] bg-gradient-to-t from-[#a62ce2] to-[#c045fc]">
-        {props}
-      </span>
-    </button>
-  );
-}
-
-export { Button };
