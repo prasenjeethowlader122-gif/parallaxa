@@ -1,7 +1,6 @@
 'use client'
+
 import Image from 'next/image';
-
-
 import profilePic from '../public/New Project 20 [79DB18E].png'
 import placeholderPic from '../public/placeholder-user.jpg'
 import Link from 'next/link'
