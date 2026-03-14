@@ -34,7 +34,6 @@ export default function Home() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
       <BreakingBanner />
-      <CategoryFilter />
 
       <main className="flex-grow">
         {/* Featured Section */}
