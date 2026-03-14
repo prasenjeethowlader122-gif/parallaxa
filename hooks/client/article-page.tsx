@@ -269,21 +269,7 @@ export default function ArticlePage() {
               <p className="text-lg first-letter:font-bold first-letter:text-2xl">
                 {article.content}
               </p>
-              <p>
-                This article represents important developments in the field. Our journalists
-                have compiled comprehensive information to ensure you have the complete picture.
-              </p>
-              <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">What This Means</h2>
-              <p>
-                Industry experts and analysts are weighing in on the implications of this story.
-                The developments outlined above are expected to have significant consequences for
-                the sector and broader economy.
-              </p>
-              <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Looking Ahead</h2>
-              <p>
-                As this situation continues to develop, we'll be following closely and bringing
-                you updates. Stay tuned for the latest information and expert analysis.
-              </p>
+
             </article>
           </div>
 
@@ -303,27 +289,8 @@ export default function ArticlePage() {
           </div>
 
           {/* Bottom Share Bar */}
-          <div className="mt-8 pt-8 border-t border-gray-200 no-print">
-            <div className="flex flex-wrap gap-3 items-center">
-              <span className="text-gray-700 font-medium text-sm">Share this story:</span>
-              <button onClick={handleShareTwitter} className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-600 rounded-lg text-sm font-medium hover:bg-sky-100 transition-colors">
-                <Twitter className="w-4 h-4" /> Twitter
-              </button>
-              <button onClick={handleShareFacebook} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
-                <Facebook className="w-4 h-4" /> Facebook
-              </button>
-              <button onClick={handleShareLinkedin} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
-                <Linkedin className="w-4 h-4" /> LinkedIn
-              </button>
-              <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" />}
-                {copied ? 'Copied!' : 'Copy Link'}
-              </button>
-              <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                <Printer className="w-4 h-4" /> Print
-              </button>
-            </div>
-          </div>
+
+          
         </div>
 
         {/* Related Articles */}
