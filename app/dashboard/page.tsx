@@ -110,9 +110,9 @@ function DashboardPageContent() {
             </Link>
           </div>
 
-          <div className="flex gap-8">
+          <div className="flex  gap-8">
             {/* Sidebar */}
-            <aside className="hidden lg:flex flex-col gap-1 w-52 flex-shrink-0">
+            <aside className="hidden lg:flex flex-col gap-1 min-w-52 flex-shrink-0">
               {(
                 [
                   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
