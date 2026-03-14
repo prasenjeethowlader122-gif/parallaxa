@@ -74,10 +74,10 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
                 </span>
               )}
             </div>
-            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">
+            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-md">
               {article.title}
             </h3>
-            <p className="text-sm text-gray-600 line-clamp-1 mt-2">{article.description}</p>
+            <p className="text-sm text-gray-600 line-clamp-1 mt-1">{article.description}</p>
             <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
@@ -120,7 +120,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               <span className="text-xs font-bold text-red-600">🔥 Trending</span>
             )}
           </div>
-          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
+          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-md">
             {article.title}
           </h3>
           <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>
