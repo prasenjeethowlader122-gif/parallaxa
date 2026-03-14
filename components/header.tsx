@@ -108,12 +108,8 @@ export function Header() {
                     {session.user.name?.charAt(0).toUpperCase() ?? session.user.email?.charAt(0).toUpperCase() ?? 'U'}
                   </div>
                 </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-xs text-gray-500 hover:text-black transition-colors"
-                >
-                  Sign out
-                </button>
+
+
               </div>
             ) : (
               <Link
