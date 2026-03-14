@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { authConfig } from './app/auth.config';
+import { authConfig } from './auth.config';
 import { getUserByEmail, validatePassword } from './lib/db/users';
 import { z } from 'zod';
 

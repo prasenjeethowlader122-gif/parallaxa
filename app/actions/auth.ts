@@ -7,7 +7,7 @@ import {
   createPasswordResetToken,
   resetPassword,
   verifyEmail,
-} from '@/lib/db/users';
+} from '@/lib/db/user';
 import { AuthError } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
