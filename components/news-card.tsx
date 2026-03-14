@@ -32,7 +32,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
 <div className="relative w-full h-full min-h-auto overflow-hidden rounded-lg bg-gray-200 mb-2">
 
             <Image
-              src={imageSrc}
+              src={imageSrc || 'https://placehold.net/600x400.png'}
               alt={article.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
