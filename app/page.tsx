@@ -76,9 +76,10 @@ export default function Home() {
              *    7 cols                2 cols  3 cols
              * ─────────────────────────────────────────────────────────
              */
+             
             <div
-              className="
-                grid gap-4
+              className=" space-y-4
+                grid gap-4 
                 grid-cols-1
                 md:grid-cols-2
                 lg:grid-cols-12 lg:grid-rows-2
@@ -88,7 +89,7 @@ export default function Home() {
               {/* ① Large hero card — left 7 cols, spans both rows */}
               {mostRecent && (
                 <div className="
-                  col-span-1
+                  col-span-1 
                   md:col-span-2
                   lg:col-span-7 lg:row-span-2
                   min-h-[260px] lg:min-h-0
