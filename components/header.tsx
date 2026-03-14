@@ -1,8 +1,7 @@
 'use client'
 
-import Image from 'next/image';
+import Image from 'next/image'
 import profilePic from '../public/New Project 20 [79DB18E].png'
-
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -15,63 +14,62 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-
+  const [desktopQuery, setDesktopQuery] = useState('')
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
       setSearchQuery('')
       setIsSearchOpen(false)
     }
   }
-
+  
+  const handleDesktopSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (desktopQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(desktopQuery.trim())}`)
+      setDesktopQuery('')
+    }
+  }
+  
   const handleSignOut = async () => {
     await signOut({ redirect: true, redirectUrl: '/' })
   }
-
+  
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-      {/* Top Bar - Logo and Main Nav */}
+      {/* Top Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <div className="text-2xl font-bold text-black tracking-tight">
-              <Image src = {profilePic} alt='logo x' height='40'/>
+              <Image src={profilePic} alt="logo" height={40} />
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link
-              href="/"
-              className="text-sm font-medium text-gray-700 hover:text-black transition-colors"
-            >
+            <Link href="/" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
               Home
             </Link>
-            <Link
-              href="/category/Technology"
-              className="text-sm font-medium text-gray-700 hover:text-black transition-colors"
-            >
+            <Link href="/category/Technology" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
               Technology
             </Link>
-            <Link
-              href="/category/Business"
-              className="text-sm font-medium text-gray-700 hover:text-black transition-colors"
-            >
+            <Link href="/category/Business" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
               Business
             </Link>
-            <Link
-              href="/category/Sports"
-              className="text-sm font-medium text-gray-700 hover:text-black transition-colors"
-            >
+            <Link href="/category/Sports" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
               Sports
             </Link>
           </nav>
 
-          {/* Right Side - Search and Auth */}
+          {/* Right Side */}
           <div className="flex items-center gap-4">
-            {/* Search Icon */}
+
+            {/* Mobile search toggle */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
@@ -79,58 +77,78 @@ export function Header() {
             >
               <Search className="w-5 h-5 text-gray-700" />
             </button>
-            <div className='hidden  pl-2 text-sm rounded-lg md:flex items-center justify-between  border-gray-200'>
-              <input type='text' placeholder='Search any news...' className='outline-none bg-transparent border-none flex-1'/>
-              <button
-              
-              className="p-2  transition-colors  px-3 rounded-r-lg text-black"
-              aria-label="Search"
+
+            {/* Desktop search */}
+            <form
+              onSubmit={handleDesktopSearch}
+              className="hidden md:flex items-center border border-gray-200 rounded-lg overflow-hidden"
             >
-              <Search className="w-5 h-5 text-black" />
-            </button>
-            </div>
-            {/* Auth Section */}
+              <input
+                type="text"
+                placeholder="Search any news..."
+                value={desktopQuery}
+                onChange={(e) => setDesktopQuery(e.target.value)}
+                className="pl-3 pr-1 py-1.5 text-sm outline-none bg-transparent w-44"
+              />
+              <button
+                type="submit"
+                className="p-2 text-black hover:bg-gray-100 transition-colors"
+                aria-label="Search"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </form>
+
+            {/* Auth */}
             {session?.user ? (
-              <div className="hidden sm:flex items-center gap-4">
-                <Image 
-                alt = 'n'
-                src = {'https://placehold.net/avatar-5.svg'} height = '10' width ='10' className='rounded-full'/>
+              <div className="hidden sm:flex items-center gap-3">
+                <Link href="/dashboard" className="flex items-center gap-2 group">
+                  <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
+                    {session.user.name?.charAt(0).toUpperCase() ?? session.user.email?.charAt(0).toUpperCase() ?? 'U'}
+                  </div>
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-xs text-gray-500 hover:text-black transition-colors"
+                >
+                  Sign out
+                </button>
               </div>
             ) : (
-              
-              <Link href='/auth/signin' className = 'hidden sm:inline-block px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors'>Sign In</Link>
+              <Link
+                href="/auth/signin"
+                className="hidden sm:inline-block px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+              >
+                Sign In
+              </Link>
             )}
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile menu toggle */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Menu"
             >
-              {isMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Mobile Search Bar */}
         {isSearchOpen && (
-          <div className="pb-4">
+          <div className="pb-4 md:hidden">
             <form onSubmit={handleSearch} className="flex gap-2">
               <input
                 type="text"
                 placeholder="Search news..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="flex-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
                 autoFocus
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm"
               >
                 Search
               </button>
@@ -143,53 +161,46 @@ export function Header() {
       {isMenuOpen && (
         <div className="md:hidden bg-gray-50 border-t border-gray-200">
           <nav className="flex flex-col gap-0">
-            <Link
-              href="/"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/category/Technology"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Technology
-            </Link>
-            <Link
-              href="/category/Business"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Business
-            </Link>
-            <Link
-              href="/category/Sports"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sports
-            </Link>
-            {!session?.user && (
+            {[
+              { href: '/', label: 'Home' },
+              { href: '/category/Technology', label: 'Technology' },
+              { href: '/category/Business', label: 'Business' },
+              { href: '/category/Sports', label: 'Sports' },
+            ].map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {label}
+              </Link>
+            ))}
+
+            {session?.user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
+                  className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors text-left border-t border-gray-200"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
               <Link
                 href="/auth/signin"
-                className="px-6 py-3 text-sm font-bold  text-red-600 hover:bg-gray-100 transition-colors"
+                className="px-6 py-3 text-sm font-bold text-red-600 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sign In
               </Link>
-            )}
-            {session?.user && (
-              <button
-                onClick={() => {
-                  handleSignOut()
-                  setIsMenuOpen(false)
-                }}
-                className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors text-left border-t border-gray-200"
-              >
-                Sign Out
-              </button>
             )}
           </nav>
         </div>

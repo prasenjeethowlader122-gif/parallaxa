@@ -1,11 +1,15 @@
 import { Metadata } from 'next';
-import { NewsArticle, getArticleById, getAllArticles, getArticleBySlug } from '@/lib/news-data'
-import ArticlePage from '@/hooks/client/article-page'
+import { getArticleBySlug, incrementArticleViews } from '@/lib/news-data';
+import ArticlePage from '@/hooks/client/article-page';
 
-export async function generateMetadata({ params }): Promise < Metadata > {
-  const {slug} = await params;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
   const article = await getArticleBySlug(slug);
-  
+
   if (!article) {
     return {
       title: 'Article Not Found',
@@ -13,11 +17,11 @@ export async function generateMetadata({ params }): Promise < Metadata > {
       robots: 'noindex, nofollow',
     };
   }
-  
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://v0-parallaxa.vercel.app/';
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app';
   const articleUrl = `${baseUrl}/article/${slug}`;
   const ogImageUrl = `${baseUrl}/api/og/${slug}`;
-  
+
   return {
     title: article.title,
     description: article.description,
@@ -27,16 +31,17 @@ export async function generateMetadata({ params }): Promise < Metadata > {
       title: article.title,
       description: article.description,
       images: [
-      {
-        url: ogImageUrl,
-        width: 1200,
-        height: 630,
-        alt: article.title,
-        type: 'image/png',
-      }],
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+          type: 'image/png',
+        },
+      ],
       type: 'article',
       url: articleUrl,
-      publishedTime: article.date,
+      publishedTime: article.date.toISOString(),
       authors: [article.author],
     },
     twitter: {
@@ -52,10 +57,24 @@ export async function generateMetadata({ params }): Promise < Metadata > {
       'max-snippet': -1,
       'max-video-preview': -1,
     },
-    canonical: articleUrl,
+    alternates: {
+      canonical: articleUrl,
+    },
   };
 }
 
-export default function ArticlePageOpen({ params }) {
-  return <ArticlePage slug={params.slug} />
+export default async function ArticlePageOpen({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  // Fire-and-forget view increment (won't block render)
+  const article = await getArticleBySlug(slug);
+  if (article) {
+    incrementArticleViews(article.id).catch(() => {});
+  }
+
+  return <ArticlePage slug={slug} />;
 }
