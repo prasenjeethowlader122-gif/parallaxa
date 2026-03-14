@@ -128,7 +128,7 @@ export default function ArticlePage() {
         }
       `}</style>
 
-      <main className="flex-grow">
+      <main className="sm:flex-grow lg:flex-row lg:items-start lg:justify-between">
         {/* Article Header */}
         <div className="py-4">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,7 +170,7 @@ export default function ArticlePage() {
                   <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-white text-xs font-bold group-hover:bg-black transition-colors">
                     {article.author.charAt(0)}
                   </div>
-                  <div className='flex flex-col items-start justify-start gap-2'>
+                  <div className='flex flex-col items-start justify-start'>
                   <span className="font-medium text-sm group-hover:underline">{article.author}</span>
                                   <div className="flex items-center text-xs gap-1.5">
                   
@@ -186,7 +186,7 @@ export default function ArticlePage() {
                   <Eye className="w-4 h-4" />
                   <span>{(article.views / 1000).toFixed(1)}K views</span>
                 </div>
-              </div>
+              
 
               {/* Share & Print Actions */}
               <div className="flex items-center gap-2 no-print">
@@ -243,7 +243,9 @@ export default function ArticlePage() {
                         {copied ? 'Copied!' : 'Copy link'}
                       </button>
                     </div>
+                    
                   )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -251,7 +253,7 @@ export default function ArticlePage() {
         </div>
 
         {/* Featured Image */}
-        <div className="relative w-full h-96 bg-gray-200">
+        <div className="relative w-full aspect-video p-2">
           <Image
             src={article.image || 'https://placehold.net/600x400.png'}
             alt={article.title}
@@ -273,19 +275,6 @@ export default function ArticlePage() {
           </div>
 
           {/* Author Card */}
-          <div className="mt-12 pt-8 border-t border-gray-200 no-print">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">About the Author</h3>
-            <Link href={`/author/${authorSlug}`} className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all group">
-              <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center text-white text-xl font-bold flex-shrink-0 group-hover:bg-black transition-colors">
-                {article.author.charAt(0)}
-              </div>
-              <div>
-                <p className="font-bold text-gray-900 group-hover:underline">{article.author}</p>
-                <p className="text-sm text-gray-500 mt-0.5">Staff Writer · {article.category}</p>
-                <p className="text-sm text-gray-400 mt-1">View all articles by this author →</p>
-              </div>
-            </Link>
-          </div>
 
           {/* Bottom Share Bar */}
 
