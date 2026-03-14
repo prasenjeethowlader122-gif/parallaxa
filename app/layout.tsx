@@ -1,20 +1,9 @@
 import type { Metadata, Viewport } from 'next'
-import localFont from 'next/font/local';
+
 import { Analytics } from '@vercel/analytics/next'
 import { ClientSessionProvider } from '@/components/session-provider'
 import './globals.css'
-const spacegrotesk = localFont({
-  src : '../public/local/font/SpaceGrotesk-VariableFont_wght.ttf'
-})
-
-export const slabo = localFont({
-  src: [
-  {
-    path: '../public/local/font/Slabo27px-Regular.ttf',
-    weight: '400',
-    style: 'normal',
-  } ]
-});
+import {spacegrotesk , slabo} from '@/lib/font'
 
 
 export const metadata: Metadata = {
@@ -52,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode
 } > ) {
   return (
-    <html lang="en" className={spacegrotesk.className}>
+    <html lang="en" className={`${spacegrotesk.className} ${slabo.className}`}>
      
       <body className="antialiased bg-white text-gray-900">
         <ClientSessionProvider>
