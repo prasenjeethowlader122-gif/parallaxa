@@ -15,6 +15,9 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
     year: 'numeric',
   })
   
+  if (!article.id) {
+    return null
+  }
   
   if (variant === 'featured') {
     return (
