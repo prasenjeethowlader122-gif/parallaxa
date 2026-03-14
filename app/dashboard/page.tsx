@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect,Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -26,7 +26,7 @@ interface ArticleRow {
   breaking?: boolean
 }
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('overview')
@@ -385,5 +385,13 @@ export default function DashboardPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function DashboardPage(){
+  return (
+    <Suspense fallback = {(<>loading...</>)}>
+    <DashboardPageContent/>
+    </Suspense>
   )
 }

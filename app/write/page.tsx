@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef ,Suspense} from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -27,7 +27,7 @@ const EMPTY: FormState = {
 
 type Status = 'idle' | 'saving' | 'saved' | 'publishing' | 'published' | 'error'
 
-export default function WritePage() {
+function WritePageContent() {
   const { data: session, status: authStatus } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -329,5 +329,13 @@ export default function WritePage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function WritePage (){
+  return (
+    <Suspense fallback = {(<>loading...</>)}>
+      <WritePageContent/>
+      </Suspense>
   )
 }
