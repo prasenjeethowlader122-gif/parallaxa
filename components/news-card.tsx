@@ -91,7 +91,11 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
 
           <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
             {article.title}
+            
           </h3>
+                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+          {article.description}
+        </p>
 
           {/* Meta row */}
           <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400">
@@ -146,7 +150,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
           {article.title}
         </h3>
 
-        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-2 -mt-2">
           {article.description}
         </p>
 
