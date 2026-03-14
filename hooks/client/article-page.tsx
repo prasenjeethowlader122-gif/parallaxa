@@ -278,7 +278,7 @@ export default function ArticlePage() {
 
         {/* ── Featured image ── */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="relative w-full aspect-video overflow-hidden">
+          <div className="relative w-full aspect-video rounded-md overflow-hidden">
             <Image
               src={article.image || 'https://placehold.net/600x400.png'}
               alt={article.title}
