@@ -139,7 +139,7 @@ export default function Home() {
                 ">
                   <NewsCard
                     article={fourth}
-                    variant="vertical"
+                    variant="featured"
                     className="h-full"
                   />
                 </div>
