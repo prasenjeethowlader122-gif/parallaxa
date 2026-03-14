@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { categories } from '@/lib/articles'
+import { categories } from '@/lib/news-data'
 import { usePathname } from 'next/navigation'
 
 export function CategoryFilter() {
