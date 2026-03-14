@@ -153,11 +153,11 @@ export default function ArticlePage() {
               )}
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
               {article.title}
             </h1>
 
-            <p className={"text-xl text-gray-600 mb-6 "}>{article.description}</p>
+            <p className={"text-sm text-gray-600 mb-6 "}>{article.description}</p>
 
             {/* Meta + Actions row */}
             <div className="flex flex-col items-start justify-start gap-4">
@@ -170,18 +170,18 @@ export default function ArticlePage() {
                   <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-white text-xs font-bold group-hover:bg-black transition-colors">
                     {article.author.charAt(0)}
                   </div>
-                  <span className="font-medium group-hover:underline">{article.author}</span>
+                  <div className='flex flex-col items-start justify-start gap-2'>
+                  <span className="font-medium text-sm group-hover:underline">{article.author}</span>
+                                  <div className="flex items-center text-xs gap-1.5">
+                  
+                  <span>{formattedDate}</span>
+                  </div>
+                </div>
                 </Link>
                 
                 </div>
-                
-                <div className="flex items-center gap-1.5">
-                  
-                  <span>{formattedDate}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                </div>
-                <div className = 'flex items-center justify-start gap-2 text-black w-full'>
+              
+                <div className = 'flex flex-row items-center justify-start gap-2 text-black w-full'>
                 <div className="flex items-center gap-1.5">
                   <Eye className="w-4 h-4" />
                   <span>{(article.views / 1000).toFixed(1)}K views</span>
@@ -256,7 +256,7 @@ export default function ArticlePage() {
             src={article.image || 'https://placehold.net/600x400.png'}
             alt={article.title}
             fill
-            className="object-cover"
+            className="object-cover aspect-video"
             priority
           />
         </div>
