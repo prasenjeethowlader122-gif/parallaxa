@@ -27,13 +27,13 @@ export function BreakingBanner() {
   }
   
   return (
-    <div className="bg-red-600 text-white">
+    <div className="bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link href={`/article/${currentArticle.slug || currentArticle.id}`}>
           <div className="flex items-center justify-between gap-4 py-3 cursor-pointer group">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="flex-shrink-0">
-                <span className="inline-block bg-white text-red-600 px-2.5 py-1 rounded font-bold text-xs animate-pulse">
+                <span className="inline-block bg-black text-white px-2.5 py-1 rounded font-bold text-xs animate-pulse">
                   BREAKING
                 </span>
               </div>
