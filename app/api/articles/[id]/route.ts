@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/auth'
 import { getArticleById, updateArticle, deleteArticle } from '@/lib/db/articles'
 
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
