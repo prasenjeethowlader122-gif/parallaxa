@@ -92,7 +92,7 @@ export default function Home() {
                   col-span-1 
                   md:col-span-2
                   lg:col-span-7 lg:row-span-2
-                  min-h-[260px] lg:min-h-0
+               lg:min-h-0
                 ">
                   <NewsCard
                     article={mostRecent}
