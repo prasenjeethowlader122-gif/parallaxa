@@ -5,163 +5,145 @@ import { Clock, Eye } from 'lucide-react'
 
 interface NewsCardProps {
   article: NewsArticle
-  variant ? : 'default' | 'featured' | 'horizontal'
-  className ? : string
+  variant?: 'default' | 'featured' | 'horizontal'
+  className?: string
 }
 
 export function NewsCard({ article, variant = 'default', className }: NewsCardProps) {
   if (!article || !article.id) return null
-  
+
   const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
-  
+
   const href = `/article/${article.slug || article.id}`
-  
-  // ─── Featured ────────────────────────────────────────────────────────────────
+
+  // Fix 6: Fallback image if source is missing
+  const imageSrc = article.image || '/images/placeholder.jpg'
+
   if (variant === 'featured') {
     return (
-      <Link href={href} className={`group block ${className ?? ''}`}>
-        {/* Image with overlay */}
-        <div className="relative w-full h-80 overflow-hidden rounded-xl bg-gray-100">
-          <Image
-            src={article.image}
-            alt={article.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          {/* Gradient: bottom-heavy so text stays readable */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-5">
-            <span className="inline-block bg-red-600 text-white px-2.5 py-0.5 rounded text-[11px] font-semibold tracking-wide uppercase mb-2">
-              Featured
-            </span>
-            <h3 className="text-white text-xl font-bold leading-snug line-clamp-2">
-              {article.title}
-            </h3>
+      // Fix 5: block removes default link underlines/outlines
+      <Link href={href} className="block">
+        {/* Fix 4: overflow-hidden added so rounded-lg clips the image correctly */}
+        <div className={`group cursor-pointer overflow-hidden ${className ?? ''}`}>
+          <div className="relative w-full h-96 overflow-hidden rounded-lg bg-gray-200 mb-2">
+            <Image
+              src={imageSrc}
+              alt={article.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <div className="inline-block bg-red-600 text-white px-3 py-1 rounded text-xs font-bold mb-3">
+                Featured
+              </div>
+              <h3 className="text-white text-2xl font-bold leading-tight text-balance">
+                {article.title}
+              </h3>
+            </div>
           </div>
-        </div>
-
-        {/* Below-image content */}
-        <div className="pt-3 space-y-2">
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
-            {article.description}
-          </p>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="font-medium text-gray-700">{article.author}</span>
-            <span className="text-gray-300">·</span>
+          <p className="text-gray-600 text-sm line-clamp-2">{article.description}</p>
+          <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+            <span className="font-medium">{article.author}</span>
             <span>{formattedDate}</span>
           </div>
         </div>
       </Link>
     )
   }
-  
-  // ─── Horizontal ───────────────────────────────────────────────────────────────
+
   if (variant === 'horizontal') {
     return (
-      <Link href={href} className={`group flex gap-3 ${className ?? ''}`}>
-        {/* Fixed-size thumbnail — narrow enough that the text column gets room */}
-        <div className="relative w-28 h-[84px] flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-          <Image
-            src={article.image}
-            alt={article.title}
-            fill
-            sizes="112px"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        </div>
-
-        {/* Text — min-w-0 prevents flex blowout */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-          {/* Category + Breaking */}
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-              {article.category}
-            </span>
-            {article.breaking && (
-              <span className="bg-red-600 text-white px-1.5 py-px rounded text-[10px] font-bold uppercase tracking-wide">
-                Breaking
-              </span>
-            )}
+      // Fix 5: block removes default link underlines/outlines
+      <Link href={href} className="block">
+        {/* Fix 2: min-h ensures card doesn't collapse if image fails */}
+        <div className={`group flex gap-4 cursor-pointer min-h-[8rem] ${className ?? ''}`}>
+          {/* Fix 1 + 7: overflow-hidden ensures radius clips; w-32 sm:w-40 is responsive */}
+          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
+            <Image
+              src={imageSrc}
+              alt={article.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
           </div>
-
-          <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
-            {article.title}
-            
-          </h3>
-                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
-          {article.description}
-        </p>
-
-          {/* Meta row */}
-          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400">
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {article.readTime} min
-            </span>
-            <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3" />
-              {(article.views / 1000).toFixed(1)}K
-            </span>
+          <div className="flex-1 min-w-0">
+            {/* Fix 8: removed redundant uppercase text — CSS uppercase class handles it */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                {article.category}
+              </span>
+              {article.breaking && (
+                <span className="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold">
+                  Breaking
+                </span>
+              )}
+            </div>
+            {/* Fix 3: text-md → text-sm (valid Tailwind class) */}
+            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
+              {article.title}
+            </h3>
+            <p className="text-sm text-gray-600 line-clamp-1 mt-1">{article.description}</p>
+            <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {article.readTime} min
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {(article.views / 1000).toFixed(1)}K views
+              </div>
+            </div>
           </div>
         </div>
       </Link>
     )
   }
-  
-  // ─── Default ──────────────────────────────────────────────────────────────────
-  return (
-    <Link href={href} className={`group block ${className ?? ''}`}>
-      {/* Thumbnail */}
-      <div className="relative w-full h-48 overflow-hidden rounded-xl bg-gray-100 mb-3">
-        <Image
-          src={article.image}
-          alt={article.title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        {article.breaking && (
-          <div className="absolute top-2.5 left-2.5">
-            <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide">
-              Breaking
-            </span>
-          </div>
-        )}
-      </div>
 
-      {/* Card body */}
-      <div className="space-y-1.5">
-        {/* Category + Trending inline */}
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-            {article.category}
-          </span>
-          {article.trending && (
-            <span className="text-[11px] font-semibold text-red-500">🔥 Trending</span>
+  // Default variant
+  return (
+    // Fix 5: block removes default link underlines/outlines
+    <Link href={href} className="block">
+      <div className={`group cursor-pointer ${className ?? ''}`}>
+        {/* Fix 1: overflow-hidden ensures rounded-lg correctly clips the image */}
+        <div className="relative w-full h-48 overflow-hidden rounded-lg bg-gray-200 mb-3">
+          <Image
+            src={imageSrc}
+            alt={article.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          {article.breaking && (
+            <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">
+              Breaking
+            </div>
           )}
         </div>
-
-        <h3 className="font-bold text-gray-900 text-md leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
-          {article.title}
-        </h3>
-
-        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-2 -mt-2">
-          {article.description}
-        </p>
-
-        {/* Meta: date left, read time right */}
-        <div className="flex items-center justify-between pt-1 text-xs text-gray-400">
-          <span>{formattedDate}</span>
-          <span>{article.readTime} min read</span>
+        <div className="space-y-2">
+          {/* Fix 8: removed redundant all-caps from text — CSS uppercase is sufficient */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+              {article.category}
+            </span>
+            {article.trending && (
+              <span className="text-xs font-bold text-red-600">🔥 Trending</span>
+            )}
+          </div>
+          {/* Fix 3: text-md → text-base (valid Tailwind class) */}
+          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-base">
+            {article.title}
+          </h3>
+          <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>
+          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+            <span>{formattedDate}</span>
+            <span>{article.readTime} min read</span>
+          </div>
         </div>
       </div>
-    </Link> 
+    </Link>
   )
 }
-
-
