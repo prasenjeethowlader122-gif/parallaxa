@@ -96,7 +96,7 @@ export default function Home() {
                 ">
                   <NewsCard
                     article={mostRecent}
-                    variant="vertical"
+                    variant="featured"
                     className="h-full"
                   />
                 </div>
@@ -111,7 +111,7 @@ export default function Home() {
                 ">
                   <NewsCard
                     article={second}
-                    variant="vertical"
+                    variant="featured"
                     className="h-full"
                   />
                 </div>
@@ -126,7 +126,7 @@ export default function Home() {
                 ">
                   <NewsCard
                     article={third}
-                    variant="vertical"
+                    variant="featured"
                     className="h-full"
                   />
                 </div>
