@@ -82,7 +82,7 @@ export default function ArticlePage() {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <Header />
-        <div className="flex-grow flex items-center justify-center">
+        <div className="flex-grow flex items-center justify-center h-full">
           <div className="animate-pulse text-gray-500">Loading article...</div>
         </div>
         <Footer />
@@ -130,12 +130,9 @@ export default function ArticlePage() {
 
       <main className="flex-grow">
         {/* Article Header */}
-        <div className="bg-gray-50 py-8">
+        <div className="py-4">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Link href="/" className="flex items-center gap-2 text-red-600 hover:text-red-700 mb-6 no-print">
-              <ArrowLeft className="w-4 h-4" />
-              Back to News
-            </Link>
+           
 
             <div className="flex items-center gap-2 mb-4">
               <Link
@@ -160,10 +157,10 @@ export default function ArticlePage() {
               {article.title}
             </h1>
 
-            <p className={"text-xl text-gray-600 mb-6 " + slabo.className}>{article.description}</p>
+            <p className={"text-xl text-gray-600 mb-6 "}>{article.description}</p>
 
             {/* Meta + Actions row */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-col items-start justify-start gap-4">
               <div className="flex flex-wrap items-center gap-5 text-sm text-gray-600">
                 {/* Author with profile link */}
                 <Link
@@ -175,14 +172,16 @@ export default function ArticlePage() {
                   </div>
                   <span className="font-medium group-hover:underline">{article.author}</span>
                 </Link>
+                
+                </div>
+                
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4" />
+                  
                   <span>{formattedDate}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  <span>{article.readTime} min read</span>
                 </div>
+                <div className = 'flex items-center justify-start gap-2 text-black w-full'>
                 <div className="flex items-center gap-1.5">
                   <Eye className="w-4 h-4" />
                   <span>{(article.views / 1000).toFixed(1)}K views</span>
@@ -194,7 +193,7 @@ export default function ArticlePage() {
                 {/* Print */}
                 <button
                   onClick={handlePrint}
-                  className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-200 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600  rounded-full border transition-colors"
                   title="Print article"
                 >
                   <Printer className="w-4 h-4" />
@@ -205,7 +204,7 @@ export default function ArticlePage() {
                 <div className="relative">
                   <button
                     onClick={handleNativeShare}
-                    className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-200 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600  rounded-full border transition-colors"
                     title="Share article"
                   >
                     <Share2 className="w-4 h-4" />
@@ -216,21 +215,21 @@ export default function ArticlePage() {
                     <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg p-2 w-48 z-50">
                       <button
                         onClick={handleShareTwitter}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600  rounded-full border transition-colors"
                       >
                         <Twitter className="w-4 h-4 text-sky-500" />
                         Share on Twitter
                       </button>
                       <button
                         onClick={handleShareFacebook}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600  rounded-full border transition-colors"
                       >
                         <Facebook className="w-4 h-4 text-blue-600" />
                         Share on Facebook
                       </button>
                       <button
                         onClick={handleShareLinkedin}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600  rounded-full border transition-colors"
                       >
                         <Linkedin className="w-4 h-4 text-blue-700" />
                         Share on LinkedIn
@@ -238,7 +237,7 @@ export default function ArticlePage() {
                       <hr className="my-1 border-gray-100" />
                       <button
                         onClick={handleCopyLink}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600  rounded-full border transition-colors"
                       >
                         {copied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" />}
                         {copied ? 'Copied!' : 'Copy link'}
