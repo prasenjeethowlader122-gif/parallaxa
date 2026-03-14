@@ -46,7 +46,9 @@
 .font-datatype {
   font-family: 'Datatype', sans-serif;
 }
-
+article{
+  font-family: var(--font-slabo) !important;
+}
 @theme inline {
   --font-sans: var(--font-datatype);
   --font-mono: 'Sora Mono', 'Sora Mono Fallback';
