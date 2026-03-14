@@ -5,7 +5,7 @@ import { OpenAI } from 'openai'
 // ─── Clients ───────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
+  apiKey: 'fc-da0837003c26469da0f8c259c6c10944',
 })
 
 // Standard OpenAI client (GPT)
@@ -16,7 +16,7 @@ const openaiClient = new OpenAI({
 // HuggingFace — same OpenAI SDK, different baseURL + key
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey:  process.env.HF_TOKEN ?? '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',
+  apiKey:   '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',
 })
 
 // ─── Models ────────────────────────────────────────────────────────────────
@@ -204,10 +204,10 @@ async function streamFromHuggingFace(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ url: string }> }
+  { params }: { params: Promise<{ query: string }> }
 ) {
   try {
-    const { url: rawQuery } = await params
+    const { query: rawQuery } = await params
     const query    = decodeURIComponent(rawQuery)
 
     // ?provider=openai (default) | ?provider=huggingface
