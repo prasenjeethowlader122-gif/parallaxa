@@ -87,12 +87,13 @@ async function searchNews(query: string): Promise<SearchResult[]> {
     // FIX: Use correct Firecrawl search API — no `sources` filter, use `pageOptions`
     const results = (await firecrawl.search(query, {
       limit: 5,
+      sources: 'news',
       scrapeOptions: {
         formats: ['markdown'],
       },
     })) as SearchResponse
 
-    const data = results?.data ?? []
+    const data = results
     console.log(`[search] got ${data.length} results`)
     return data
   } catch (err) {
@@ -241,7 +242,7 @@ export async function GET(
   try {
     // FIX: no await needed — params is a plain object
     const query    = decodeURIComponent(params.query)
-    const provider = req.nextUrl.searchParams.get('provider') ?? 'openai'
+    const provider = req.nextUrl.searchParams.get('provider') ?? 'huggingface'
 
     // ── 1. Search ─────────────────────────────────────────────────────────
     console.log(`[pipeline] 1/4 searching: "${query}"`)
