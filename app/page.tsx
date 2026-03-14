@@ -19,6 +19,7 @@ export default function Home() {
       try {
         const featured = (await getFeaturedArticles()).filter(Boolean)
         const latest = (await getAllArticles()).filter(Boolean).slice(0, 12)
+        
         setFeaturedArticles(featured)
         setLatestArticles(latest)
       } catch (error) {
@@ -40,7 +41,9 @@ export default function Home() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
           {isLoading ? (
-            <div className="space-y-4">
+
+    
+            <div className="space-y-4 grid grid-cols-5 grid-rows-5 gap-4">
               {[...Array(3)].map((_, i) => (
                 <div
                   key={i}
@@ -49,13 +52,31 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="flex flex-row items-center justify-between gap-4">
+              {
+                featuredArticles.reduce((prev, current) => {return new Date(current.date) > new Date(prev.date) ? current : prev;}) !==null ? (
+                  <div className = 'h-full flex-1'>
+                                          <NewsCard
+                        key={article.id || 'null'}
+                        className=""
+                        article={article}
+                        variant="vertical"
+                      />
+                  </div>
+                ):null
+              }
+              <div className='flex flex-col items-start justify-start'></div>
               {featuredArticles.map((article) => (
-                <NewsCard
-                  key={article.id || ''}
-                  article={article}
-                  variant="featured"
-                />
+              <>
+                {
+                                        <NewsCard
+                        key={article.id || 'null'}
+                        className=''
+                        article={article}
+                        variant="horizontal"
+                      />
+                }
+              </>
               ))}
             </div>
           )}
