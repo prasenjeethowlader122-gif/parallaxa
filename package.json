@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^3.9.1",
     "@vercel/analytics": "1.6.1",
     "bcrypt-ts": "latest",
+    "@neondatabase/serverless": "latest",
     "drizzle-orm": "latest",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
