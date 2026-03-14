@@ -212,7 +212,7 @@ export default function ArticlePage() {
 
             {/* Views + actions */}
             <div className="flex items-center gap-2 no-print">
-              <span className="flex items-center gap-1.5 text-xs text-gray-400 pr-1 rounded-full bg-gray-100 px-3 py-2">
+              <span className="flex items-center gap-1.5 text-xs text-gray-400 pr-2 rounded-full bg-gray-100 px-3 py-2">
                 <Eye className="w-3.5 h-3.5" />
                 {(article.views / 1000).toFixed(1)}K
               </span>
@@ -278,7 +278,7 @@ export default function ArticlePage() {
 
         {/* ── Featured image ── */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="relative w-full aspect-video rounded-2xl overflow-hidden">
+          <div className="relative w-full aspect-video overflow-hidden">
             <Image
               src={article.image || 'https://placehold.net/600x400.png'}
               alt={article.title}
