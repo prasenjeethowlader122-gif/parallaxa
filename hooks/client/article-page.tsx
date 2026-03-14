@@ -296,7 +296,7 @@ export default function ArticlePage() {
 
         {/* ── Article body ── */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 print-content">
-          <article className={`text-gray-700 leading-relaxed text-base space-y-5  font-[--font-slabo]`}>
+          <article className={`${slabo.className} text-gray-700 leading-relaxed text-base space-y-5`}>
             <p className="first-letter:text-5xl first-letter:font-bold first-letter:float-left first-letter:leading-none first-letter:mr-2 first-letter:mt-1">
               {article.content}
             </p>
