@@ -10,15 +10,14 @@ import { NewsArticle, getFeaturedArticles, getAllArticles } from '@/lib/db/artic
 
 function FeaturedSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 auto-rows-[220px]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
       {/* Large left cell */}
-      <div className="md:col-span-1 lg:col-span-7 lg:row-span-2 bg-gray-200 rounded-xl animate-pulse" />
+      <div className="md:col-span-1 lg:col-span-7 lg:row-span-2 bg-gray-200 rounded-xl animate-pulse h-[540px]" />
       {/* Top-right */}
-      <div className="lg:col-span-5 bg-gray-200 rounded-xl animate-pulse" />
+      <div className="lg:col-span-5 bg-gray-200 rounded-xl animate-pulse h-[260px]" />
       {/* Bottom-right split */}
-      <div className="lg:col-span-2 bg-gray-200 rounded-xl animate-pulse hidden lg:block" />
-      <div className="lg:col-span-2 bg-gray-200 rounded-xl animate-pulse hidden lg:block" />
-      <div className="lg:col-span-1 bg-gray-200 rounded-xl animate-pulse hidden lg:block" />
+      <div className="lg:col-span-2 bg-gray-200 rounded-xl animate-pulse h-[260px] hidden lg:block" />
+      <div className="lg:col-span-3 bg-gray-200 rounded-xl animate-pulse h-[260px] hidden lg:block" />
     </div>
   )
 }
@@ -65,35 +64,32 @@ export default function Home() {
              * Responsive grid strategy
              * ─────────────────────────────────────────────────────────
              * Mobile  (< md)   : single column stack, each card natural height
-             * Tablet  (md–lg)  : 2 equal columns, all cards same row height
-             * Desktop (≥ lg)   : 12-column grid, 2 fixed rows of 260 px
+             * Tablet  (md–lg)  : 2 equal columns
+             * Desktop (≥ lg)   : 12-column grid, explicit row heights
              *
-             *   ┌─────────────────────┬───────────────┐  row 1 (260 px)
+             *   ┌─────────────────────┬───────────────┐  row 1 (260px)
              *   │                     │   second      │
-             *   │   mostRecent        ├───────┬───────┤  row 2 (260 px)
+             *   │   mostRecent        ├───────┬───────┤  row 2 (260px)
              *   │   (spans 2 rows)    │ third │fourth │
              *   └─────────────────────┴───────┴───────┘
              *    7 cols                2 cols  3 cols
              * ─────────────────────────────────────────────────────────
+             *
+             * KEY FIX: Use explicit row definitions via CSS grid-template-rows
+             * instead of gridAutoRows, so the hero card can span both rows
+             * (total 536px = 260+260+16gap) without fighting aspect-ratio.
+             * Cards use variant="featured" which fills the container height.
              */
-             
             <div
-              className="
-                grid gap-4 
-                grid-cols-1
-                md:grid-cols-2
-                lg:grid-cols-12 lg:grid-rows-2
-              "
-              style={{ gridAutoRows: '260px' }}
+              className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
+              style={{
+                // Two explicit rows of 260px each on desktop
+                gridTemplateRows: 'repeat(2, 260px)',
+              }}
             >
-              {/* ① Large hero card — left 7 cols, spans both rows */}
+              {/* ① Large hero card — left 7 cols, spans both rows → total height 536px */}
               {mostRecent && (
-                <div className="
-                  col-span-1 
-                  md:col-span-2
-                  lg:col-span-7 lg:row-span-2
-               lg:min-h-0
-                ">
+                <div className="col-span-1 md:col-span-2 lg:col-span-7 lg:row-span-2 h-[220px] md:h-[260px] lg:h-auto">
                   <NewsCard
                     article={mostRecent}
                     variant="featured"
@@ -104,11 +100,7 @@ export default function Home() {
 
               {/* ② Top-right card — cols 8–12, row 1 */}
               {second && (
-                <div className="
-                  col-span-1
-                  lg:col-span-5 lg:col-start-8 lg:row-start-1
-                  min-h-[200px] lg:min-h-0
-                ">
+                <div className="col-span-1 lg:col-span-5 lg:col-start-8 lg:row-start-1 h-[220px] lg:h-auto">
                   <NewsCard
                     article={second}
                     variant="featured"
@@ -119,11 +111,7 @@ export default function Home() {
 
               {/* ③ Bottom-right — cols 8–9, row 2 */}
               {third && (
-                <div className="
-                  col-span-1
-                  lg:col-span-2 lg:col-start-8 lg:row-start-2
-                  min-h-[200px] lg:min-h-0
-                ">
+                <div className="col-span-1 lg:col-span-2 lg:col-start-8 lg:row-start-2 h-[220px] lg:h-auto">
                   <NewsCard
                     article={third}
                     variant="featured"
@@ -134,11 +122,7 @@ export default function Home() {
 
               {/* ④ Bottom-right — cols 10–12, row 2 */}
               {fourth && (
-                <div className="
-                  col-span-1
-                  lg:col-span-3 lg:col-start-10 lg:row-start-2
-                  min-h-[200px] lg:min-h-0
-                ">
+                <div className="col-span-1 lg:col-span-3 lg:col-start-10 lg:row-start-2 h-[220px] lg:h-auto">
                   <NewsCard
                     article={fourth}
                     variant="featured"

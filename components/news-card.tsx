@@ -5,65 +5,65 @@ import { Clock, Eye } from 'lucide-react'
 
 interface NewsCardProps {
   article: NewsArticle
-  variant?: 'default' | 'featured' | 'horizontal'
-  className?: string
+  variant ? : 'default' | 'featured' | 'horizontal'
+  className ? : string
 }
 
 export function NewsCard({ article, variant = 'default', className }: NewsCardProps) {
   if (!article || !article.id) return null
-
+  
   const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
-
+  
   const href = `/article/${article.slug || article.id}`
-
-  // Fix 6: Fallback image if source is missing
+  
   const imageSrc = article.image || '/images/placeholder.jpg'
-
+  
   if (variant === 'featured') {
     return (
-      // Fix 5: block removes default link underlines/outlines
-      <Link href={href} className="block">
-        {/* Fix 4: overflow-hidden added so rounded-lg clips the image correctly */}
-        <div className={`group cursor-pointer overflow-hidden h-full ${className ?? ''}`}>
-<div className="relative w-full h-full h-full overflow-hidden rounded-lg bg-gray-200 mb-2 aspect-video">
-
+      <Link href={href} className="block h-full">
+        {/*
+         * KEY FIX: The outer div and the image container both use h-full
+         * so they fill whatever height the grid cell provides.
+         * aspect-video is REMOVED — it fought the fixed grid-row height
+         * and caused cards to overflow/overlap each other.
+         * The image container is purely position:relative + fills parent.
+         */}
+        <div className={`group cursor-pointer overflow-hidden h-full flex flex-col ${className ?? ''}`}>
+          {/* Image fills all available space */}
+          <div className="relative w-full flex-1 overflow-hidden rounded-lg bg-gray-200 min-h-0">
             <Image
-              src={imageSrc || 'https://placehold.net/600x400.png'}
+              src={imageSrc}
               alt={article.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300 aspect-video"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="inline-block bg-red-600 text-white px-3 py-1 rounded text-xs font-bold mb-3">
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="inline-block bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold mb-2">
                 Featured
               </div>
-              <h3 className="text-white text-2xl font-bold leading-tight text-balance">
+              <h3 className="text-white text-lg font-bold leading-tight line-clamp-3">
                 {article.title}
               </h3>
+              <div className="flex items-center gap-3 mt-2 text-xs text-white/70">
+                <span className="font-medium">{article.author}</span>
+                <span>{formattedDate}</span>
+              </div>
             </div>
-          </div>
-          <p className="text-gray-600 text-sm line-clamp-2">{article.description}</p>
-          <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-            <span className="font-medium">{article.author}</span>
-            <span>{formattedDate}</span>
           </div>
         </div>
       </Link>
     )
   }
-
+  
   if (variant === 'horizontal') {
     return (
-      // Fix 5: block removes default link underlines/outlines
       <Link href={href} className="block">
-        {/* Fix 2: min-h ensures card doesn't collapse if image fails */}
         <div className={`group flex gap-4 cursor-pointer min-h-[8rem] ${className ?? ''}`}>
-          {/* Fix 1 + 7: overflow-hidden ensures radius clips; w-32 sm:w-40 is responsive */}
           <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
             <Image
               src={imageSrc}
@@ -73,7 +73,6 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             />
           </div>
           <div className="flex-1 min-w-0">
-            {/* Fix 8: removed redundant uppercase text — CSS uppercase class handles it */}
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
                 {article.category}
@@ -84,7 +83,6 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
                 </span>
               )}
             </div>
-            {/* Fix 3: text-md → text-sm (valid Tailwind class) */}
             <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
               {article.title}
             </h3>
@@ -104,13 +102,11 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
       </Link>
     )
   }
-
+  
   // Default variant
   return (
-    // Fix 5: block removes default link underlines/outlines
     <Link href={href} className="block">
       <div className={`group cursor-pointer ${className ?? ''}`}>
-        {/* Fix 1: overflow-hidden ensures rounded-lg correctly clips the image */}
         <div className="relative w-full h-48 overflow-hidden rounded-lg bg-gray-200 mb-3">
           <Image
             src={imageSrc}
@@ -125,7 +121,6 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
           )}
         </div>
         <div className="space-y-2">
-          {/* Fix 8: removed redundant all-caps from text — CSS uppercase is sufficient */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
               {article.category}
@@ -134,7 +129,6 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               <span className="text-xs font-bold text-red-600">🔥 Trending</span>
             )}
           </div>
-          {/* Fix 3: text-md → text-base (valid Tailwind class) */}
           <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-base">
             {article.title}
           </h3>
