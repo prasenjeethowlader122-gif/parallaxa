@@ -258,9 +258,12 @@ export default function ArticlePage() {
             src={article.image || 'https://placehold.net/600x400.png'}
             alt={article.title}
             fill
-            className="object-cover aspect-video"
+            className="object-cover aspect-video mx-2"
             priority
           />
+          <caption className = 'text-gray-600 text-sm font-medium mx-2 mt-2'>
+            {article.description}
+          </caption>
         </div>
 
         {/* Article Content */}
