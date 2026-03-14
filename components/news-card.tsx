@@ -142,7 +142,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
           )}
         </div>
 
-        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
+        <h3 className="font-bold text-gray-900 text-md leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
           {article.title}
         </h3>
 
