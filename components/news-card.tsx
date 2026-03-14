@@ -24,7 +24,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
     return (
       <Link href={href}>
         <div className={`group cursor-pointer ${className ?? ''}`}>
-          <div className="relative w-full h-96 overflow-hidden rounded-lg bg-gray-200 mb-4">
+          <div className="relative w-full h-96 overflow-hidden rounded-lg bg-gray-200 mb-2">
             <Image
               src={article.image}
               alt={article.title}
