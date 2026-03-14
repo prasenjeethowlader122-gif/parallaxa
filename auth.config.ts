@@ -41,5 +41,6 @@ export const authConfig = {
       return session;
     },
   },
+  
   session: { strategy: 'jwt' },
 }

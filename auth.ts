@@ -16,6 +16,7 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  secret: 'jUeVqevjX3mTrNSHdomPVUos4O/rZOyJLWByViRoT5WcwyfcULBLe/BC46o=',
   providers: [
     Credentials({
       async authorize(credentials) {
