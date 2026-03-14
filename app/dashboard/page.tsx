@@ -128,7 +128,7 @@ function StatCard({
         {icon}
       </div>
       <div>
-        <p className="text-2xl font-semibold leading-none" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}>{value}</p>
+        <p className="text-2xl font-semibold leading-none" style={{  color: 'var(--text-primary)' }}>{value}</p>
         <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
       </div>
     </div>
@@ -144,7 +144,7 @@ function NavItem({
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-left transition-all duration-150"
       style={{
-        fontFamily: "'Syne', sans-serif",
+        
         fontSize: 13,
         fontWeight: active ? 600 : 400,
         background: active ? 'var(--text-primary)' : 'transparent',
@@ -182,11 +182,11 @@ function ArticleRow({
         <Link
           href={`/article/${article.slug}`}
           className="text-sm font-medium block truncate hover:underline"
-          style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}
+          style={{  color: 'var(--text-primary)' }}
         >
           {article.title}
         </Link>
-        <div className="flex items-center gap-2 mt-1 flex-wrap" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'var(--text-tertiary)' }}>
+        <div className="flex items-center gap-2 mt-1 flex-wrap" style={{  fontSize: 11, color: 'var(--text-tertiary)' }}>
           <span
             className="px-1.5 py-0.5 rounded"
             style={{ background: 'var(--hover-bg)', color: 'var(--text-secondary)', fontSize: 10 }}
@@ -243,7 +243,7 @@ function Card({ title, action, children }: { title?: string; action?: React.Reac
     <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
       {title && (
         <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: '1px solid var(--border)' }}>
-          <span className="text-sm font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}>{title}</span>
+          <span className="text-sm font-semibold" style={{  color: 'var(--text-primary)' }}>{title}</span>
           {action}
         </div>
       )}
@@ -295,13 +295,13 @@ function OverviewTab({ articles, loading, session, onSwitchArticles }: {
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}>
+            <p className="text-sm font-semibold truncate" style={{  color: 'var(--text-primary)' }}>
               {session.user.name ?? 'Anonymous'}
             </p>
-            <p className="text-xs truncate mt-0.5" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-secondary)' }}>
+            <p className="text-xs truncate mt-0.5" style={{  color: 'var(--text-secondary)' }}>
               {session.user.email}
             </p>
-            <p className="text-xs mt-0.5" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-tertiary)' }}>
+            <p className="text-xs mt-0.5" style={{  color: 'var(--text-tertiary)' }}>
               Staff Writer
             </p>
           </div>
@@ -358,8 +358,8 @@ function OverviewTab({ articles, loading, session, onSwitchArticles }: {
             <span style={{ color: 'var(--bg-primary)' }}>{Icons.edit}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--bg-primary)' }}>Write new article</p>
-            <p className="text-xs mt-0.5" style={{ fontFamily: "'DM Mono', monospace", color: 'rgba(255,255,255,0.45)' }}>Publish to your readers</p>
+            <p className="text-sm font-semibold" style={{  color: 'var(--bg-primary)' }}>Write new article</p>
+            <p className="text-xs mt-0.5" style={{  color: 'rgba(255,255,255,0.45)' }}>Publish to your readers</p>
           </div>
           <span className="ml-auto" style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>{Icons.chevron}</span>
         </Link>
@@ -375,8 +375,8 @@ function OverviewTab({ articles, loading, session, onSwitchArticles }: {
             {Icons.trending}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}>View public profile</p>
-            <p className="text-xs mt-0.5" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-tertiary)' }}>See how others see you</p>
+            <p className="text-sm font-semibold" style={{  color: 'var(--text-primary)' }}>View public profile</p>
+            <p className="text-xs mt-0.5" style={{  color: 'var(--text-tertiary)' }}>See how others see you</p>
           </div>
           <span className="ml-auto" style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{Icons.chevron}</span>
         </Link>
@@ -455,7 +455,7 @@ function SettingsTab({ session }: { session: any }) {
             <label
               htmlFor="displayName"
               className="block mb-1.5 uppercase tracking-widest"
-              style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, fontWeight: 500, color: 'var(--text-tertiary)' }}
+              style={{  fontSize: 10, fontWeight: 500, color: 'var(--text-tertiary)' }}
             >
               Display name
             </label>
@@ -468,7 +468,7 @@ function SettingsTab({ session }: { session: any }) {
                 width: '100%',
                 padding: '8px 12px',
                 fontSize: 13,
-                fontFamily: "'Syne', sans-serif",
+                
                 background: 'var(--card-bg)',
                 color: 'var(--text-primary)',
                 border: '1px solid var(--border)',
@@ -485,7 +485,7 @@ function SettingsTab({ session }: { session: any }) {
             <label
               htmlFor="email"
               className="block mb-1.5 uppercase tracking-widest"
-              style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, fontWeight: 500, color: 'var(--text-tertiary)' }}
+              style={{  fontSize: 10, fontWeight: 500, color: 'var(--text-tertiary)' }}
             >
               Email address
             </label>
@@ -498,7 +498,7 @@ function SettingsTab({ session }: { session: any }) {
                 width: '100%',
                 padding: '8px 12px',
                 fontSize: 13,
-                fontFamily: "'DM Mono', monospace",
+                
                 background: 'var(--hover-bg)',
                 color: 'var(--text-tertiary)',
                 border: '1px solid var(--border)',
@@ -507,7 +507,7 @@ function SettingsTab({ session }: { session: any }) {
                 cursor: 'not-allowed',
               }}
             />
-            <p className="mt-1 text-xs" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-tertiary)' }}>
+            <p className="mt-1 text-xs" style={{  color: 'var(--text-tertiary)' }}>
               Email cannot be changed here.
             </p>
           </div>
@@ -518,7 +518,7 @@ function SettingsTab({ session }: { session: any }) {
               onClick={handleSave}
               className="px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-200"
               style={{
-                fontFamily: "'Syne', sans-serif",
+                
                 background: saved ? '#3B6D11' : 'var(--text-primary)',
                 color: 'var(--bg-primary)',
                 border: 'none',
@@ -533,7 +533,7 @@ function SettingsTab({ session }: { session: any }) {
 
       <Card title="Danger zone">
         <div className="p-5">
-          <p className="text-sm mb-4" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-tertiary)' }}>
+          <p className="text-sm mb-4" style={{  color: 'var(--text-tertiary)' }}>
             Irreversible actions. Be careful.
           </p>
           <button
@@ -541,7 +541,7 @@ function SettingsTab({ session }: { session: any }) {
             onClick={() => signOut({ redirect: true, redirectUrl: '/' })}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-150"
             style={{
-              fontFamily: "'Syne', sans-serif",
+              
               background: 'transparent',
               color: '#b91c1c',
               border: '1px solid #fca5a5',
@@ -666,10 +666,10 @@ function DashboardPageContent() {
           {/* ── Page header ── */}
           <div className="flex items-center justify-between mb-7">
             <div>
-              <h1 className="text-2xl font-bold leading-tight" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}>
+              <h1 className="text-2xl font-bold leading-tight">
                 Dashboard
               </h1>
-              <p className="mt-0.5 text-sm" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-tertiary)' }}>
+              <p className="mt-0.5 text-sm">
                 Welcome back, {session.user.name ?? session.user.email}
               </p>
             </div>
@@ -677,11 +677,7 @@ function DashboardPageContent() {
             <Link
               href="/write"
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-85"
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                background: 'var(--text-primary)',
-                color: 'var(--bg-primary)',
-              }}
+              
             >
               {Icons.plus}
               <span className="hidden sm:inline">New Article</span>
@@ -697,7 +693,7 @@ function DashboardPageContent() {
                 onClick={() => setTab(id)}
                 className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  
                   background: tab === id ? 'var(--text-primary)' : 'transparent',
                   color: tab === id ? 'var(--bg-primary)' : 'var(--text-secondary)',
                   border: `1px solid ${tab === id ? 'var(--text-primary)' : 'var(--border)'}`,
@@ -732,10 +728,10 @@ function DashboardPageContent() {
                   {initials}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold truncate" style={{ fontFamily: "'Syne', sans-serif", color: 'var(--text-primary)' }}>
+                  <p className="text-xs font-semibold truncate" style={{  color: 'var(--text-primary)' }}>
                     {session.user.name ?? 'Anonymous'}
                   </p>
-                  <p className="text-[10px] truncate" style={{ fontFamily: "'DM Mono', monospace", color: 'var(--text-tertiary)' }}>
+                  <p className="text-[10px] truncate" style={{  color: 'var(--text-tertiary)' }}>
                     Staff Writer
                   </p>
                 </div>
