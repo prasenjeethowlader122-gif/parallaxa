@@ -30,51 +30,49 @@ interface SearchResult {
   url:       string
   title?:    string
   markdown?: string
+  metadata?: {
+    ogImage?: string
+    image?:   string
+  }
 }
 
 interface SearchResponse {
   data?: SearchResult[]
+  success?: boolean
 }
 
 interface ScrapedArticle {
   url:      string
   markdown: string
-  image:    string | null   // best image found for this article
+  image:    string | null
 }
 
 interface ScrapePageResult {
   markdown?: string
   metadata?: {
-    ogImage?:   string
-    image?:     string
+    ogImage?:    string
+    image?:      string
     screenshot?: string
   }
   html?: string
+  success?: boolean
 }
 
 // ─── Image extraction helper ──────────────────────────────────────────────
 
-/**
- * Pull the best image URL from a scraped page result.
- * Priority: og:image meta → first <img> in HTML → null
- */
 function extractImageFromPage(page: ScrapePageResult): string | null {
-  // 1. Firecrawl surfaces og:image in metadata
   const ogImage = page.metadata?.ogImage ?? page.metadata?.image ?? null
   if (ogImage && ogImage.startsWith('http')) return ogImage
 
-  // 2. Fall back: parse first <img src="..."> from raw HTML
   if (page.html) {
     const match = page.html.match(/<img[^>]+src=["']([^"']+)["']/i)
     if (match?.[1]?.startsWith('http')) return match[1]
   }
 
-  // 3. Fall back: look for image URLs inside the markdown
   if (page.markdown) {
     const mdMatch = page.markdown.match(/!\[.*?\]\((https?:\/\/[^)]+)\)/)
     if (mdMatch?.[1]) return mdMatch[1]
 
-    // bare image URL pattern
     const urlMatch = page.markdown.match(/(https?:\/\/\S+\.(?:jpg|jpeg|png|webp|gif))/i)
     if (urlMatch?.[1]) return urlMatch[1]
   }
@@ -85,13 +83,22 @@ function extractImageFromPage(page: ScrapePageResult): string | null {
 // ─── Step 1 – Search news ──────────────────────────────────────────────────
 
 async function searchNews(query: string): Promise<SearchResult[]> {
-  const results = (await firecrawl.search(query, {
-    sources:       ['news'],
-    scrapeOptions: { formats: ['markdown'] },
-    limit:         3,
-  })) as SearchResponse
+  try {
+    // FIX: Use correct Firecrawl search API — no `sources` filter, use `pageOptions`
+    const results = (await firecrawl.search(query, {
+      limit: 5,
+      scrapeOptions: {
+        formats: ['markdown'],
+      },
+    })) as SearchResponse
 
-  return results?.data ?? []
+    const data = results?.data ?? []
+    console.log(`[search] got ${data.length} results`)
+    return data
+  } catch (err) {
+    console.error('[search] firecrawl.search failed:', err)
+    return []
+  }
 }
 
 // ─── Step 2 – Scrape each article URL for markdown + image ────────────────
@@ -101,26 +108,40 @@ async function scrapeArticles(
 ): Promise<ScrapedArticle[]> {
   const scraped: ScrapedArticle[] = []
 
-  for (const result of results) {
+  // If search already returned markdown inline, use that to avoid extra scrape calls
+  const needsScraping = results.filter(r => !r.markdown || r.markdown.length < 200)
+  const hasMarkdown   = results.filter(r => r.markdown && r.markdown.length >= 200)
+
+  // Use inline markdown directly
+  for (const result of hasMarkdown) {
+    const image = (result.metadata?.ogImage ?? result.metadata?.image ?? null) as string | null
+    scraped.push({
+      url:      result.url,
+      markdown: result.markdown!.slice(0, 4000),
+      image,
+    })
+  }
+
+  // Only scrape URLs that didn't come with markdown
+  for (const result of needsScraping) {
     try {
-      // Always do a full scrape so we get metadata (og:image etc.) + html
       const page = (await firecrawl.scrapeUrl(result.url, {
-        formats: ['markdown', 'html'],   // html needed for img fallback
+        formats: ['markdown', 'html'],
       })) as ScrapePageResult
 
-      const markdown = (page?.markdown ?? result.markdown ?? '').slice(0, 4000)
+      if (!page?.success && !page?.markdown) {
+        console.warn(`[scrape] no content returned for: ${result.url}`)
+        continue
+      }
+
+      const markdown = (page?.markdown ?? '').slice(0, 4000)
       const image    = extractImageFromPage(page)
 
-      if (markdown) {
+      if (markdown.length > 100) {
         scraped.push({ url: result.url, markdown, image })
       }
-    } catch {
-      console.warn(`[scrape] failed: ${result.url}`)
-
-      // Still keep search-inline markdown if scrape failed
-      if (result.markdown && result.markdown.length > 200) {
-        scraped.push({ url: result.url, markdown: result.markdown.slice(0, 4000), image: null })
-      }
+    } catch (err) {
+      console.warn(`[scrape] failed for ${result.url}:`, err)
     }
   }
 
@@ -175,12 +196,11 @@ async function streamFromOpenAI(
   })
 }
 
-// ─── Step 4b – Stream article from HuggingFace via OpenAI-compatible router
+// ─── Step 4b – Stream article from HuggingFace ────────────────────────────
 
 async function streamFromHuggingFace(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]
 ): Promise<ReadableStream> {
-  // Identical API shape to OpenAI — just a different client instance
   const stream = await hfClient.chat.completions.create({
     model:       HF_MODEL,
     messages,
@@ -200,17 +220,27 @@ async function streamFromHuggingFace(
   })
 }
 
+// ─── SSE helper ───────────────────────────────────────────────────────────
+
+function sseEvent(eventName: string, payload: unknown): Uint8Array {
+  return new TextEncoder().encode(
+    `event: ${eventName}\ndata: ${JSON.stringify(payload)}\n\n`
+  )
+}
+
+function sseData(text: string): Uint8Array {
+  return new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`)
+}
+
 // ─── Route Handler ─────────────────────────────────────────────────────────
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ query: string }> }
+  { params }: { params: { query: string } }   // FIX: params is NOT a Promise in Next.js 14
 ) {
   try {
-    const { query: rawQuery } = await params
-    const query    = decodeURIComponent(rawQuery)
-
-    // ?provider=openai (default) | ?provider=huggingface
+    // FIX: no await needed — params is a plain object
+    const query    = decodeURIComponent(params.query)
     const provider = req.nextUrl.searchParams.get('provider') ?? 'openai'
 
     // ── 1. Search ─────────────────────────────────────────────────────────
@@ -236,11 +266,11 @@ export async function GET(
       .join('\n\n---\n\n')
       .slice(0, 8000)
 
-    const sources  = scraped.map(s => s.url)
-    const images   = scraped.map(s => s.image)          // parallel array — null if not found
-    const heroImage = images.find(Boolean) ?? null      // first non-null image = hero
-    const messages = buildMessages(query, combinedMarkdown)
-    const model    = provider === 'huggingface' ? HF_MODEL : OPENAI_MODEL
+    const sources   = scraped.map(s => s.url)
+    const images    = scraped.map(s => s.image)
+    const heroImage = images.find(Boolean) ?? null
+    const messages  = buildMessages(query, combinedMarkdown)
+    const model     = provider === 'huggingface' ? HF_MODEL : OPENAI_MODEL
 
     // ── 4. Stream article ─────────────────────────────────────────────────
     console.log(`[pipeline] 4/4 streaming via ${provider} (${model})…`)
@@ -250,19 +280,24 @@ export async function GET(
         ? await streamFromHuggingFace(messages)
         : await streamFromOpenAI(messages)
 
-    // Prepend a single metadata line so the client knows sources + model + images
-    const metaLine = `data: ${JSON.stringify({ sources, provider, model, images, heroImage })}\n\n`
-
+    // FIX: Use proper SSE events so client can reliably distinguish metadata vs content
     const responseStream = new ReadableStream({
       async start(controller) {
-        controller.enqueue(new TextEncoder().encode(metaLine))
+        // Send metadata as a named SSE event
+        controller.enqueue(sseEvent('meta', { sources, provider, model, images, heroImage }))
 
+        // Stream article chunks as SSE `data` events with a `text` field
         const reader = articleStream.getReader()
+        const decoder = new TextDecoder()
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-          controller.enqueue(value)
+          const text = decoder.decode(value, { stream: true })
+          if (text) controller.enqueue(sseData(text))
         }
+
+        // Signal end of stream
+        controller.enqueue(new TextEncoder().encode('event: done\ndata: {}\n\n'))
         controller.close()
       },
     })
@@ -272,6 +307,7 @@ export async function GET(
         'Content-Type':  'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection':    'keep-alive',
+        'X-Accel-Buffering': 'no',   // FIX: prevent nginx from buffering SSE
       },
     })
   } catch (e) {
