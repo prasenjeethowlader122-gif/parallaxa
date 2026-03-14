@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode
 } > ) {
   return (
-    <html lang="en" className={`${spacegrotesk.className} ${slabo.className}`}>
+    <html lang="en" className={`${spacegrotesk.className}`}>
      
       <body className="antialiased bg-white text-gray-900">
         <ClientSessionProvider>
