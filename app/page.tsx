@@ -112,28 +112,6 @@ export default function Home() {
         </section>
 
         {/* Newsletter Section */}
-        <section className="bg-black text-white py-16">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-            <p className="text-gray-300 mb-8">
-              Get the latest news delivered straight to your inbox every morning.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 bg-white text-gray-900 rounded-lg focus:outline-none"
-                required
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </section>
       </main>
 
       <Footer />
