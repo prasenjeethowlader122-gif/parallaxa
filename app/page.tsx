@@ -10,21 +10,26 @@ import { TrendingSection } from '@/components/trending-section'
 import { NewsArticle, getFeaturedArticles, getAllArticles } from '@/lib/db/articles'
 
 export default function Home() {
-  const [featuredArticles, setFeaturedArticles] = useState<NewsArticle[]>([])
-  const [latestArticles, setLatestArticles] = useState<NewsArticle[]>([])
+  const [featuredArticles, setFeaturedArticles] = useState < NewsArticle[] > ([])
+  const [latestArticles, setLatestArticles] = useState < NewsArticle[] > ([])
   const [isLoading, setIsLoading] = useState(true)
-
+  
   useEffect(() => {
-  async function loadData() {
-    const featured = await getFeaturedArticles()
-    const latest = (await getAllArticles()).slice(0, 12)
-    setFeaturedArticles(featured)
-    setLatestArticles(latest)
-    setIsLoading(false)
-  }
-  loadData()
-}, [])
-
+    async function loadData() {
+      try {
+        const featured = (await getFeaturedArticles()).filter(Boolean)
+        const latest = (await getAllArticles()).filter(Boolean).slice(0, 12)
+        setFeaturedArticles(featured)
+        setLatestArticles(latest)
+      } catch (error) {
+        console.error('Failed to load articles:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+  
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
@@ -86,7 +91,8 @@ export default function Home() {
                   <div className="space-y-6">
                     {latestArticles.map((article) => (
                       <NewsCard
-                        key={article.id} className = 'my-2'
+                        key={article.id}
+                        className="my-2"
                         article={article}
                         variant="horizontal"
                       />
