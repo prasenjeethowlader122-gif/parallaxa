@@ -11,8 +11,7 @@ export async function GET(
     const firecrawl = new Firecrawl({ apiKey: "fc-da0837003c26469da0f8c259c6c10944" });
     const { url } = await params
     const results = await firecrawl.search(url, {
-      limit: 3,
-      scrapeOptions: { formats: ['markdown'] }
+      limit: 3
     });
     console.log(results);
     return NextResponse.json(results)
