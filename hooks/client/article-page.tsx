@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import BlankImage from '../public/placeholder.svg'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -254,7 +255,7 @@ export default function ArticlePage() {
         {/* Featured Image */}
         <div className="relative w-full h-96 bg-gray-200">
           <Image
-            src={article.image}
+            src={article.image || BlankImage}
             alt={article.title}
             fill
             className="object-cover"

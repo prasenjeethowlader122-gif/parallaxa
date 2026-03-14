@@ -59,7 +59,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredArticles.map((article) => (
                 <NewsCard
-                  key={article.id}
+                  key={article.id || ''}
                   article={article}
                   variant="featured"
                 />
@@ -91,7 +91,7 @@ export default function Home() {
                   <div className="space-y-6">
                     {latestArticles.map((article) => (
                       <NewsCard
-                        key={article.id}
+                        key={article.id || 'null'}
                         className="my-2"
                         article={article}
                         variant="horizontal"
