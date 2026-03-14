@@ -6,15 +6,18 @@ import { NewsArticle, getTrendingArticles } from '@/lib/news-data'
 import { Flame } from 'lucide-react'
 
 export function TrendingSection() {
-  const [trendingArticles, setTrendingArticles] = useState<NewsArticle[]>([])
-
+  const [trendingArticles, setTrendingArticles] = useState < NewsArticle[] > ([])
+  
   useEffect(() => {
-    const articles = getTrendingArticles()
-    setTrendingArticles(articles)
+    async function load() {
+      const articles = await getTrendingArticles()
+      setTrendingArticles(articles)
+    }
+    load()
   }, [])
-
+  
   if (trendingArticles.length === 0) return null
-
+  
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
       <div className="flex items-center gap-2 mb-6">
@@ -24,7 +27,7 @@ export function TrendingSection() {
 
       <div className="space-y-4">
         {trendingArticles.map((article, index) => (
-          <Link key={article.id} href={`/article/${article.id}`} className = 'my-2'>
+          <Link key={article.id} href={`/article/${article.slug || article.id}`}>
             <div className="group cursor-pointer pb-4 border-b border-gray-200 last:border-0 last:pb-0">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold">

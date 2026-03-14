@@ -6,11 +6,11 @@ import { usePathname } from 'next/navigation'
 
 export function CategoryFilter() {
   const pathname = usePathname()
-
+  
   const isActive = (category: string) => {
     return pathname === `/category/${category}`
   }
-
+  
   return (
     <div className="bg-white border-b border-gray-200 sticky top-16 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

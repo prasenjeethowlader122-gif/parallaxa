@@ -6,23 +6,24 @@ import { Clock, Eye } from 'lucide-react'
 interface NewsCardProps {
   article: NewsArticle
   variant ? : 'default' | 'featured' | 'horizontal'
+  className ? : string
 }
 
-export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
+export function NewsCard({ article, variant = 'default', className }: NewsCardProps) {
+  if (!article || !article.id) return null
+  
   const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
   
-  if (!article.id) {
-    return null
-  }
+  const href = `/article/${article.slug || article.id}`
   
   if (variant === 'featured') {
     return (
-      <Link href={`/article/${article.title.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')}`}>
-        <div className="group cursor-pointer">
+      <Link href={href}>
+        <div className={`group cursor-pointer ${className ?? ''}`}>
           <div className="relative w-full h-96 overflow-hidden rounded-lg bg-gray-200 mb-4">
             <Image
               src={article.image}
@@ -30,7 +31,7 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="inline-block bg-red-600 text-white px-3 py-1 rounded text-xs font-bold mb-3">
                 Featured
@@ -52,8 +53,8 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
   
   if (variant === 'horizontal') {
     return (
-      <Link href={`/article/${article.title}`}>
-        <div className="group flex gap-4 cursor-pointer">
+      <Link href={href}>
+        <div className={`group flex gap-4 cursor-pointer ${className ?? ''}`}>
           <div className="relative w-40 h-32 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
             <Image
               src={article.image}
@@ -95,8 +96,8 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
   
   // Default variant
   return (
-    <Link href={`/article/${article.title}`}>
-      <div className="group cursor-pointer">
+    <Link href={href}>
+      <div className={`group cursor-pointer ${className ?? ''}`}>
         <div className="relative w-full h-48 overflow-hidden rounded-lg bg-gray-200 mb-3">
           <Image
             src={article.image}

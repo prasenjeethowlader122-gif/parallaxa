@@ -2,30 +2,34 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { NewsArticle, getBreakingNews } from '@//lib/news-data'
+import { NewsArticle, getBreakingNews } from '@/lib/news-data'
 import { ChevronRight } from 'lucide-react'
 
 export function BreakingBanner() {
-  const [breakingArticles, setBreakingArticles] = useState<NewsArticle[]>([])
+  const [breakingArticles, setBreakingArticles] = useState < NewsArticle[] > ([])
   const [currentIndex, setCurrentIndex] = useState(0)
-
+  
   useEffect(() => {
-    const articles = getBreakingNews()
-    setBreakingArticles(articles)
+    async function load() {
+      const articles = await getBreakingNews()
+      setBreakingArticles(articles)
+    }
+    load()
   }, [])
-
+  
   if (breakingArticles.length === 0) return null
-
+  
   const currentArticle = breakingArticles[currentIndex]
-
+  if (!currentArticle) return null
+  
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % breakingArticles.length)
   }
-
+  
   return (
     <div className="bg-red-600 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link href={`/article/${currentArticle.id}`}>
+        <Link href={`/article/${currentArticle.slug || currentArticle.id}`}>
           <div className="flex items-center justify-between gap-4 py-3 cursor-pointer group">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="flex-shrink-0">
@@ -43,7 +47,6 @@ export function BreakingBanner() {
           </div>
         </Link>
 
-        {/* Indicators and Navigation */}
         {breakingArticles.length > 1 && (
           <div className="flex items-center justify-center gap-2 pb-3 pt-2 border-t border-red-500">
             {breakingArticles.map((_, index) => (
