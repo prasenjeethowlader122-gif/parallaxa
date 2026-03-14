@@ -157,7 +157,7 @@ export default function ArticlePage() {
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             <Link
               href={`/category/${article.category}`}
-              className="text-xs font-semibold text-gray-500 uppercase bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors tracking-wide"
+              className="text-xs font-semibold text-gray-500 uppercase bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors tracking-wide"
             >
               {article.category}
             </Link>
@@ -192,7 +192,7 @@ export default function ArticlePage() {
           </p>
 
           {/* Meta row */}
-          <div className="flex items-center justify-between gap-4 pb-6 border-b border-gray-100 flex-wrap">
+          <div className="flex  items-center justify-between gap-4 pb-6 border-b border-gray-100 flex-wrap">
 
             {/* Author + date */}
             <Link
@@ -212,7 +212,7 @@ export default function ArticlePage() {
 
             {/* Views + actions */}
             <div className="flex items-center gap-2 no-print">
-              <span className="flex items-center gap-1.5 text-xs text-gray-400 pr-1">
+              <span className="flex items-center gap-1.5 text-xs text-gray-400 pr-1 rounded-full bg-gray-100 px-3 py-2">
                 <Eye className="w-3.5 h-3.5" />
                 {(article.views / 1000).toFixed(1)}K
               </span>
