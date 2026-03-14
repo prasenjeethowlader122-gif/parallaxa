@@ -29,13 +29,13 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
       <Link href={href} className="block">
         {/* Fix 4: overflow-hidden added so rounded-lg clips the image correctly */}
         <div className={`group cursor-pointer overflow-hidden h-full ${className ?? ''}`}>
-<div className="relative w-full h-full min-h-auto overflow-hidden rounded-lg bg-gray-200 mb-2">
+<div className="relative w-full h-full h-full overflow-hidden rounded-lg bg-gray-200 mb-2 aspect-video">
 
             <Image
               src={imageSrc || 'https://placehold.net/600x400.png'}
               alt={article.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-300 aspect-video"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
