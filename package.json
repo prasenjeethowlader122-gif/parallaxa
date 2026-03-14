@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^3.9.1",
     "@vercel/analytics": "1.6.1",
     "bcrypt-ts": "latest",
+    "openai": "latest",
     "@neondatabase/serverless": "latest",
     "@mendable/firecrawl-js": "latest",
     "drizzle-orm": "latest",
