@@ -41,7 +41,8 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
       {/* Top Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-start gap-4 h-16">
+        <div className="flex items-center justify-between h-16">
+          <div className='flex items-center justify-start gap-4 '>
           <Menu className="w-5 h-5" />
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
@@ -49,7 +50,7 @@ export function Header() {
               <Image src={profilePic} alt="logo" height={40} />
             </div>
           </Link>
-
+</div>
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
