@@ -1,8 +1,13 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { compare } from 'bcrypt-ts';
-import { getUser } from 'app/db';
-import { authConfig } from 'app/auth.config';
+import { authConfig } from './app/auth.config';
+import { getUserByEmail, validatePassword } from './lib/db/users';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 export const {
   handlers: { GET, POST },
@@ -13,11 +18,27 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      async authorize({ email, password }: any) {
-        let user = await getUser(email);
-        if (user.length === 0) return null;
-        let passwordsMatch = await compare(password, user[0].password!);
-        if (passwordsMatch) return user[0] as any;
+      async authorize(credentials) {
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
+
+        const { email, password } = parsed.data;
+        const user = await getUserByEmail(email);
+        if (!user) return null;
+
+        const valid = await validatePassword(user, password);
+        if (!valid) return null;
+
+        // Block unverified users (optional — remove if not using email verification)
+        // if (!user.email_verified) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          emailVerified: user.email_verified,
+        } as any;
       },
     }),
   ],

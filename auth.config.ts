@@ -1,26 +1,45 @@
-import { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
   pages: {
-    signIn: 'auth/signin',
+    signIn: '/login',
+    error: '/login',
   },
-  providers: [
-    // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
-    // while this file is also used in non-Node.js environments
-  ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      let isLoggedIn = !!auth?.user;
-      let isOnDashboard = nextUrl.pathname.startsWith('/protected');
+      const isLoggedIn = !!auth?.user;
+      const protectedPaths = ['/dashboard', '/admin', '/profile', '/settings'];
+      const isProtected = protectedPaths.some((path) =>
+        nextUrl.pathname.startsWith(path)
+      );
+      const isAuthPage =
+        nextUrl.pathname.startsWith('/login') ||
+        nextUrl.pathname.startsWith('/register');
 
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL('/protected', nextUrl));
+      if (isProtected && !isLoggedIn) {
+        return Response.redirect(new URL('/login', nextUrl));
       }
-
+      if (isAuthPage && isLoggedIn) {
+        return Response.redirect(new URL('/dashboard', nextUrl));
+      }
       return true;
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role;
+        token.emailVerified = (user as any).emailVerified;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        (session.user as any).role = token.role;
+        (session.user as any).emailVerified = token.emailVerified;
+      }
+      return session;
+    },
   },
-};
+  session: { strategy: 'jwt' },
+}
