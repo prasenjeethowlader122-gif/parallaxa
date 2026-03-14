@@ -49,7 +49,7 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
   
   if (variant === 'horizontal') {
     return (
-      <Link href={`/article/${article.id}`}>
+      <Link href={`/article/${article.title}`}>
         <div className="group flex gap-4 cursor-pointer">
           <div className="relative w-40 h-32 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
             <Image
@@ -92,7 +92,7 @@ export function NewsCard({ article, variant = 'default' }: NewsCardProps) {
   
   // Default variant
   return (
-    <Link href={`/article/${article.id}`}>
+    <Link href={`/article/${article.title}`}>
       <div className="group cursor-pointer">
         <div className="relative w-full h-48 overflow-hidden rounded-lg bg-gray-200 mb-3">
           <Image
