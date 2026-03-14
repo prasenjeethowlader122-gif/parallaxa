@@ -12,7 +12,7 @@ export default function GlobalError({
     <html>
       <body>
         <h2>Something went wrong!</h2>
-        <small>{error.message + '<br/>' + error.digest}</small>
+        <small>{error.message + '\n' + error.stack}</small>
         <button onClick={() => reset()}>Try again</button>
       </body>
     </html>
