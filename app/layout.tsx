@@ -3,25 +3,17 @@ import localFont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next'
 import { ClientSessionProvider } from '@/components/session-provider'
 import './globals.css'
+const spacegrotesk = localFont({
+  src : '../public/local/font/SpaceGrotesk-VariableFont_wght.ttf'
+})
 
-
-const philosopher = localFont({
+export const slabo = localFont({
   src: [
   {
-    path: '../public/local/philosopher-font/Philosopher-Regular.ttf',
+    path: '../public/local/font/Slabo27px-Regular.ttf',
     weight: '400',
     style: 'normal',
-  },
-  {
-    path: '../public/local/philosopher-font/Philosopher-Italic.ttf',
-    weight: '400',
-    style: 'italic',
-  },
-  {
-    path: '../public/local/philosopher-font/Philosopher-Bold.ttf',
-    weight: '700',
-    style: 'normal',
-  }, ]
+  } ]
 });
 
 
@@ -60,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode
 } > ) {
   return (
-    <html lang="en" className={philosopher.className}>
+    <html lang="en" className={spacegrotesk.className}>
      
       <body className="antialiased bg-white text-gray-900">
         <ClientSessionProvider>

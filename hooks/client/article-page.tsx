@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import {slabo} from '@/app/layout'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
@@ -159,7 +160,7 @@ export default function ArticlePage() {
               {article.title}
             </h1>
 
-            <p className="text-xl text-gray-600 mb-6">{article.description}</p>
+            <p className={"text-xl text-gray-600 mb-6 " + slabo.className}>{article.description}</p>
 
             {/* Meta + Actions row */}
             <div className="flex flex-wrap items-center justify-between gap-4">
