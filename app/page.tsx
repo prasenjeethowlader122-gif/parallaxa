@@ -40,8 +40,8 @@ export default function Home() {
         {/* Featured Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Featured Stories
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2 border-b">
+              Featured News
             </h2>
             <p className="text-gray-600">The stories you need to read today</p>
           </div>
