@@ -29,7 +29,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
       <Link href={href} className="block">
         {/* Fix 4: overflow-hidden added so rounded-lg clips the image correctly */}
         <div className={`group cursor-pointer overflow-hidden h-full ${className ?? ''}`}>
-<div className="relative w-full h-full overflow-hidden rounded-lg bg-gray-200 mb-2">
+<div className="relative w-full h-full min-h-96 overflow-hidden rounded-lg bg-gray-200 mb-2">
 
             <Image
               src={imageSrc}
