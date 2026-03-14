@@ -265,7 +265,7 @@ export default function ArticlePage() {
         {/* Article Content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 print-content">
           <div className="prose prose-lg max-w-none">
-            <article className="text-gray-700 leading-relaxed space-y-6">
+            <article className={"text-gray-700 leading-relaxed space-y-6 " + slabo.className }>
               <p className="text-lg first-letter:font-bold first-letter:text-2xl">
                 {article.content}
               </p>

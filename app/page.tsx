@@ -7,7 +7,7 @@ import { BreakingBanner } from '@/components/breaking-banner'
 import { CategoryFilter } from '@/components/category-filter'
 import { NewsCard } from '@/components/news-card'
 import { TrendingSection } from '@/components/trending-section'
-import { NewsArticle, getFeaturedArticles, getAllArticles } from '@/lib/news-data'
+import { NewsArticle, getFeaturedArticles, getAllArticles } from '@/lib/db/articles'
 
 export default function Home() {
   const [featuredArticles, setFeaturedArticles] = useState<NewsArticle[]>([])
@@ -15,12 +15,15 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const featured = getFeaturedArticles()
-    const latest = getAllArticles().slice(0, 12)
+  async function loadData() {
+    const featured = await getFeaturedArticles()
+    const latest = (await getAllArticles()).slice(0, 12)
     setFeaturedArticles(featured)
     setLatestArticles(latest)
     setIsLoading(false)
-  }, [])
+  }
+  loadData()
+}, [])
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
