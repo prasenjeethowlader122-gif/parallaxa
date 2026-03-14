@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from './auth.config';
-import { getUserByEmail, validatePassword } from './lib/db/users';
+import { getUserByEmail, validatePassword } from './lib/db/user';
 import { z } from 'zod';
 
 const loginSchema = z.object({
