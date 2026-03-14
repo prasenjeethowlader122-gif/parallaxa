@@ -31,6 +31,12 @@ export default function Home() {
     loadData()
   }, [])
   
+  // Sort featured articles by date descending; most recent goes in the big cell
+  const sortedFeatured = [...featuredArticles].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+  const [mostRecent, second, third, fourth] = sortedFeatured
+  
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
@@ -39,45 +45,65 @@ export default function Home() {
       <main className="flex-grow">
         {/* Featured Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
           {isLoading ? (
-
-    
-            <div className="space-y-4 grid grid-cols-5 grid-rows-5 gap-4">
-              {[...Array(3)].map((_, i) => (
+            <div className="grid grid-cols-5 grid-rows-5 gap-4">
+              {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="bg-gray-200 rounded-lg h-96 animate-pulse"
+                  className="bg-gray-200 rounded-lg animate-pulse"
+                  style={{ minHeight: '12rem' }}
                 />
               ))}
             </div>
           ) : (
-            <div className="flex flex-row items-center justify-between gap-4">
-              {
-                featuredArticles.reduce((prev, current) => {return new Date(current.date) > new Date(prev.date) ? current : prev;}) !==null ? (
-                  <div className = 'h-full flex-1'>
-                                          <NewsCard
-                        key={article.id || 'null'}
-                        className=""
-                        article={article}
-                        variant="vertical"
-                      />
-                  </div>
-                ):null
-              }
-              <div className='flex flex-col items-start justify-start'></div>
-              {featuredArticles.map((article) => (
-              <>
-                {
-                                        <NewsCard
-                        key={article.id || 'null'}
-                        className=''
-                        article={article}
-                        variant="horizontal"
-                      />
-                }
-              </>
-              ))}
+            <div className="grid grid-cols-5 grid-rows-5 gap-4">
+              {/* Large cell — most recent article */}
+              {mostRecent && (
+                <div className="col-span-3 row-span-3">
+                  <NewsCard
+                    key={mostRecent.id || 'most-recent'}
+                    className="h-full"
+                    article={mostRecent}
+                    variant="vertical"
+                  />
+                </div>
+              )}
+
+              {/* Top-right cell — second article */}
+              {second && (
+                <div className="col-span-2 row-span-2 col-start-4">
+                  <NewsCard
+                    key={second.id || 'second'}
+                    className="h-full"
+                    article={second}
+                    variant="vertical"
+                  />
+                </div>
+              )}
+
+              {/* Bottom-right first small cell — third article */}
+              {third && (
+                <div className="col-start-4 row-start-3">
+                  <NewsCard
+                    key={third.id || 'third'}
+                    className="h-full"
+                    article={third}
+                    variant="vertical"
+                  />
+                </div>
+              )}
+
+              {/* Bottom-right second small cell — fourth article */}
+              {fourth && (
+                <div className="col-start-5 row-start-3">
+                  <NewsCard
+                    key={fourth.id || 'fourth'}
+                    className="h-full"
+                    article={fourth}
+                    variant="vertical"
+                  />
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -124,8 +150,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* Newsletter Section */}
       </main>
 
       <Footer />
