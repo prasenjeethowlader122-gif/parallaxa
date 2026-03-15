@@ -475,7 +475,8 @@ export default function ArticlePage() {
               <div className="no-print pt-2
                px-2 pb-2 border-t border-gray-100">
                 <div className="flex items-center gap-2 flex-row items-center justify-start gap-2">
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest mr-1">Share</span>
+                  <span className="text-xs font-medium text-black tracking-widest mr-1">Share</span>
+                  <hr className= 'w-full'/>
                   <div className='flex flex-row items-center justify-start w-full flex-1'>
                   <button
                     onClick={handleShareTwitter}
