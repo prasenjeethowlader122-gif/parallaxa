@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       cssClass:      body.cssClass      ?? null,
       visibility:    body.visibility    ?? 'public',
       scheduledAt:   body.scheduledAt   ? new Date(body.scheduledAt) : undefined,
+      user_id: session.user.id,
       status:        body.status        ?? 'draft',
     })
 
