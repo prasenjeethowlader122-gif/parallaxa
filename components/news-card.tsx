@@ -70,8 +70,8 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs  text-blue-600  tracking-wide">
+            <div className="flex items-center gap-2">
+              <span className="text-xs  text-blue-600 font-medium tracking-wide">
                 {article.category}
               </span>
           
