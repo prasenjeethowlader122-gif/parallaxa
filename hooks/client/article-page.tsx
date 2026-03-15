@@ -480,7 +480,7 @@ export default function ArticlePage() {
                   <div className='flex flex-row items-center justify-start w-full flex-1 rounded-full border px-3'>
                   <button
                     onClick={handleShareTwitter}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                   >
                     <Twitter className="w-3.5 h-3.5" />
                     
@@ -488,7 +488,7 @@ export default function ArticlePage() {
                   <hr className='w-full'/>
                   <button
                     onClick={handleShareFacebook}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                   >
                     <Facebook className="w-3.5 h-3.5" />
                     
@@ -496,7 +496,7 @@ export default function ArticlePage() {
                   <hr className='w-full'/>
                   <button
                     onClick={handleShareLinkedin}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                   >
                     <Linkedin className="w-3.5 h-3.5" />
                   
@@ -504,7 +504,7 @@ export default function ArticlePage() {
                   <hr className='w-full'/>
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                   >
                     {copied
                       ? <Check className="w-3.5 h-3.5" />
