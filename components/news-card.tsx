@@ -74,19 +74,15 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+              <span className="text-xs  text-blue-600  tracking-wide">
                 {article.category}
               </span>
-              {article.breaking && (
-                <span className="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold">
-                  Breaking
-                </span>
-              )}
+          
             </div>
             <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
               {article.title}
             </h3>
-            <p className="text-sm text-gray-600 line-clamp-1 mt-1">{article.description}</p>
+            <p className="text-xs text-gray-500 line-clamp-1 mt-1">{article.description}</p>
             <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
