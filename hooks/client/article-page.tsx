@@ -393,7 +393,7 @@ export default function ArticlePage() {
               </h1>
 
               {/* Standfirst / description */}
-              <p className="text-lg text-gray-600 leading-relaxed border-l-[3px] border-red-600 pl-4 mb-6">
+              <p className="text-md text-gray-600 leading-relaxed mb-4">
                 {article.description}
               </p>
 
