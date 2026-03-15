@@ -140,14 +140,14 @@ export function Header() {
                 placeholder="Search news..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
+                className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
                 autoFocus
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm"
+                className="px-4 py-2 border-2 border-gray-100 text-black rounded-full font-medium hover:bg-gray-800 transition-colors text-sm"
               >
-                Search
+              <Search className='h-5 w-5'/>
               </button>
             </form>
           </div>
