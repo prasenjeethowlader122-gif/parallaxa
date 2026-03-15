@@ -45,7 +45,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             <div className="absolute bottom-0 left-0 right-0 p-4">
              
               <h3 className="text-white text-lg font-bold leading-tight line-clamp-3">
-                <strong className='mr-2 font-medium text-blue-600'>{article.category}</strong>{article.title}
+{article.title}
               </h3>
             
               <div className="flex items-center gap-3 mt-2 text-xs text-white/70">
