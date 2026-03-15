@@ -85,10 +85,6 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             <p className="text-xs text-gray-500 line-clamp-1 mt-1">{article.description}</p>
             <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {article.readTime} min
-              </div>
-              <div className="flex items-center gap-1">
                 <Eye className="w-3 h-3" />
                 {(article.views / 1000).toFixed(1)}K views
               </div>
