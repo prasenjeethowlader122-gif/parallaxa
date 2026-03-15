@@ -1,18 +1,23 @@
 /**
  * POST /api/pipeline
  *
- * Starts a new pipeline job in the background.
+ * Sends the `news/pipeline.requested` event to Inngest,
+ * which triggers the durable pipeline function.
  *
  * Response 200:
  * {
- *   jobId: string
+ *   eventId: string   ← Inngest event ID (use Inngest dashboard to track)
  * }
  */
 
 import { NextResponse } from 'next/server'
-import { startNewsPipeline } from '@/lib/news-pipeline'
+import { inngest } from '@/lib/inngest/client'
 
 export async function POST() {
-  const jobId = startNewsPipeline()
-  return NextResponse.json({ jobId })
+  const [{ id: eventId }] = await inngest.send({
+    name: 'news/pipeline.requested',
+    data: {},
+  })
+  
+  return NextResponse.json({ eventId })
 }

@@ -14,6 +14,7 @@
     "@vercel/analytics": "1.6.1",
     "bcrypt-ts": "latest",
     "openai": "latest",
+    "inngest":"latest",
     "@neondatabase/serverless": "latest",
     "@mendable/firecrawl-js": "latest",
     "drizzle-orm": "latest",
