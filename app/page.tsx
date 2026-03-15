@@ -163,11 +163,7 @@ export default function Home() {
               </div>
 
               {/* Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-32">
-                  <TrendingSection />
-                </div>
-              </div>
+            
             </div>
           </div>
         </section>
