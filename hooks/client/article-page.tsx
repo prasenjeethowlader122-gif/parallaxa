@@ -520,7 +520,7 @@ export default function ArticlePage() {
 
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
-                <section className="no-print mt-12 pt-6 border-t-2 border-gray-900">
+                <section className="no-print mt-2 pt-6 border-t">
                   <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-900 mb-5">
                     More in {article.category}
                   </h2>
