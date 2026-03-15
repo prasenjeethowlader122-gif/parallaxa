@@ -489,14 +489,14 @@ export default function ArticlePage() {
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     <Facebook className="w-3.5 h-3.5" />
-                    Facebook
+                    
                   </button>
                   <button
                     onClick={handleShareLinkedin}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     <Linkedin className="w-3.5 h-3.5" />
-                    LinkedIn
+                  
                   </button>
                   <button
                     onClick={handleCopyLink}
@@ -505,7 +505,7 @@ export default function ArticlePage() {
                     {copied
                       ? <Check className="w-3.5 h-3.5" />
                       : <Link2 className="w-3.5 h-3.5" />}
-                    {copied ? 'Copied!' : 'Copy link'}
+                  
                   </button>
                 </div>
                 </div>
