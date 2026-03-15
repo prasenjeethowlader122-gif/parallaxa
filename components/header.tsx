@@ -43,7 +43,13 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className='flex items-center justify-start gap-4 '>
-          <Menu className="w-5 h-5" />
+                    <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Menu"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <div className="text-2xl font-bold text-black tracking-tight">
@@ -121,13 +127,7 @@ export function Header() {
             )}
 
             {/* Mobile menu toggle */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Menu"
-            >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+            
           </div>
         </div>
 
