@@ -96,7 +96,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                 background: sc.bg,
                 color: sc.text,
                 fontWeight: 600,
-                fontFamily: "'Syne', sans-serif",
+                
                 textTransform: 'capitalize',
                 flexShrink: 0,
               }}
@@ -124,7 +124,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                 background: sidebarOpen ? 'var(--text-primary)' : 'var(--card-bg)',
                 color: sidebarOpen ? 'var(--bg-primary)' : 'var(--text-primary)',
                 cursor: 'pointer',
-                fontFamily: "'Syne', sans-serif",
+                
                 fontWeight: 600,
               }}
               className="editor-sidebar-toggle"
@@ -143,7 +143,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                 background: 'var(--card-bg)',
                 color: 'var(--text-primary)',
                 cursor: 'pointer',
-                fontFamily: "'Syne', sans-serif",
+                
                 fontWeight: 600,
                 opacity: saving ? 0.6 : 1,
               }}
@@ -164,7 +164,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                 background: 'var(--card-bg)',
                 color: 'var(--text-primary)',
                 cursor: 'pointer',
-                fontFamily: "'Syne', sans-serif",
+                
                 fontWeight: 600,
               }}
               className="editor-preview-btn"
@@ -183,7 +183,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                 background: form.status === 'published' ? '#3B6D11' : 'var(--text-primary)',
                 color: 'var(--bg-primary)',
                 cursor: 'pointer',
-                fontFamily: "'Syne', sans-serif",
+                
                 fontWeight: 700,
                 opacity: publishing ? 0.7 : 1,
                 transition: 'opacity 0.15s',
@@ -263,7 +263,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                 outline: 'none',
                 background: 'transparent',
                 color: 'var(--text-primary)',
-                fontFamily: "'Syne', sans-serif",
+                
                 lineHeight: 1.3,
                 marginBottom: 8,
                 paddingBottom: 12,
@@ -313,7 +313,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                     background: 'none',
                     border: 'none',
                     borderBottom: activeTab === tab ? '2px solid var(--text-primary)' : '2px solid transparent',
-                    fontFamily: "'Syne', sans-serif",
+                    
                     fontWeight: 600,
                     transition: 'color 0.12s',
                     textTransform: 'capitalize',
@@ -352,7 +352,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                     fontWeight: 700,
                     marginBottom: 10,
                     color: 'var(--text-primary)',
-                    fontFamily: "'Syne', sans-serif",
+                    
                   }}
                 >
                   {form.title || '(No title)'}
@@ -414,7 +414,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
                   cursor: 'pointer',
                   fontSize: 12,
                   color: 'var(--text-secondary)',
-                  fontFamily: "'Syne', sans-serif",
+                  
                 }}
               >
                 ✕ Close
