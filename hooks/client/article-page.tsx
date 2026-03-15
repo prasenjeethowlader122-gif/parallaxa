@@ -281,9 +281,9 @@ export default function ArticlePage() {
       <Header />
 
       {/* ── Reading progress bar ── */}
-      <div className="no-print sticky top-0 left-0 right-0 h-0.5 bg-gray-100 z-50">
+      <div className="no-print sticky top-0 left-0 right-0 h-0.5 bg-gray-50 z-50">
         <div
-          className="h-full bg-red-600 transition-all duration-100 ease-linear"
+          className="h-full bg-black transition-all duration-100 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>
