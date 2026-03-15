@@ -474,34 +474,34 @@ export default function ArticlePage() {
               {/* ── Bottom share bar ── */}
               <div className="no-print pt-5 pb-2 border-t border-gray-100">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mr-1">Share</span>
+                  <span className="text-sm font-semibold text-gray-400 uppercase tracking-widest mr-1">Share</span>
                   <button
                     onClick={handleShareTwitter}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-gray-500 rounded-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                   >
-                    <Twitter className="w-3.5 h-3.5 text-sky-500" />
-                    X / Twitter
+                    <Twitter className="w-3.5 h-3.5" />
+                    
                   </button>
                   <button
                     onClick={handleShareFacebook}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-gray-500 rounded-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                   >
-                    <Facebook className="w-3.5 h-3.5 text-blue-600" />
+                    <Facebook className="w-3.5 h-3.5" />
                     Facebook
                   </button>
                   <button
                     onClick={handleShareLinkedin}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-gray-500 rounded-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                   >
-                    <Linkedin className="w-3.5 h-3.5 text-blue-700" />
+                    <Linkedin className="w-3.5 h-3.5" />
                     LinkedIn
                   </button>
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-gray-500 rounded-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     {copied
-                      ? <Check className="w-3.5 h-3.5 text-green-500" />
+                      ? <Check className="w-3.5 h-3.5" />
                       : <Link2 className="w-3.5 h-3.5" />}
                     {copied ? 'Copied!' : 'Copy link'}
                   </button>
