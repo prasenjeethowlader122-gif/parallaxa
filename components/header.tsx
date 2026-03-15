@@ -4,7 +4,8 @@ import Image from 'next/image'
 import profilePic from '../public/New Project 20 [79DB18E].png'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+
+import { useState , useEffect} from 'react'
 import { Search, Menu, X, Languages} from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 
@@ -15,7 +16,7 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [desktopQuery, setDesktopQuery] = useState('')
-  
+  const [changelanguage , setchangelanguage] = useState(false);
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -75,7 +76,9 @@ export function Header() {
 
           {/* Right Side */}
           <div className="flex items-center gap-4">
-
+                    <button className='md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden' onClick = {setchangelanguage(!changelanguage)}>
+          <Languages className='w-5 h-5'/>
+        </button>
             {/* Mobile search toggle */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -130,9 +133,7 @@ export function Header() {
             
           </div>
         </div>
-        <button className='md:hidden px-4 py-2 border-2 border-gray-100 text-black rounded-full font-medium hover:bg-gray-800 transition-colors text-sm'>
-          <Languages className='w-5 h-5'/>
-        </button>
+
         {/* Mobile Search Bar */}
         {isSearchOpen && (
           <div className="pb-4 md:hidden">
