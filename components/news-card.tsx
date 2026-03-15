@@ -34,7 +34,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
          */}
         <div className={`group cursor-pointer overflow-hidden h-full flex flex-col ${className ?? ''}`}>
           {/* Image fills all available space */}
-          <div className="relative w-full flex-1 overflow-hidden rounded-lg bg-gray-200 min-h-0">
+          <div className="relative w-full flex-1 overflow-hidden  bg-gray-200 min-h-0">
             <Image
               src={imageSrc}
               alt={article.title}
@@ -64,7 +64,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
     return (
       <Link href={href} className="block">
         <div className={`group flex gap-4 cursor-pointer min-h-[8rem] ${className ?? ''}`}>
-          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
+          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden  bg-gray-200">
             <Image
               src={imageSrc}
               alt={article.title}
@@ -107,7 +107,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   return (
     <Link href={href} className="block">
       <div className={`group cursor-pointer ${className ?? ''}`}>
-        <div className="relative w-full h-48 overflow-hidden rounded-lg bg-gray-200 mb-3">
+        <div className="relative w-full h-48 overflow-hidden bg-gray-200 mb-3">
           <Image
             src={imageSrc}
             alt={article.title}
