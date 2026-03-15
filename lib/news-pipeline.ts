@@ -1,146 +1,171 @@
 /**
- * news-pipeline.ts
+ * lib/news-pipeline.ts
  *
  * Full pipeline:
- *   1. Crawl https://www.yahoo.com/news/articles/ → extract 10 article URLs
+ *   1. Crawl https://www.yahoo.com/news/articles/ → extract up to 10 article URLs
  *   2. Scrape each URL for markdown + hero image
- *   3. Generate a news article via HuggingFace (streaming collapsed to string)
- *   4. Save each article to SQLite
+ *   3. Generate a news article via HuggingFace AI (JSON output)
+ *   4. Save to Neon PostgreSQL via existing createArticle()
+ *
+ * Job state is kept in-memory (per process).
+ * Articles are stored in your existing Neon `articles` table.
  */
 
 import Firecrawl from '@mendable/firecrawl-js'
 import { OpenAI } from 'openai'
-import {
-  updateJobStatus,
-  createArticleRecord,
-  updateArticle,
-} from './db'
+import { createArticle } from '@/lib/db/articles'
 
-// ─── Clients ──────────────────────────────────────────────────────────────
+// ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
+  apiKey: process.env.FIRECRAWL_API_KEY!,
 })
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey:  process.env.HF_API_KEY ?? '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',
+  apiKey:  process.env.HF_API_KEY!,
 })
 
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
 
-// ─── Types ────────────────────────────────────────────────────────────────
+// ─── Job types ────────────────────────────────────────────────────────────────
 
-interface CrawlLink {
-  url:   string
-  title: string | null
+export interface PipelineArticle {
+  sourceUrl:  string
+  title:      string | null
+  status:     'pending' | 'done' | 'failed'
+  articleId:  string | null   // Neon article id after save
+  error?:     string
 }
 
-interface ScrapedPage {
-  url:      string
-  title:    string | null
-  markdown: string
-  image:    string | null
+export interface PipelineJob {
+  id:        string
+  status:    'pending' | 'running' | 'done' | 'failed'
+  createdAt: Date
+  updatedAt: Date
+  error?:    string
+  progress:  { total: number; done: number; failed: number }
+  articles:  PipelineArticle[]
 }
 
-// ─── Step 1 – Crawl Yahoo News for article links ─────────────────────────
+// In-memory job store (keyed by jobId)
+const jobStore = new Map<string, PipelineJob>()
 
-export async function crawlYahooNewsLinks(): Promise<CrawlLink[]> {
+export function getJob(jobId: string): PipelineJob | null {
+  return jobStore.get(jobId) ?? null
+}
+
+export function listJobs(): PipelineJob[] {
+  return Array.from(jobStore.values()).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  )
+}
+
+function makeJobId(): string {
+  return `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+}
+
+// ─── Step 1 – Crawl Yahoo News ────────────────────────────────────────────────
+
+async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | null }[]> {
   console.log('[pipeline] Step 1: crawling Yahoo News…')
 
-  // Use Firecrawl map to discover URLs from the Yahoo News articles section
-  const mapResult = await (firecrawl as any).map('https://www.yahoo.com/news/articles/', {
-    limit: 30,           // grab extra; we'll filter down to 10 real articles
-    includeSubdomains: false,
-  })
-
-  // mapResult may be { links: string[] } or string[]
-  const rawLinks: string[] = Array.isArray(mapResult)
-    ? mapResult
-    : (mapResult?.links ?? [])
-
-  // Filter to actual article URLs (contain a path segment after /news/articles/)
-  const articleLinks = rawLinks
-    .filter((url: string) =>
-      typeof url === 'string' &&
-      url.includes('yahoo.com') &&
-      /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
+  try {
+    const mapResult = await (firecrawl as any).map(
+      'https://www.yahoo.com/news/articles/',
+      { limit: 30, includeSubdomains: false }
     )
-    .slice(0, 10)
-    .map((url: string) => ({ url, title: null }))
 
-  console.log(`[pipeline] Step 1: found ${articleLinks.length} article links`)
+    const rawLinks: string[] = Array.isArray(mapResult)
+      ? mapResult
+      : (mapResult?.links ?? [])
 
-  // Fallback: if map didn't find enough, use firecrawl.search to find Yahoo News articles
-  if (articleLinks.length < 5) {
-    console.log('[pipeline] Step 1: fallback – searching Yahoo News…')
-    const searchResults = await (firecrawl as any).search('site:yahoo.com/news latest news today', {
-      limit: 10,
-      scrapeOptions: { formats: ['markdown'] },
-    })
-
-    const fallback: CrawlLink[] = ((searchResults as any[]) || [])
-      .filter((r: any) => r?.url?.includes('yahoo.com'))
+    const links = rawLinks
+      .filter(
+        (url: string) =>
+          typeof url === 'string' &&
+          url.includes('yahoo.com') &&
+          /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
+      )
       .slice(0, 10)
-      .map((r: any) => ({ url: r.url, title: r.title ?? null }))
+      .map((url: string) => ({ url, title: null }))
 
-    return fallback
+    console.log(`[pipeline] Step 1: found ${links.length} links via map`)
+    if (links.length >= 5) return links
+  } catch (err) {
+    console.warn('[pipeline] firecrawl.map failed, using search fallback:', err)
   }
 
-  return articleLinks
+  // Fallback: search for Yahoo News articles
+  console.log('[pipeline] Step 1: search fallback…')
+  const results = await (firecrawl as any).search(
+    'site:yahoo.com/news latest news today',
+    { limit: 10, scrapeOptions: { formats: ['markdown'] } }
+  )
+
+  return ((results as any[]) || [])
+    .filter((r: any) => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
+    .slice(0, 10)
+    .map((r: any) => ({ url: r.url as string, title: (r.title as string) ?? null }))
 }
 
-// ─── Step 2 – Scrape each article URL ────────────────────────────────────
+// ─── Step 2 – Scrape article ──────────────────────────────────────────────────
 
 function extractImage(page: any): string | null {
   const og = page?.metadata?.ogImage ?? page?.metadata?.image ?? null
-  if (og && og.startsWith('http')) return og
-
+  if (og && typeof og === 'string' && og.startsWith('http')) return og
   if (page?.html) {
-    const m = page.html.match(/<img[^>]+src=["']([^"']+)["']/i)
+    const m = (page.html as string).match(/<img[^>]+src=["']([^"']+)["']/i)
     if (m?.[1]?.startsWith('http')) return m[1]
   }
-
   if (page?.markdown) {
-    const m = page.markdown.match(/!\[.*?\]\((https?:\/\/[^)]+)\)/)
+    const m = (page.markdown as string).match(/!\[.*?\]\((https?:\/\/[^)]+)\)/)
     if (m?.[1]) return m[1]
   }
-
   return null
 }
 
-export async function scrapeArticle(link: CrawlLink): Promise<ScrapedPage | null> {
+async function scrapeArticle(link: { url: string; title: string | null }) {
   try {
     const page = await firecrawl.scrapeUrl(link.url, {
       formats: ['markdown', 'html'],
     }) as any
 
-    const markdown = (page?.markdown ?? '').slice(0, 5000)
+    const markdown = ((page?.markdown ?? '') as string).slice(0, 5000)
     if (markdown.length < 100) return null
 
-    const title = page?.metadata?.title ?? link.title ?? null
-    const image = extractImage(page)
-
-    return { url: link.url, title, markdown, image }
+    return {
+      url:      link.url,
+      title:    (page?.metadata?.title as string | undefined) ?? link.title ?? null,
+      markdown,
+      image:    extractImage(page),
+    }
   } catch (err) {
     console.warn(`[pipeline] scrape failed for ${link.url}:`, err)
     return null
   }
 }
 
-// ─── Step 3 – Generate article with HuggingFace ───────────────────────────
+// ─── Step 3 – Generate article via HuggingFace ───────────────────────────────
 
-async function generateArticle(page: ScrapedPage): Promise<{ title: string; body: string }> {
+async function generateArticle(page: {
+  url: string
+  title: string | null
+  markdown: string
+  image: string | null
+}) {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     {
       role: 'system',
       content: `You are a professional news journalist.
-Write a clear, engaging news article based solely on the provided source material.
-Respond in EXACTLY this format and no other:
-
-TITLE: <compelling headline>
----
-<article body in 4-5 paragraphs, plain text only, no markdown>`,
+Write a full news article based ONLY on the provided source material.
+Respond with ONLY a valid JSON object in this exact format (no code fences, no extra text):
+{
+  "title": "<compelling headline>",
+  "description": "<2-sentence summary for the article card>",
+  "content": "<full article body, 4-5 paragraphs, plain text only>",
+  "category": "<one of: Business | Technology | Sports | Entertainment | Science | Health | World>"
+}`,
     },
     {
       role: 'user',
@@ -148,93 +173,176 @@ TITLE: <compelling headline>
     },
   ]
 
-  // Collect streaming response into a string
   const stream = await hfClient.chat.completions.create({
     model:       HF_MODEL,
     messages,
     stream:      true,
-    max_tokens:  1000,
+    max_tokens:  1200,
     temperature: 0.6,
   })
 
-  let full = ''
+  let raw = ''
   for await (const chunk of stream) {
-    full += chunk.choices[0]?.delta?.content ?? ''
+    raw += chunk.choices[0]?.delta?.content ?? ''
   }
 
-  // Parse TITLE and body
-  const titleMatch = full.match(/TITLE:\s*(.+)/i)
-  const bodyMatch  = full.split(/^---$/m)
+  // Strip possible markdown code fences
+  const clean = raw.replace(/```json|```/g, '').trim()
 
-  const title = titleMatch?.[1]?.trim() ?? page.title ?? 'Untitled'
-  const body  = (bodyMatch[1] ?? full).trim()
-
-  return { title, body }
+  try {
+    const parsed = JSON.parse(clean)
+    return {
+      title:       String(parsed.title       ?? page.title ?? 'Untitled'),
+      description: String(parsed.description ?? ''),
+      content:     String(parsed.content     ?? ''),
+      category:    String(parsed.category    ?? 'World'),
+    }
+  } catch {
+    // JSON parse failed — best-effort extraction
+    const titleMatch = raw.match(/TITLE:\s*(.+)/i)
+    return {
+      title:       titleMatch?.[1]?.trim() ?? page.title ?? 'Untitled',
+      description: '',
+      content:     raw.trim(),
+      category:    'World',
+    }
+  }
 }
 
-// ─── Main pipeline ────────────────────────────────────────────────────────
+// ─── Step 4 – Save to Neon via existing createArticle() ──────────────────────
+
+async function saveToNeon(
+  generated: { title: string; description: string; content: string; category: string },
+  page: { image: string | null }
+): Promise<string | null> {
+  const wordCount = generated.content.split(/\s+/).length
+  const readTime  = Math.max(1, Math.ceil(wordCount / 200)) // ~200 wpm
+
+  const saved = await createArticle({
+    title:           generated.title,
+    description:     generated.description,
+    content:         generated.content,
+    category:        generated.category,
+    author:          'AI Pipeline',
+    date:            new Date(),
+    image:           page.image ?? '',
+    readTime,
+    featured:        false,
+    breaking:        false,
+    trending:        false,
+    ogImage:         page.image ?? undefined,
+    twitterCard:     'summary_large_image',
+    visibility:      'public',
+    status:          'published',
+    noIndex:         false,
+    allowComments:   true,
+    showInRss:       true,
+    ampEnabled:      false,
+  })
+
+  return saved?.id ?? null
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Run the full pipeline for a given jobId.
- * Should be called from the API route AFTER the job row is created.
+ * Starts a new pipeline job in the background.
+ * Returns the jobId immediately — poll GET /api/pipeline/[id] for progress.
  */
-export async function runNewsPipeline(jobId: number): Promise<void> {
-  try {
-    updateJobStatus(jobId, 'running')
+export function startNewsPipeline(): string {
+  const jobId = makeJobId()
 
-    // ── 1. Crawl Yahoo News ──────────────────────────────────────────────
+  const job: PipelineJob = {
+    id:        jobId,
+    status:    'pending',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    progress:  { total: 0, done: 0, failed: 0 },
+    articles:  [],
+  }
+
+  jobStore.set(jobId, job)
+  setImmediate(() => runPipeline(jobId))
+  return jobId
+}
+
+// ─── Internal runner ──────────────────────────────────────────────────────────
+
+async function runPipeline(jobId: string): Promise<void> {
+  const job = jobStore.get(jobId)!
+
+  const update = (patch: Partial<Omit<PipelineJob, 'id' | 'createdAt'>>) => {
+    Object.assign(job, { ...patch, updatedAt: new Date() })
+  }
+
+  try {
+    update({ status: 'running' })
+
+    // 1. Crawl
     const links = await crawlYahooNewsLinks()
 
     if (!links.length) {
-      updateJobStatus(jobId, 'failed', 'No article links found on Yahoo News')
+      update({ status: 'failed', error: 'No article links found on Yahoo News' })
       return
     }
 
-    // ── 2. Process each article ──────────────────────────────────────────
-    for (const link of links) {
-      // Create a pending article record immediately so progress is visible
-      const articleRecord = createArticleRecord(jobId, link.url, link.title)
+    update({
+      progress: { total: links.length, done: 0, failed: 0 },
+      articles: links.map(l => ({
+        sourceUrl: l.url,
+        title:     l.title,
+        status:    'pending',
+        articleId: null,
+      })),
+    })
+
+    // 2 + 3 + 4. Per-article: scrape → generate → save
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i]
+      const meta = job.articles[i]
 
       try {
-        // 2a. Scrape
-        console.log(`[pipeline] scraping: ${link.url}`)
+        console.log(`[pipeline] [${i + 1}/${links.length}] scraping: ${link.url}`)
         const page = await scrapeArticle(link)
 
         if (!page) {
-          updateArticle(articleRecord.id, { status: 'failed', error: 'Could not scrape content' })
+          meta.status = 'failed'
+          meta.error  = 'Could not scrape content'
+          job.progress.failed++
+          update({})
           continue
         }
 
-        // Update hero image if found
-        if (page.image) {
-          updateArticle(articleRecord.id, { hero_image: page.image })
-        }
+        console.log(`[pipeline] [${i + 1}/${links.length}] generating…`)
+        const generated = await generateArticle(page)
 
-        // 2b. Generate
-        console.log(`[pipeline] generating article for: ${link.url}`)
-        const { title, body } = await generateArticle(page)
+        console.log(`[pipeline] [${i + 1}/${links.length}] saving to Neon…`)
+        const savedId = await saveToNeon(generated, page)
 
-        // 2c. Save
-        updateArticle(articleRecord.id, {
-          title,
-          body,
-          status:     'done',
-          hero_image: page.image,
-        })
+        meta.title     = generated.title
+        meta.status    = 'done'
+        meta.articleId = savedId
+        job.progress.done++
+        update({})
 
-        console.log(`[pipeline] ✓ saved article: "${title}"`)
+        console.log(`[pipeline] ✓ "${generated.title}" → id:${savedId}`)
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
-        console.error(`[pipeline] article failed (${link.url}):`, msg)
-        updateArticle(articleRecord.id, { status: 'failed', error: msg })
+        console.error(`[pipeline] ✗ ${link.url}:`, msg)
+        meta.status = 'failed'
+        meta.error  = msg
+        job.progress.failed++
+        update({})
       }
     }
 
-    updateJobStatus(jobId, 'done')
-    console.log(`[pipeline] job ${jobId} complete.`)
+    update({ status: 'done' })
+    console.log(
+      `[pipeline] job ${jobId} complete — done:${job.progress.done} failed:${job.progress.failed}`
+    )
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error(`[pipeline] job ${jobId} fatal error:`, msg)
-    updateJobStatus(jobId, 'failed', msg)
+    console.error(`[pipeline] fatal error for job ${jobId}:`, msg)
+    update({ status: 'failed', error: msg })
   }
 }

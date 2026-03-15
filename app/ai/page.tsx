@@ -1,285 +1,268 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import type { PipelineJob, PipelineArticle } from '@/lib/news-pipeline'
 
-// ─── Types ────────────────────────────────────────────────────────────────
+// ─── Status helpers ───────────────────────────────────────────────────────────
 
-interface Job {
-  id: number
-  status: string
-  created_at: string
-  updated_at: string
-  error: string | null
+const STATUS_STYLE: Record < string, React.CSSProperties > = {
+  done: { background: '#dcfce7', color: '#15803d' },
+  running: { background: '#dbeafe', color: '#1d4ed8' },
+  failed: { background: '#fee2e2', color: '#b91c1c' },
+  pending: { background: '#f3f4f6', color: '#6b7280' },
 }
 
-interface Article {
-  id: number
-  job_id: number
-  source_url: string
-  source_title: string | null
-  hero_image: string | null
-  title: string | null
-  body: string | null
-  status: string
-  created_at: string
-  error: string | null
+function Badge({ status }: { status: string }) {
+  return (
+    <span style={{
+      fontSize: 11, padding: '2px 10px', borderRadius: 99, fontWeight: 600,
+      whiteSpace: 'nowrap', ...(STATUS_STYLE[status] ?? STATUS_STYLE.pending),
+    }}>
+      {status}
+    </span>
+  )
 }
 
-interface JobDetail {
-  job: Job
-  articles: Article[]
-  counts: { total: number; done: number; failed: number; pending: number }
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────
-
-function statusColor(status: string) {
-  switch (status) {
-    case 'done':    return '#16a34a'
-    case 'running': return '#2563eb'
-    case 'failed':  return '#dc2626'
-    default:        return '#9ca3af'
-  }
-}
-
-function statusBadge(status: string) {
-  const colors: Record<string, string> = {
-    done:    'background:#dcfce7;color:#15803d',
-    running: 'background:#dbeafe;color:#1d4ed8',
-    failed:  'background:#fee2e2;color:#b91c1c',
-    pending: 'background:#f3f4f6;color:#6b7280',
-  }
-  return colors[status] ?? colors.pending
-}
-
-// ─── Component ────────────────────────────────────────────────────────────
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function NewsDashboard() {
-  const [jobs, setJobs]               = useState<Job[]>([])
-  const [selectedJob, setSelectedJob] = useState<JobDetail | null>(null)
-  const [starting, setStarting]       = useState(false)
-  const [expanded, setExpanded]       = useState<number | null>(null)
-  const pollRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Load job list
+  const [jobs, setJobs] = useState < PipelineJob[] > ([])
+  const [selected, setSelected] = useState < PipelineJob | null > (null)
+  const [starting, setStarting] = useState(false)
+  const [expanded, setExpanded] = useState < string | null > (null)
+  const pollRef = useRef < NodeJS.Timeout | null > (null)
+  
+  // ── Data fetching ───────────────────────────────────────────────────────────
+  
   const loadJobs = useCallback(async () => {
-    const res = await fetch('/api/jobs')
+    const res = await fetch('/api/pipeline')
     const data = await res.json()
     setJobs(data.jobs ?? [])
   }, [])
-
-  // Load detail for a specific job
-  const loadJobDetail = useCallback(async (jobId: number) => {
-    const res = await fetch(`/api/jobs/${jobId}`)
-    const data: JobDetail = await res.json()
-    setSelectedJob(data)
-    return data
+  
+  const loadJob = useCallback(async (jobId: string): Promise < PipelineJob | null > => {
+    const res = await fetch(`/api/pipeline/${jobId}`)
+    const data = await res.json()
+    if (data.job) {
+      setSelected(data.job)
+      return data.job as PipelineJob
+    }
+    return null
   }, [])
-
-  // Auto-poll while a job is running
-  const startPolling = useCallback((jobId: number) => {
+  
+  const startPolling = useCallback((jobId: string) => {
     if (pollRef.current) clearInterval(pollRef.current)
     pollRef.current = setInterval(async () => {
-      const detail = await loadJobDetail(jobId)
+      const job = await loadJob(jobId)
       await loadJobs()
-      if (detail.job.status === 'done' || detail.job.status === 'failed') {
+      if (job?.status === 'done' || job?.status === 'failed') {
         clearInterval(pollRef.current!)
       }
     }, 3000)
-  }, [loadJobDetail, loadJobs])
-
+  }, [loadJob, loadJobs])
+  
   useEffect(() => {
     loadJobs()
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [loadJobs])
-
-  // Start a new job
+  
+  // ── Actions ─────────────────────────────────────────────────────────────────
+  
   async function startJob() {
     setStarting(true)
     try {
-      const res = await fetch('/api/jobs', { method: 'POST' })
+      const res = await fetch('/api/pipeline', { method: 'POST' })
       const { jobId } = await res.json()
       await loadJobs()
-      await loadJobDetail(jobId)
+      await loadJob(jobId)
       startPolling(jobId)
     } finally {
       setStarting(false)
     }
   }
-
-  // Select a job
-  async function selectJob(job: Job) {
-    await loadJobDetail(job.id)
+  
+  async function selectJob(job: PipelineJob) {
+    await loadJob(job.id)
     if (job.status === 'running') startPolling(job.id)
   }
-
-  const progress = selectedJob
-    ? Math.round(((selectedJob.counts.done + selectedJob.counts.failed) / Math.max(selectedJob.counts.total, 1)) * 100)
-    : 0
-
-  // ─── Render ──────────────────────────────────────────────────────────
-
+  
+  // ── Progress ─────────────────────────────────────────────────────────────────
+  
+  const total = selected?.articles.length ?? 0
+  const done = selected?.articles.filter(a => a.status === 'done').length ?? 0
+  const failed = selected?.articles.filter(a => a.status === 'failed').length ?? 0
+  const progress = total > 0 ? Math.round(((done + failed) / total) * 100) : 0
+  
+  // ── Render ────────────────────────────────────────────────────────────────────
+  
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', background: '#f8fafc', minHeight: '100vh', padding: '0' }}>
+    <div style={{ fontFamily: 'system-ui,sans-serif', background: '#f8fafc', minHeight: '100vh' }}>
 
       {/* Header */}
-      <div style={{ background: '#1e293b', color: '#fff', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: '#0f172a', color: '#fff', padding: '18px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: -0.5 }}>📰 Yahoo News Pipeline</h1>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#94a3b8' }}>Crawl → Scrape → AI Generate → SQLite</p>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>📰 Yahoo News AI Pipeline</h1>
+          <p style={{ margin: '3px 0 0', fontSize: 12, color: '#94a3b8' }}>
+            Crawl → Scrape → HuggingFace AI → Neon PostgreSQL
+          </p>
         </div>
         <button
           onClick={startJob}
           disabled={starting}
           style={{
-            background: starting ? '#475569' : '#3b82f6',
-            color: '#fff', border: 'none', borderRadius: 8,
-            padding: '10px 22px', fontSize: 14, fontWeight: 600,
+            background: starting ? '#475569' : '#3b82f6', color: '#fff',
+            border: 'none', borderRadius: 8, padding: '10px 22px',
+            fontSize: 14, fontWeight: 600,
             cursor: starting ? 'not-allowed' : 'pointer',
-            transition: 'background 0.2s',
           }}
         >
-          {starting ? '⏳ Starting…' : '▶ Start New Job'}
+          {starting ? '⏳ Starting…' : '▶ Run New Job'}
         </button>
       </div>
 
-      <div style={{ display: 'flex', height: 'calc(100vh - 72px)' }}>
+      <div style={{ display: 'flex', height: 'calc(100vh - 68px)' }}>
 
-        {/* Sidebar – Job list */}
-        <div style={{ width: 280, background: '#fff', borderRight: '1px solid #e2e8f0', overflowY: 'auto', flexShrink: 0 }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid #e2e8f0', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            Recent Jobs
+        {/* Sidebar */}
+        <div style={{ width: 260, background: '#fff', borderRight: '1px solid #e2e8f0', overflowY: 'auto', flexShrink: 0 }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8 }}>
+            Jobs
           </div>
           {jobs.length === 0 && (
-            <div style={{ padding: 20, color: '#94a3b8', fontSize: 13, textAlign: 'center' }}>
-              No jobs yet.<br />Click "Start New Job" to begin.
-            </div>
+            <p style={{ padding: 20, fontSize: 13, color: '#94a3b8', textAlign: 'center' }}>
+              No jobs yet.
+            </p>
           )}
           {jobs.map(job => (
             <div
               key={job.id}
               onClick={() => selectJob(job)}
               style={{
-                padding: '12px 16px',
-                cursor: 'pointer',
+                padding: '11px 16px', cursor: 'pointer',
                 borderBottom: '1px solid #f1f5f9',
-                background: selectedJob?.job.id === job.id ? '#eff6ff' : 'transparent',
-                borderLeft: selectedJob?.job.id === job.id ? '3px solid #3b82f6' : '3px solid transparent',
+                background: selected?.id === job.id ? '#eff6ff' : 'transparent',
+                borderLeft: selected?.id === job.id ? '3px solid #3b82f6' : '3px solid transparent',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 600, fontSize: 13 }}>Job #{job.id}</span>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 99, ...Object.fromEntries((statusBadge(job.status)).split(';').map(s => s.split(':'))) }}>
-                  {job.status}
-                </span>
+                <span style={{ fontWeight: 600, fontSize: 12 }}>#{job.id.slice(-8)}</span>
+                <Badge status={job.status} />
               </div>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
-                {new Date(job.created_at).toLocaleString()}
+              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
+                {new Date(job.createdAt).toLocaleString()}
               </div>
+              {job.progress.total > 0 && (
+                <div style={{ marginTop: 6, background: '#e2e8f0', borderRadius: 99, height: 4 }}>
+                  <div style={{
+                    width: `${Math.round(((job.progress.done + job.progress.failed) / job.progress.total) * 100)}%`,
+                    height: '100%', background: '#3b82f6', borderRadius: 99,
+                  }} />
+                </div>
+              )}
             </div>
           ))}
         </div>
 
-        {/* Main – Job detail */}
+        {/* Main panel */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px' }}>
-          {!selectedJob ? (
+          {!selected ? (
             <div style={{ textAlign: 'center', marginTop: 80, color: '#94a3b8' }}>
               <div style={{ fontSize: 48 }}>📋</div>
-              <p style={{ fontSize: 15 }}>Select a job from the sidebar, or start a new one.</p>
+              <p>Select a job or start a new one.</p>
             </div>
           ) : (
             <>
-              {/* Job header */}
-              <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', marginBottom: 20, border: '1px solid #e2e8f0' }}>
+              {/* Job summary card */}
+              <div style={{ background: '#fff', borderRadius: 12, padding: '18px 22px', marginBottom: 20, border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Job #{selectedJob.job.id}</h2>
-                    <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
-                      Started {new Date(selectedJob.job.created_at).toLocaleString()}
+                    <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Job {selected.id}</h2>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+                      {new Date(selected.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: statusColor(selectedJob.job.status) }}>
-                      {selectedJob.job.status.toUpperCase()}
-                    </div>
-                    {selectedJob.job.error && (
-                      <div style={{ fontSize: 12, color: '#dc2626', marginTop: 4 }}>{selectedJob.job.error}</div>
-                    )}
-                  </div>
+                  <Badge status={selected.status} />
                 </div>
 
-                {/* Progress bar */}
-                {selectedJob.counts.total > 0 && (
-                  <div style={{ marginTop: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 6 }}>
-                      <span>{selectedJob.counts.done} done · {selectedJob.counts.failed} failed · {selectedJob.counts.pending} pending</span>
+                {selected.error && (
+                  <div style={{ marginTop: 10, padding: '8px 12px', background: '#fee2e2', borderRadius: 6, fontSize: 13, color: '#b91c1c' }}>
+                    {selected.error}
+                  </div>
+                )}
+
+                {total > 0 && (
+                  <div style={{ marginTop: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 5 }}>
+                      <span>✓ {done} done &nbsp;·&nbsp; ✗ {failed} failed &nbsp;·&nbsp; ⏳ {total - done - failed} pending</span>
                       <span>{progress}%</span>
                     </div>
-                    <div style={{ background: '#e2e8f0', borderRadius: 99, height: 8, overflow: 'hidden' }}>
-                      <div style={{ width: `${progress}%`, height: '100%', background: '#3b82f6', borderRadius: 99, transition: 'width 0.5s' }} />
+                    <div style={{ background: '#e2e8f0', borderRadius: 99, height: 8 }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: '#3b82f6', borderRadius: 99, transition: 'width 0.4s' }} />
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Articles */}
-              {selectedJob.articles.length === 0 && (
-                <div style={{ textAlign: 'center', color: '#94a3b8', padding: 40 }}>
-                  {selectedJob.job.status === 'running' ? '⏳ Crawling Yahoo News…' : 'No articles yet.'}
-                </div>
+              {/* Article list */}
+              {selected.articles.length === 0 && (
+                <p style={{ textAlign: 'center', color: '#94a3b8', padding: 40 }}>
+                  {selected.status === 'running' ? '⏳ Crawling Yahoo News…' : 'No articles yet.'}
+                </p>
               )}
 
-              {selectedJob.articles.map(article => (
+              {selected.articles.map((article: PipelineArticle, i: number) => (
                 <div
-                  key={article.id}
-                  style={{ background: '#fff', borderRadius: 12, marginBottom: 14, border: '1px solid #e2e8f0', overflow: 'hidden' }}
+                  key={i}
+                  style={{ background: '#fff', borderRadius: 10, marginBottom: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}
                 >
-                  {/* Article card header */}
                   <div
-                    style={{ padding: '14px 20px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                    onClick={() => setExpanded(expanded === article.id ? null : article.id)}
+                    style={{ padding: '12px 18px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    onClick={() => setExpanded(expanded === `${i}` ? null : `${i}`)}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: article.title ? '#1e293b' : '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {article.title ?? (article.status === 'pending' ? '⏳ Generating…' : article.status === 'failed' ? '✗ Failed' : 'Untitled')}
+                      <div style={{ fontWeight: 600, fontSize: 13, color: article.title ? '#1e293b' : '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {article.title
+                          ?? (article.status === 'pending' ? '⏳ Pending…'
+                          : article.status === 'failed'  ? '✗ Failed'
+                          : 'Untitled')}
                       </div>
-                      <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <a href={article.source_url} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', textDecoration: 'none' }} onClick={e => e.stopPropagation()}>
-                          {article.source_url}
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <a
+                          href={article.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: '#3b82f6', textDecoration: 'none' }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {article.sourceUrl}
                         </a>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 16 }}>
-                      <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 99, whiteSpace: 'nowrap', ...Object.fromEntries((statusBadge(article.status)).split(';').map(s => s.split(':'))) }}>
-                        {article.status}
-                      </span>
-                      <span style={{ color: '#94a3b8', fontSize: 16 }}>{expanded === article.id ? '▲' : '▼'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 14 }}>
+                      {article.articleId && (
+                        <span style={{ fontSize: 10, color: '#94a3b8' }}>id:{article.articleId.slice(0,8)}</span>
+                      )}
+                      <Badge status={article.status} />
+                      <span style={{ color: '#94a3b8' }}>{expanded === `${i}` ? '▲' : '▼'}</span>
                     </div>
                   </div>
 
-                  {/* Expanded article body */}
-                  {expanded === article.id && article.body && (
-                    <div style={{ borderTop: '1px solid #f1f5f9', padding: '16px 20px' }}>
-                      {article.hero_image && (
-                        <img
-                          src={article.hero_image}
-                          alt="hero"
-                          style={{ width: '100%', maxHeight: 220, objectFit: 'cover', borderRadius: 8, marginBottom: 14 }}
-                          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                        />
-                      )}
-                      {article.body.split('\n').filter(Boolean).map((para, i) => (
-                        <p key={i} style={{ margin: '0 0 12px', fontSize: 14, lineHeight: 1.7, color: '#334155' }}>
-                          {para}
-                        </p>
-                      ))}
+                  {expanded === `${i}` && article.error && (
+                    <div style={{ borderTop: '1px solid #fee2e2', padding: '10px 18px', background: '#fff5f5', fontSize: 13, color: '#b91c1c' }}>
+                      ⚠ {article.error}
                     </div>
                   )}
 
-                  {/* Error message */}
-                  {expanded === article.id && article.error && (
-                    <div style={{ borderTop: '1px solid #fee2e2', padding: '12px 20px', background: '#fff5f5', fontSize: 13, color: '#b91c1c' }}>
-                      ⚠ {article.error}
+                  {expanded === `${i}` && article.articleId && (
+                    <div style={{ borderTop: '1px solid #f1f5f9', padding: '12px 18px', background: '#f8fafc', fontSize: 13, color: '#334155' }}>
+                      ✓ Saved to Neon —{' '}
+                      <a
+                        href={`/articles/${article.articleId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}
+                      >
+                        View article →
+                      </a>
                     </div>
                   )}
                 </div>
