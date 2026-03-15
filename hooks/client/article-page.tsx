@@ -473,9 +473,9 @@ export default function ArticlePage() {
 
               {/* ── Bottom share bar ── */}
               <div className="no-print pt-2
-               px-2 pb-2 border-t border-gray-100">
+                pb-2 border-t border-gray-100">
                 <div className="flex items-center gap-2 flex-row items-center justify-start gap-2">
-                  <span className="text-xs font-medium text-black tracking-widest mr-1">Share</span>
+                  <span className="text-sm font-medium text-black tracking-widest mr-1">Share</span>
                   <hr className= 'w-full'/>
                   <div className='flex flex-row items-center justify-start w-full flex-1'>
                   <button
@@ -485,6 +485,7 @@ export default function ArticlePage() {
                     <Twitter className="w-3.5 h-3.5" />
                     
                   </button>
+                  <hr className='w-full'/>
                   <button
                     onClick={handleShareFacebook}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
@@ -492,6 +493,7 @@ export default function ArticlePage() {
                     <Facebook className="w-3.5 h-3.5" />
                     
                   </button>
+                  <hr className='w-full'/>
                   <button
                     onClick={handleShareLinkedin}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
@@ -499,6 +501,7 @@ export default function ArticlePage() {
                     <Linkedin className="w-3.5 h-3.5" />
                   
                   </button>
+                  <hr className='w-full'/>
                   <button
                     onClick={handleCopyLink}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
