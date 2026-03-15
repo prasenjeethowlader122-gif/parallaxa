@@ -388,7 +388,7 @@ export default function ArticlePage() {
               </div>
 
               {/* Headline */}
-              <h1 className={`${slabo.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-4`}>
+              <h1 className={`${slabo.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
                 {article.title}
               </h1>
 
@@ -509,20 +509,7 @@ export default function ArticlePage() {
               </div>
 
               {/* ── Author byline card ── */}
-              <div className="mt-8 p-5 border border-gray-100 rounded bg-gray-50 flex items-start gap-4">
-                <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                  {authorInitials(article.author)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <Link href={`/author/${authorSlug}`} className="text-sm font-semibold text-gray-900 hover:underline">
-                    {article.author}
-                  </Link>
-                  <p className="text-xs text-gray-400 mt-0.5 mb-2">Staff Reporter</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    Covers breaking news and in-depth investigations across international affairs.
-                  </p>
-                </div>
-              </div>
+
 
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
