@@ -5,7 +5,7 @@ import profilePic from '../public/New Project 20 [79DB18E].png'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Search, Menu, X } from 'lucide-react'
+import { Search, Menu, X, Languages} from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 
 export function Header() {
@@ -130,7 +130,7 @@ export function Header() {
             
           </div>
         </div>
-        <button className='md:hidden px-4 py-2 border-2 border-gray-100 text-black rounded-full font-medium hover:bg-gray-800 transition-colors text-sm'>
+        <button className='md:hidden'>
           <Languages className='w-5 h-5'/>
         </button>
         {/* Mobile Search Bar */}
