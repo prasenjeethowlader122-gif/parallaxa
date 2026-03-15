@@ -27,10 +27,40 @@ export async function PATCH(
   try {
     const { id } = await params
     const body = await req.json()
+
     const article = await updateArticle(id, {
-      ...body,
-      date: body.date ? new Date(body.date) : undefined,
+      // Core
+      ...(body.title       !== undefined && { title:       body.title }),
+      ...(body.description !== undefined && { description: body.description }),
+      ...(body.content     !== undefined && { content:     body.content }),
+      ...(body.category    !== undefined && { category:    body.category }),
+      ...(body.image       !== undefined && { image:       body.image }),
+      ...(body.readTime    !== undefined && { readTime:    body.readTime }),
+      ...(body.featured    !== undefined && { featured:    body.featured }),
+      ...(body.breaking    !== undefined && { breaking:    body.breaking }),
+      ...(body.trending    !== undefined && { trending:    body.trending }),
+      ...(body.date        !== undefined && { date:        new Date(body.date) }),
+      // SEO
+      ...(body.seoTitle        !== undefined && { seoTitle:        body.seoTitle }),
+      ...(body.metaDescription !== undefined && { metaDescription: body.metaDescription }),
+      ...(body.focusKeyword    !== undefined && { focusKeyword:    body.focusKeyword }),
+      ...(body.canonicalUrl    !== undefined && { canonicalUrl:    body.canonicalUrl }),
+      ...(body.ogImage         !== undefined && { ogImage:         body.ogImage }),
+      ...(body.twitterCard     !== undefined && { twitterCard:     body.twitterCard }),
+      // Advanced
+      ...(body.noIndex       !== undefined && { noIndex:       body.noIndex }),
+      ...(body.allowComments !== undefined && { allowComments: body.allowComments }),
+      ...(body.showInRss     !== undefined && { showInRss:     body.showInRss }),
+      ...(body.ampEnabled    !== undefined && { ampEnabled:    body.ampEnabled }),
+      ...(body.redirectUrl   !== undefined && { redirectUrl:   body.redirectUrl }),
+      ...(body.cssClass      !== undefined && { cssClass:      body.cssClass }),
+      ...(body.visibility    !== undefined && { visibility:    body.visibility }),
+      ...(body.status        !== undefined && { status:        body.status }),
+      ...(body.scheduledAt   !== undefined && {
+        scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
+      }),
     })
+
     if (!article) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json(article)
   } catch (e) {

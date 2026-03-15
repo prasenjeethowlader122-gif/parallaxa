@@ -12,6 +12,12 @@ export interface ArticleRow {
   slug: string
   featured?: boolean
   breaking?: boolean
+  trending?: boolean
+  status?: 'draft' | 'published' | 'scheduled' | 'archived'
+  // SEO quick info
+  seoTitle?: string
+  metaDescription?: string
+  focusKeyword?: string
 }
 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
@@ -106,6 +112,36 @@ export function Card({
   )
 }
 
+// ─── Status pill ──────────────────────────────────────────────────────────────
+
+const statusStyle: Record<string, { bg: string; text: string }> = {
+  published: { bg: '#EAF3DE', text: '#3B6D11' },
+  draft:     { bg: '#FAEEDA', text: '#854F0B' },
+  scheduled: { bg: '#E6F1FB', text: '#185FA5' },
+  archived:  { bg: '#F1EFE8', text: '#5F5E5A' },
+}
+
+function StatusPill({ status }: { status?: string }) {
+  if (!status) return null
+  const s = statusStyle[status] ?? statusStyle.draft
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        padding: '2px 7px',
+        borderRadius: 20,
+        background: s.bg,
+        color: s.text,
+        fontWeight: 600,
+        fontFamily: "'Syne', sans-serif",
+        flexShrink: 0,
+      }}
+    >
+      {status}
+    </span>
+  )
+}
+
 // ─── ArticleRow ───────────────────────────────────────────────────────────────
 
 export function ArticleRowItem({
@@ -125,13 +161,16 @@ export function ArticleRowItem({
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
       <div className="flex-1 min-w-0">
-        <Link
-          href={`/article/${article.slug}`}
-          className="text-sm font-medium block truncate hover:underline"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          {article.title}
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href={`/article/${article.slug}`}
+            className="text-sm font-medium block truncate hover:underline"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {article.title}
+          </Link>
+          <StatusPill status={article.status} />
+        </div>
         <div
           className="flex items-center gap-2 mt-1 flex-wrap"
           style={{ fontSize: 11, color: 'var(--text-tertiary)' }}
@@ -143,7 +182,7 @@ export function ArticleRowItem({
             {article.category}
           </span>
           <span className="flex items-center gap-1">{Icons.eye} {article.views.toLocaleString()}</span>
-          <span className="flex items-center gap-1">{Icons.clock} {article.date.toLocaleDateString()}</span>
+          <span className="flex items-center gap-1">{Icons.clock} {new Date(article.date).toLocaleDateString()}</span>
           {article.breaking && (
             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#fee2e2', color: '#b91c1c' }}>
               Breaking
@@ -152,6 +191,15 @@ export function ArticleRowItem({
           {article.featured && (
             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#fef3c7', color: '#92400e' }}>
               Featured
+            </span>
+          )}
+          {article.focusKeyword && (
+            <span
+              className="px-1.5 py-0.5 rounded"
+              style={{ background: '#E6F1FB', color: '#185FA5', fontSize: 10 }}
+              title="SEO: Focus keyword set"
+            >
+              SEO ✓
             </span>
           )}
         </div>

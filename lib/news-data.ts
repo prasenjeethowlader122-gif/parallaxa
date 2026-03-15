@@ -1,14 +1,13 @@
 /**
- * This file is kept as a thin re-export shim so that existing imports of
- * `@/lib/news-data` continue to work without touching every consumer file.
- *
- * All logic now lives in `@/lib/db/articles`.
+ * Thin re-export shim so existing imports of `@/lib/news-data` keep working.
+ * All logic lives in `@/lib/db/articles`.
  */
-export type { NewsArticle } from './db/articles';
+export type { NewsArticle, CreateArticleInput, UpdateArticleInput, Category } from './db/articles'
 
 export {
   categories,
   getAllArticles,
+  getPublishedArticles,
   getArticleById,
   getArticleBySlug,
   getArticlesByCategory,
@@ -20,4 +19,4 @@ export {
   createArticle,
   updateArticle,
   deleteArticle,
-} from './db/articles';
+} from './db/articles'

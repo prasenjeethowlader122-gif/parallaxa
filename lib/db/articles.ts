@@ -1,5 +1,7 @@
 import { sql } from './index';
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 export interface NewsArticle {
   id: string;
   title: string;
@@ -15,9 +17,30 @@ export interface NewsArticle {
   trending?: boolean;
   views: number;
   slug: string;
+  // SEO
+  seoTitle?: string;
+  metaDescription?: string;
+  focusKeyword?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  twitterCard?: 'summary_large_image' | 'summary' | 'app';
+  // Advanced
+  noIndex?: boolean;
+  allowComments?: boolean;
+  showInRss?: boolean;
+  ampEnabled?: boolean;
+  redirectUrl?: string;
+  cssClass?: string;
+  visibility?: 'public' | 'unlisted' | 'members';
+  scheduledAt?: Date;
+  status?: 'draft' | 'published' | 'scheduled' | 'archived';
+  updatedAt?: Date;
 }
 
-// ── helpers ──────────────────────────────────────────────
+export type CreateArticleInput = Omit<NewsArticle, 'id' | 'slug' | 'views' | 'updatedAt'>;
+export type UpdateArticleInput = Partial<CreateArticleInput>;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function mapRow(row: any): NewsArticle | null {
   if (!row || !row.id) {
@@ -25,20 +48,38 @@ function mapRow(row: any): NewsArticle | null {
     return null;
   }
   return {
-    id: row.id,
-    title: row.title ?? '',
-    description: row.description ?? '',
-    content: row.content ?? '',
-    category: row.category ?? '',
-    author: row.author ?? '',
-    date: row.date ? new Date(row.date) : new Date(),
-    image: row.image ?? '',
-    readTime: row.read_time ?? 0,
-    featured: row.featured ?? false,
-    breaking: row.breaking ?? false,
-    trending: row.trending ?? false,
-    views: row.views ?? 0,
-    slug: row.slug ?? '',
+    id:               row.id,
+    title:            row.title            ?? '',
+    description:      row.description      ?? '',
+    content:          row.content          ?? '',
+    category:         row.category         ?? '',
+    author:           row.author           ?? '',
+    date:             row.date             ? new Date(row.date) : new Date(),
+    image:            row.image            ?? '',
+    readTime:         row.read_time        ?? 0,
+    featured:         row.featured         ?? false,
+    breaking:         row.breaking         ?? false,
+    trending:         row.trending         ?? false,
+    views:            row.views            ?? 0,
+    slug:             row.slug             ?? '',
+    // SEO
+    seoTitle:         row.seo_title        ?? null,
+    metaDescription:  row.meta_description ?? null,
+    focusKeyword:     row.focus_keyword    ?? null,
+    canonicalUrl:     row.canonical_url    ?? null,
+    ogImage:          row.og_image         ?? null,
+    twitterCard:      row.twitter_card     ?? 'summary_large_image',
+    // Advanced
+    noIndex:          row.no_index         ?? false,
+    allowComments:    row.allow_comments   ?? true,
+    showInRss:        row.show_in_rss      ?? true,
+    ampEnabled:       row.amp_enabled      ?? false,
+    redirectUrl:      row.redirect_url     ?? null,
+    cssClass:         row.css_class        ?? null,
+    visibility:       row.visibility       ?? 'public',
+    scheduledAt:      row.scheduled_at     ? new Date(row.scheduled_at) : undefined,
+    status:           row.status           ?? 'draft',
+    updatedAt:        row.updated_at       ? new Date(row.updated_at) : undefined,
   };
 }
 
@@ -46,13 +87,11 @@ function filterRows(rows: any[]): NewsArticle[] {
   return rows.map(mapRow).filter((a): a is NewsArticle => a !== null);
 }
 
-// ── queries ──────────────────────────────────────────────
+// ── Queries ───────────────────────────────────────────────────────────────────
 
 export async function getAllArticles(): Promise<NewsArticle[]> {
   try {
-    const rows = await sql`
-      SELECT * FROM articles ORDER BY date DESC
-    `;
+    const rows = await sql`SELECT * FROM articles ORDER BY date DESC`;
     return filterRows(rows);
   } catch (error) {
     console.error('getAllArticles error:', error);
@@ -60,11 +99,23 @@ export async function getAllArticles(): Promise<NewsArticle[]> {
   }
 }
 
-export async function getArticleBySlug(slug: string): Promise<NewsArticle | null> {
+export async function getPublishedArticles(): Promise<NewsArticle[]> {
   try {
     const rows = await sql`
-      SELECT * FROM articles WHERE slug = ${slug} LIMIT 1
+      SELECT * FROM articles
+      WHERE status = 'published'
+      ORDER BY date DESC
     `;
+    return filterRows(rows);
+  } catch (error) {
+    console.error('getPublishedArticles error:', error);
+    return [];
+  }
+}
+
+export async function getArticleBySlug(slug: string): Promise<NewsArticle | null> {
+  try {
+    const rows = await sql`SELECT * FROM articles WHERE slug = ${slug} LIMIT 1`;
     return rows[0] ? mapRow(rows[0]) : null;
   } catch (error) {
     console.error('getArticleBySlug error:', error);
@@ -74,9 +125,7 @@ export async function getArticleBySlug(slug: string): Promise<NewsArticle | null
 
 export async function getArticleById(id: string): Promise<NewsArticle | null> {
   try {
-    const rows = await sql`
-      SELECT * FROM articles WHERE id = ${id} LIMIT 1
-    `;
+    const rows = await sql`SELECT * FROM articles WHERE id = ${id} LIMIT 1`;
     return rows[0] ? mapRow(rows[0]) : null;
   } catch (error) {
     console.error('getArticleById error:', error);
@@ -87,7 +136,9 @@ export async function getArticleById(id: string): Promise<NewsArticle | null> {
 export async function getArticlesByCategory(category: string): Promise<NewsArticle[]> {
   try {
     const rows = await sql`
-      SELECT * FROM articles WHERE category = ${category} ORDER BY date DESC
+      SELECT * FROM articles
+      WHERE category = ${category} AND status = 'published'
+      ORDER BY date DESC
     `;
     return filterRows(rows);
   } catch (error) {
@@ -100,7 +151,7 @@ export async function getFeaturedArticles(): Promise<NewsArticle[]> {
   try {
     const rows = await sql`
       SELECT * FROM articles
-      WHERE featured = TRUE
+      WHERE featured = TRUE AND status = 'published'
       ORDER BY views DESC
       LIMIT 3
     `;
@@ -115,7 +166,7 @@ export async function getBreakingNews(): Promise<NewsArticle[]> {
   try {
     const rows = await sql`
       SELECT * FROM articles
-      WHERE breaking = TRUE
+      WHERE breaking = TRUE AND status = 'published'
       ORDER BY date DESC
       LIMIT 3
     `;
@@ -130,7 +181,7 @@ export async function getTrendingArticles(): Promise<NewsArticle[]> {
   try {
     const rows = await sql`
       SELECT * FROM articles
-      WHERE trending = TRUE
+      WHERE trending = TRUE AND status = 'published'
       ORDER BY views DESC
       LIMIT 5
     `;
@@ -146,9 +197,8 @@ export async function searchArticles(query: string): Promise<NewsArticle[]> {
     const q = `%${query}%`;
     const rows = await sql`
       SELECT * FROM articles
-      WHERE title ILIKE ${q}
-         OR description ILIKE ${q}
-         OR content ILIKE ${q}
+      WHERE (title ILIKE ${q} OR description ILIKE ${q} OR content ILIKE ${q})
+        AND status = 'published'
       ORDER BY date DESC
     `;
     return filterRows(rows);
@@ -160,28 +210,51 @@ export async function searchArticles(query: string): Promise<NewsArticle[]> {
 
 export async function incrementArticleViews(id: string): Promise<void> {
   try {
-    await sql`
-      UPDATE articles SET views = views + 1 WHERE id = ${id}
-    `;
+    await sql`UPDATE articles SET views = views + 1 WHERE id = ${id}`;
   } catch (error) {
     console.error('incrementArticleViews error:', error);
   }
 }
 
-// ── mutations ─────────────────────────────────────────────
-
-export type CreateArticleInput = Omit<NewsArticle, 'id' | 'slug' | 'views'>;
+// ── Mutations ─────────────────────────────────────────────────────────────────
 
 export async function createArticle(input: CreateArticleInput): Promise<NewsArticle | null> {
   try {
     const rows = await sql`
-      INSERT INTO articles
-        (title, description, content, category, author, date, image, read_time,
-         featured, breaking, trending)
-      VALUES
-        (${input.title}, ${input.description}, ${input.content}, ${input.category},
-         ${input.author}, ${input.date.toISOString()}, ${input.image}, ${input.readTime},
-         ${input.featured ?? false}, ${input.breaking ?? false}, ${input.trending ?? false})
+      INSERT INTO articles (
+        title, description, content, category, author, date, image, read_time,
+        featured, breaking, trending,
+        seo_title, meta_description, focus_keyword, canonical_url, og_image, twitter_card,
+        no_index, allow_comments, show_in_rss, amp_enabled,
+        redirect_url, css_class, visibility, scheduled_at, status
+      ) VALUES (
+        ${input.title},
+        ${input.description},
+        ${input.content},
+        ${input.category},
+        ${input.author},
+        ${input.date.toISOString()},
+        ${input.image},
+        ${input.readTime},
+        ${input.featured  ?? false},
+        ${input.breaking  ?? false},
+        ${input.trending  ?? false},
+        ${input.seoTitle         ?? null},
+        ${input.metaDescription  ?? null},
+        ${input.focusKeyword     ?? null},
+        ${input.canonicalUrl     ?? null},
+        ${input.ogImage          ?? null},
+        ${input.twitterCard      ?? 'summary_large_image'},
+        ${input.noIndex          ?? false},
+        ${input.allowComments    ?? true},
+        ${input.showInRss        ?? true},
+        ${input.ampEnabled       ?? false},
+        ${input.redirectUrl      ?? null},
+        ${input.cssClass         ?? null},
+        ${input.visibility       ?? 'public'},
+        ${input.scheduledAt      ? input.scheduledAt.toISOString() : null},
+        ${input.status           ?? 'draft'}
+      )
       RETURNING *
     `;
     return rows[0] ? mapRow(rows[0]) : null;
@@ -193,30 +266,50 @@ export async function createArticle(input: CreateArticleInput): Promise<NewsArti
 
 export async function updateArticle(
   id: string,
-  input: Partial<CreateArticleInput>
+  input: UpdateArticleInput
 ): Promise<NewsArticle | null> {
   try {
-    const fields: string[] = [];
-    const values: any[] = [];
-
     const fieldMap: Record<string, string> = {
-      title: 'title',
-      description: 'description',
-      content: 'content',
-      category: 'category',
-      author: 'author',
-      date: 'date',
-      image: 'image',
-      readTime: 'read_time',
-      featured: 'featured',
-      breaking: 'breaking',
-      trending: 'trending',
+      title:           'title',
+      description:     'description',
+      content:         'content',
+      category:        'category',
+      author:          'author',
+      date:            'date',
+      image:           'image',
+      readTime:        'read_time',
+      featured:        'featured',
+      breaking:        'breaking',
+      trending:        'trending',
+      seoTitle:        'seo_title',
+      metaDescription: 'meta_description',
+      focusKeyword:    'focus_keyword',
+      canonicalUrl:    'canonical_url',
+      ogImage:         'og_image',
+      twitterCard:     'twitter_card',
+      noIndex:         'no_index',
+      allowComments:   'allow_comments',
+      showInRss:       'show_in_rss',
+      ampEnabled:      'amp_enabled',
+      redirectUrl:     'redirect_url',
+      cssClass:        'css_class',
+      visibility:      'visibility',
+      scheduledAt:     'scheduled_at',
+      status:          'status',
     };
+
+    const fields: string[] = [];
+    const values: any[]   = [];
 
     for (const [key, col] of Object.entries(fieldMap)) {
       if (key in input) {
         fields.push(col);
-        values.push(key === 'date' ? (input as any)[key].toISOString() : (input as any)[key]);
+        const raw = (input as any)[key];
+        if ((key === 'date' || key === 'scheduledAt') && raw instanceof Date) {
+          values.push(raw.toISOString());
+        } else {
+          values.push(raw ?? null);
+        }
       }
     }
 
@@ -242,9 +335,7 @@ export async function updateArticle(
 
 export async function deleteArticle(id: string): Promise<boolean> {
   try {
-    const rows = await sql`
-      DELETE FROM articles WHERE id = ${id} RETURNING id
-    `;
+    const rows = await sql`DELETE FROM articles WHERE id = ${id} RETURNING id`;
     return rows.length > 0;
   } catch (error) {
     console.error('deleteArticle error:', error);
@@ -254,5 +345,7 @@ export async function deleteArticle(id: string): Promise<boolean> {
 
 export const categories = [
   'Business', 'Technology', 'Sports',
-  'Entertainment', 'Science', 'Health' , 'World',
+  'Entertainment', 'Science', 'Health', 'World',
 ] as const;
+
+export type Category = typeof categories[number];
