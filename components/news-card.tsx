@@ -43,9 +43,6 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <div className="inline-block bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold mb-2">
-                Featured
-              </div>
               <h3 className="text-white text-lg font-bold leading-tight line-clamp-3">
                 {article.title}
               </h3>
