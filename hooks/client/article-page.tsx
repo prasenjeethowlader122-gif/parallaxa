@@ -477,7 +477,7 @@ export default function ArticlePage() {
                 <div className="flex items-center gap-2 flex-row items-center justify-start gap-2">
                   <span className="text-sm font-medium text-black tracking-widest mr-1">Share</span>
                   <hr className= 'w-full'/>
-                  <div className='flex flex-row items-center justify-start w-full flex-1'>
+                  <div className='flex flex-row items-center justify-start w-full flex-1 rounded-full border px-3'>
                   <button
                     onClick={handleShareTwitter}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
