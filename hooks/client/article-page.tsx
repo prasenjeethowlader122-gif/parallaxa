@@ -388,7 +388,7 @@ export default function ArticlePage() {
               </div>
 
               {/* Headline */}
-              <h1 className={`${slabo.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
+              <h1 className={` text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
                 {article.title}
               </h1>
 
@@ -431,7 +431,7 @@ export default function ArticlePage() {
 
               {/* ── Hero image ── */}
               <div className="mb-2">
-                <div className="relative w-full aspect-video rounded overflow-hidden bg-gray-100">
+                <div className="relative w-full aspect-video  overflow-hidden bg-gray-100">
                   <Image
                     src={article.image || 'https://placehold.net/1200x675.png'}
                     alt={article.title}
