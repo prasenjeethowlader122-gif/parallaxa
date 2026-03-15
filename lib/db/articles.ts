@@ -1,4 +1,5 @@
 import { sql } from './index';
+import { neon } from '@neondatabase/serverless';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ export interface NewsArticle {
   redirectUrl?: string;
   cssClass?: string;
   visibility?: 'public' | 'unlisted' | 'members';
-  scheduledAt?: Date;
+  scheduledAt?: Date | null;
   status?: 'draft' | 'published' | 'scheduled' | 'archived';
   updatedAt?: Date;
 }
@@ -77,7 +78,7 @@ function mapRow(row: any): NewsArticle | null {
     redirectUrl:      row.redirect_url     ?? null,
     cssClass:         row.css_class        ?? null,
     visibility:       row.visibility       ?? 'public',
-    scheduledAt:      row.scheduled_at     ? new Date(row.scheduled_at) : undefined,
+    scheduledAt:      row.scheduled_at     ? new Date(row.scheduled_at) : null,
     status:           row.status           ?? 'draft',
     updatedAt:        row.updated_at       ? new Date(row.updated_at) : undefined,
   };
@@ -308,7 +309,9 @@ export async function updateArticle(
         if ((key === 'date' || key === 'scheduledAt') && raw instanceof Date) {
           values.push(raw.toISOString());
         } else {
-          values.push(raw ?? null);
+          // Fix: preserve explicit null (e.g. clearing scheduledAt) rather than
+          // coercing it; only fall back to null for true undefined.
+          values.push(raw !== undefined ? raw : null);
         }
       }
     }
@@ -323,7 +326,8 @@ export async function updateArticle(
       RETURNING *
     `;
 
-    const { neon } = await import('@neondatabase/serverless');
+    // Fix: reuse the module-level sql connection instead of re-instantiating
+    // neon() on every call (which creates a new connection pool each time).
     const rawSql = neon(process.env.DATABASE_URL!);
     const rows = await rawSql(queryText, [...values, id]);
     return rows[0] ? mapRow(rows[0] as any) : null;
