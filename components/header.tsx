@@ -16,7 +16,7 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [desktopQuery, setDesktopQuery] = useState('')
-  const [changelanguage , setchangelanguage] = useState(false);
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -76,7 +76,7 @@ export function Header() {
 
           {/* Right Side */}
           <div className="flex items-center gap-4">
-                    <button className='md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden' onClick = {setchangelanguage(!changelanguage)}>
+                    <button className='md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors'>
           <Languages className='w-5 h-5'/>
         </button>
             {/* Mobile search toggle */}
