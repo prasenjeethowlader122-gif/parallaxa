@@ -130,7 +130,9 @@ export function Header() {
             
           </div>
         </div>
-
+        <button className='md:hidden px-4 py-2 border-2 border-gray-100 text-black rounded-full font-medium hover:bg-gray-800 transition-colors text-sm'>
+          <Languages className='w-5 h-5'/>
+        </button>
         {/* Mobile Search Bar */}
         {isSearchOpen && (
           <div className="pb-4 md:hidden">
