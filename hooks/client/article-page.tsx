@@ -472,9 +472,11 @@ export default function ArticlePage() {
               </article>
 
               {/* ── Bottom share bar ── */}
-              <div className="no-print pt-5 pb-2 border-t border-gray-100">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold text-gray-400 uppercase tracking-widest mr-1">Share</span>
+              <div className="no-print pt-2
+               px-2 pb-2 border-t border-gray-100">
+                <div className="flex items-center gap-2 flex-row items-center justify-start gap-2">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest mr-1">Share</span>
+                  <div className='flex flex-row items-center justify-start w-full flex-1'>
                   <button
                     onClick={handleShareTwitter}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
@@ -505,6 +507,7 @@ export default function ArticlePage() {
                       : <Link2 className="w-3.5 h-3.5" />}
                     {copied ? 'Copied!' : 'Copy link'}
                   </button>
+                </div>
                 </div>
               </div>
 
