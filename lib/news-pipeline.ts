@@ -18,12 +18,12 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY!,
+  apiKey: 'fc-da0837003c26469da0f8c259c6c10944',
 })
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey:  process.env.HF_API_KEY!,
+  apiKey:  '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',
 })
 
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
