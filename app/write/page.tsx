@@ -12,7 +12,7 @@ function DesktopOnly({ children }: { children: React.ReactNode }) {
   const [isDesktop, setIsDesktop] = useState < boolean | null > (null)
   
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
+    const mq = window.matchMedia('(min-width: 768px)')
     setIsDesktop(mq.matches)
     
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
