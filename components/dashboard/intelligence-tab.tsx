@@ -84,34 +84,16 @@ export function IntelligenceTab() {
     }
     
     const data = await response.json()
-    const eventId: string | null = data.eventId ?? null
-    
+    const eventId: string | null = data.data[0] ?? null
+    setJobId(eventId)
+    setIsRunning(true)
+    fetchJobStatus(eventId)
     if (!eventId) {
       setError('No event ID returned from pipeline')
       return
     }
     
-    try {
-      const runsRes = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`, {
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_INNGEST_API_KEY}`,
-        },
-      })
-      
-      if (runsRes.ok) {
-        const runsData = await runsRes.json()
-        const runs: Array < { run_id ? : string;id ? : string } > = runsData?.data ?? runsData?.runs ?? []
-        const runId = runs[0]?.run_id ?? runs[0]?.id ?? null
-        
-        if (runId) {
-          setJobId(runId)
-          setIsRunning(true)
-          fetchJobStatus(runId)
-        }
-      }
-    } catch (e) {
-      setError('Failed to fetch run IDs:', e)
-    }
+    
   } catch (err) {
     setError(err instanceof Error ? err.message : 'Unknown error')
   } finally {
