@@ -79,16 +79,28 @@ export function IntelligenceTab() {
       
       if (response.ok) {
         const data = await response.json()
-        const newJobId = data.runId // ← use runId, not eventId
-        
-        if (!newJobId) {
-          setError('Pipeline started but run ID not yet available. Check Inngest dashboard.')
-          return
+        const eventId = data.eventId;
+        try {
+          const runIds = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`,{
+            headers: {
+              Authorization: `Bearer ${process.env.INNGEST_SIGNING_KEY}`
+            }
+          })
+          if (runIds.ok) {
+            const data = await runIds.json()
+            const runs = data?.data ?? data?.runs ?? []
+            if (runs.length > 0) 
+          runs =  runs[0].run_id ?? runs[0].id ?? null
+          setJobId(runs)
+setIsRunning(true)
+fetchJobStatus(runs)
+          }
+        } catch (e) {
+          
         }
         
-        setJobId(newJobId)
-        setIsRunning(true)
-        fetchJobStatus(newJobId)
+        
+        
       } else {
         setError('Failed to connect pipeline')
       }
