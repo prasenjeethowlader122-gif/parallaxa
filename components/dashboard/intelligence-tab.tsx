@@ -110,7 +110,7 @@ export function IntelligenceTab() {
         }
       }
     } catch (e) {
-      console.error('Failed to fetch run IDs:', e)
+      setError('Failed to fetch run IDs:', e)
     }
   } catch (err) {
     setError(err instanceof Error ? err.message : 'Unknown error')
