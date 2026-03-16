@@ -91,7 +91,7 @@ export function IntelligenceTab() {
           fetchJobStatus(newJobId)
         }, 500)
       } else {
-        setError(response.statusText)
+        setError(' Failed to coonect pipeline')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
