@@ -1,15 +1,7 @@
-/**
- * app/api/pipeline/[jobId]/route.ts
- *
- * Fetches detailed run information from Inngest including all steps and their outputs.
- *
- * Uses the Inngest REST API to get:
- * - Run status (pending, running, completed, failed)
- * - Step-level execution details
- * - Full output and error information
- */
-
 import { NextRequest, NextResponse } from 'next/server'
+
+// Must be an Inngest API key (starts with "sk-"), NOT the signing key.
+const INNGEST_API_KEY = process.env.INNGEST_API_KEY
 
 interface InngestStep {
   id: string
@@ -18,11 +10,7 @@ interface InngestStep {
   started_at?: string
   ended_at?: string
   output?: any
-  error?: {
-    name: string
-    message: string
-    stack?: string
-  }
+  error?: { name: string; message: string; stack?: string }
   attempt?: number
   retries?: number
 }
@@ -33,11 +21,7 @@ interface InngestRun {
   started_at?: string
   ended_at?: string
   output?: any
-  error?: {
-    name: string
-    message: string
-    stack?: string
-  }
+  error?: { name: string; message: string; stack?: string }
   steps?: InngestStep[]
 }
 
@@ -47,11 +31,7 @@ interface PipelineJobResponse {
   createdAt: string
   updatedAt: string
   error?: string
-  progress: {
-    total: number
-    done: number
-    failed: number
-  }
+  progress: { total: number; done: number; failed: number }
   articles: Array<{
     sourceUrl: string
     title: string | null
@@ -72,31 +52,33 @@ interface PipelineJobResponse {
 }
 
 async function fetchInngestRun(runId: string): Promise<InngestRun | null> {
+  if (!INNGEST_API_KEY) {
+    console.warn('[pipeline] INNGEST_API_KEY is not set')
+    return null
+  }
+
   try {
     const response = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
       headers: {
-        Authorization: `Bearer signkey-prod-30a52089d4ed603399def4e78018449200675cb8a3c1ce7a8a4ff7522d2b1c35`,
+        Authorization: `Bearer ${INNGEST_API_KEY}`,
       },
     })
 
     if (!response.ok) {
-      console.error(`Failed to fetch Inngest run: ${response.status}`)
+      console.error(`[pipeline] Inngest run fetch returned ${response.status}`)
       return null
     }
 
     const data = await response.json()
     return data.data || data
   } catch (err) {
-    console.error('Error fetching Inngest run:', err)
+    console.error('[pipeline] Error fetching Inngest run:', err)
     return null
   }
 }
 
-// Map Inngest status to our internal status
-function mapInngestStatus(
-  inngestStatus: string
-): 'pending' | 'running' | 'done' | 'failed' {
-  const lower = inngestStatus.toLowerCase()
+function mapInngestStatus(status: string): 'pending' | 'running' | 'done' | 'failed' {
+  const lower = status.toLowerCase()
   if (lower === 'queued' || lower === 'pending') return 'pending'
   if (lower === 'running') return 'running'
   if (lower === 'completed') return 'done'
@@ -104,14 +86,8 @@ function mapInngestStatus(
   return 'pending'
 }
 
-// Extract article data from function output
-function extractArticlesFromOutput(
-  output: any
-): PipelineJobResponse['articles'] {
-  if (!output || !Array.isArray(output.articles)) {
-    return []
-  }
-
+function extractArticlesFromOutput(output: any): PipelineJobResponse['articles'] {
+  if (!output || !Array.isArray(output.articles)) return []
   return output.articles.map((article: any) => ({
     sourceUrl: article.sourceUrl || 'Unknown',
     title: article.title || null,
@@ -121,17 +97,13 @@ function extractArticlesFromOutput(
   }))
 }
 
-// Format step information for display
 function formatSteps(steps?: InngestStep[]): PipelineJobResponse['steps'] {
-  if (!steps || !Array.isArray(steps)) {
-    return []
-  }
-
+  if (!steps || !Array.isArray(steps)) return []
   return steps.map((step) => {
-    const duration = step.started_at && step.ended_at
-      ? new Date(step.ended_at).getTime() - new Date(step.started_at).getTime()
-      : undefined
-
+    const duration =
+      step.started_at && step.ended_at
+        ? new Date(step.ended_at).getTime() - new Date(step.started_at).getTime()
+        : undefined
     return {
       id: step.id || step.name,
       name: step.name,
@@ -150,25 +122,23 @@ export async function GET(
   try {
     const { jobId } = await params
 
-    // Fetch the run from Inngest
-    const inngestRun = await fetchInngestRun(jobId)
-
-    if (!inngestRun) {
+    if (!INNGEST_API_KEY) {
       return NextResponse.json(
-        { error: 'Run not found' },
-        { status: 404 }
+        { error: 'INNGEST_API_KEY is not configured on the server' },
+        { status: 503 }
       )
     }
 
-    // Extract articles from output
-    const articles = extractArticlesFromOutput(inngestRun.output)
+    const inngestRun = await fetchInngestRun(jobId)
 
-    // Calculate progress
-    const totalArticles = articles.length
+    if (!inngestRun) {
+      return NextResponse.json({ error: 'Run not found' }, { status: 404 })
+    }
+
+    const articles = extractArticlesFromOutput(inngestRun.output)
     const doneArticles = articles.filter((a) => a.status === 'done').length
     const failedArticles = articles.filter((a) => a.status === 'failed').length
 
-    // Format response
     const response: PipelineJobResponse = {
       id: inngestRun.run_id,
       status: mapInngestStatus(inngestRun.status),
@@ -176,7 +146,7 @@ export async function GET(
       updatedAt: inngestRun.ended_at || new Date().toISOString(),
       error: inngestRun.error?.message,
       progress: {
-        total: totalArticles,
+        total: articles.length,
         done: doneArticles,
         failed: failedArticles,
       },
@@ -188,7 +158,7 @@ export async function GET(
 
     return NextResponse.json(response)
   } catch (e) {
-    console.error('Error in pipeline GET:', e)
+    console.error('[pipeline] Error in GET handler:', e)
     return NextResponse.json(
       { error: 'Failed to fetch pipeline status' },
       { status: 500 }
