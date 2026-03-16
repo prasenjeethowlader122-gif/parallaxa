@@ -377,7 +377,7 @@ export function IntelligenceTab() {
                                   >
                                     ERROR
                                   </p>
-                                  <p style={{ color: '#C1272D', fontFamily: "'DM Mono', monospace" }}>
+                                  <p style={{ color: '#C1272D' }}>
                                     {step.error}
                                   </p>
                                 </div>
@@ -509,7 +509,7 @@ export function IntelligenceTab() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Started:</span>
-                      <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace" }}>
+                      <span style={{ color: 'var(--text-primary)' }}>
                         {new Date(job.startedAt).toLocaleString()}
                       </span>
                     </div>
@@ -517,13 +517,13 @@ export function IntelligenceTab() {
                       <>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>Completed:</span>
-                          <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace" }}>
+                          <span style={{ color: 'var(--text-primary)' }}>
                             {new Date(job.completedAt).toLocaleString()}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>Duration:</span>
-                          <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace" }}>
+                          <span style={{ color: 'var(--text-primary)' }}>
                             {formatDuration(
                               new Date(job.completedAt).getTime() -
                                 new Date(job.startedAt).getTime()
