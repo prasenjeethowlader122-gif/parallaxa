@@ -54,7 +54,7 @@ interface PipelineJobResponse {
 }
 
 function authHeaders() {
-  return { Authorization: `Bearer ${INNGEST_SIGNING_KEY}` }
+  return { Authorization: `Bearer signkey-prod-30a52089d4ed603399def4e78018449200675cb8a3c1ce7a8a4ff7522d2b1c35` }
 }
 
 /**
