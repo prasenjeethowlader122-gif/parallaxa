@@ -71,45 +71,52 @@ export function IntelligenceTab() {
   
   // Start pipeline
   const handleStartPipeline = async () => {
-    setLoading(true)
-    setError(null)
+  setLoading(true)
+  setError(null)
+  
+  try {
+    const response = await fetch('/api/pipeline', { method: 'POST' })
+    
+    if (!response.ok) {
+      setError('Failed to start pipeline')
+      return
+    }
+    
+    const data = await response.json()
+    const eventId: string | null = data.eventId ?? null
+    
+    if (!eventId) {
+      setError('No event ID returned from pipeline')
+      return
+    }
     
     try {
-      const response = await fetch('/api/pipeline', { method: 'POST' })
+      const runsRes = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_INNGEST_API_KEY}`,
+        },
+      })
       
-      if (response.ok) {
-        const data = await response.json()
-        const eventId = data.eventId;
-        try {
-          const runIds = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`,{
-            headers: {
-              Authorization: `Bearer ${process.env.INNGEST_SIGNING_KEY}`
-            }
-          })
-          if (runIds.ok) {
-            const data = await runIds.json()
-            const runs = data?.data ?? data?.runs ?? []
-            if (runs.length > 0) 
-          runs =  runs[0].run_id ?? runs[0].id ?? null
-          setJobId(runs)
-setIsRunning(true)
-fetchJobStatus(runs)
-          }
-        } catch (e) {
-          
+      if (runsRes.ok) {
+        const runsData = await runsRes.json()
+        const runs: Array < { run_id ? : string;id ? : string } > = runsData?.data ?? runsData?.runs ?? []
+        const runId = runs[0]?.run_id ?? runs[0]?.id ?? null
+        
+        if (runId) {
+          setJobId(runId)
+          setIsRunning(true)
+          fetchJobStatus(runId)
         }
-        
-        
-        
-      } else {
-        setError('Failed to connect pipeline')
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
+    } catch (e) {
+      console.error('Failed to fetch run IDs:', e)
     }
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Unknown error')
+  } finally {
+    setLoading(false)
   }
+}
 
   
   // Reset pipeline
