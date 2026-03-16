@@ -98,6 +98,7 @@ export function IntelligenceTab() {
       setLoading(false)
     }
   }
+
   
   // Reset pipeline
   const handleReset = () => {
@@ -600,8 +601,6 @@ export function IntelligenceTab() {
               </button>
             )}
           </div>
-        </div> <
-    /Card> <
-    /div>
+        </div> </Card> </div>
   )
 }
