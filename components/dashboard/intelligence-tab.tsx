@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react'
 import { Icons } from './icons'
 import { Card } from './ui'
 
-interface Props {
-  session: any
+interface Step {
+  id: string
+  name: string
+  status: string
+  duration?: number
+  output?: any
+  error?: string
 }
 
 interface PipelineJob {
@@ -22,6 +27,9 @@ interface PipelineJob {
     articleId: string | null
     error?: string
   }>
+  steps: Step[]
+  startedAt?: string
+  completedAt?: string
 }
 
 export function IntelligenceTab() {
@@ -30,6 +38,7 @@ export function IntelligenceTab() {
   const [job, setJob] = useState<PipelineJob | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [expandedStep, setExpandedStep] = useState<string | null>(null)
 
   // Fetch pipeline job status
   const fetchJobStatus = async (id: string) => {
@@ -72,10 +81,15 @@ export function IntelligenceTab() {
 
       if (response.ok) {
         const data = await response.json()
-        const newJobId = data.id
+        // The eventId might be returned; we need to fetch the run with it
+        const newJobId = data.eventId || data.id
         setJobId(newJobId)
         setIsRunning(true)
-        setJob(data)
+        
+        // Fetch initial job data
+        setTimeout(() => {
+          fetchJobStatus(newJobId)
+        }, 500)
       } else {
         setError('Failed to start pipeline')
       }
@@ -94,15 +108,18 @@ export function IntelligenceTab() {
     setJob(null)
     setIsRunning(false)
     setError(null)
+    setExpandedStep(null)
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'done':
+      case 'completed':
         return '#3B6D11'
       case 'failed':
         return '#C1272D'
       case 'pending':
+      case 'queued':
       case 'running':
         return '#185FA5'
       default:
@@ -110,9 +127,48 @@ export function IntelligenceTab() {
     }
   }
 
+  const getStatusBg = (status: string) => {
+    switch (status) {
+      case 'done':
+      case 'completed':
+        return '#EAF3DE'
+      case 'failed':
+        return '#FBEAF0'
+      case 'pending':
+      case 'queued':
+      case 'running':
+        return '#E6F1FB'
+      default:
+        return 'var(--hover-bg)'
+    }
+  }
+
   const getStatusLabel = (status: string) => {
     return status.charAt(0).toUpperCase() + status.slice(1)
   }
+
+  const formatDuration = (ms?: number) => {
+    if (!ms) return '-'
+    if (ms < 1000) return `${ms}ms`
+    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+    return `${(ms / 60000).toFixed(1)}m`
+  }
+
+  const getStepIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'done':
+        return '✓'
+      case 'failed':
+        return '✕'
+      case 'running':
+        return '▶'
+      default:
+        return '○'
+    }
+  }
+
+  const pending = job ? job.progress.total - job.progress.done - job.progress.failed : 0
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,6 +181,7 @@ export function IntelligenceTab() {
           {/* Status Display */}
           {job && (
             <div className="space-y-4">
+              {/* Main Status Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div
                   className="p-4 rounded-lg"
@@ -156,7 +213,7 @@ export function IntelligenceTab() {
               {/* Progress Bar */}
               <div>
                 <div
-                  className="w-full h-2 rounded-full overflow-hidden"
+                  className="w-full h-2 rounded-full overflow-hidden flex"
                   style={{ background: 'var(--hover-bg)' }}
                 >
                   <div
@@ -166,10 +223,17 @@ export function IntelligenceTab() {
                       background: '#3B6D11',
                     }}
                   />
+                  <div
+                    className="h-full transition-all duration-300"
+                    style={{
+                      width: `${job.progress.total > 0 ? (job.progress.failed / job.progress.total) * 100 : 0}%`,
+                      background: '#C1272D',
+                    }}
+                  />
                 </div>
               </div>
 
-              {/* Stats */}
+              {/* Article Stats */}
               <div className="grid grid-cols-3 gap-2">
                 <div
                   className="p-3 rounded-lg text-center"
@@ -196,7 +260,7 @@ export function IntelligenceTab() {
                     className="text-lg font-bold"
                     style={{ color: '#854F0B' }}
                   >
-                    {job.progress.total - job.progress.done - job.progress.failed}
+                    {pending}
                   </p>
                 </div>
                 <div
@@ -215,6 +279,144 @@ export function IntelligenceTab() {
                 </div>
               </div>
 
+              {/* Execution Steps */}
+              {job.steps && job.steps.length > 0 && (
+                <div className="space-y-2">
+                  <h3
+                    className="text-sm font-semibold"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    Execution Steps
+                  </h3>
+                  <div
+                    className="space-y-1.5"
+                    style={{ background: 'var(--hover-bg)', borderRadius: 8, padding: 12 }}
+                  >
+                    {job.steps.map((step) => (
+                      <div key={step.id} className="space-y-1">
+                        <button
+                          onClick={() =>
+                            setExpandedStep(
+                              expandedStep === step.id ? null : step.id
+                            )
+                          }
+                          className="w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors hover:opacity-80"
+                          style={{
+                            background: 'var(--card-bg)',
+                            border: `1px solid ${getStatusColor(step.status)}`,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: getStatusColor(step.status),
+                              fontWeight: 'bold',
+                              minWidth: '20px',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {getStepIcon(step.status)}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="text-xs font-semibold truncate"
+                              style={{ color: 'var(--text-primary)' }}
+                            >
+                              {step.name}
+                            </p>
+                          </div>
+                          <span
+                            style={{
+                              fontSize: 10,
+                              color: 'var(--text-tertiary)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {formatDuration(step.duration)}
+                          </span>
+                          <span
+                            style={{
+                              color: 'var(--text-tertiary)',
+                              transform:
+                                expandedStep === step.id
+                                  ? 'rotate(90deg)'
+                                  : 'rotate(0deg)',
+                              transition: 'transform 0.2s',
+                            }}
+                          >
+                            ›
+                          </span>
+                        </button>
+
+                        {/* Step Details */}
+                        {expandedStep === step.id && (
+                          <div
+                            className="p-3 rounded-lg text-xs"
+                            style={{ background: 'var(--card-bg)', marginLeft: 8 }}
+                          >
+                            <div className="space-y-2">
+                              <div>
+                                <p
+                                  style={{ color: 'var(--text-tertiary)', fontSize: 9 }}
+                                >
+                                  STATUS
+                                </p>
+                                <p
+                                  style={{
+                                    color: getStatusColor(step.status),
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {getStatusLabel(step.status)}
+                                </p>
+                              </div>
+
+                              {step.error && (
+                                <div>
+                                  <p
+                                    style={{ color: 'var(--text-tertiary)', fontSize: 9 }}
+                                  >
+                                    ERROR
+                                  </p>
+                                  <p style={{ color: '#C1272D', fontFamily: "'DM Mono', monospace" }}>
+                                    {step.error}
+                                  </p>
+                                </div>
+                              )}
+
+                              {step.output && (
+                                <div>
+                                  <p
+                                    style={{ color: 'var(--text-tertiary)', fontSize: 9 }}
+                                  >
+                                    OUTPUT
+                                  </p>
+                                  <pre
+                                    style={{
+                                      background: 'var(--hover-bg)',
+                                      padding: '6px 8px',
+                                      borderRadius: 4,
+                                      overflow: 'auto',
+                                      maxHeight: '120px',
+                                      color: 'var(--text-secondary)',
+                                      fontFamily: "'DM Mono', monospace",
+                                      fontSize: 9,
+                                    }}
+                                  >
+                                    {typeof step.output === 'string'
+                                      ? step.output
+                                      : JSON.stringify(step.output, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Articles List */}
               {job.articles.length > 0 && (
                 <div className="space-y-2">
@@ -222,20 +424,18 @@ export function IntelligenceTab() {
                     className="text-sm font-semibold"
                     style={{ color: 'var(--text-primary)' }}
                   >
-                    Articles
+                    Processed Articles
                   </h3>
                   <div
-                    className="max-h-64 overflow-y-auto space-y-2"
+                    className="max-h-64 overflow-y-auto space-y-1.5"
                     style={{ background: 'var(--hover-bg)', borderRadius: 8, padding: 12 }}
                   >
                     {job.articles.map((article, idx) => (
                       <div
                         key={idx}
-                        className="flex items-start gap-2 text-xs"
+                        className="flex items-start gap-2 p-2.5 rounded-lg text-xs"
                         style={{
-                          padding: '8px',
                           background: 'var(--card-bg)',
-                          borderRadius: 6,
                           borderLeft: `3px solid ${getStatusColor(article.status)}`,
                         }}
                       >
@@ -243,19 +443,49 @@ export function IntelligenceTab() {
                           style={{
                             color: getStatusColor(article.status),
                             fontWeight: 600,
-                            minWidth: '50px',
+                            minWidth: '45px',
+                            flexShrink: 0,
                           }}
                         >
                           {getStatusLabel(article.status)}
                         </span>
-                        <span style={{ color: 'var(--text-secondary)', flex: 1 }}>
-                          {article.title || article.sourceUrl}
-                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            style={{
+                              color: 'var(--text-primary)',
+                              fontWeight: 500,
+                              truncate: 'true',
+                            }}
+                          >
+                            {article.title || 'Untitled'}
+                          </p>
+                          <p
+                            style={{
+                              color: 'var(--text-tertiary)',
+                              marginTop: 2,
+                              wordBreak: 'break-all',
+                            }}
+                          >
+                            {article.sourceUrl}
+                          </p>
+                          {article.error && (
+                            <p
+                              style={{
+                                color: '#C1272D',
+                                marginTop: 4,
+                                fontFamily: "'DM Mono', monospace",
+                              }}
+                            >
+                              Error: {article.error}
+                            </p>
+                          )}
+                        </div>
                         {article.articleId && (
                           <span
                             style={{
                               color: 'var(--text-tertiary)',
-                              fontSize: 10,
+                              fontSize: 9,
+                              flexShrink: 0,
                             }}
                           >
                             ID: {article.articleId.slice(0, 8)}
@@ -263,6 +493,45 @@ export function IntelligenceTab() {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Timing Information */}
+              {job.startedAt && (
+                <div
+                  className="p-3 rounded-lg text-xs"
+                  style={{ background: 'var(--hover-bg)' }}
+                >
+                  <p style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
+                    TIMING
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Started:</span>
+                      <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace" }}>
+                        {new Date(job.startedAt).toLocaleString()}
+                      </span>
+                    </div>
+                    {job.completedAt && (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>Completed:</span>
+                          <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace" }}>
+                            {new Date(job.completedAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>Duration:</span>
+                          <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace" }}>
+                            {formatDuration(
+                              new Date(job.completedAt).getTime() -
+                                new Date(job.startedAt).getTime()
+                            )}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -286,8 +555,8 @@ export function IntelligenceTab() {
                 className="text-sm mb-4"
                 style={{ color: 'var(--text-tertiary)' }}
               >
-                Click the button below to start the news pipeline. It will crawl Yahoo News,
-                generate articles using AI, and save them to your database.
+                Start the news pipeline to automatically crawl Yahoo News, generate articles
+                using AI, and save them to your database.
               </p>
             </div>
           )}
