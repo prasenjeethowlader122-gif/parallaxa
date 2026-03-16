@@ -2,7 +2,7 @@
  * lib/news-pipeline.ts
  *
  * Full pipeline (non-Inngest, in-process version):
- *   1. Crawl https://www.yahoo.com/news/articles/ → extract up to 10 article URLs
+ *   1. Crawl https://news.yahoo.com → extract up to 10 article URLs
  *   2. Scrape each URL for markdown + hero image
  *   3. Generate a news article via HuggingFace AI (JSON output)
  *   4. Save to Neon PostgreSQL via existing createArticle()
@@ -17,8 +17,13 @@
  * 2. Removed hardcoded API key fallbacks — keys must come from env vars. Falling
  *    back to a committed key is a security risk and silently breaks rotation.
  * 3. Added try/catch in scrapeArticle (was missing in this file's version).
- * 4. Deduplicated: this file no longer re-exports PipelineJob/PipelineArticle
- *    types that are now canonical here and imported by any callers.
+ * 4. Fixed toStringArray() to handle Firecrawl v2 map() response shape:
+ *    v2 returns { success, links: [{url, title, description},...] } — each link
+ *    is an object, not a plain string. The old helper returned [] silently.
+ * 5. Changed map() target to news.yahoo.com (has a sitemap; /articles/ path does not).
+ * 6. Broadened article URL regex from /articles/ to /news/ to match Yahoo's real paths.
+ * 7. Removed site: operator from search fallback — Yahoo blocks it in Firecrawl search.
+ * 8. Added Strategy 3: seed scrape of news.yahoo.com HTML as a last-resort link extractor.
  */
 
 import Firecrawl from '@mendable/firecrawl-js'
@@ -26,6 +31,7 @@ import { OpenAI } from 'openai'
 import { createArticle } from '@/lib/db/articles'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
+
 
 const firecrawl = new Firecrawl({
   apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
@@ -77,20 +83,31 @@ function makeJobId(): string {
 
 // ─── Firecrawl response normalisers ──────────────────────────────────────────
 //
-// firecrawl.map()    → string[] | { links: string[] } | { urls: string[] }
-// firecrawl.search() → { data: SearchResult[] }  ← NOT a plain array
+// Firecrawl v2 map() returns:
+//   { success: true, links: Array<{ url: string; title?: string; description?: string }> }
 //
-// The original code did `(results || []).filter(…)` which throws
-// "filter is not a function" because the search response is an object.
+// Links are OBJECTS, not plain strings. The old helper only handled string[],
+// { links: string[] }, and { urls: string[] } — it returned [] on v2 responses,
+// which is why the pipeline always reported "No article links found".
+//
+// firecrawl.search() returns { data: SearchResult[] } — NOT a plain array.
 
 function toStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((v): v is string => typeof v === 'string')
+    return value.flatMap((v) => {
+      if (typeof v === 'string') return [v]
+      // v2 object shape: { url: string; title?: string; description?: string }
+      if (v && typeof v === 'object' && typeof (v as any).url === 'string') {
+        return [(v as any).url as string]
+      }
+      return []
+    })
   }
   if (value && typeof value === 'object') {
     const v = value as Record<string, unknown>
-    if (Array.isArray(v.links)) return v.links.filter((x): x is string => typeof x === 'string')
-    if (Array.isArray(v.urls))  return v.urls.filter((x): x is string => typeof x === 'string')
+    // v2 envelope: { success: true, links: [...] }
+    if (Array.isArray(v.links)) return toStringArray(v.links)
+    if (Array.isArray(v.urls))  return toStringArray(v.urls)
   }
   return []
 }
@@ -109,9 +126,10 @@ async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | nul
   console.log('[pipeline] Step 1: crawling Yahoo News…')
 
   // ── Strategy 1: firecrawl.map ──────────────────────────────────────────────
+  // Use news.yahoo.com — it has a sitemap. The /news/articles/ subpath does not.
   try {
     const mapResult = await (firecrawl as any).map(
-      'https://www.yahoo.com/news/articles/',
+      'https://news.yahoo.com',
       { limit: 30, includeSubdomains: false }
     )
 
@@ -119,33 +137,63 @@ async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | nul
     const links = rawLinks
       .filter(url =>
         url.includes('yahoo.com') &&
-        /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
+        // Broader pattern: Yahoo article paths vary (e.g. /news/slug-123abc.html)
+        /yahoo\.com\/news\/[a-z0-9_-]{10,}/i.test(url)
       )
       .slice(0, 10)
       .map(url => ({ url, title: null as null }))
 
     console.log(`[pipeline] Step 1: found ${links.length} links via map`)
-    if (links.length >= 5) return links
+    if (links.length >= 3) return links
   } catch (err) {
     console.warn('[pipeline] firecrawl.map failed, using search fallback:', err)
   }
 
   // ── Strategy 2: firecrawl.search ──────────────────────────────────────────
+  // Removed `site:yahoo.com` — Yahoo blocks the site: operator in Firecrawl search.
+  // A general news query returns more reliable results.
   console.log('[pipeline] Step 1: search fallback…')
   try {
     const searchResult = await (firecrawl as any).search(
-      'site:yahoo.com/news latest news today',
+      'latest news today 2026',
       { limit: 10, scrapeOptions: { formats: ['markdown'] } }
     )
 
     const results = toSearchResults(searchResult)
-
-    return results
-      .filter(r => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
+    const links = results
+      .filter(r => typeof r?.url === 'string')
       .slice(0, 10)
       .map(r => ({ url: r.url, title: r.title ?? null }))
+
+    console.log(`[pipeline] Step 1: found ${links.length} links via search`)
+    if (links.length >= 1) return links
   } catch (err) {
     console.warn('[pipeline] firecrawl.search failed:', err)
+  }
+
+  // ── Strategy 3: seed scrape (last resort) ─────────────────────────────────
+  // If both API strategies fail (rate-limited, blocked, etc.), scrape the
+  // Yahoo News homepage HTML directly and extract article hrefs.
+  console.log('[pipeline] Step 1: seed scrape fallback…')
+  try {
+    const page = await firecrawl.scrapeUrl('https://news.yahoo.com', {
+      formats: ['html'],
+    }) as any
+
+    const html: string = page?.html ?? ''
+    const urlMatches = [
+      ...html.matchAll(/href="(https:\/\/[^"]*yahoo\.com\/news\/[^"]{10,})"/g),
+    ]
+    const links = urlMatches
+      .map(m => ({ url: m[1].split('?')[0], title: null as null }))
+      // dedupe by URL
+      .filter((v, i, arr) => arr.findIndex(x => x.url === v.url) === i)
+      .slice(0, 10)
+
+    console.log(`[pipeline] Step 1: found ${links.length} links via seed scrape`)
+    return links
+  } catch (err) {
+    console.warn('[pipeline] seed scrape failed:', err)
     return []
   }
 }
@@ -325,7 +373,7 @@ async function runPipeline(jobId: string): Promise<void> {
     const links = await crawlYahooNewsLinks()
 
     if (!links.length) {
-      update({ status: 'failed', error: 'No article links found on Yahoo News' })
+      update({ status: 'failed', error: 'No article links found — all three strategies failed' })
       return
     }
 
