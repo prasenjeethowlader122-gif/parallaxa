@@ -8,7 +8,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
   Icons, NavItem,
-  OverviewTab, ArticlesTab, SettingsTab,
+  OverviewTab, ArticlesTab, SettingsTab,IntelligenceTab,
   type ArticleRow,
 } from '@/components/dashboard'
 
@@ -19,7 +19,12 @@ type Tab = 'overview' | 'articles' | 'settings'
 const NAV: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: 'Overview',    icon: Icons.grid     },
   { id: 'articles', label: 'My Articles', icon: Icons.file     },
+  {
+    id: 'intelligence', label:'Intelligence',
+    icon: Icons.file
+  },
   { id: 'settings', label: 'Settings',    icon: Icons.settings },
+  
 ]
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -188,6 +193,11 @@ function DashboardPageContent() {
                   onSwitchArticles={() => setTab('articles')}
                 />
               )}
+              {
+                tab === 'intelligence' && (
+                  <IntelligenceTab/>
+                )
+              }
               {tab === 'articles' && (
                 <ArticlesTab
                   articles={articles}
