@@ -21,7 +21,10 @@
  *    v2 returns { success, links: [{url, title, description},...] } — each link
  *    is an object, not a plain string. The old helper returned [] silently.
  * 5. Changed map() target to news.yahoo.com (has a sitemap; /articles/ path does not).
- * 6. Broadened article URL regex from /articles/ to /news/ to match Yahoo's real paths.
+ * 6. Fixed URL filtering: replaced the overly-narrow /news/articles/ regex with
+ *    isRealArticleUrl() which matches real Yahoo URL shapes (/article/<slug> and
+ *    /article-<slug>) while excluding slideshows, hub pages, and bare paths.
+ *    The old regex used /news/articles/ (plural) which never matched any real URL.
  * 7. Removed site: operator from search fallback — Yahoo blocks it in Firecrawl search.
  * 8. Added Strategy 3: seed scrape of news.yahoo.com HTML as a last-resort link extractor.
  */
@@ -31,7 +34,6 @@ import { OpenAI } from 'openai'
 import { createArticle } from '@/lib/db/articles'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
-
 
 const firecrawl = new Firecrawl({
   apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
@@ -120,26 +122,61 @@ function toSearchResults(value: unknown): Array<{ url: string; title?: string }>
   return []
 }
 
+// ─── URL filter ───────────────────────────────────────────────────────────────
+//
+// Real Yahoo News article URL shapes (from live firecrawl.map() response):
+//
+//   ✓ https://www.yahoo.com/news/article/slug-with-id-140005715.html
+//   ✓ https://www.yahoo.com/news/article/what-happened-at-trumps-134625259.html
+//   ✓ https://www.yahoo.com/news/article-breaking-witnesses-023737737.html
+//   ✓ https://www.yahoo.com/news/article-fat-arab-women-061222972.html
+//
+// URLs to exclude:
+//   ✗ /news/article-slideshow-1105956.html   ← gallery/slideshow pages
+//   ✗ /news/article-featured.html            ← hub page, no slug
+//   ✗ /news/article                          ← bare path
+//   ✗ /news/article-vo-012150928.html        ← video-only pages (low text content)
+//
+// NOTE: The previous regex matched /news/articles/ (plural) which does not exist
+// on Yahoo News — this was why the pipeline always returned zero links.
+
+function isRealArticleUrl(url: string): boolean {
+  if (!url.includes('yahoo.com')) return false
+
+  // Must contain /news/article in the path
+  if (!/yahoo\.com\/news\/article/i.test(url)) return false
+
+  // Exclude slideshow pages
+  if (/\/article-slideshow-/i.test(url)) return false
+
+  // Exclude video-only pages
+  if (/\/article-vo-/i.test(url)) return false
+
+  // Exclude bare hub pages: /news/article, /news/article.html, /news/article-featured.html
+  if (/\/news\/article(-featured)?\.html?$/i.test(url)) return false
+  if (/\/news\/article\/?$/i.test(url)) return false
+
+  // Must have a meaningful slug: at least 9 chars after the /article[-/] token
+  if (!/\/article[-/][a-z0-9][-a-z0-9]{8,}/i.test(url)) return false
+
+  return true
+}
+
 // ─── Step 1 – Crawl Yahoo News ────────────────────────────────────────────────
 
 async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | null }[]> {
   console.log('[pipeline] Step 1: crawling Yahoo News…')
 
   // ── Strategy 1: firecrawl.map ──────────────────────────────────────────────
-  // Use news.yahoo.com — it has a sitemap. The /news/articles/ subpath does not.
   try {
     const mapResult = await (firecrawl as any).map(
       'https://news.yahoo.com',
-      { limit: 30, includeSubdomains: false }
+      { limit: 50, includeSubdomains: false }
     )
 
     const rawLinks = toStringArray(mapResult)
     const links = rawLinks
-      .filter(url =>
-        url.includes('yahoo.com') &&
-        // Broader pattern: Yahoo article paths vary (e.g. /news/slug-123abc.html)
-        /yahoo\.com\/news\/[a-z0-9_-]{10,}/i.test(url)
-      )
+      .filter(isRealArticleUrl)
       .slice(0, 10)
       .map(url => ({ url, title: null as null }))
 
@@ -182,13 +219,15 @@ async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | nul
 
     const html: string = page?.html ?? ''
     const urlMatches = [
-      ...html.matchAll(/href="(https:\/\/[^"]*yahoo\.com\/news\/[^"]{10,})"/g),
+      ...html.matchAll(/href="(https:\/\/[^"]*yahoo\.com\/news\/article[^"]{8,})"/g),
     ]
     const links = urlMatches
-      .map(m => ({ url: m[1].split('?')[0], title: null as null }))
+      .map(m => m[1].split('?')[0])
+      .filter(isRealArticleUrl)
       // dedupe by URL
-      .filter((v, i, arr) => arr.findIndex(x => x.url === v.url) === i)
+      .filter((url, i, arr) => arr.indexOf(url) === i)
       .slice(0, 10)
+      .map(url => ({ url, title: null as null }))
 
     console.log(`[pipeline] Step 1: found ${links.length} links via seed scrape`)
     return links

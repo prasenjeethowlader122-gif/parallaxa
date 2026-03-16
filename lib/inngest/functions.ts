@@ -21,6 +21,10 @@
  *    was throwing "filter is not a function". Added toStringArray() / toSearchResults()
  *    normalizers that handle every shape the SDK may return.
  * 5. Fixed import path for inngest client (was a circular self-import in the old file).
+ * 6. Fixed URL regex: real Yahoo News article URLs use /news/article/ (singular) or
+ *    /news/article-<slug> patterns, NOT /news/articles/ (plural). Updated regex to
+ *    match actual URL shapes seen from firecrawl.map() and added exclusion for
+ *    slideshow and non-article paths.
  */
 
 import { inngest } from './client'
@@ -31,7 +35,7 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
+  apiKey: process.env.FIRECRAWL_API_KEY ?? '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',
 })
 
 const hfClient = new OpenAI({
@@ -81,18 +85,27 @@ function extractImage(page: any): string | null {
 /**
  * Normalise the value returned by firecrawl.map() into a plain string[].
  * The SDK can return:
- *   - string[]                 (older versions)
- *   - { links: string[] }      (current MapResponse)
- *   - { urls: string[] }       (undocumented alternate key seen in the wild)
+ *   - string[]                              (older versions)
+ *   - { links: string[] }                   (MapResponse v1)
+ *   - { links: Array<{url,title,...}> }      (MapResponse v2 — objects, not strings)
+ *   - { urls: string[] }                    (undocumented alternate key)
  */
 function toStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((v): v is string => typeof v === 'string')
+    return value.flatMap((v) => {
+      if (typeof v === 'string') return [v]
+      // v2 object shape: { url: string; title?: string; description?: string }
+      if (v && typeof v === 'object' && typeof (v as any).url === 'string') {
+        return [(v as any).url as string]
+      }
+      return []
+    })
   }
   if (value && typeof value === 'object') {
     const v = value as Record<string, unknown>
-    if (Array.isArray(v.links)) return v.links.filter((x): x is string => typeof x === 'string')
-    if (Array.isArray(v.urls))  return v.urls.filter((x): x is string => typeof x === 'string')
+    // v2 envelope: { success: true, links: [...] }
+    if (Array.isArray(v.links)) return toStringArray(v.links)
+    if (Array.isArray(v.urls))  return toStringArray(v.urls)
   }
   return []
 }
@@ -111,24 +124,55 @@ function toSearchResults(value: unknown): Array<{ url: string; title?: string }>
   return []
 }
 
+/**
+ * Returns true for URLs that look like real Yahoo News articles.
+ *
+ * Real URL patterns observed from firecrawl.map():
+ *   ✓ /news/article/slug-with-words-123abc456.html      ← /article/ + slug + .html
+ *   ✓ /news/article-breaking-witnesses-driver-023737737.html  ← /article-<slug>
+ *   ✓ /news/article/time-person-140005715.html
+ *
+ * URLs to EXCLUDE:
+ *   ✗ /news/article-slideshow-1105956.html              ← slideshow pages
+ *   ✗ /news/article-featured.html                       ← non-article hub pages
+ *   ✗ /news/article                                     ← bare path with no slug
+ *   ✗ /news/article-vo-012150928.html                   ← video-only pages (optional)
+ */
+function isRealArticleUrl(url: string): boolean {
+  if (!url.includes('yahoo.com')) return false
+
+  // Must contain /news/article somewhere in the path
+  if (!/yahoo\.com\/news\/article/i.test(url)) return false
+
+  // Exclude slideshow pages
+  if (/\/article-slideshow-/i.test(url)) return false
+
+  // Exclude bare /news/article and /news/article-featured.html hub pages
+  if (/\/news\/article(-featured)?\.html?$/i.test(url)) return false
+  if (/\/news\/article\/?$/i.test(url)) return false
+
+  // Must have a meaningful slug segment (at least 10 chars after the path token)
+  // Covers both: /article/<slug> and /article-<slug>
+  if (!/\/article[-/][a-z0-9][-a-z0-9]{8,}/i.test(url)) return false
+
+  return true
+}
+
 async function crawlYahooNewsLinks(): Promise<ArticleLink[]> {
   // ── Strategy 1: firecrawl.map ────────────────────────────────────────────
   try {
     const mapResult = await (firecrawl as any).map(
-      'https://www.yahoo.com/news/articles/',
-      { limit: 30, includeSubdomains: false }
+      'https://news.yahoo.com',
+      { limit: 50, includeSubdomains: false }
     )
 
     const rawLinks = toStringArray(mapResult)
     const links = rawLinks
-      .filter(url =>
-        url.includes('yahoo.com') &&
-        /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
-      )
+      .filter(isRealArticleUrl)
       .slice(0, 10)
       .map(url => ({ url, title: null as null }))
 
-    console.log(`[inngest] map found ${links.length} links`)
+    console.log(`[inngest] map found ${links.length} article links`)
     if (links.length >= 5) return links
   } catch (err) {
     console.warn('[inngest] firecrawl.map failed, falling back to search:', err)
@@ -137,7 +181,7 @@ async function crawlYahooNewsLinks(): Promise<ArticleLink[]> {
   // ── Strategy 2: firecrawl.search ─────────────────────────────────────────
   try {
     const searchResult = await (firecrawl as any).search(
-      'site:yahoo.com/news latest news today',
+      'latest news today 2026',
       { limit: 10, scrapeOptions: { formats: ['markdown'] } }
     )
 
