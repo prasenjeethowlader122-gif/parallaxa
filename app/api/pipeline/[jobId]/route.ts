@@ -75,7 +75,7 @@ async function fetchInngestRun(runId: string): Promise<InngestRun | null> {
   try {
     const response = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
       headers: {
-        Authorization: `Bearer ${process.env.INNGEST_SIGNING_KEY}`,
+        Authorization: `Bearer signkey-prod-30a52089d4ed603399def4e78018449200675cb8a3c1ce7a8a4ff7522d2b1c35`,
       },
     })
 
