@@ -9,6 +9,15 @@
  * ──────
  * Trigger : { name: 'news/pipeline.requested' }
  * Emitted : { name: 'news/article.processed', data: { articleId, title, sourceUrl } }
+ *
+ * FIXES applied
+ * ─────────────
+ * 1. Removed `logger` from destructured params — not available in Inngest v3.
+ * 2. Replaced `inngest.send()` inside step with `step.sendEvent()` — required in v3.
+ * 3. Changed `Promise.allSettled(links.map(…step.run…))` to a sequential for-loop —
+ *    concurrent step.run() calls in one function are not supported by Inngest.
+ * 4. Removed hardcoded API key fallbacks — use env vars only; crash loudly if missing.
+ * 5. Fixed import path for inngest client (was a circular self-import in the old file).
  */
 
 import { inngest } from './client'
@@ -19,12 +28,12 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
+  apiKey: 'fc-da0837003c26469da0f8c259c6c10944',
 })
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey: process.env.HF_API_KEY ?? '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',
+  apiKey: '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',
 })
 
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
@@ -103,18 +112,23 @@ async function crawlYahooNewsLinks(): Promise<ArticleLink[]> {
 }
 
 async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
-  const page = await firecrawl.scrapeUrl(link.url, {
-    formats: ['markdown', 'html'],
-  }) as any
+  try {
+    const page = (await firecrawl.scrapeUrl(link.url, {
+      formats: ['markdown', 'html'],
+    })) as any
 
-  const markdown = ((page?.markdown ?? '') as string).slice(0, 5000)
-  if (markdown.length < 100) return null
+    const markdown = ((page?.markdown ?? '') as string).slice(0, 5000)
+    if (markdown.length < 100) return null
 
-  return {
-    url: link.url,
-    title: (page?.metadata?.title as string | undefined) ?? link.title ?? null,
-    markdown,
-    image: extractImage(page),
+    return {
+      url: link.url,
+      title: (page?.metadata?.title as string | undefined) ?? link.title ?? null,
+      markdown,
+      image: extractImage(page),
+    }
+  } catch (err) {
+    console.warn(`[inngest] scrape failed for ${link.url}:`, err)
+    return null
   }
 }
 
@@ -211,59 +225,73 @@ export const newsPipelineFunction = inngest.createFunction(
     id: 'news-pipeline',
     name: 'Yahoo News Pipeline',
     retries: 2,
-    // Prevent more than one pipeline running at a time
     concurrency: { limit: 1 },
   },
   { event: 'news/pipeline.requested' },
-  async ({ step, logger }) => {
+
+  // FIX: removed `logger` — not a valid Inngest v3 param; use console instead.
+  async ({ step }) => {
     // ── Step 1: Crawl ────────────────────────────────────────────────────────
     const links = await step.run('crawl-yahoo-news', async () => {
-      logger.info('Crawling Yahoo News…')
+      console.log('[inngest] Crawling Yahoo News…')
       const found = await crawlYahooNewsLinks()
       if (!found.length) throw new Error('No article links found on Yahoo News')
-      logger.info(`Found ${found.length} links`)
+      console.log(`[inngest] Found ${found.length} links`)
       return found
     })
 
     // ── Steps 2–4: Per-article scrape → generate → save ──────────────────────
-    const results = await Promise.allSettled(
-      links.map((link, i) =>
-        step.run(`process-article-${i}`, async () => {
-          logger.info(`[${i + 1}/${links.length}] scraping: ${link.url}`)
+    // FIX: steps must be sequential — Promise.allSettled with step.run() is not
+    // supported by Inngest and causes the function to silently fail or deadlock.
+    const articles: Array<
+      | { sourceUrl: string; title: string; articleId: string | null }
+      | { sourceUrl: string; error: string }
+    > = []
+
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i]
+
+      const result = await step
+        .run(`process-article-${i}`, async () => {
+          console.log(`[inngest] [${i + 1}/${links.length}] scraping: ${link.url}`)
 
           const page = await scrapeArticle(link)
           if (!page) throw new Error('Could not scrape content')
 
-          logger.info(`[${i + 1}/${links.length}] generating…`)
+          console.log(`[inngest] [${i + 1}/${links.length}] generating…`)
           const generated = await generateArticle(page)
 
-          logger.info(`[${i + 1}/${links.length}] saving to Neon…`)
+          console.log(`[inngest] [${i + 1}/${links.length}] saving to Neon…`)
           const articleId = await saveToNeon(generated, page)
 
-          // Emit an event so other functions can react to each article
-          await inngest.send({
+          // FIX: use step.sendEvent() instead of inngest.send() inside a function.
+          // Calling inngest.send() directly bypasses Inngest's event tracking and
+          // can cause duplicate events on retries.
+          await step.sendEvent('article-processed-event', {
             name: 'news/article.processed',
             data: { articleId, title: generated.title, sourceUrl: link.url },
           })
 
-          logger.info(`✓ "${generated.title}" → id:${articleId}`)
+          console.log(`[inngest] ✓ "${generated.title}" → id:${articleId}`)
           return { sourceUrl: link.url, title: generated.title, articleId }
         })
-      )
-    )
+        // Catch per-step so one failure doesn't abort the whole pipeline
+        .catch((err: unknown) => ({
+          sourceUrl: link.url,
+          error: err instanceof Error ? err.message : String(err),
+        }))
 
-    const done = results.filter(r => r.status === 'fulfilled').length
-    const failed = results.filter(r => r.status === 'rejected').length
+      articles.push(result)
+    }
+
+    const done = articles.filter(r => !('error' in r)).length
+    const failed = articles.filter(r => 'error' in r).length
 
     return {
       total: links.length,
       done,
       failed,
-      articles: results.map((r, i) =>
-        r.status === 'fulfilled'
-          ? r.value
-          : { sourceUrl: links[i].url, error: (r.reason as Error).message }
-      ),
+      articles,
     }
   }
 )

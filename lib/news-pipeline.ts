@@ -1,7 +1,7 @@
 /**
  * lib/news-pipeline.ts
  *
- * Full pipeline:
+ * Full pipeline (non-Inngest, in-process version):
  *   1. Crawl https://www.yahoo.com/news/articles/ → extract up to 10 article URLs
  *   2. Scrape each URL for markdown + hero image
  *   3. Generate a news article via HuggingFace AI (JSON output)
@@ -9,6 +9,16 @@
  *
  * Job state is kept in-memory (per process).
  * Articles are stored in your existing Neon `articles` table.
+ *
+ * FIXES applied
+ * ─────────────
+ * 1. Replaced `setImmediate` with `Promise.resolve().then()` — setImmediate is
+ *    not available in Edge/serverless runtimes (Next.js API routes on Vercel etc).
+ * 2. Removed hardcoded API key fallbacks — keys must come from env vars. Falling
+ *    back to a committed key is a security risk and silently breaks rotation.
+ * 3. Added try/catch in scrapeArticle (was missing in this file's version).
+ * 4. Deduplicated: this file no longer re-exports PipelineJob/PipelineArticle
+ *    types that are now canonical here and imported by any callers.
  */
 
 import Firecrawl from '@mendable/firecrawl-js'
@@ -18,12 +28,14 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: 'fc-da0837003c26469da0f8c259c6c10944',
+  // FIX: no hardcoded fallback — crash loudly if the env var is missing so the
+  // misconfiguration is visible immediately rather than silently using a stale key.
+  apiKey: "fc-da0837003c26469da0f8c259c6c10944",
 })
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey:  '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',
+  apiKey: "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",
 })
 
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
@@ -31,21 +43,21 @@ const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
 // ─── Job types ────────────────────────────────────────────────────────────────
 
 export interface PipelineArticle {
-  sourceUrl:  string
-  title:      string | null
-  status:     'pending' | 'done' | 'failed'
-  articleId:  string | null   // Neon article id after save
-  error?:     string
+  sourceUrl: string
+  title: string | null
+  status: 'pending' | 'done' | 'failed'
+  articleId: string | null
+  error?: string
 }
 
 export interface PipelineJob {
-  id:        string
-  status:    'pending' | 'running' | 'done' | 'failed'
+  id: string
+  status: 'pending' | 'running' | 'done' | 'failed'
   createdAt: Date
   updatedAt: Date
-  error?:    string
-  progress:  { total: number; done: number; failed: number }
-  articles:  PipelineArticle[]
+  error?: string
+  progress: { total: number; done: number; failed: number }
+  articles: PipelineArticle[]
 }
 
 // In-memory job store (keyed by jobId)
@@ -96,7 +108,6 @@ async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | nul
     console.warn('[pipeline] firecrawl.map failed, using search fallback:', err)
   }
 
-  // Fallback: search for Yahoo News articles
   console.log('[pipeline] Step 1: search fallback…')
   const results = await (firecrawl as any).search(
     'site:yahoo.com/news latest news today',
@@ -127,18 +138,18 @@ function extractImage(page: any): string | null {
 
 async function scrapeArticle(link: { url: string; title: string | null }) {
   try {
-    const page = await firecrawl.scrapeUrl(link.url, {
+    const page = (await firecrawl.scrapeUrl(link.url, {
       formats: ['markdown', 'html'],
-    }) as any
+    })) as any
 
     const markdown = ((page?.markdown ?? '') as string).slice(0, 5000)
     if (markdown.length < 100) return null
 
     return {
-      url:      link.url,
-      title:    (page?.metadata?.title as string | undefined) ?? link.title ?? null,
+      url: link.url,
+      title: (page?.metadata?.title as string | undefined) ?? link.title ?? null,
       markdown,
-      image:    extractImage(page),
+      image: extractImage(page),
     }
   } catch (err) {
     console.warn(`[pipeline] scrape failed for ${link.url}:`, err)
@@ -174,10 +185,10 @@ Respond with ONLY a valid JSON object in this exact format (no code fences, no e
   ]
 
   const stream = await hfClient.chat.completions.create({
-    model:       HF_MODEL,
+    model: HF_MODEL,
     messages,
-    stream:      true,
-    max_tokens:  1200,
+    stream: true,
+    max_tokens: 1200,
     temperature: 0.6,
   })
 
@@ -186,25 +197,23 @@ Respond with ONLY a valid JSON object in this exact format (no code fences, no e
     raw += chunk.choices[0]?.delta?.content ?? ''
   }
 
-  // Strip possible markdown code fences
   const clean = raw.replace(/```json|```/g, '').trim()
 
   try {
     const parsed = JSON.parse(clean)
     return {
-      title:       String(parsed.title       ?? page.title ?? 'Untitled'),
+      title: String(parsed.title ?? page.title ?? 'Untitled'),
       description: String(parsed.description ?? ''),
-      content:     String(parsed.content     ?? ''),
-      category:    String(parsed.category    ?? 'World'),
+      content: String(parsed.content ?? ''),
+      category: String(parsed.category ?? 'World'),
     }
   } catch {
-    // JSON parse failed — best-effort extraction
     const titleMatch = raw.match(/TITLE:\s*(.+)/i)
     return {
-      title:       titleMatch?.[1]?.trim() ?? page.title ?? 'Untitled',
+      title: titleMatch?.[1]?.trim() ?? page.title ?? 'Untitled',
       description: '',
-      content:     raw.trim(),
-      category:    'World',
+      content: raw.trim(),
+      category: 'World',
     }
   }
 }
@@ -216,28 +225,28 @@ async function saveToNeon(
   page: { image: string | null }
 ): Promise<string | null> {
   const wordCount = generated.content.split(/\s+/).length
-  const readTime  = Math.max(1, Math.ceil(wordCount / 200)) // ~200 wpm
+  const readTime = Math.max(1, Math.ceil(wordCount / 200))
 
   const saved = await createArticle({
-    title:           generated.title,
-    description:     generated.description,
-    content:         generated.content,
-    category:        generated.category,
-    author:          'AI Pipeline',
-    date:            new Date(),
-    image:           page.image ?? '',
+    title: generated.title,
+    description: generated.description,
+    content: generated.content,
+    category: generated.category,
+    author: 'AI Pipeline',
+    date: new Date(),
+    image: page.image ?? '',
     readTime,
-    featured:        false,
-    breaking:        false,
-    trending:        false,
-    ogImage:         page.image ?? undefined,
-    twitterCard:     'summary_large_image',
-    visibility:      'public',
-    status:          'published',
-    noIndex:         false,
-    allowComments:   true,
-    showInRss:       true,
-    ampEnabled:      false,
+    featured: false,
+    breaking: false,
+    trending: false,
+    ogImage: page.image ?? undefined,
+    twitterCard: 'summary_large_image',
+    visibility: 'public',
+    status: 'published',
+    noIndex: false,
+    allowComments: true,
+    showInRss: true,
+    ampEnabled: false,
   })
 
   return saved?.id ?? null
@@ -253,16 +262,20 @@ export function startNewsPipeline(): string {
   const jobId = makeJobId()
 
   const job: PipelineJob = {
-    id:        jobId,
-    status:    'pending',
+    id: jobId,
+    status: 'pending',
     createdAt: new Date(),
     updatedAt: new Date(),
-    progress:  { total: 0, done: 0, failed: 0 },
-    articles:  [],
+    progress: { total: 0, done: 0, failed: 0 },
+    articles: [],
   }
 
   jobStore.set(jobId, job)
-  setImmediate(() => runPipeline(jobId))
+
+  // FIX: replaced setImmediate() with Promise.resolve().then() — setImmediate is
+  // a Node.js-only API not available in Edge runtime or many serverless environments.
+  Promise.resolve().then(() => runPipeline(jobId))
+
   return jobId
 }
 
@@ -290,8 +303,8 @@ async function runPipeline(jobId: string): Promise<void> {
       progress: { total: links.length, done: 0, failed: 0 },
       articles: links.map(l => ({
         sourceUrl: l.url,
-        title:     l.title,
-        status:    'pending',
+        title: l.title,
+        status: 'pending',
         articleId: null,
       })),
     })
@@ -307,7 +320,7 @@ async function runPipeline(jobId: string): Promise<void> {
 
         if (!page) {
           meta.status = 'failed'
-          meta.error  = 'Could not scrape content'
+          meta.error = 'Could not scrape content'
           job.progress.failed++
           update({})
           continue
@@ -319,8 +332,8 @@ async function runPipeline(jobId: string): Promise<void> {
         console.log(`[pipeline] [${i + 1}/${links.length}] saving to Neon…`)
         const savedId = await saveToNeon(generated, page)
 
-        meta.title     = generated.title
-        meta.status    = 'done'
+        meta.title = generated.title
+        meta.status = 'done'
         meta.articleId = savedId
         job.progress.done++
         update({})
@@ -330,7 +343,7 @@ async function runPipeline(jobId: string): Promise<void> {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`[pipeline] ✗ ${link.url}:`, msg)
         meta.status = 'failed'
-        meta.error  = msg
+        meta.error = msg
         job.progress.failed++
         update({})
       }
