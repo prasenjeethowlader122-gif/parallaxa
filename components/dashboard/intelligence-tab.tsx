@@ -91,7 +91,7 @@ export function IntelligenceTab() {
           fetchJobStatus(newJobId)
         }, 500)
       } else {
-        setError('Failed to start pipeline')
+        setError(response.statusText)
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
