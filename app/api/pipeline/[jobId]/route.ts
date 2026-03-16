@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Must be an Inngest API key (starts with "sk-"), NOT the signing key.
-const INNGEST_API_KEY = process.env.INNGEST_API_KEY
+// Uses the Inngest Signing Key — required for the REST API (/v1/events and /v1/runs)
+const INNGEST_SIGNING_KEY = process.env.INNGEST_SIGNING_KEY
 
 interface InngestStep {
   id: string
@@ -51,16 +51,57 @@ interface PipelineJobResponse {
   completedAt?: string
 }
 
+/**
+ * Step 1 — resolve an Event ID to a Run ID.
+ *
+ * Per Inngest docs: GET /v1/events/{eventId}/runs returns all runs
+ * triggered by that event. The response shape is { data: InngestRun[] }.
+ *
+ * Auth: Bearer <INNGEST_SIGNING_KEY>
+ */
+async function fetchRunIdFromEvent(eventId: string): Promise<string | null> {
+  if (!INNGEST_SIGNING_KEY) return null
+
+  try {
+    const response = await fetch(
+      `https://api.inngest.com/v1/events/${eventId}/runs`,
+      {
+        headers: {
+          Authorization: `Bearer ${INNGEST_SIGNING_KEY}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      console.error(`[pipeline] Event runs fetch returned ${response.status}`)
+      return null
+    }
+
+    const json = await response.json()
+    // json.data is an array of runs; take the first one
+    const runs: InngestRun[] = json.data ?? []
+    return runs[0]?.run_id ?? null
+  } catch (err) {
+    console.error('[pipeline] Error fetching runs for event:', err)
+    return null
+  }
+}
+
+/**
+ * Step 2 — fetch the full run details once we have the Run ID.
+ *
+ * GET /v1/runs/{runId}
+ */
 async function fetchInngestRun(runId: string): Promise<InngestRun | null> {
-  if (!INNGEST_API_KEY) {
-    console.warn('[pipeline] INNGEST_API_KEY is not set')
+  if (!INNGEST_SIGNING_KEY) {
+    console.warn('[pipeline] INNGEST_SIGNING_KEY is not set')
     return null
   }
 
   try {
     const response = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
       headers: {
-        Authorization: `Bearer ${INNGEST_API_KEY}`,
+        Authorization: `Bearer ${INNGEST_SIGNING_KEY}`,
       },
     })
 
@@ -122,14 +163,30 @@ export async function GET(
   try {
     const { jobId } = await params
 
-    if (!INNGEST_API_KEY) {
+    if (!INNGEST_SIGNING_KEY) {
       return NextResponse.json(
-        { error: 'INNGEST_API_KEY is not configured on the server' },
+        { error: 'INNGEST_SIGNING_KEY is not configured on the server' },
         { status: 503 }
       )
     }
 
-    const inngestRun = await fetchInngestRun(jobId)
+    // jobId is an Event ID — resolve it to a Run ID first
+    const runId = await fetchRunIdFromEvent(jobId)
+
+    if (!runId) {
+      // The run may not have been assigned yet (event just sent); return pending
+      return NextResponse.json({
+        id: jobId,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        progress: { total: 0, done: 0, failed: 0 },
+        articles: [],
+        steps: [],
+      })
+    }
+
+    const inngestRun = await fetchInngestRun(runId)
 
     if (!inngestRun) {
       return NextResponse.json({ error: 'Run not found' }, { status: 404 })
