@@ -28,14 +28,12 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  // FIX: no hardcoded fallback — crash loudly if the env var is missing so the
-  // misconfiguration is visible immediately rather than silently using a stale key.
-  apiKey: "fc-da0837003c26469da0f8c259c6c10944",
+  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
 })
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey: "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",
+  apiKey: process.env.HF_API_KEY ?? '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',
 })
 
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
@@ -77,30 +75,54 @@ function makeJobId(): string {
   return `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
 }
 
+// ─── Firecrawl response normalisers ──────────────────────────────────────────
+//
+// firecrawl.map()    → string[] | { links: string[] } | { urls: string[] }
+// firecrawl.search() → { data: SearchResult[] }  ← NOT a plain array
+//
+// The original code did `(results || []).filter(…)` which throws
+// "filter is not a function" because the search response is an object.
+
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => typeof v === 'string')
+  }
+  if (value && typeof value === 'object') {
+    const v = value as Record<string, unknown>
+    if (Array.isArray(v.links)) return v.links.filter((x): x is string => typeof x === 'string')
+    if (Array.isArray(v.urls))  return v.urls.filter((x): x is string => typeof x === 'string')
+  }
+  return []
+}
+
+function toSearchResults(value: unknown): Array<{ url: string; title?: string }> {
+  if (value && typeof value === 'object' && Array.isArray((value as any).data)) {
+    return (value as any).data
+  }
+  if (Array.isArray(value)) return value
+  return []
+}
+
 // ─── Step 1 – Crawl Yahoo News ────────────────────────────────────────────────
 
 async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | null }[]> {
   console.log('[pipeline] Step 1: crawling Yahoo News…')
 
+  // ── Strategy 1: firecrawl.map ──────────────────────────────────────────────
   try {
     const mapResult = await (firecrawl as any).map(
       'https://www.yahoo.com/news/articles/',
       { limit: 30, includeSubdomains: false }
     )
 
-    const rawLinks: string[] = Array.isArray(mapResult)
-      ? mapResult
-      : (mapResult?.links ?? [])
-
+    const rawLinks = toStringArray(mapResult)
     const links = rawLinks
-      .filter(
-        (url: string) =>
-          typeof url === 'string' &&
-          url.includes('yahoo.com') &&
-          /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
+      .filter(url =>
+        url.includes('yahoo.com') &&
+        /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
       )
       .slice(0, 10)
-      .map((url: string) => ({ url, title: null }))
+      .map(url => ({ url, title: null as null }))
 
     console.log(`[pipeline] Step 1: found ${links.length} links via map`)
     if (links.length >= 5) return links
@@ -108,16 +130,24 @@ async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | nul
     console.warn('[pipeline] firecrawl.map failed, using search fallback:', err)
   }
 
+  // ── Strategy 2: firecrawl.search ──────────────────────────────────────────
   console.log('[pipeline] Step 1: search fallback…')
-  const results = await (firecrawl as any).search(
-    'site:yahoo.com/news latest news today',
-    { limit: 10, scrapeOptions: { formats: ['markdown'] } }
-  )
+  try {
+    const searchResult = await (firecrawl as any).search(
+      'site:yahoo.com/news latest news today',
+      { limit: 10, scrapeOptions: { formats: ['markdown'] } }
+    )
 
-  return ((results as any[]) || [])
-    .filter((r: any) => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
-    .slice(0, 10)
-    .map((r: any) => ({ url: r.url as string, title: (r.title as string) ?? null }))
+    const results = toSearchResults(searchResult)
+
+    return results
+      .filter(r => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
+      .slice(0, 10)
+      .map(r => ({ url: r.url, title: r.title ?? null }))
+  } catch (err) {
+    console.warn('[pipeline] firecrawl.search failed:', err)
+    return []
+  }
 }
 
 // ─── Step 2 – Scrape article ──────────────────────────────────────────────────

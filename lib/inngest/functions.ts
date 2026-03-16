@@ -16,7 +16,10 @@
  * 2. Replaced `inngest.send()` inside step with `step.sendEvent()` — required in v3.
  * 3. Changed `Promise.allSettled(links.map(…step.run…))` to a sequential for-loop —
  *    concurrent step.run() calls in one function are not supported by Inngest.
- * 4. Removed hardcoded API key fallbacks — use env vars only; crash loudly if missing.
+ * 4. Fixed firecrawl response shape handling — firecrawl.search() returns
+ *    { data: SearchResult[] }, NOT a plain array. Calling .filter() on the object
+ *    was throwing "filter is not a function". Added toStringArray() / toSearchResults()
+ *    normalizers that handle every shape the SDK may return.
  * 5. Fixed import path for inngest client (was a circular self-import in the old file).
  */
 
@@ -28,12 +31,12 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: 'fc-da0837003c26469da0f8c259c6c10944',
+  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
 })
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey: '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',
+  apiKey: process.env.HF_API_KEY ?? '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',
 })
 
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
@@ -75,40 +78,83 @@ function extractImage(page: any): string | null {
   return null
 }
 
+/**
+ * Normalise the value returned by firecrawl.map() into a plain string[].
+ * The SDK can return:
+ *   - string[]                 (older versions)
+ *   - { links: string[] }      (current MapResponse)
+ *   - { urls: string[] }       (undocumented alternate key seen in the wild)
+ */
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => typeof v === 'string')
+  }
+  if (value && typeof value === 'object') {
+    const v = value as Record<string, unknown>
+    if (Array.isArray(v.links)) return v.links.filter((x): x is string => typeof x === 'string')
+    if (Array.isArray(v.urls))  return v.urls.filter((x): x is string => typeof x === 'string')
+  }
+  return []
+}
+
+/**
+ * Normalise the value returned by firecrawl.search() into a plain object[].
+ * The SDK returns SearchResponse { data: SearchResult[] }, NOT a plain array.
+ * The original code did `(results || []).filter(…)` which threw
+ * "filter is not a function" because `results` is an object, not an array.
+ */
+function toSearchResults(value: unknown): Array<{ url: string; title?: string }> {
+  if (value && typeof value === 'object' && Array.isArray((value as any).data)) {
+    return (value as any).data
+  }
+  if (Array.isArray(value)) return value
+  return []
+}
+
 async function crawlYahooNewsLinks(): Promise<ArticleLink[]> {
+  // ── Strategy 1: firecrawl.map ────────────────────────────────────────────
   try {
     const mapResult = await (firecrawl as any).map(
       'https://www.yahoo.com/news/articles/',
       { limit: 30, includeSubdomains: false }
     )
-    const rawLinks: string[] = Array.isArray(mapResult)
-      ? mapResult
-      : (mapResult?.links ?? [])
 
+    const rawLinks = toStringArray(mapResult)
     const links = rawLinks
-      .filter(
-        (url: string) =>
-          typeof url === 'string' &&
-          url.includes('yahoo.com') &&
-          /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
+      .filter(url =>
+        url.includes('yahoo.com') &&
+        /\/news\/articles\/[a-z0-9-]{10,}/i.test(url)
       )
       .slice(0, 10)
-      .map((url: string) => ({ url, title: null }))
+      .map(url => ({ url, title: null as null }))
 
+    console.log(`[inngest] map found ${links.length} links`)
     if (links.length >= 5) return links
   } catch (err) {
-    console.warn('[inngest] firecrawl.map failed, using search fallback:', err)
+    console.warn('[inngest] firecrawl.map failed, falling back to search:', err)
   }
 
-  const results = await (firecrawl as any).search(
-    'site:yahoo.com/news latest news today',
-    { limit: 10, scrapeOptions: { formats: ['markdown'] } }
-  )
+  // ── Strategy 2: firecrawl.search ─────────────────────────────────────────
+  try {
+    const searchResult = await (firecrawl as any).search(
+      'site:yahoo.com/news latest news today',
+      { limit: 10, scrapeOptions: { formats: ['markdown'] } }
+    )
 
-  return ((results as any[]) || [])
-    .filter((r: any) => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
-    .slice(0, 10)
-    .map((r: any) => ({ url: r.url as string, title: (r.title as string) ?? null }))
+    // FIX: toSearchResults() unwraps { data: […] } so we always get a plain array.
+    const results = toSearchResults(searchResult)
+
+    const links = results
+      .filter(r => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
+      .slice(0, 10)
+      .map(r => ({ url: r.url, title: r.title ?? null }))
+
+    console.log(`[inngest] search found ${links.length} links`)
+    return links
+  } catch (err) {
+    console.warn('[inngest] firecrawl.search failed:', err)
+    return []
+  }
 }
 
 async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
