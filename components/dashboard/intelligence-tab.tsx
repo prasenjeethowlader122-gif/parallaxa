@@ -8,9 +8,9 @@ interface Step {
   id: string
   name: string
   status: string
-  duration?: number
-  output?: any
-  error?: string
+  duration ? : number
+  output ? : any
+  error ? : string
 }
 
 interface PipelineJob {
@@ -18,28 +18,28 @@ interface PipelineJob {
   status: 'pending' | 'running' | 'done' | 'failed'
   createdAt: string
   updatedAt: string
-  error?: string
-  progress: { total: number; done: number; failed: number }
-  articles: Array<{
-    sourceUrl: string
-    title: string | null
-    status: 'pending' | 'done' | 'failed'
-    articleId: string | null
-    error?: string
-  }>
-  steps: Step[]
-  startedAt?: string
-  completedAt?: string
+  error ? : string
+  progress: { total: number;done: number;failed: number }
+  articles: Array < {
+      sourceUrl: string
+      title: string | null
+      status: 'pending' | 'done' | 'failed'
+      articleId: string | null
+      error ? : string
+    } >
+    steps: Step[]
+  startedAt ? : string
+  completedAt ? : string
 }
 
 export function IntelligenceTab() {
   const [isRunning, setIsRunning] = useState(false)
-  const [jobId, setJobId] = useState<string | null>(null)
-  const [job, setJob] = useState<PipelineJob | null>(null)
+  const [jobId, setJobId] = useState < string | null > (null)
+  const [job, setJob] = useState < PipelineJob | null > (null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [expandedStep, setExpandedStep] = useState<string | null>(null)
-
+  const [error, setError] = useState < string | null > (null)
+  const [expandedStep, setExpandedStep] = useState < string | null > (null)
+  
   // Fetch pipeline job status
   const fetchJobStatus = async (id: string) => {
     try {
@@ -53,11 +53,11 @@ export function IntelligenceTab() {
       console.error('Failed to fetch job status:', err)
     }
   }
-
+  
   // Poll for job updates when running
   useEffect(() => {
     if (!jobId || !isRunning) return
-
+    
     const interval = setInterval(() => {
       fetchJobStatus(jobId).then((data) => {
         if (data?.status !== 'running' && data?.status !== 'pending') {
@@ -65,43 +65,40 @@ export function IntelligenceTab() {
         }
       })
     }, 2000)
-
+    
     return () => clearInterval(interval)
   }, [jobId, isRunning])
-
+  
   // Start pipeline
   const handleStartPipeline = async () => {
     setLoading(true)
     setError(null)
-
+    
     try {
-      const response = await fetch('/api/pipeline', {
-        method: 'POST',
-      })
-
+      const response = await fetch('/api/pipeline', { method: 'POST' })
+      
       if (response.ok) {
         const data = await response.json()
-        // The eventId might be returned; we need to fetch the run with it
-        const newJobId = data.eventId || data.id
+        const newJobId = data.runId // ← use runId, not eventId
+        
+        if (!newJobId) {
+          setError('Pipeline started but run ID not yet available. Check Inngest dashboard.')
+          return
+        }
+        
         setJobId(newJobId)
         setIsRunning(true)
-        
-        // Fetch initial job data
-        setTimeout(() => {
-          fetchJobStatus(newJobId)
-        }, 500)
+        fetchJobStatus(newJobId)
       } else {
-        setError(' Failed to coonect pipeline')
+        setError('Failed to connect pipeline')
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      console.error('Pipeline error:', err)
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
   }
-
+  
   // Reset pipeline
   const handleReset = () => {
     setJobId(null)
@@ -110,7 +107,7 @@ export function IntelligenceTab() {
     setError(null)
     setExpandedStep(null)
   }
-
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'done':
@@ -126,7 +123,7 @@ export function IntelligenceTab() {
         return 'var(--text-tertiary)'
     }
   }
-
+  
   const getStatusBg = (status: string) => {
     switch (status) {
       case 'done':
@@ -142,18 +139,18 @@ export function IntelligenceTab() {
         return 'var(--hover-bg)'
     }
   }
-
+  
   const getStatusLabel = (status: string) => {
     return status.charAt(0).toUpperCase() + status.slice(1)
   }
-
-  const formatDuration = (ms?: number) => {
+  
+  const formatDuration = (ms ? : number) => {
     if (!ms) return '-'
     if (ms < 1000) return `${ms}ms`
     if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
     return `${(ms / 60000).toFixed(1)}m`
   }
-
+  
   const getStepIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -167,9 +164,9 @@ export function IntelligenceTab() {
         return '○'
     }
   }
-
+  
   const pending = job ? job.progress.total - job.progress.done - job.progress.failed : 0
-
+  
   return (
     <div className="flex flex-col gap-4">
       <h1 className="py-6 border-b" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
@@ -603,8 +600,8 @@ export function IntelligenceTab() {
               </button>
             )}
           </div>
-        </div>
-      </Card>
-    </div>
+        </div> <
+    /Card> <
+    /div>
   )
 }
