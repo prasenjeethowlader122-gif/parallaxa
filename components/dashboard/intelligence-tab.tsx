@@ -50,6 +50,7 @@ export function IntelligenceTab() {
         return data
       }
     } catch (err) {
+      setError(id + ': failed')
       console.error('Failed to fetch job status:', err)
     }
   }
