@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Uses the Inngest Signing Key — required for the REST API (/v1/events and /v1/runs)
 const INNGEST_SIGNING_KEY = process.env.INNGEST_SIGNING_KEY
 
 interface InngestStep {
@@ -11,8 +10,6 @@ interface InngestStep {
   ended_at?: string
   output?: any
   error?: { name: string; message: string; stack?: string }
-  attempt?: number
-  retries?: number
 }
 
 interface InngestRun {
@@ -25,6 +22,14 @@ interface InngestRun {
   steps?: InngestStep[]
 }
 
+interface ArticleEntry {
+  sourceUrl: string
+  title: string | null
+  status: 'pending' | 'done' | 'failed'
+  articleId: string | null
+  error?: string
+}
+
 interface PipelineJobResponse {
   id: string
   status: 'pending' | 'running' | 'done' | 'failed'
@@ -32,13 +37,7 @@ interface PipelineJobResponse {
   updatedAt: string
   error?: string
   progress: { total: number; done: number; failed: number }
-  articles: Array<{
-    sourceUrl: string
-    title: string | null
-    status: 'pending' | 'done' | 'failed'
-    articleId: string | null
-    error?: string
-  }>
+  articles: ArticleEntry[]
   steps: Array<{
     id: string
     name: string
@@ -51,109 +50,157 @@ interface PipelineJobResponse {
   completedAt?: string
 }
 
+function authHeaders() {
+  return { Authorization: `Bearer ${INNGEST_SIGNING_KEY}` }
+}
+
 /**
- * Step 1 — resolve an Event ID to a Run ID.
- *
- * Per Inngest docs: GET /v1/events/{eventId}/runs returns all runs
- * triggered by that event. The response shape is { data: InngestRun[] }.
- *
- * Auth: Bearer <INNGEST_SIGNING_KEY>
+ * Resolve Event ID → Run ID via GET /v1/events/{eventId}/runs
+ * Returns null when the run hasn't been assigned yet (normal race condition
+ * right after inngest.send() — caller should retry / return pending).
  */
 async function fetchRunIdFromEvent(eventId: string): Promise<string | null> {
-  if (!INNGEST_SIGNING_KEY) return null
-
   try {
-    const response = await fetch(
-      `https://api.inngest.com/v1/events/${eventId}/runs`,
-      {
-        headers: {
-          Authorization: `Bearer ${INNGEST_SIGNING_KEY}`,
-        },
-      }
-    )
-
-    if (!response.ok) {
-      console.error(`[pipeline] Event runs fetch returned ${response.status}`)
+    const res = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) {
+      console.error(`[pipeline] /events/${eventId}/runs → ${res.status}`)
       return null
     }
-
-    const json = await response.json()
-    // json.data is an array of runs; take the first one
+    const json = await res.json()
     const runs: InngestRun[] = json.data ?? []
     return runs[0]?.run_id ?? null
   } catch (err) {
-    console.error('[pipeline] Error fetching runs for event:', err)
+    console.error('[pipeline] fetchRunIdFromEvent error:', err)
+    return null
+  }
+}
+
+/** Fetch full run details — includes live step statuses and outputs. */
+async function fetchInngestRun(runId: string): Promise<InngestRun | null> {
+  try {
+    const res = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) {
+      console.error(`[pipeline] /runs/${runId} → ${res.status}`)
+      return null
+    }
+    const json = await res.json()
+    return json.data ?? json
+  } catch (err) {
+    console.error('[pipeline] fetchInngestRun error:', err)
     return null
   }
 }
 
 /**
- * Step 2 — fetch the full run details once we have the Run ID.
+ * Extract article progress from the best available source at any point
+ * during execution:
  *
- * GET /v1/runs/{runId}
+ *  Priority 1 — run.output.articles[]  (run completed)
+ *  Priority 2 — step.output.articles[] (aggregator step completed)
+ *  Priority 3 — individual steps where each step = one article
+ *               (step.output has { articleId | title | sourceUrl })
+ *  Priority 4 — failed steps with no output (count as failed articles)
+ *
+ * This means the progress counter increments in real-time as each step
+ * finishes, rather than jumping from 0/0 to N/N at the very end.
  */
-async function fetchInngestRun(runId: string): Promise<InngestRun | null> {
-  if (!INNGEST_SIGNING_KEY) {
-    console.warn('[pipeline] INNGEST_SIGNING_KEY is not set')
-    return null
+function extractArticles(run: InngestRun): ArticleEntry[] {
+  // ── Priority 1: completed run has final output ───────────────────────────
+  if (run.output?.articles && Array.isArray(run.output.articles)) {
+    return run.output.articles.map((a: any) => ({
+      sourceUrl: a.sourceUrl ?? 'Unknown',
+      title: a.title ?? null,
+      status: a.error ? 'failed' : 'done',
+      articleId: a.articleId ?? null,
+      error: a.error,
+    }))
   }
 
-  try {
-    const response = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
-      headers: {
-        Authorization: `Bearer ${INNGEST_SIGNING_KEY}`,
-      },
-    })
+  const articles: ArticleEntry[] = []
 
-    if (!response.ok) {
-      console.error(`[pipeline] Inngest run fetch returned ${response.status}`)
-      return null
+  for (const step of run.steps ?? []) {
+    const out = step.output
+
+    // ── Priority 2: step returned a batch ─────────────────────────────────
+    if (out?.articles && Array.isArray(out.articles)) {
+      out.articles.forEach((a: any) =>
+        articles.push({
+          sourceUrl: a.sourceUrl ?? 'Unknown',
+          title: a.title ?? null,
+          status: a.error ? 'failed' : 'done',
+          articleId: a.articleId ?? null,
+          error: a.error,
+        })
+      )
+      continue
     }
 
-    const data = await response.json()
-    return data.data || data
-  } catch (err) {
-    console.error('[pipeline] Error fetching Inngest run:', err)
-    return null
+    // ── Priority 3: step output IS one article ────────────────────────────
+    if (out && (out.articleId || out.title || out.sourceUrl)) {
+      articles.push({
+        sourceUrl: out.sourceUrl ?? 'Unknown',
+        title: out.title ?? null,
+        status:
+          step.status === 'Failed'    ? 'failed'
+          : step.status === 'Completed' ? 'done'
+          : 'pending',
+        articleId: out.articleId ?? null,
+        error: step.error?.message,
+      })
+      continue
+    }
+
+    // ── Priority 4: failed step with no useful output ─────────────────────
+    if (step.status === 'Failed' && step.error) {
+      articles.push({
+        sourceUrl: 'Unknown',
+        title: null,
+        status: 'failed',
+        articleId: null,
+        error: step.error.message,
+      })
+    }
   }
+
+  return articles
 }
 
-function mapInngestStatus(status: string): 'pending' | 'running' | 'done' | 'failed' {
-  const lower = status.toLowerCase()
-  if (lower === 'queued' || lower === 'pending') return 'pending'
-  if (lower === 'running') return 'running'
-  if (lower === 'completed') return 'done'
-  if (lower === 'failed' || lower === 'cancelled') return 'failed'
-  return 'pending'
-}
-
-function extractArticlesFromOutput(output: any): PipelineJobResponse['articles'] {
-  if (!output || !Array.isArray(output.articles)) return []
-  return output.articles.map((article: any) => ({
-    sourceUrl: article.sourceUrl || 'Unknown',
-    title: article.title || null,
-    status: article.error ? 'failed' : 'done',
-    articleId: article.articleId || null,
-    error: article.error,
-  }))
+function mapStatus(s: string): PipelineJobResponse['status'] {
+  const l = s.toLowerCase()
+  if (l === 'queued' || l === 'pending') return 'pending'
+  if (l === 'running') return 'running'
+  if (l === 'completed') return 'done'
+  return 'failed'
 }
 
 function formatSteps(steps?: InngestStep[]): PipelineJobResponse['steps'] {
-  if (!steps || !Array.isArray(steps)) return []
-  return steps.map((step) => {
-    const duration =
-      step.started_at && step.ended_at
-        ? new Date(step.ended_at).getTime() - new Date(step.started_at).getTime()
-        : undefined
-    return {
-      id: step.id || step.name,
-      name: step.name,
-      status: step.status.toLowerCase(),
-      duration,
-      output: step.output,
-      error: step.error?.message,
-    }
-  })
+  return (steps ?? []).map((s) => ({
+    id: s.id ?? s.name,
+    name: s.name,
+    status: s.status.toLowerCase(),
+    duration:
+      s.started_at && s.ended_at
+        ? new Date(s.ended_at).getTime() - new Date(s.started_at).getTime()
+        : undefined,
+    output: s.output,
+    error: s.error?.message,
+  }))
+}
+
+function pendingResponse(eventId: string): PipelineJobResponse {
+  return {
+    id: eventId,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    progress: { total: 0, done: 0, failed: 0 },
+    articles: [],
+    steps: [],
+  }
 }
 
 export async function GET(
@@ -165,60 +212,45 @@ export async function GET(
 
     if (!INNGEST_SIGNING_KEY) {
       return NextResponse.json(
-        { error: 'INNGEST_SIGNING_KEY is not configured on the server' },
+        { error: 'INNGEST_SIGNING_KEY is not configured' },
         { status: 503 }
       )
     }
 
-    // jobId is an Event ID — resolve it to a Run ID first
+    // Step 1 — resolve eventId → runId
     const runId = await fetchRunIdFromEvent(jobId)
-
     if (!runId) {
-      // The run may not have been assigned yet (event just sent); return pending
-      return NextResponse.json({
-        id: jobId,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        progress: { total: 0, done: 0, failed: 0 },
-        articles: [],
-        steps: [],
-      })
+      // Run not assigned yet — tell frontend to keep polling
+      return NextResponse.json(pendingResponse(jobId))
     }
 
-    const inngestRun = await fetchInngestRun(runId)
-
-    if (!inngestRun) {
+    // Step 2 — fetch run (includes live step-level data)
+    const run = await fetchInngestRun(runId)
+    if (!run) {
       return NextResponse.json({ error: 'Run not found' }, { status: 404 })
     }
 
-    const articles = extractArticlesFromOutput(inngestRun.output)
-    const doneArticles = articles.filter((a) => a.status === 'done').length
-    const failedArticles = articles.filter((a) => a.status === 'failed').length
+    // Step 3 — derive article progress from whatever is available right now
+    const articles = extractArticles(run)
+    const done    = articles.filter((a) => a.status === 'done').length
+    const failed  = articles.filter((a) => a.status === 'failed').length
 
-    const response: PipelineJobResponse = {
-      id: inngestRun.run_id,
-      status: mapInngestStatus(inngestRun.status),
-      createdAt: inngestRun.started_at || new Date().toISOString(),
-      updatedAt: inngestRun.ended_at || new Date().toISOString(),
-      error: inngestRun.error?.message,
-      progress: {
-        total: articles.length,
-        done: doneArticles,
-        failed: failedArticles,
-      },
+    const body: PipelineJobResponse = {
+      id: run.run_id,
+      status: mapStatus(run.status),
+      createdAt: run.started_at ?? new Date().toISOString(),
+      updatedAt: run.ended_at   ?? new Date().toISOString(),
+      error: run.error?.message,
+      progress: { total: articles.length, done, failed },
       articles,
-      steps: formatSteps(inngestRun.steps),
-      startedAt: inngestRun.started_at,
-      completedAt: inngestRun.ended_at,
+      steps: formatSteps(run.steps),
+      startedAt: run.started_at,
+      completedAt: run.ended_at,
     }
 
-    return NextResponse.json(response)
+    return NextResponse.json(body)
   } catch (e) {
-    console.error('[pipeline] Error in GET handler:', e)
-    return NextResponse.json(
-      { error: 'Failed to fetch pipeline status' },
-      { status: 500 }
-    )
+    console.error('[pipeline] GET error:', e)
+    return NextResponse.json({ error: 'Failed to fetch pipeline status' }, { status: 500 })
   }
 }
