@@ -3,7 +3,7 @@ import { inngest } from '@/lib/inngest/client'
 
 export async function POST() {
   const [{ id: eventId }] = await inngest.send({
-    name: 'news/pipeline.requested',
+    name: 'yahoo-news-pipeline',
     data: {},
   })
 
