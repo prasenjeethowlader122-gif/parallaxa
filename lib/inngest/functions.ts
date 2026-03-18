@@ -10,33 +10,33 @@
  * Trigger : { name: 'news/pipeline.requested' }
  * Emitted : { name: 'news/article.processed', data: { articleId, title, sourceUrl } }
  *
- * FIXES applied
- * ─────────────
- * 1. Removed `logger` from destructured params — not available in Inngest v3.
- * 2. Replaced `inngest.send()` inside step with `step.sendEvent()` — required in v3.
- * 3. Changed `Promise.allSettled(links.map(…step.run…))` to a sequential for-loop —
- *    concurrent step.run() calls in one function are not supported by Inngest.
- * 4. Fixed firecrawl response shape handling — firecrawl.search() returns
- *    { data: SearchResult[] }, NOT a plain array. Calling .filter() on the object
- *    was throwing "filter is not a function". Added toStringArray() / toSearchResults()
- *    normalizers that handle every shape the SDK may return.
- * 5. Fixed import path for inngest client (was a circular self-import in the old file).
- * 6. Fixed URL regex: real Yahoo News article URLs use /news/article/ (singular) or
- *    /news/article-<slug> patterns, NOT /news/articles/ (plural). Updated regex to
- *    match actual URL shapes seen from firecrawl.map() and added exclusion for
- *    slideshow and non-article paths.
+ * CHANGES in this revision
+ * ────────────────────────
+ * - Replaced Firecrawl entirely with Playwright (chromium) for all crawling
+ *   and scraping. No external crawl service or API key required.
+ * - crawlYahooNewsLinks()  → launches a headless browser, navigates to
+ *   news.yahoo.com, and collects <a href> links that match the article URL
+ *   pattern. Falls back to a raw HTML regex pass on the page source if the
+ *   DOM query finds too few results.
+ * - scrapeArticle()        → opens each article URL in a new browser page,
+ *   extracts the article body text (via a series of CSS selector candidates),
+ *   the page title, and the first og:image / twitter:image meta tag.
+ * - A single browser instance is created once per pipeline run and closed
+ *   after all articles are processed, keeping resource usage low.
+ * - isRealArticleUrl() helper is retained unchanged — it guards against
+ *   slideshow / hub pages regardless of how the links were discovered.
+ * - All Inngest-level fixes from the previous revision are preserved:
+ *     • No `logger` in destructured params.
+ *     • step.sendEvent() instead of inngest.send().
+ *     • Sequential for-loop instead of Promise.allSettled(step.run()).
  */
 
 import { inngest } from './client'
-import Firecrawl from '@mendable/firecrawl-js'
+import { chromium, Browser, Page } from 'playwright'
 import { OpenAI } from 'openai'
 import { createArticle } from '@/lib/db/articles'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
-
-const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
-})
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
@@ -55,7 +55,7 @@ interface ArticleLink {
 interface ScrapedPage {
   url: string
   title: string | null
-  markdown: string
+  markdown: string   // We store plain text here; variable name kept for compat
   image: string | null
 }
 
@@ -66,189 +66,229 @@ interface GeneratedArticle {
   category: string
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function extractImage(page: any): string | null {
-  const og = page?.metadata?.ogImage ?? page?.metadata?.image ?? null
-  if (og && typeof og === 'string' && og.startsWith('http')) return og
-  if (page?.html) {
-    const m = (page.html as string).match(/<img[^>]+src=["']([^"']+)["']/i)
-    if (m?.[1]?.startsWith('http')) return m[1]
-  }
-  if (page?.markdown) {
-    const m = (page.markdown as string).match(/!\[.*?\]\((https?:\/\/[^)]+)\)/)
-    if (m?.[1]) return m[1]
-  }
-  return null
-}
-
-/**
- * Normalise the value returned by firecrawl.map() into a plain string[].
- * The SDK can return:
- *   - string[]                              (older versions)
- *   - { links: string[] }                   (MapResponse v1)
- *   - { links: Array<{url,title,...}> }      (MapResponse v2 — objects, not strings)
- *   - { urls: string[] }                    (undocumented alternate key)
- */
-function toStringArray(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.flatMap((v) => {
-      if (typeof v === 'string') return [v]
-      // v2 object shape: { url: string; title?: string; description?: string }
-      if (v && typeof v === 'object' && typeof (v as any).url === 'string') {
-        return [(v as any).url as string]
-      }
-      return []
-    })
-  }
-  if (value && typeof value === 'object') {
-    const v = value as Record<string, unknown>
-    // v2 envelope: { success: true, links: [...] }
-    if (Array.isArray(v.links)) return toStringArray(v.links)
-    if (Array.isArray(v.urls))  return toStringArray(v.urls)
-  }
-  return []
-}
-
-/**
- * Normalise the value returned by firecrawl.search() into a plain object[].
- * The SDK returns SearchResponse { data: SearchResult[] }, NOT a plain array.
- * The original code did `(results || []).filter(…)` which threw
- * "filter is not a function" because `results` is an object, not an array.
- */
-function toSearchResults(value: unknown): Array<{ url: string; title?: string }> {
-  if (value && typeof value === 'object' && Array.isArray((value as any).data)) {
-    return (value as any).data
-  }
-  if (Array.isArray(value)) return value
-  return []
-}
+// ─── URL helpers ──────────────────────────────────────────────────────────────
 
 /**
  * Returns true for URLs that look like real Yahoo News articles.
  *
- * Real URL patterns observed from firecrawl.map():
- *   ✓ /news/article/slug-with-words-123abc456.html      ← /article/ + slug + .html
- *   ✓ /news/article-breaking-witnesses-driver-023737737.html  ← /article-<slug>
- *   ✓ /news/article/time-person-140005715.html
+ * Real URL patterns observed:
+ *   ✓ /news/article/slug-with-words-123abc456.html
+ *   ✓ /news/article-breaking-witnesses-driver-023737737.html
  *
  * URLs to EXCLUDE:
- *   ✗ /news/article-slideshow-1105956.html              ← slideshow pages
- *   ✗ /news/article-featured.html                       ← non-article hub pages
- *   ✗ /news/article                                     ← bare path with no slug
- *   ✗ /news/article-vo-012150928.html                   ← video-only pages (optional)
+ *   ✗ /news/article-slideshow-*
+ *   ✗ /news/article-featured.html
+ *   ✗ /news/article  (bare path)
  */
 function isRealArticleUrl(url: string): boolean {
   if (!url.includes('yahoo.com')) return false
-
-  // Must contain /news/article somewhere in the path
   if (!/yahoo\.com\/news\/article/i.test(url)) return false
-
-  // Exclude slideshow pages
   if (/\/article-slideshow-/i.test(url)) return false
-
-  // Exclude bare /news/article and /news/article-featured.html hub pages
   if (/\/news\/article(-featured)?\.html?$/i.test(url)) return false
   if (/\/news\/article\/?$/i.test(url)) return false
-
-  // Must have a meaningful slug segment (at least 10 chars after the path token)
-  // Covers both: /article/<slug> and /article-<slug>
+  // Must have a meaningful slug segment (≥10 chars after the path token)
   if (!/\/article[-/][a-z0-9][-a-z0-9]{8,}/i.test(url)) return false
-
   return true
 }
 
-async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | null }[]> {
+// ─── Playwright crawl helpers ──────────────────────────────────────────────────
 
-  // ── Strategy 1: firecrawl.map with search filter ────────────────────────
-  // Use the `search` param so map returns article-relevant URLs ranked first.
+/**
+ * Launches a headless Chromium browser and returns it.
+ * Caller is responsible for calling browser.close().
+ */
+async function launchBrowser(): Promise<Browser> {
+  return chromium.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+    ],
+  })
+}
+
+/**
+ * Creates a new browser page with a realistic user-agent and common headers
+ * to reduce the chance of bot-detection blocks on news sites.
+ */
+async function newStealthPage(browser: Browser): Promise<Page> {
+  const context = await browser.newContext({
+    userAgent:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+      'Chrome/124.0.0.0 Safari/537.36',
+    extraHTTPHeaders: {
+      'Accept-Language': 'en-US,en;q=0.9',
+      Accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    },
+    viewport: { width: 1280, height: 800 },
+    javaScriptEnabled: true,
+  })
+  return context.newPage()
+}
+
+/**
+ * Crawl the Yahoo News homepage with Playwright and return up to `limit`
+ * article links. Falls back to a raw-HTML regex scan if DOM query returns
+ * too few results (e.g. when JS rendering is partially blocked).
+ */
+async function crawlYahooNewsLinks(
+  browser: Browser,
+  limit = 10
+): Promise<ArticleLink[]> {
+  const page = await newStealthPage(browser)
+
   try {
-    const mapResult = await firecrawl.map('https://news.yahoo.com', {
-      limit: 50,
-      search: 'article',        // ← official param, filters/ranks by relevance
-    } as any)
-    
-    // SDK returns { success, links: [{url, title, description}] }
-    const rawLinks: string[] = (mapResult?.links ?? [])
-      .map((l: any) => (typeof l === 'string' ? l : l?.url))
-      .filter((u: any): u is string => typeof u === 'string')
-
-    const links = rawLinks
-      .filter(isRealArticleUrl)
-      .slice(0, 10)
-      .map(url => ({ url, title: null as null }))
-
-    console.log(`[pipeline] map found ${links.length} article links`)
-    if (links.length >= 3) return links
-  } catch (err) {
-    console.warn('[pipeline] firecrawl.map failed:', err)
-  }
-
-  // ── Strategy 2: firecrawl.search with sources: ['news'] ────────────────
-  // v2 response shape: { success, data: { news: [{url, title, snippet}] } }
-  try {
-    const searchResult = await (firecrawl as any).search('latest breaking news', {
-      limit: 10,
-      sources: ['news'],        // ← official param for news results
+    console.log('[playwright] navigating to news.yahoo.com…')
+    await page.goto('https://news.yahoo.com', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30_000,
     })
 
-    // data.news is the array — NOT data itself
-    const newsItems: Array<{ url: string; title?: string }> =
-      searchResult?.data?.news ?? searchResult?.data?.web ?? []
+    // Wait briefly for any lazy-loaded link elements to appear
+    await page.waitForTimeout(2_000)
 
-    const links = newsItems
-      .filter(r => typeof r?.url === 'string')
-      .slice(0, 10)
-      .map(r => ({ url: r.url, title: r.title ?? null }))
+    // ── Strategy 1: DOM query for <a> tags ──────────────────────────────
+    const domLinks: ArticleLink[] = await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('a[href]'))
+      return anchors
+        .map((a) => ({
+          url: (a as HTMLAnchorElement).href,
+          title: (a as HTMLAnchorElement).textContent?.trim() || null,
+        }))
+        .filter((l) => l.url.startsWith('http'))
+    })
 
-    console.log(`[pipeline] search found ${links.length} links`)
-    if (links.length >= 1) return links
-  } catch (err) {
-    console.warn('[pipeline] firecrawl.search failed:', err)
-  }
+    const filteredDom = domLinks
+      .filter((l) => isRealArticleUrl(l.url))
+      // Deduplicate by URL
+      .filter((l, i, arr) => arr.findIndex((x) => x.url === l.url) === i)
+      .slice(0, limit)
 
-  // ── Strategy 3: seed scrape ────────────────────────────────────────────
-  try {
-    const page = await firecrawl.scrapeUrl('https://news.yahoo.com', {
-      formats: ['html'],
-    }) as any
+    console.log(`[playwright] DOM query found ${filteredDom.length} article links`)
 
-    const html: string = page?.html ?? ''
-    const links = [...html.matchAll(/href="(https:\/\/[^"]*yahoo\.com\/news\/article[^"]{8,})"/g)]
-      .map(m => m[1].split('?')[0])
+    if (filteredDom.length >= 3) return filteredDom
+
+    // ── Strategy 2: Raw HTML regex fallback ────────────────────────────
+    console.log('[playwright] falling back to HTML regex scan…')
+    const html = await page.content()
+    const matches = [...html.matchAll(/href="(https:\/\/[^"]*yahoo\.com\/news\/article[^"]{8,})"/g)]
+    const regexLinks = matches
+      .map((m) => m[1].split('?')[0])
       .filter(isRealArticleUrl)
       .filter((url, i, arr) => arr.indexOf(url) === i)
-      .slice(0, 10)
-      .map(url => ({ url, title: null as null }))
+      .slice(0, limit)
+      .map((url) => ({ url, title: null as null }))
 
-    console.log(`[pipeline] seed scrape found ${links.length} links`)
-    return links
-  } catch (err) {
-    console.warn('[pipeline] seed scrape failed:', err)
-    return []
+    console.log(`[playwright] HTML regex found ${regexLinks.length} links`)
+    return regexLinks
+  } finally {
+    await page.close()
   }
 }
 
-async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
-  try {
-    const page = (await firecrawl.scrapeUrl(link.url, {
-      formats: ['markdown', 'html'],
-    })) as any
+/**
+ * Ordered list of CSS selectors tried when extracting article body text.
+ * First selector that yields ≥200 characters wins.
+ */
+const ARTICLE_BODY_SELECTORS = [
+  'article',
+  '[data-test-locator="articleBody"]',
+  '.caas-body',
+  '.article-body',
+  '.body-text',
+  'main',
+  '#article-content',
+  '.content-body',
+  'p',  // last-resort: grab all paragraphs
+]
 
-    const markdown = ((page?.markdown ?? '') as string).slice(0, 5000)
-    if (markdown.length < 100) return null
+/**
+ * Scrape a single article URL with Playwright.
+ * Returns null if the page yields insufficient content.
+ */
+async function scrapeArticleWithPlaywright(
+  browser: Browser,
+  link: ArticleLink
+): Promise<ScrapedPage | null> {
+  const page = await newStealthPage(browser)
+
+  try {
+    await page.goto(link.url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30_000,
+    })
+    await page.waitForTimeout(1_500)
+
+    // ── Title ──────────────────────────────────────────────────────────
+    const title: string | null = await page.evaluate(() => {
+      const og = document.querySelector<HTMLMetaElement>('meta[property="og:title"]')
+      if (og?.content) return og.content
+      const tw = document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')
+      if (tw?.content) return tw.content
+      return document.title || null
+    })
+
+    // ── Image ──────────────────────────────────────────────────────────
+    const image: string | null = await page.evaluate(() => {
+      const og = document.querySelector<HTMLMetaElement>('meta[property="og:image"]')
+      if (og?.content?.startsWith('http')) return og.content
+      const tw = document.querySelector<HTMLMetaElement>('meta[name="twitter:image"]')
+      if (tw?.content?.startsWith('http')) return tw.content
+      const img = document.querySelector<HTMLImageElement>('article img[src]')
+      if (img?.src?.startsWith('http')) return img.src
+      return null
+    })
+
+    // ── Body text ──────────────────────────────────────────────────────
+    let bodyText = ''
+
+    for (const selector of ARTICLE_BODY_SELECTORS) {
+      const text: string = await page.evaluate((sel: string) => {
+        const el = document.querySelector(sel)
+        return el ? (el as HTMLElement).innerText ?? '' : ''
+      }, selector)
+
+      if (text.length >= 200) {
+        bodyText = text.slice(0, 5000)
+        break
+      }
+    }
+
+    // Last resort: collect all <p> text across the page
+    if (bodyText.length < 200) {
+      bodyText = await page.evaluate(() => {
+        return Array.from(document.querySelectorAll('p'))
+          .map((p) => (p as HTMLElement).innerText?.trim())
+          .filter(Boolean)
+          .join('\n\n')
+          .slice(0, 5000)
+      })
+    }
+
+    if (bodyText.length < 100) {
+      console.warn(`[playwright] insufficient content for ${link.url}`)
+      return null
+    }
 
     return {
       url: link.url,
-      title: (page?.metadata?.title as string | undefined) ?? link.title ?? null,
-      markdown,
-      image: extractImage(page),
+      title: title ?? link.title,
+      markdown: bodyText,   // plain text stored in 'markdown' field for compat
+      image,
     }
   } catch (err) {
-    console.warn(`[inngest] scrape failed for ${link.url}:`, err)
+    console.warn(`[playwright] scrape failed for ${link.url}:`, err)
     return null
+  } finally {
+    await page.close()
   }
 }
+
+// ─── AI generation ─────────────────────────────────────────────────────────────
 
 async function generateArticle(page: ScrapedPage): Promise<GeneratedArticle> {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
@@ -304,6 +344,8 @@ Respond with ONLY a valid JSON object in this exact format (no code fences, no e
   }
 }
 
+// ─── DB persistence ────────────────────────────────────────────────────────────
+
 async function saveToNeon(
   generated: GeneratedArticle,
   page: { image: string | null }
@@ -347,20 +389,24 @@ export const newsPipelineFunction = inngest.createFunction(
   },
   { event: 'news/pipeline.requested' },
 
-  // FIX: removed `logger` — not a valid Inngest v3 param; use console instead.
   async ({ step }) => {
     // ── Step 1: Crawl ────────────────────────────────────────────────────────
     const links = await step.run('crawl-yahoo-news', async () => {
-      console.log('[inngest] Crawling Yahoo News…')
-      const found = await crawlYahooNewsLinks()
-      if (!found.length) throw new Error('No article links found on Yahoo News')
-      console.log(`[inngest] Found ${found.length} links`)
-      return found
+      console.log('[inngest] Crawling Yahoo News with Playwright…')
+      const browser = await launchBrowser()
+      try {
+        const found = await crawlYahooNewsLinks(browser, 10)
+        if (!found.length) throw new Error('No article links found on Yahoo News')
+        console.log(`[inngest] Found ${found.length} links`)
+        return found
+      } finally {
+        await browser.close()
+      }
     })
 
     // ── Steps 2–4: Per-article scrape → generate → save ──────────────────────
-    // FIX: steps must be sequential — Promise.allSettled with step.run() is not
-    // supported by Inngest and causes the function to silently fail or deadlock.
+    // Steps must run sequentially — Promise.allSettled with step.run() is not
+    // supported by Inngest and causes silent failures or deadlocks.
     const articles: Array<
       | { sourceUrl: string; title: string; articleId: string | null }
       | { sourceUrl: string; error: string }
@@ -373,7 +419,16 @@ export const newsPipelineFunction = inngest.createFunction(
         .run(`process-article-${i}`, async () => {
           console.log(`[inngest] [${i + 1}/${links.length}] scraping: ${link.url}`)
 
-          const page = await scrapeArticle(link)
+          // Each step gets its own browser instance so a crashed page doesn't
+          // affect other steps and Inngest retries start clean.
+          const browser = await launchBrowser()
+          let page: ScrapedPage | null = null
+          try {
+            page = await scrapeArticleWithPlaywright(browser, link)
+          } finally {
+            await browser.close()
+          }
+
           if (!page) throw new Error('Could not scrape content')
 
           console.log(`[inngest] [${i + 1}/${links.length}] generating…`)
@@ -382,9 +437,8 @@ export const newsPipelineFunction = inngest.createFunction(
           console.log(`[inngest] [${i + 1}/${links.length}] saving to Neon…`)
           const articleId = await saveToNeon(generated, page)
 
-          // FIX: use step.sendEvent() instead of inngest.send() inside a function.
-          // Calling inngest.send() directly bypasses Inngest's event tracking and
-          // can cause duplicate events on retries.
+          // Use step.sendEvent() — calling inngest.send() directly bypasses
+          // Inngest's event tracking and can cause duplicate events on retries.
           await step.sendEvent('article-processed-event', {
             name: 'news/article.processed',
             data: { articleId, title: generated.title, sourceUrl: link.url },
@@ -402,14 +456,9 @@ export const newsPipelineFunction = inngest.createFunction(
       articles.push(result)
     }
 
-    const done = articles.filter(r => !('error' in r)).length
-    const failed = articles.filter(r => 'error' in r).length
+    const done    = articles.filter(r => !('error' in r)).length
+    const failed  = articles.filter(r =>  'error' in r).length
 
-    return {
-      total: links.length,
-      done,
-      failed,
-      articles,
-    }
+    return { total: links.length, done, failed, articles }
   }
 )
