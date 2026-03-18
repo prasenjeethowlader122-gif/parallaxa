@@ -137,7 +137,7 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="flex items-center justify-center flex-shrink-0 invert">
+            <div className="flex items-center justify-center flex-shrink-0">
               <Image src={profilePic} alt="logo" height={22} />
             </div>
             <div className="flex flex-col leading-none">
@@ -274,7 +274,7 @@ export function Header() {
             </button>
             <Link href="/" className="flex items-center gap-2">
               <div className="flex items-center justify-center">
-                <Image src={profilePic} alt="logo" height={22} />
+                <Image src={profilePic} alt="logo" height={24} />
               </div>
               <span className="text-[17px] font-semibold text-gray-900 tracking-tight">
                 Parallaxa<span className="text-red-600">.</span>
