@@ -35,7 +35,7 @@ import { createArticle } from '@/lib/db/articles'
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
 const firecrawl = new Firecrawl({
-  apiKey: process.env.FIRECRAWL_API_KEY ?? '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',
+  apiKey: process.env.FIRECRAWL_API_KEY ?? 'fc-da0837003c26469da0f8c259c6c10944',
 })
 
 const hfClient = new OpenAI({
@@ -167,7 +167,7 @@ async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | nul
       limit: 50,
       search: 'article',        // ← official param, filters/ranks by relevance
     } as any)
-
+    
     // SDK returns { success, links: [{url, title, description}] }
     const rawLinks: string[] = (mapResult?.links ?? [])
       .map((l: any) => (typeof l === 'string' ? l : l?.url))
