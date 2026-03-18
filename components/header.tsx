@@ -243,7 +243,7 @@ export function Header() {
           <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
           <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
         </div>
-        <div className="overflow-hidden flex-1 flex items-center">
+        <div className="sm:hidden overflow-hidden flex-1 flex items-center">
           {tickerArticles.length > 0 && (
             <div className="flex animate-[ticker_32s_linear_infinite] whitespace-nowrap">
               {[...tickerArticles, ...tickerArticles].map((article, i) => (
