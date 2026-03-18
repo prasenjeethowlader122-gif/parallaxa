@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { Search, Menu, X, Languages, Bell, ChevronDown, TrendingUp, Bookmark, Radio } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
+import { NewsArticle, getBreakingNews } from '@/lib/news-data'
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
@@ -17,15 +18,6 @@ const NAV_LINKS = [
   { href: '/category/Science', label: 'Science' },
   { href: '/category/Health', label: 'Health' },
   { href: '/category/Opinion', label: 'Opinion', badge: 'New' },
-]
-
-const TICKER_ITEMS = [
-  { label: 'Markets', text: 'S&P 500 up 1.2% after Fed holds rates steady' },
-  { label: 'Climate', text: 'Geneva summit reaches landmark emissions accord' },
-  { label: 'Tech', text: 'AI chip demand hits record high, stocks surge globally' },
-  { label: 'Space', text: 'SpaceX logs 200th successful orbital launch milestone' },
-  { label: 'Politics', text: 'G7 agrees new trade framework for 2026' },
-  { label: 'Health', text: 'WHO declares end to regional outbreak in Southeast Asia' },
 ]
 
 export function Header() {
@@ -40,6 +32,7 @@ export function Header() {
   const [activeNav, setActiveNav] = useState('/')
   const [searchCategory, setSearchCategory] = useState('All')
   const [isCatOpen, setIsCatOpen] = useState(false)
+  const [tickerArticles, setTickerArticles] = useState<NewsArticle[]>([])
   const catRef = useRef<HTMLDivElement>(null)
 
   const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
@@ -52,6 +45,18 @@ export function Header() {
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  useEffect(() => {
+    async function loadTicker() {
+      try {
+        const articles = await getBreakingNews()
+        setTickerArticles(articles)
+      } catch (error) {
+        console.error('Failed to load ticker articles:', error)
+      }
+    }
+    loadTicker()
   }, [])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -232,8 +237,6 @@ export function Header() {
         </div>
       </div>
 
-      {/* ── NAV ROW (desktop) ── */}
-
       {/* ── TICKER ── */}
       <div className="bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden">
         <div className="flex items-center gap-1 px-4 h-full bg-red-600 text-white flex-shrink-0">
@@ -241,13 +244,18 @@ export function Header() {
           <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
         </div>
         <div className="overflow-hidden flex-1 flex items-center">
-          <div className="flex animate-[ticker_32s_linear_infinite] whitespace-nowrap">
-            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-              <span key={i} className="text-[11px] text-gray-500 px-7 border-r border-gray-200">
-                <span className="font-semibold text-gray-800">{item.label}:</span> {item.text}
-              </span>
-            ))}
-          </div>
+          {tickerArticles.length > 0 && (
+            <div className="flex animate-[ticker_32s_linear_infinite] whitespace-nowrap">
+              {[...tickerArticles, ...tickerArticles].map((article, i) => (
+                <span key={i} className="text-[11px] text-gray-500 px-7 border-r border-gray-200">
+                  <span className="font-semibold text-gray-800">
+                    {article.category ?? 'Breaking'}:
+                  </span>{' '}
+                  {article.title}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -266,7 +274,7 @@ export function Header() {
             </button>
             <Link href="/" className="flex items-center gap-2">
               <div className="flex items-center justify-center">
-                <Image src={profilePic} alt="logo" height={16} />
+                <Image src={profilePic} alt="logo" height={22} />
               </div>
               <span className="text-[17px] font-semibold text-gray-900 tracking-tight">
                 Parallaxa<span className="text-red-600">.</span>
@@ -348,7 +356,6 @@ export function Header() {
             <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
               Trending now
             </p>
-          
           </div>
 
           {/* Auth */}
