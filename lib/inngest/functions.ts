@@ -166,14 +166,14 @@ async function crawlYahooNewsLinks(): Promise<ArticleLink[]> {
       { limit: 50, includeSubdomains: false }
     )
 
-    const rawLinks = toStringArray(mapResult)
-    const links = rawLinks
+   // const rawLinks = toStringArray(mapResult)
+  /**  const links = rawLinks
       .filter(isRealArticleUrl)
       .slice(0, 10)
-      .map(url => ({ url, title: null as null }))
+      .map(url => ({ url, title: null as null }))**/
 
     console.log(`[inngest] map found ${links.length} article links`)
-    if (links.length >= 5) return links
+    if (mapResult.length >= 5) return mapResult
   } catch (err) {
     console.warn('[inngest] firecrawl.map failed, falling back to search:', err)
   }
