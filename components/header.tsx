@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import profilePic from '../public/New Project 20 [79DB18E].png'
+import profilePic from '../public/New Project 25 [4D921DE].png'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
@@ -132,14 +132,14 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-gray-900 flex items-center justify-center flex-shrink-0">
               <Image src={profilePic} alt="logo" height={22} className="brightness-0 invert" />
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-[19px] font-semibold text-gray-900 tracking-tight">
-                Pulse<span className="text-red-600">.</span>
+                Parallaxa<span className="text-red-600">.</span>
               </span>
-              <span className="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">World News</span>
+              <span className="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">Intelligence</span>
             </div>
           </Link>
 
