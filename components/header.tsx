@@ -4,19 +4,56 @@ import Image from 'next/image'
 import profilePic from '../public/New Project 20 [79DB18E].png'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-
-import { useState , useEffect} from 'react'
-import { Search, Menu, X, Languages} from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Search, Menu, X, Languages, Bell, ChevronDown, TrendingUp, Bookmark, Radio } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
+
+const NAV_LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/category/World', label: 'World' },
+  { href: '/category/Technology', label: 'Technology' },
+  { href: '/category/Business', label: 'Business' },
+  { href: '/category/Sports', label: 'Sports' },
+  { href: '/category/Science', label: 'Science' },
+  { href: '/category/Health', label: 'Health' },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New' },
+]
+
+const TICKER_ITEMS = [
+  { label: 'Markets', text: 'S&P 500 up 1.2% after Fed holds rates steady' },
+  { label: 'Climate', text: 'Geneva summit reaches landmark emissions accord' },
+  { label: 'Tech', text: 'AI chip demand hits record high, stocks surge globally' },
+  { label: 'Space', text: 'SpaceX logs 200th successful orbital launch milestone' },
+  { label: 'Politics', text: 'G7 agrees new trade framework for 2026' },
+  { label: 'Health', text: 'WHO declares end to regional outbreak in Southeast Asia' },
+]
 
 export function Header() {
   const router = useRouter()
   const { data: session } = useSession()
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isAnnVisible, setIsAnnVisible] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [desktopQuery, setDesktopQuery] = useState('')
-  
+  const [activeNav, setActiveNav] = useState('/')
+  const [searchCategory, setSearchCategory] = useState('All')
+  const [isCatOpen, setIsCatOpen] = useState(false)
+  const catRef = useRef<HTMLDivElement>(null)
+
+  const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) {
+        setIsCatOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -25,184 +62,387 @@ export function Header() {
       setIsSearchOpen(false)
     }
   }
-  
+
   const handleDesktopSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (desktopQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(desktopQuery.trim())}`)
+      const cat = searchCategory !== 'All' ? `&category=${searchCategory}` : ''
+      router.push(`/search?q=${encodeURIComponent(desktopQuery.trim())}${cat}`)
       setDesktopQuery('')
     }
   }
-  
+
   const handleSignOut = async () => {
     await signOut({ redirect: true, redirectUrl: '/' })
   }
-  
+
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  })
+
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
-      {/* Top Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className='flex items-center justify-start gap-4 '>
-                    <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Menu"
-            >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+    <header className="sticky top-0 z-50">
+
+      {/* ── ANNOUNCEMENT BAR ── */}
+      {isAnnVisible && (
+        <div className="bg-red-600 text-white text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
+          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+          <span>Breaking: Fed holds interest rates steady for third consecutive meeting —</span>
+          <Link href="/category/Business" className="underline underline-offset-2 opacity-80 hover:opacity-100">
+            Read full story
+          </Link>
+          <button
+            onClick={() => setIsAnnVisible(false)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity p-1"
+            aria-label="Dismiss"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+
+      {/* ── UTILITY ROW (desktop only) ── */}
+      <div className="hidden md:block bg-gray-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 h-8 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <span className="text-xs text-gray-400">{today}</span>
+            <div className="flex items-center gap-4">
+              {['Newsletter', 'Podcast', 'E-paper'].map((item) => (
+                <Link
+                  key={item}
+                  href="#"
+                  className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  {item}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors border border-gray-200 rounded-full px-2.5 py-0.5 hover:bg-white">
+            <Languages className="w-3 h-3" />
+            EN
+            <ChevronDown className="w-2.5 h-2.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── BRAND ROW (desktop) ── */}
+      <div className="hidden md:block bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <div className="text-2xl font-bold text-black tracking-tight">
-              <Image src={profilePic} alt="logo" height={40} />
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Image src={profilePic} alt="logo" height={22} className="brightness-0 invert" />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-[19px] font-semibold text-gray-900 tracking-tight">
+                Pulse<span className="text-red-600">.</span>
+              </span>
+              <span className="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">World News</span>
             </div>
           </Link>
-</div>
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
-              Home
-            </Link>
-            <Link href="/category/Technology" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
-              Technology
-            </Link>
-            <Link href="/category/Business" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
-              Business
-            </Link>
-            <Link href="/category/Sports" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
-              Sports
-            </Link>
-          </nav>
 
-          {/* Right Side */}
-          <div className="flex items-center gap-4">
-                    <button className='md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors'>
-          <Languages className='w-5 h-5'/>
-        </button>
-            {/* Mobile search toggle */}
+          {/* Search */}
+          <form
+            onSubmit={handleDesktopSearch}
+            className="flex-1 max-w-md flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 focus-within:bg-white focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
+          >
+            {/* Category dropdown */}
+            <div className="relative flex-shrink-0" ref={catRef}>
+              <button
+                type="button"
+                onClick={() => setIsCatOpen(!isCatOpen)}
+                className="flex items-center gap-1 px-3 h-10 text-xs text-gray-500 border-r border-gray-200 hover:bg-gray-100 transition-colors gap-1.5"
+              >
+                {searchCategory}
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              {isCatOpen && (
+                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 min-w-[120px]">
+                  {SEARCH_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => { setSearchCategory(cat); setIsCatOpen(false) }}
+                      className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                        searchCategory === cat
+                          ? 'bg-gray-900 text-white'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <input
+              type="text"
+              placeholder="Search stories, topics, people…"
+              value={desktopQuery}
+              onChange={(e) => setDesktopQuery(e.target.value)}
+              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent text-gray-900 placeholder-gray-400 min-w-0"
+            />
             <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+              type="submit"
+              className="w-10 h-10 flex items-center justify-center bg-gray-900 text-white hover:bg-gray-700 transition-colors flex-shrink-0"
               aria-label="Search"
             >
-              <Search className="w-5 h-5 text-gray-700" />
+              <Search className="w-4 h-4" />
+            </button>
+          </form>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              className="relative w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
             </button>
 
-            {/* Desktop search */}
-            <form
-              onSubmit={handleDesktopSearch}
-              className="hidden md:flex items-center border border-gray-200 rounded-lg overflow-hidden"
-            >
-              <input
-                type="text"
-                placeholder="Search any news..."
-                value={desktopQuery}
-                onChange={(e) => setDesktopQuery(e.target.value)}
-                className="pl-3 pr-1 py-1.5 text-sm outline-none bg-transparent w-44"
-              />
-              <button
-                type="submit"
-                className="p-2 text-black hover:bg-gray-100 transition-colors"
-                aria-label="Search"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-            </form>
-
-            {/* Auth */}
             {session?.user ? (
-              <div className="hidden sm:flex items-center gap-3">
-                <Link href="/dashboard" className="flex items-center gap-2 group">
-                  <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
+              <div className="flex items-center gap-2">
+                <Link href="/dashboard">
+                  <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-semibold hover:ring-2 hover:ring-gray-300 transition-all">
                     {session.user.name?.charAt(0).toUpperCase() ?? session.user.email?.charAt(0).toUpperCase() ?? 'U'}
                   </div>
                 </Link>
-
-
               </div>
             ) : (
-              <Link
-                href="/auth/signin"
-                className="hidden sm:inline-block px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
-                Sign In
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/auth/signin"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                >
+                  Get started
+                </Link>
+              </div>
             )}
+          </div>
+        </div>
+      </div>
 
-            {/* Mobile menu toggle */}
-            
+      {/* ── NAV ROW (desktop) ── */}
+      <div className="hidden md:block bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <nav className="flex items-center">
+            {NAV_LINKS.map(({ href, label, badge }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setActiveNav(href)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-sm transition-colors border-b-2 whitespace-nowrap ${
+                  activeNav === href
+                    ? 'text-gray-900 font-medium border-red-600'
+                    : 'text-gray-500 hover:text-gray-900 border-transparent'
+                }`}
+              >
+                {label}
+                {badge && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
+                    {badge}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-red-50 text-red-600 font-medium">
+              <Radio className="w-3 h-3" />
+              Live
+            </button>
+            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+              <TrendingUp className="w-3 h-3" />
+              Trending
+            </button>
+            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+              <Bookmark className="w-3 h-3" />
+              Saved
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── TICKER ── */}
+      <div className="bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden">
+        <div className="flex items-center gap-1 px-4 h-full bg-red-600 text-white flex-shrink-0">
+          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
+        </div>
+        <div className="overflow-hidden flex-1 flex items-center">
+          <div className="flex animate-[ticker_32s_linear_infinite] whitespace-nowrap">
+            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+              <span key={i} className="text-[11px] text-gray-500 px-7 border-r border-gray-200">
+                <span className="font-semibold text-gray-800">{item.label}:</span> {item.text}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── MOBILE TOP BAR ── */}
+      <div className="md:hidden bg-white border-b border-gray-100">
+        <div className="px-4 h-14 flex items-center justify-between gap-3">
+
+          {/* Left: hamburger + logo */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { setIsMenuOpen(!isMenuOpen); setIsSearchOpen(false) }}
+              className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              aria-label="Menu"
+            >
+              {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-gray-900 rounded-md flex items-center justify-center">
+                <Image src={profilePic} alt="logo" height={16} className="brightness-0 invert" />
+              </div>
+              <span className="text-[17px] font-semibold text-gray-900 tracking-tight">
+                Pulse<span className="text-red-600">.</span>
+              </span>
+            </Link>
+          </div>
+
+          {/* Right: search + bell */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setIsSearchOpen(!isSearchOpen); setIsMenuOpen(false) }}
+              className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              aria-label="Search"
+            >
+              {isSearchOpen ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+            </button>
+            <button className="relative w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
+            </button>
           </div>
         </div>
 
-        {/* Mobile Search Bar */}
+        {/* Mobile search bar */}
         {isSearchOpen && (
-          <div className="pb-4 md:hidden">
-            <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="px-4 pb-3 border-t border-gray-100 pt-2">
+            <form onSubmit={handleSearch} className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-gray-50 focus-within:bg-white focus-within:border-gray-400 transition-all">
               <input
                 type="text"
-                placeholder="Search news..."
+                placeholder="Search stories, topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
+                className="flex-1 px-4 py-2.5 text-sm outline-none bg-transparent text-gray-900 placeholder-gray-400"
                 autoFocus
               />
               <button
                 type="submit"
-                className="px-4 py-2 border-2 border-gray-100 text-black rounded-full font-medium hover:bg-gray-800 transition-colors text-sm"
+                className="w-10 h-10 flex items-center justify-center bg-gray-900 text-white flex-shrink-0"
+                aria-label="Search"
               >
-              <Search className='h-5 w-5'/>
+                <Search className="w-4 h-4" />
               </button>
             </form>
           </div>
         )}
       </div>
 
-      {/* Mobile Navigation */}
+      {/* ── MOBILE MENU ── */}
       {isMenuOpen && (
-        <div className="md:hidden bg-gray-50 border-t border-gray-200">
-          <nav className="flex flex-col gap-0">
-            {[
-              { href: '/', label: 'Home' },
-              { href: '/category/Technology', label: 'Technology' },
-              { href: '/category/Business', label: 'Business' },
-              { href: '/category/Sports', label: 'Sports' },
-            ].map(({ href, label }) => (
+        <div className="md:hidden bg-white border-b border-gray-200">
+
+          {/* Sections */}
+          <div className="py-2 border-b border-gray-100">
+            <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+              Sections
+            </p>
+            {NAV_LINKS.map(({ href, label, badge }) => (
               <Link
                 key={href}
                 href={href}
-                className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => { setActiveNav(href); setIsMenuOpen(false) }}
+                className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
               >
-                {label}
+                <span className="flex items-center gap-2">
+                  {label}
+                  {badge && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
+                      {badge}
+                    </span>
+                  )}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-gray-300 -rotate-90" />
               </Link>
             ))}
+          </div>
 
+          {/* Trending */}
+          <div className="py-2 border-b border-gray-100">
+            <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+              Trending now
+            </p>
+            {[
+              { icon: '🔴', label: 'Fed Rate Decision' },
+              { icon: '💻', label: 'AI & Technology' },
+              { icon: '🌍', label: 'Climate Summit' },
+            ].map(({ icon, label }) => (
+              <Link
+                key={label}
+                href={`/search?q=${encodeURIComponent(label)}`}
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <span>{icon}</span> {label}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-gray-300 -rotate-90" />
+              </Link>
+            ))}
+          </div>
+
+          {/* Auth */}
+          <div className="p-4">
             {session?.user ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-semibold">
+                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{session.user.name ?? session.user.email}</span>
+                </div>
                 <button
                   onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
-                  className="px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors text-left border-t border-gray-200"
+                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Sign Out
+                  Sign out
                 </button>
-              </>
+              </div>
             ) : (
-              <Link
-                href="/auth/signin"
-                className="px-6 py-3 text-sm font-bold text-red-600 hover:bg-gray-100 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </Link>
+              <div className="flex gap-2">
+                <Link
+                  href="/auth/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex-1 py-2.5 text-center text-sm font-medium text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex-1 py-2.5 text-center text-sm font-medium text-white bg-gray-900 rounded-xl hover:bg-gray-700 transition-colors"
+                >
+                  Get started
+                </Link>
+              </div>
             )}
-          </nav>
+          </div>
         </div>
       )}
     </header>
