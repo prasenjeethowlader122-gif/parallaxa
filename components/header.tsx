@@ -233,46 +233,6 @@ export function Header() {
       </div>
 
       {/* ── NAV ROW (desktop) ── */}
-      <div className="hidden md:block bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <nav className="flex items-center">
-            {NAV_LINKS.map(({ href, label, badge }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setActiveNav(href)}
-                className={`flex items-center gap-1.5 px-4 py-3 text-sm transition-colors border-b-2 whitespace-nowrap ${
-                  activeNav === href
-                    ? 'text-gray-900 font-medium border-red-600'
-                    : 'text-gray-500 hover:text-gray-900 border-transparent'
-                }`}
-              >
-                {label}
-                {badge && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
-                    {badge}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-red-50 text-red-600 font-medium">
-              <Radio className="w-3 h-3" />
-              Live
-            </button>
-            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-              <TrendingUp className="w-3 h-3" />
-              Trending
-            </button>
-            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-              <Bookmark className="w-3 h-3" />
-              Saved
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* ── TICKER ── */}
       <div className="bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden">
@@ -388,23 +348,7 @@ export function Header() {
             <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
               Trending now
             </p>
-            {[
-              { icon: '🔴', label: 'Fed Rate Decision' },
-              { icon: '💻', label: 'AI & Technology' },
-              { icon: '🌍', label: 'Climate Summit' },
-            ].map(({ icon, label }) => (
-              <Link
-                key={label}
-                href={`/search?q=${encodeURIComponent(label)}`}
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span>{icon}</span> {label}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-gray-300 -rotate-90" />
-              </Link>
-            ))}
+          
           </div>
 
           {/* Auth */}
