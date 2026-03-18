@@ -158,45 +158,73 @@ function isRealArticleUrl(url: string): boolean {
   return true
 }
 
-async function crawlYahooNewsLinks(): Promise<ArticleLink[]> {
-  // ── Strategy 1: firecrawl.map ────────────────────────────────────────────
-  try {
-    const mapResult = await (firecrawl as any).map(
-      'https://news.yahoo.com',
-      { limit: 50, includeSubdomains: false }
-    )
+async function crawlYahooNewsLinks(): Promise<{ url: string; title: string | null }[]> {
 
-   // const rawLinks = toStringArray(mapResult)
-  /**  const links = rawLinks
+  // ── Strategy 1: firecrawl.map with search filter ────────────────────────
+  // Use the `search` param so map returns article-relevant URLs ranked first.
+  try {
+    const mapResult = await firecrawl.map('https://news.yahoo.com', {
+      limit: 50,
+      search: 'article',        // ← official param, filters/ranks by relevance
+    } as any)
+
+    // SDK returns { success, links: [{url, title, description}] }
+    const rawLinks: string[] = (mapResult?.links ?? [])
+      .map((l: any) => (typeof l === 'string' ? l : l?.url))
+      .filter((u: any): u is string => typeof u === 'string')
+
+    const links = rawLinks
       .filter(isRealArticleUrl)
       .slice(0, 10)
-      .map(url => ({ url, title: null as null }))**/
+      .map(url => ({ url, title: null as null }))
 
-    console.log(`[inngest] map found ${links.length} article links`)
-    if (mapResult.length >= 5) return mapResult
+    console.log(`[pipeline] map found ${links.length} article links`)
+    if (links.length >= 3) return links
   } catch (err) {
-    console.warn('[inngest] firecrawl.map failed, falling back to search:', err)
+    console.warn('[pipeline] firecrawl.map failed:', err)
   }
 
-  // ── Strategy 2: firecrawl.search ─────────────────────────────────────────
+  // ── Strategy 2: firecrawl.search with sources: ['news'] ────────────────
+  // v2 response shape: { success, data: { news: [{url, title, snippet}] } }
   try {
-    const searchResult = await (firecrawl as any).search(
-      'latest news today 2026',
-      { limit: 10, scrapeOptions: { formats: ['markdown'] } }
-    )
+    const searchResult = await (firecrawl as any).search('latest breaking news', {
+      limit: 10,
+      sources: ['news'],        // ← official param for news results
+    })
 
-    // FIX: toSearchResults() unwraps { data: […] } so we always get a plain array.
-    const results = toSearchResults(searchResult)
+    // data.news is the array — NOT data itself
+    const newsItems: Array<{ url: string; title?: string }> =
+      searchResult?.data?.news ?? searchResult?.data?.web ?? []
 
-    const links = results
-      .filter(r => typeof r?.url === 'string' && r.url.includes('yahoo.com'))
+    const links = newsItems
+      .filter(r => typeof r?.url === 'string')
       .slice(0, 10)
       .map(r => ({ url: r.url, title: r.title ?? null }))
 
-    console.log(`[inngest] search found ${links.length} links`)
+    console.log(`[pipeline] search found ${links.length} links`)
+    if (links.length >= 1) return links
+  } catch (err) {
+    console.warn('[pipeline] firecrawl.search failed:', err)
+  }
+
+  // ── Strategy 3: seed scrape ────────────────────────────────────────────
+  try {
+    const page = await firecrawl.scrapeUrl('https://news.yahoo.com', {
+      formats: ['html'],
+    }) as any
+
+    const html: string = page?.html ?? ''
+    const links = [...html.matchAll(/href="(https:\/\/[^"]*yahoo\.com\/news\/article[^"]{8,})"/g)]
+      .map(m => m[1].split('?')[0])
+      .filter(isRealArticleUrl)
+      .filter((url, i, arr) => arr.indexOf(url) === i)
+      .slice(0, 10)
+      .map(url => ({ url, title: null as null }))
+
+    console.log(`[pipeline] seed scrape found ${links.length} links`)
     return links
   } catch (err) {
-    console.warn('[inngest] firecrawl.search failed:', err)
+    console.warn('[pipeline] seed scrape failed:', err)
     return []
   }
 }
