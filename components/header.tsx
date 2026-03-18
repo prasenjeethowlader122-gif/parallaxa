@@ -265,11 +265,11 @@ export function Header() {
               {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gray-900 rounded-md flex items-center justify-center">
-                <Image src={profilePic} alt="logo" height={16} className="brightness-0 invert" />
+              <div className="flex items-center justify-center">
+                <Image src={profilePic} alt="logo" height={16} />
               </div>
               <span className="text-[17px] font-semibold text-gray-900 tracking-tight">
-                Pulse<span className="text-red-600">.</span>
+                Parallaxa<span className="text-red-600">.</span>
               </span>
             </Link>
           </div>
