@@ -267,10 +267,10 @@ export function Header() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => { setIsMenuOpen(!isMenuOpen); setIsSearchOpen(false) }}
-              className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
               aria-label="Menu"
             >
-              {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-4 h-4" />}
             </button>
             <Link href="/" className="flex items-center gap-2">
               <div className="flex items-center justify-center">
@@ -286,13 +286,13 @@ export function Header() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setIsSearchOpen(!isSearchOpen); setIsMenuOpen(false) }}
-              className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
               aria-label="Search"
             >
-              {isSearchOpen ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+              {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
             </button>
-            <button className="relative w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
-              <Bell className="w-4 h-4" />
+            <button className="relative w-9 h-9 flex items-center justify-center  text-gray-600 hover:bg-gray-50 transition-colors">
+              <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
             </button>
           </div>
