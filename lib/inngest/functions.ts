@@ -492,7 +492,7 @@ export const newsPipelineFunction = inngest.createFunction(
     // discoverArticleLinks uses step.fetch / step.sleep — must stay at top level.
     // Do NOT wrap in step.run().
     logger.info('[pipeline] Discovering Yahoo News article links…')
-    const links = await discoverArticleLinks(step, 10)
+    const links = await discoverArticleLinks(step, 50)
 
     // FIX 7: Removed the broken retry block. The original code called
     // discoverArticleLinks a second time unconditionally (the if-block was
