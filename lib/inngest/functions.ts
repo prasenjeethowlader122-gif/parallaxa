@@ -504,7 +504,7 @@ export const newsPipelineFunction = inngest.createFunction(
     // If discovery yields zero links the pipeline now exits cleanly with a
     // clear log message instead of looping or crashing.
     if (links.length === 0) {
-      logger.warn('[pipeline] No article links discovered — all strategies exhausted. Exiting.')
+      throw new Error('[pipeline] No article links discovered — all strategies exhausted. Exiting.')
       return {
         total: 0,
         saved: 0,
