@@ -224,7 +224,7 @@ function buildEmbedText(gen: GeneratedArticle, page: ScrapedPage): string {
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id: 'news-pipeline-yzo007rp', name: 'Yahoo News Pipeline',
+    id: 'news-pipeline-yzo00rp', name: 'Yahoo News Pipeline',
     retries: 3, concurrency: { limit: 1 },
     triggers: [{ event: 'news/pipeline.requested' }],
   },
