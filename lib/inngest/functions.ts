@@ -207,7 +207,7 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
   // Strategy 1: map yahoo.com/news
   try {
     console.log('[firescrape] mapping yahoo.com/news…')
-    const mapped = await firescrapeMap('https://yahoo.com/news', 60)
+    const mapped = await firescrapeMap('https://yahoo.com/news/', 60)
     for (const url of mapped) {
       const clean = url.split('?')[0]
       if (isRealArticleUrl(clean) && !collected.has(clean)) {
@@ -218,7 +218,7 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
   } catch (err) {
     console.warn('[firescrape] map failed, falling back:', err)
   }
-
+/*
   // Strategy 2: scrape link-rich pages
   if (collected.size < limit) {
     const SOURCES = [
@@ -271,7 +271,8 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
 
   const result = [...collected.values()].slice(0, limit)
   console.log(`[firescrape] final unique article links: ${result.length}`)
-  return result
+  */
+  return collected
 }
 
 // ─── Article scraping ─────────────────────────────────────────────────────────
@@ -409,7 +410,7 @@ export const newsPipelineFunction = inngest.createFunction(
     // Step 1: Crawl
     const links = await step.run('crawl-yahoo-news', async () => {
       console.log('[inngest] Crawling Yahoo News via FireScrape API…')
-      const found = await crawlYahooNewsLinks('https://yahoo.com/news/',10)
+      const found = await crawlYahooNewsLinks(10)
       if (!found.length) throw new Error('No article links found on Yahoo News')
       console.log(`[inngest] Found ${found.length} links`)
       return found
