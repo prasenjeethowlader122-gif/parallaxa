@@ -456,7 +456,7 @@ export const newsPipelineFunction = inngest.createFunction(
   {
     id:          'news-pipeline',
     name:        'Yahoo News Pipeline',
-    retries:     2,
+    retries:     3,
     concurrency: { limit: 1 },
     triggers: [{ event: 'news/pipeline.requested' }]
   },
