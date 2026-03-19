@@ -1,4 +1,5 @@
 import { sql } from './index'
+import { OpenAI } from 'openai'
 import { neon } from '@neondatabase/serverless'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
