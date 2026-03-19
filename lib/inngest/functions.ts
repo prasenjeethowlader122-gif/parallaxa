@@ -135,8 +135,8 @@ function isArticleUrl(raw: string): boolean {
   if (!match) return false
 
   // Slug must end with a numeric ID (e.g. -140445852)
-  const slug = match[1]
-  if (!/\-\d{6,}$/.test(slug)) return false
+  //const slug = match[1]
+  //if (!/\-\d{6,}$/.test(slug)) return false
 
   return true
 }
