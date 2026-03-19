@@ -457,7 +457,7 @@ async function saveArticle(generated: GeneratedArticle, page: ScrapedPage): Prom
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id:          'news-pipeline-vy',
+    id:          'news-pipeline-vyz',
     name:        'Yahoo News Pipeline',
     retries:     3,
     concurrency: { limit: 1 },
@@ -484,7 +484,12 @@ export const newsPipelineFunction = inngest.createFunction(
     let links = await discoverArticleLinks(step, 10)
 
     if (links.length === 0) {
-       links = ['https://www.yahoo.com/news/articles/terrify-every-american-pnw-leaders-000543599.html']
+       links = [
+    {
+      url: 'https://www.yahoo.com/news/articles/terrify-every-american-pnw-leaders-000543599.html',
+      title: null,
+    },
+  ]
     }
 
     logger.info(`[pipeline] Discovered ${links.length} article links`)
