@@ -45,10 +45,9 @@ interface GeneratedArticle {
 
 // ─── FireScrape API types ─────────────────────────────────────────────────────
 
-// PageMetadata mirrors app/models.py PageMetadata (all fields snake_case)
 interface FireScrapeMetadata {
   title?: string
-  og_image?: string       // FIX: was ogImage (camelCase), API returns snake_case
+  og_image?: string
   og_title?: string
   og_description?: string
   description?: string
@@ -172,7 +171,6 @@ async function firescrapeCrawl(
   throw new Error(`FireScrape crawl job ${job_id} timed out after 2 minutes`)
 }
 
-// FIX: API returns { total, urls, url_details, stats } — not { urls?, links? }
 async function firescrapeMap(url: string, maxPages = 50): Promise<string[]> {
   const res = await fetch(`${FIRESCRAPE_BASE}/v1/map`, {
     method: 'POST',
@@ -190,7 +188,6 @@ async function firescrapeMap(url: string, maxPages = 50): Promise<string[]> {
     throw new Error(`FireScrape map failed for ${url}: ${res.status} ${text}`)
   }
 
-  // API shape: { total: number, urls: string[], url_details: {...}, stats: {...} }
   const data = await res.json() as { total?: number; urls?: string[] }
   return data.urls ?? []
 }
@@ -203,22 +200,27 @@ function sleep(ms: number): Promise<void> {
 
 async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
   const collected = new Map<string, ArticleLink>()
+  const strategyResults: Record<string, number> = {}
 
   // Strategy 1: map yahoo.com/news
   try {
-    console.log('[firescrape] mapping yahoo.com/news…')
+    console.log('[firescrape] Strategy 1: mapping yahoo.com/news…')
     const mapped = await firescrapeMap('https://yahoo.com/news/', 60)
+    console.log(`[firescrape] map returned ${mapped.length} raw URLs`)
+
     for (const url of mapped) {
       const clean = url.split('?')[0]
       if (isRealArticleUrl(clean) && !collected.has(clean)) {
         collected.set(clean, { url: clean, title: null })
       }
     }
-    console.log(`[firescrape] map yielded ${collected.size} article URLs`)
+    strategyResults['map'] = collected.size
+    console.log(`[firescrape] Strategy 1 yielded ${collected.size} article URLs`)
   } catch (err) {
-    console.warn('[firescrape] map failed, falling back:', err)
+    console.warn('[firescrape] Strategy 1 (map) failed:', err instanceof Error ? err.message : err)
+    strategyResults['map'] = 0
   }
-/*
+
   // Strategy 2: scrape link-rich pages
   if (collected.size < limit) {
     const SOURCES = [
@@ -230,9 +232,10 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
     for (const source of SOURCES) {
       if (collected.size >= limit) break
       try {
-        console.log(`[firescrape] scraping links from ${source}…`)
+        console.log(`[firescrape] Strategy 2: scraping links from ${source}…`)
         const result = await firescrapeUrl(source)
         const links: string[] = result.links ?? []
+        console.log(`[firescrape] got ${links.length} raw links from ${source}`)
 
         for (const url of links) {
           const clean = url.split('?')[0]
@@ -244,16 +247,19 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
 
         console.log(`[firescrape] after ${source}: ${collected.size} article URLs`)
       } catch (err) {
-        console.warn(`[firescrape] scrape-links failed for ${source}:`, err)
+        console.warn(`[firescrape] Strategy 2 failed for ${source}:`, err instanceof Error ? err.message : err)
       }
     }
+    strategyResults['scrape'] = collected.size
   }
 
   // Strategy 3: async crawl as last resort
   if (collected.size < limit) {
     try {
-      console.log('[firescrape] starting async crawl on yahoo.com/news…')
+      console.log('[firescrape] Strategy 3: async crawl on yahoo.com/news…')
       const pages = await firescrapeCrawl('https://yahoo.com/news', 20, 2)
+      console.log(`[firescrape] crawl returned ${pages.length} pages`)
+
       for (const page of pages) {
         for (const url of page.links ?? []) {
           const clean = url.split('?')[0]
@@ -262,17 +268,30 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
           }
           if (collected.size >= limit) break
         }
+        if (collected.size >= limit) break
       }
+      strategyResults['crawl'] = collected.size
       console.log(`[firescrape] after crawl: ${collected.size} article URLs`)
     } catch (err) {
-      console.warn('[firescrape] crawl strategy failed:', err)
+      console.warn('[firescrape] Strategy 3 (crawl) failed:', err instanceof Error ? err.message : err)
+      strategyResults['crawl'] = 0
     }
   }
 
+  // ✅ FIX: was returning the Map object directly — now returns the sliced array
   const result = [...collected.values()].slice(0, limit)
-  console.log(`[firescrape] final unique article links: ${result.length}`)
-  */
-  return collected
+  console.log(`[firescrape] final unique article links: ${result.length} | strategy results:`, strategyResults)
+
+  if (result.length === 0) {
+    throw new Error(
+      `All discovery strategies failed to find Yahoo News article links. ` +
+      `Strategy results: ${JSON.stringify(strategyResults)}. ` +
+      `Check that the FireScrape API (${FIRESCRAPE_BASE}) is reachable and that isRealArticleUrl() ` +
+      `filters are not too strict for the current Yahoo News URL structure.`
+    )
+  }
+
+  return result
 }
 
 // ─── Article scraping ─────────────────────────────────────────────────────────
@@ -284,16 +303,13 @@ async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
 
     const markdown = result.markdown ?? result.text ?? ''
     if (markdown.length < 100) {
-      console.warn(`[firescrape] insufficient content for ${link.url}`)
+      console.warn(`[firescrape] insufficient content (${markdown.length} chars) for ${link.url}`)
       return null
     }
 
     const meta = result.metadata ?? {}
     const title = meta.title ?? link.title ?? null
-
-    // FIX: API returns snake_case og_image, not camelCase ogImage
-    const image =
-      (typeof meta.og_image === 'string' ? meta.og_image : null) ?? null
+    const image = (typeof meta.og_image === 'string' ? meta.og_image : null) ?? null
 
     return {
       url: link.url,
@@ -302,7 +318,7 @@ async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
       image,
     }
   } catch (err) {
-    console.warn(`[firescrape] scrape failed for ${link.url}:`, err)
+    console.warn(`[firescrape] scrape failed for ${link.url}:`, err instanceof Error ? err.message : err)
     return null
   }
 }
@@ -329,8 +345,6 @@ Respond with ONLY a valid JSON object in this exact format (no code fences, no e
     },
   ]
 
-  // FIX: HuggingFace router may not emit OpenAI-compatible streaming deltas.
-  // Use non-streaming to get a reliable single response body.
   const response = await hfClient.chat.completions.create({
     model: HF_MODEL,
     messages,
@@ -340,17 +354,27 @@ Respond with ONLY a valid JSON object in this exact format (no code fences, no e
   })
 
   const raw = response.choices[0]?.message?.content ?? ''
+  if (!raw) {
+    throw new Error(`HuggingFace model returned empty response for ${page.url}`)
+  }
+
   const clean = raw.replace(/```json|```/g, '').trim()
 
   try {
     const parsed = JSON.parse(clean)
+    if (!parsed.title || !parsed.content) {
+      throw new Error('Parsed JSON missing required fields: title or content')
+    }
     return {
       title: String(parsed.title ?? page.title ?? 'Untitled'),
       description: String(parsed.description ?? ''),
       content: String(parsed.content ?? ''),
       category: String(parsed.category ?? 'World'),
     }
-  } catch {
+  } catch (parseErr) {
+    console.warn(`[generate] JSON parse failed for ${page.url}:`, parseErr instanceof Error ? parseErr.message : parseErr)
+    console.warn(`[generate] Raw response (first 300 chars): ${raw.slice(0, 300)}`)
+
     const titleMatch = raw.match(/TITLE:\s*(.+)/i)
     return {
       title: titleMatch?.[1]?.trim() ?? page.title ?? 'Untitled',
@@ -392,7 +416,11 @@ async function saveToNeon(
     ampEnabled: false,
   })
 
-  return saved?.id ?? null
+  if (!saved?.id) {
+    throw new Error(`Database insert returned no ID for article: "${generated.title}"`)
+  }
+
+  return saved.id
 }
 
 // ─── Inngest Function ─────────────────────────────────────────────────────────
@@ -406,20 +434,36 @@ export const newsPipelineFunction = inngest.createFunction(
   },
   { event: 'news/pipeline.requested' },
 
-  async ({ step }) => {
-    // Step 1: Crawl
+  async ({ step, logger }) => {
+    // ── Step 1: Crawl ──────────────────────────────────────────────────────────
     const links = await step.run('crawl-yahoo-news', async () => {
-      console.log('[inngest] Crawling Yahoo News via FireScrape API…')
-      const found = await crawlYahooNewsLinks(10)
-      if (!found.length) throw new Error('No article links found on Yahoo News')
-      console.log(`[inngest] Found ${found.length} links`)
+      logger.info('[inngest] Crawling Yahoo News via FireScrape API…')
+
+      let found: ArticleLink[]
+      try {
+        found = await crawlYahooNewsLinks(10)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        logger.error(`[inngest] crawlYahooNewsLinks threw: ${msg}`)
+        // Re-throw with context so Inngest marks this step as failed
+        throw new Error(`Link discovery failed: ${msg}`)
+      }
+
+      if (!found.length) {
+        throw new Error(
+          'No article links found on Yahoo News after all strategies. ' +
+          'Verify the FireScrape API is online and Yahoo News URL structure has not changed.'
+        )
+      }
+
+      logger.info(`[inngest] Found ${found.length} article links`)
       return found
     })
 
-    // Steps 2–N: Per-article scrape → generate → save
+    // ── Steps 2–N: per-article pipeline ────────────────────────────────────────
     const articles: Array<
       | { sourceUrl: string; title: string; articleId: string | null }
-      | { sourceUrl: string; error: string }
+      | { sourceUrl: string; error: string; stage: string }
     > = []
 
     for (let i = 0; i < links.length; i++) {
@@ -427,30 +471,61 @@ export const newsPipelineFunction = inngest.createFunction(
 
       const result = await step
         .run(`process-article-${i}`, async () => {
-          console.log(`[inngest] [${i + 1}/${links.length}] scraping: ${link.url}`)
+          logger.info(`[inngest] [${i + 1}/${links.length}] scraping: ${link.url}`)
 
-          const page = await scrapeArticle(link)
-          if (!page) throw new Error('Could not scrape content')
+          // — Scrape —
+          let page: ScrapedPage | null
+          try {
+            page = await scrapeArticle(link)
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            logger.warn(`[inngest] [${i + 1}/${links.length}] scrape threw: ${msg}`)
+            throw new Error(`[scrape] ${msg}`)
+          }
 
-          console.log(`[inngest] [${i + 1}/${links.length}] generating…`)
-          const generated = await generateArticle(page)
+          if (!page) {
+            throw new Error(`[scrape] Could not extract usable content from ${link.url}`)
+          }
 
-          console.log(`[inngest] [${i + 1}/${links.length}] saving to Neon…`)
-          const articleId = await saveToNeon(generated, page)
+          // — Generate —
+          logger.info(`[inngest] [${i + 1}/${links.length}] generating article with AI…`)
+          let generated: GeneratedArticle
+          try {
+            generated = await generateArticle(page)
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            logger.warn(`[inngest] [${i + 1}/${links.length}] generation threw: ${msg}`)
+            throw new Error(`[generate] ${msg}`)
+          }
 
-          console.log(`[inngest] ✓ "${generated.title}" → id:${articleId}`)
-          // FIX: return the data we need; sendEvent is called OUTSIDE step.run below
+          // — Save —
+          logger.info(`[inngest] [${i + 1}/${links.length}] saving "${generated.title}" to Neon…`)
+          let articleId: string | null
+          try {
+            articleId = await saveToNeon(generated, page)
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            logger.warn(`[inngest] [${i + 1}/${links.length}] DB save threw: ${msg}`)
+            throw new Error(`[db] ${msg}`)
+          }
+
+          logger.info(`[inngest] ✓ [${i + 1}/${links.length}] "${generated.title}" → id:${articleId}`)
           return { sourceUrl: link.url, title: generated.title, articleId }
         })
-        .catch((err: unknown) => ({
-          sourceUrl: link.url,
-          error: err instanceof Error ? err.message : String(err),
-        }))
+        .catch((err: unknown) => {
+          const raw = err instanceof Error ? err.message : String(err)
+          // Extract stage tag like [scrape], [generate], [db] if present
+          const stageMatch = raw.match(/^\[(\w+)\]/)
+          const stage = stageMatch?.[1] ?? 'unknown'
+          const error = stageMatch ? raw.slice(stageMatch[0].length).trim() : raw
+
+          logger.error(`[inngest] ✗ [${i + 1}/${links.length}] ${link.url} failed at stage=${stage}: ${error}`)
+          return { sourceUrl: link.url, error, stage }
+        })
 
       articles.push(result)
 
-      // FIX: step.sendEvent must be called at the top level of the Inngest
-      // function handler, never nested inside a step.run callback.
+      // sendEvent must be at the top level of the handler, never inside step.run
       if (!('error' in result)) {
         await step.sendEvent(`article-processed-event-${i}`, {
           name: 'news/article.processed',
@@ -466,6 +541,25 @@ export const newsPipelineFunction = inngest.createFunction(
     const done = articles.filter((r) => !('error' in r)).length
     const failed = articles.filter((r) => 'error' in r).length
 
-    return { total: links.length, done, failed, articles }
+    // Summarise failures by stage
+    const failuresByStage = articles
+      .filter((r): r is { sourceUrl: string; error: string; stage: string } => 'error' in r)
+      .reduce<Record<string, number>>((acc, r) => {
+        acc[r.stage] = (acc[r.stage] ?? 0) + 1
+        return acc
+      }, {})
+
+    logger.info(
+      `[inngest] Pipeline complete — done: ${done}, failed: ${failed}, ` +
+      `failuresByStage: ${JSON.stringify(failuresByStage)}`
+    )
+
+    return {
+      total: links.length,
+      done,
+      failed,
+      failuresByStage,
+      articles,
+    }
   }
 )
