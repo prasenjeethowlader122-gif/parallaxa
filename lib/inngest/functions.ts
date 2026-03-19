@@ -23,10 +23,8 @@ const FIRESCRAPE_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
 
 const YAHOO_SOURCES = [
-  'https://yahoo.com/news/',
-  'https://yahoo.com/news/',
-  'https://yahoo.com/news/',
-  'https://yahoo.com/news/',
+  'https://www.yahoo.com/news/',
+ 
 ]
 
 // ─── HuggingFace client ───────────────────────────────────────────────────────
@@ -286,13 +284,13 @@ async function discoverArticleLinks(
       console.log(`[discover] A: map ${YAHOO_SOURCES[i]}`)
       const urls = await firescrapeMap(step, YAHOO_SOURCES[i], `discover-map-${i}`, 60)
       console.log(`[discover] A: map returned ${urls.length} raw URLs`)
-      urls.forEach((u) => u)
+      urls.forEach((u) => add(u))
       console.log(`[discover] A: running total ${links.length}`)
     } catch (e) {
       console.warn(`[discover] A: map failed for ${YAHOO_SOURCES[i]}: ${errMsg(e)}`)
     }
   }
-  /*
+  
 
   // Strategy B: scrape + extract links
   if (links.length < limit) {
@@ -327,7 +325,7 @@ async function discoverArticleLinks(
     }
   }
 
-  console.log(`[discover] final: ${links.length} unique articles (limit ${limit})`)*/
+  console.log(`[discover] final: ${links.length} unique articles (limit ${limit})`)
   return links.slice(0, limit)
 }
 
@@ -484,12 +482,13 @@ export const newsPipelineFunction = inngest.createFunction(
     let links = await discoverArticleLinks(step, 10)
 
     if (links.length === 0) {
-       links = [
+      /* links = [
     {
       url: 'https://www.yahoo.com/news/articles/terrify-every-american-pnw-leaders-000543599.html',
       title: null,
     },
-  ]
+  ]**/
+  links = await discoverArticleLinks(step, 10)
     }
 
     logger.info(`[pipeline] Discovered ${links.length} article links`)
