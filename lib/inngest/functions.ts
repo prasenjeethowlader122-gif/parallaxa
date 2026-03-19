@@ -111,8 +111,10 @@ interface FireScrapeCrawlStatus {
   pages?:   FireScrapeScrapeResult[]
 }
 
+// FIX: Added embedding payload to the success result so it's accessible
+// outside step.run for the sendEvent call.
 type PipelineResult =
-  | { ok: true;  sourceUrl: string; title: string; articleId: string }
+  | { ok: true;  sourceUrl: string; title: string; articleId: string; embeddingPayload: ArticleEmbeddingPayload }
   | { ok: false; sourceUrl: string; stage: string; error: string }
 
 type InngestStep = GetFunctionInput<typeof inngest>['step']
@@ -134,10 +136,6 @@ function isArticleUrl(raw: string): boolean {
   const match = u.pathname.match(/^\/news\/articles\/([^/]+)\.html$/)
   if (!match) return false
 
-  // Slug must end with a numeric ID (e.g. -140445852)
-  //const slug = match[1]
-  //if (!/\-\d{6,}$/.test(slug)) return false
-
   return true
 }
 
@@ -152,29 +150,100 @@ async function firescrapeWakeUp(step: InngestStep): Promise<void> {
   }
 }
 
+// ─── FireScrape Map types ─────────────────────────────────────────────────────
+
+interface FireScrapeMapJob {
+  job_id: string
+}
+
+interface FireScrapeMapStatus {
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  urls?:  string[]
+  total?: number
+}
+
+// /v1/map is a long-running operation (can take 30–120s for large sites).
+// Strategy:
+//   1. POST /v1/map  → get job_id  (step.fetch — retryable HTTP call)
+//   2. Poll GET /v1/map/{job_id} with step.sleep + step.fetch until
+//      status === 'completed' or we exhaust MAX_POLLS.
+//
+// This mirrors exactly how firescrapeCrawl works and ensures Inngest
+// never times out waiting on a single blocking HTTP request.
 async function firescrapeMap(
   step: InngestStep,
   url: string,
-  stepId: string,
+  mapIndex: number,
   maxPages = 60,
 ): Promise<string[]> {
-  const res = await step.fetch(stepId, `${FIRESCRAPE_BASE}/v1/map`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ url, include_sitemap: false, max_pages: maxPages, same_domain: true }),
-  })
+  // Step 1 — start the map job
+  const startRes = await step.fetch(
+    `firescrape-map-start-${mapIndex}`,
+    `${FIRESCRAPE_BASE}/v1/map`,
+    {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        url,
+        include_sitemap: false,
+        max_pages:       maxPages,
+        same_domain:     true,
+      }),
+    },
+  )
 
-  if (!res.ok) {
-    throw new Error(`/v1/map HTTP ${res.status}: ${await res.text().catch(() => res.statusText)}`)
+  if (!startRes.ok) {
+    throw new Error(`/v1/map start HTTP ${startRes.status}: ${await startRes.text().catch(() => startRes.statusText)}`)
   }
 
-  const data = await res.json() as { urls?: unknown }
+  const startData = await startRes.json() as FireScrapeMapJob | FireScrapeMapStatus
 
-  if (!Array.isArray(data.urls)) {
-    throw new Error(`/v1/map unexpected shape: ${JSON.stringify(data).slice(0, 200)}`)
+  // FireScrape may return URLs immediately if the result is already cached
+  // or if the implementation is synchronous — handle both cases.
+  if ('urls' in startData && Array.isArray(startData.urls)) {
+    console.log(`[map] immediate response — ${startData.urls.length} URLs`)
+    return (startData.urls as unknown[]).filter((u): u is string => typeof u === 'string')
   }
 
-  return (data.urls as unknown[]).filter((u): u is string => typeof u === 'string')
+  // Step 2 — poll until completed
+  const { job_id } = startData as FireScrapeMapJob
+  if (!job_id) {
+    throw new Error(`/v1/map returned neither urls nor job_id: ${JSON.stringify(startData).slice(0, 200)}`)
+  }
+
+  const MAX_POLLS        = 40          // 40 × 5 s = 200 s max wait
+  const POLL_INTERVAL_MS = 5_000
+
+  for (let poll = 0; poll < MAX_POLLS; poll++) {
+    await step.sleep(`map-poll-wait-${mapIndex}-${poll}`, POLL_INTERVAL_MS)
+
+    const pollRes = await step.fetch(
+      `firescrape-map-poll-${mapIndex}-${poll}`,
+      `${FIRESCRAPE_BASE}/v1/map/${job_id}`,
+    )
+
+    if (!pollRes.ok) {
+      console.warn(`[map] poll HTTP ${pollRes.status} for job ${job_id}, retrying…`)
+      continue
+    }
+
+    const status = await pollRes.json() as FireScrapeMapStatus
+    console.log(`[map] job ${job_id} → ${status.status} (poll ${poll + 1}/${MAX_POLLS}, urls so far: ${status.urls?.length ?? 0})`)
+
+    if (status.status === 'completed') {
+      const urls = (status.urls ?? []).filter((u): u is string => typeof u === 'string')
+      console.log(`[map] job ${job_id} completed — ${urls.length} URLs`)
+      return urls
+    }
+
+    if (status.status === 'failed' || status.status === 'cancelled') {
+      throw new Error(`Map job ${job_id} ended with status: ${status.status}`)
+    }
+
+    // still pending / running — keep polling
+  }
+
+  throw new Error(`Map job ${job_id} timed out after ${MAX_POLLS} polls (${MAX_POLLS * POLL_INTERVAL_MS / 1000}s)`)
 }
 
 async function firescrapeUrl(
@@ -231,7 +300,7 @@ async function firescrapeCrawl(
   const { job_id } = await startRes.json() as FireScrapeCrawlJob
   if (!job_id) throw new Error('/v1/crawl returned no job_id')
 
-  const MAX_POLLS       = 30
+  const MAX_POLLS        = 30
   const POLL_INTERVAL_MS = 4_000
 
   for (let poll = 0; poll < MAX_POLLS; poll++) {
@@ -279,7 +348,7 @@ async function discoverArticleLinks(
     if (links.length > limit) break
     try {
       console.log(`[discover] A: map ${YAHOO_SOURCES[i]}`)
-      const urls = await firescrapeMap(step, YAHOO_SOURCES[i], `discover-map-${i}`, 60)
+      const urls = await firescrapeMap(step, YAHOO_SOURCES[i], i, 60)
       console.log(`[discover] A: map returned ${urls.length} raw URLs`)
       urls.forEach((u) => add(u))
       console.log(`[discover] A: running total ${links.length}`)
@@ -413,23 +482,6 @@ async function generateArticle(page: ScrapedPage): Promise<GeneratedArticle> {
 
 // ─── Embedding text assembly ──────────────────────────────────────────────────
 
-/**
- * Build the canonical embedding text for an article.
- *
- * Strategy: concatenate the fields that carry the most semantic signal,
- * separated by newlines so tokenisation boundaries fall naturally.
- *
- *   title       → high-weight summary of the article's topic
- *   category    → anchors domain (Business, Health, …) — helps clustering
- *   description → the concise 2-sentence summary
- *   content     → truncated body (first ~1 200 chars covers the lede + detail
- *                 without ballooning token count for long articles)
- *
- * The BGE / E5 family of models performs best when the input text is a
- * coherent passage rather than a bag of fields, so we use a lightweight
- * template rather than JSON. Prefix "Represent this document for retrieval:"
- * is recommended by the BGE authors for asymmetric retrieval tasks.
- */
 function buildEmbeddingText(
   generated: GeneratedArticle,
   page: ScrapedPage,
@@ -448,14 +500,6 @@ function buildEmbeddingText(
 
 // ─── Generate embedding via HuggingFace (plain fetch — safe inside step.run) ──
 
-/**
- * Call the HF embeddings endpoint and return the float32 vector.
- *
- * Non-fatal: if the embedding call fails (rate limit, model cold-start, etc.)
- * we return `undefined` for the vector. The article is already saved; the
- * caller emits the payload with vector=undefined so a background job can
- * re-embed later without re-running the full pipeline.
- */
 async function generateEmbedding(text: string): Promise<number[] | undefined> {
   try {
     const response = await hfClient.embeddings.create({
@@ -470,7 +514,6 @@ async function generateEmbedding(text: string): Promise<number[] | undefined> {
 
     return vector as number[]
   } catch (e) {
-    // Non-fatal — log and let the caller decide what to emit
     console.warn(`[embed] embedding generation failed (non-fatal): ${errMsg(e)}`)
     return undefined
   }
@@ -571,18 +614,23 @@ export const newsPipelineFunction = inngest.createFunction(
           }
 
           // 3. Save to DB
+          // FIX: articleId is declared here, before it is used below.
           logger.info(`[pipeline] ${tag} saving "${generated.title}"…`)
           let articleId: string
-          
+          try {
+            articleId = await saveArticle(generated, page)
+          } catch (e) {
+            throw new Error(`[db] ${errMsg(e)}`)
+          }
 
           // 4. Build embedding text + generate vector
           //    Non-fatal: article is already saved; a failed embed won't
-          //    roll back the DB insert. The downstream event carries the
-          //    payload so a separate Inngest function can store / re-embed.
+          //    roll back the DB insert.
           logger.info(`[pipeline] ${tag} building embedding…`)
           const embeddingText   = buildEmbeddingText(generated, page)
           const embeddingVector = await generateEmbedding(embeddingText)
 
+          // FIX: articleId is now guaranteed to be assigned before this point.
           const embeddingPayload: ArticleEmbeddingPayload = {
             articleId,
             text:   embeddingText,
@@ -594,17 +642,15 @@ export const newsPipelineFunction = inngest.createFunction(
           if (embeddingVector) {
             logger.info(`[pipeline] ${tag} embedding OK — dim=${embeddingVector.length}`)
           } else {
-            logger.warn(`[pipeline] ${tag} embedding skipped (see warn above) — will need re-embedding`)
-            generated.embedding = embeddingPayload.vector;
+            logger.warn(`[pipeline] ${tag} embedding skipped — will need re-embedding`)
           }
-          try {
-  articleId = await saveArticle(generated, page)
-} catch (e) {
-  throw new Error(`[db] ${errMsg(e)}`)
-}
 
           logger.info(`[pipeline] ${tag} ✓ id:${articleId}`)
-          return { ok: true, sourceUrl: link.url, title: generated.title, articleId }
+
+          // FIX: Return embeddingPayload as part of the result so the
+          // sendEvent call outside step.run can include it without
+          // recomputing or accessing out-of-scope variables.
+          return { ok: true, sourceUrl: link.url, title: generated.title, articleId, embeddingPayload }
         })
         .catch((e: unknown): PipelineResult => {
           const raw   = errMsg(e)
@@ -618,16 +664,15 @@ export const newsPipelineFunction = inngest.createFunction(
       results.push(result)
 
       if (result.ok) {
-        // Re-derive embedding payload for the event (variables scoped inside
-        // step.run are not accessible here — recompute from result fields).
-        // For the event we only need articleId + title + sourceUrl; the full
-        // embedding payload was emitted inside step.run above.
         await step.sendEvent(`article-saved-${i}`, {
           name: 'news/article.processed',
           data: {
-            articleId: result.articleId,
-            title:     result.title,
-            sourceUrl: result.sourceUrl,
+            articleId:       result.articleId,
+            title:           result.title,
+            sourceUrl:       result.sourceUrl,
+            // FIX: embeddingPayload now comes directly from the step.run
+            // return value — no variable scope issues.
+            embeddingPayload: result.embeddingPayload,
           },
         })
       }
