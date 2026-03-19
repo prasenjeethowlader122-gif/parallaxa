@@ -17,8 +17,8 @@ import type { GetFunctionInput } from 'inngest'
 
 const FS_BASE        = process.env.FIRESCRAPE_BASE_URL    ?? 'https://parallaxa-py-1.onrender.com'
 const HF_MODEL       = process.env.HF_MODEL               ?? 'Qwen/Qwen2.5-72B-Instruct'
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL     ?? 'BAAI/bge-large-en-v1.5'
-const YAHOO_SOURCES  = ['https://www.yahoo.com/news/']
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL     ?? 'sentence-transformers/all-MiniLM-L6-v2'
+const YAHOO_SOURCES  = ['https://www.yahoo.com/news']
 const FALLBACK_URL   = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 const hf = new OpenAI({
@@ -121,7 +121,7 @@ async function discoverLinks(step: Step, limit: number): Promise<ArticleLink[]> 
   }
 
   for (let i = 0; i < YAHOO_SOURCES.length && out.length < limit; i++) {
-    try { (await fsMap(step, YAHOO_SOURCES[i], i)).forEach(u => u) }
+    try { (await fsMap(step, YAHOO_SOURCES[i], i)).forEach(u => add(u)) }
     catch (e) { console.warn(`[discover] map[${i}]: ${errMsg(e)}`) }
   }
 
@@ -185,13 +185,25 @@ async function embed(text: string): Promise<number[] | undefined> {
 async function saveArticle(gen: GeneratedArticle, page: ScrapedPage): Promise<string> {
   const readTime = Math.max(1, Math.ceil(gen.content.split(/\s+/).length / 200))
   const saved = await createArticle({
-    title: gen.title, description: gen.description, content: gen.content,
-    category: gen.category, author: 'Intelligence', date: new Date(),
+    title: gen.title, 
+    description: gen.description, 
+    content: gen.content,
+    category: gen.category, 
+    author: 'Intelligence', 
+    date: new Date(),
     image: page.image ?? '', readTime,
-    featured: false, breaking: false, trending: false,
-    ogImage: page.image ?? undefined, twitterCard: 'summary_large_image',
-    visibility: 'public', status: 'published',
-    noIndex: false, allowComments: true, showInRss: true, ampEnabled: false,
+    featured: false, 
+    breaking: false, 
+    trending: false,
+    ogImage: page.image ?? undefined, 
+    twitterCard: 'summary_large_image',
+    visibility: 'public', 
+    status: 'published',
+    noIndex: false, 
+    allowComments: true, 
+    showInRss: true, 
+    ampEnabled: false,
+   // embedding: gen.embedding
   })
   if (!saved?.id) throw new Error('DB insert returned no id')
   return saved.id
@@ -220,6 +232,7 @@ export const newsPipelineFunction = inngest.createFunction(
   async ({ step, logger }) => {
 
     // ── Step 0: Wake FireScrape ───────────────────────────────────────────────
+    
     await firescrapeWakeUp(step)
 
     // ── Step 1: Discover links (step.fetch/sleep calls — top-level) ───────────
