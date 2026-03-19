@@ -78,18 +78,6 @@ async function fsMap(step: Step, url: string, idx: number): Promise<string[]> {
   const data = await r.json() as FsJob | FsMapStatus
   if ('urls' in data && Array.isArray(data.urls)) return data.urls.filter((u): u is string => typeof u === 'string')
 
-  const { job_id } = data as FsJob
-  if (!job_id) throw new Error(`/v1/map no job_id: ${JSON.stringify(data).slice(0, 200)}`)
-
-  for (let p = 0; p < 40; p++) {
-    await step.sleep(`fs-map-wait-${idx}-${p}`, 5_000)
-    const pr = await step.fetch(`fs-map-poll-${idx}-${p}`, `${FS_BASE}/v1/map/${job_id}`)
-    if (!pr.ok) { console.warn(`[map] poll HTTP ${pr.status}`); continue }
-    const s = await pr.json() as FsMapStatus
-    if (s.status === 'completed') return (s.urls ?? []).filter((u): u is string => typeof u === 'string')
-    if (s.status === 'failed' || s.status === 'cancelled') throw new Error(`map job ${job_id}: ${s.status}`)
-  }
-  throw new Error(`map job ${job_id} timed out`)
 }
 
 async function fsScrapeLinks(step: Step, url: string, id: string): Promise<string[]> {
@@ -133,18 +121,8 @@ async function discoverLinks(step: Step, limit: number): Promise<ArticleLink[]> 
   }
 
   for (let i = 0; i < YAHOO_SOURCES.length && out.length < limit; i++) {
-    try { (await fsMap(step, YAHOO_SOURCES[i], i)).forEach(u => add(u)) }
+    try { (await fsMap(step, YAHOO_SOURCES[i], i)).forEach(u => u) }
     catch (e) { console.warn(`[discover] map[${i}]: ${errMsg(e)}`) }
-  }
-
-  for (let i = 0; i < YAHOO_SOURCES.length && out.length < limit; i++) {
-    try { (await fsScrapeLinks(step, YAHOO_SOURCES[i], `discover-scrape-${i}`)).forEach(u => add(u)) }
-    catch (e) { console.warn(`[discover] scrape[${i}]: ${errMsg(e)}`) }
-  }
-
-  for (let i = 0; i < YAHOO_SOURCES.length && out.length < limit; i++) {
-    try { (await fsCrawl(step, YAHOO_SOURCES[i], i)).forEach(p => (p.links ?? []).forEach(u => add(u))) }
-    catch (e) { console.warn(`[discover] crawl[${i}]: ${errMsg(e)}`) }
   }
 
   return out.slice(0, limit)
@@ -234,7 +212,7 @@ function buildEmbedText(gen: GeneratedArticle, page: ScrapedPage): string {
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id: 'news-pipeline-yzo007p', name: 'Yahoo News Pipeline',
+    id: 'news-pipeline-yzo007rp', name: 'Yahoo News Pipeline',
     retries: 3, concurrency: { limit: 1 },
     triggers: [{ event: 'news/pipeline.requested' }],
   },
@@ -247,7 +225,7 @@ export const newsPipelineFunction = inngest.createFunction(
     // ── Step 1: Discover links (step.fetch/sleep calls — top-level) ───────────
     logger.info('[pipeline] Discovering links…')
     const rawLinks = await discoverLinks(step, 50)
-    const links    = rawLinks.length > 0 ? rawLinks : [{ url: FALLBACK_URL, title: null }]
+    const links    = rawLinks.length > 0 ? rawLinks : null
 
     // Snapshot discovery results as a named step → visible in Inngest dashboard
     await step.run('discovery-summary', async () => ({
