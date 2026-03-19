@@ -577,7 +577,7 @@ export const newsPipelineFunction = inngest.createFunction(
 
     // ── Step 1: Discover article links ────────────────────────────────────────
     logger.info('[pipeline] Discovering Yahoo News article links…')
-    const links = await discoverArticleLinks(step, 50)
+    let links = await discoverArticleLinks(step, 50)
 
     if (links.length === 0) {
       links = [
