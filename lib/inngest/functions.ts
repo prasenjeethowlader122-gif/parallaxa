@@ -409,7 +409,7 @@ export const newsPipelineFunction = inngest.createFunction(
     // Step 1: Crawl
     const links = await step.run('crawl-yahoo-news', async () => {
       console.log('[inngest] Crawling Yahoo News via FireScrape API…')
-      const found = await crawlYahooNewsLinks(10)
+      const found = await crawlYahooNewsLinks('https://yahoo.com/news/',10)
       if (!found.length) throw new Error('No article links found on Yahoo News')
       console.log(`[inngest] Found ${found.length} links`)
       return found
