@@ -561,7 +561,7 @@ async function saveArticle(generated: GeneratedArticle, page: ScrapedPage): Prom
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id:          'news-pipeline-yzo07',
+    id:          'news-pipeline-yzo007',
     name:        'Yahoo News Pipeline',
     retries:     3,
     concurrency: { limit: 1 },
