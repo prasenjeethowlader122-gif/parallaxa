@@ -32,7 +32,7 @@ const YAHOO_SOURCES = [
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey: process.env.HF_API_KEY ?? '',
+  apiKey: process.env.HF_API_KEY ?? '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',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────
