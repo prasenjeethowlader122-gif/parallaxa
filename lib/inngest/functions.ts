@@ -45,10 +45,16 @@ interface GeneratedArticle {
 
 // ─── FireScrape API types ─────────────────────────────────────────────────────
 
+// PageMetadata mirrors app/models.py PageMetadata (all fields snake_case)
 interface FireScrapeMetadata {
   title?: string
-  ogImage?: string
-  twitterImage?: string
+  og_image?: string       // FIX: was ogImage (camelCase), API returns snake_case
+  og_title?: string
+  og_description?: string
+  description?: string
+  author?: string
+  published_time?: string
+  status_code?: number
   [key: string]: unknown
 }
 
@@ -58,6 +64,7 @@ interface FireScrapeScrapeResult {
   links?: string[]
   metadata?: FireScrapeMetadata
   error?: string
+  success?: boolean
 }
 
 interface FireScrapeCrawlJob {
@@ -95,10 +102,6 @@ function isRealArticleUrl(url: string): boolean {
 
 // ─── FireScrape helpers ───────────────────────────────────────────────────────
 
-/**
- * Scrape a single URL via POST /v1/scrape.
- * Returns markdown, metadata (title, images), and links.
- */
 async function firescrapeUrl(url: string): Promise<FireScrapeScrapeResult> {
   const res = await fetch(`${FIRESCRAPE_BASE}/v1/scrape`, {
     method: 'POST',
@@ -119,16 +122,11 @@ async function firescrapeUrl(url: string): Promise<FireScrapeScrapeResult> {
   return res.json() as Promise<FireScrapeScrapeResult>
 }
 
-/**
- * Start an async crawl via POST /v1/crawl, then poll until complete.
- * Returns the list of page results.
- */
 async function firescrapeCrawl(
   startUrl: string,
   maxPages = 15,
   maxDepth = 2
 ): Promise<FireScrapeScrapeResult[]> {
-  // Start the job
   const startRes = await fetch(`${FIRESCRAPE_BASE}/v1/crawl`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -150,7 +148,6 @@ async function firescrapeCrawl(
   const { job_id }: FireScrapeCrawlJob = await startRes.json()
   console.log(`[firescrape] crawl job started: ${job_id}`)
 
-  // Poll until done (max 2 minutes)
   const deadline = Date.now() + 120_000
   while (Date.now() < deadline) {
     await sleep(4_000)
@@ -175,18 +172,17 @@ async function firescrapeCrawl(
   throw new Error(`FireScrape crawl job ${job_id} timed out after 2 minutes`)
 }
 
-/**
- * Use POST /v1/map for fast URL discovery without full content extraction.
- */
+// FIX: API returns { total, urls, url_details, stats } — not { urls?, links? }
 async function firescrapeMap(url: string, maxPages = 50): Promise<string[]> {
   const res = await fetch(`${FIRESCRAPE_BASE}/v1/map`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, 
+    body: JSON.stringify({
+      url,
       include_sitemap: false,
-      max_pages:
-      maxPages, 
-      same_domain: true }),
+      max_pages: maxPages,
+      same_domain: true,
+    }),
   })
 
   if (!res.ok) {
@@ -194,8 +190,9 @@ async function firescrapeMap(url: string, maxPages = 50): Promise<string[]> {
     throw new Error(`FireScrape map failed for ${url}: ${res.status} ${text}`)
   }
 
-  const data = await res.json() as { urls?: string[]; links?: string[] }
-  return data.urls ?? data.links ?? []
+  // API shape: { total: number, urls: string[], url_details: {...}, stats: {...} }
+  const data = await res.json() as { total?: number; urls?: string[] }
+  return data.urls ?? []
 }
 
 function sleep(ms: number): Promise<void> {
@@ -204,18 +201,10 @@ function sleep(ms: number): Promise<void> {
 
 // ─── Article link discovery ───────────────────────────────────────────────────
 
-/**
- * Discover Yahoo News article links using FireScrape.
- *
- * Strategy:
- *  1. /v1/map on yahoo.com/news — fast, gets lots of URLs
- *  2. Fall back to /v1/scrape on multiple sources for their `links` field
- *  3. Filter to real article URLs
- */
 async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
   const collected = new Map<string, ArticleLink>()
 
-  // ── Strategy 1: map yahoo.com/news ──────────────────────────────────────────
+  // Strategy 1: map yahoo.com/news
   try {
     console.log('[firescrape] mapping yahoo.com/news…')
     const mapped = await firescrapeMap('https://yahoo.com/news', 60)
@@ -230,7 +219,7 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
     console.warn('[firescrape] map failed, falling back:', err)
   }
 
-  // ── Strategy 2: scrape link-rich pages ──────────────────────────────────────
+  // Strategy 2: scrape link-rich pages
   if (collected.size < limit) {
     const SOURCES = [
       'https://yahoo.com/news',
@@ -260,7 +249,7 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
     }
   }
 
-  // ── Strategy 3: async crawl as last resort ───────────────────────────────────
+  // Strategy 3: async crawl as last resort
   if (collected.size < limit) {
     try {
       console.log('[firescrape] starting async crawl on yahoo.com/news…')
@@ -269,10 +258,7 @@ async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
         for (const url of page.links ?? []) {
           const clean = url.split('?')[0]
           if (isRealArticleUrl(clean) && !collected.has(clean)) {
-            collected.set(clean, {
-              url: clean,
-              title: null,
-            })
+            collected.set(clean, { url: clean, title: null })
           }
           if (collected.size >= limit) break
         }
@@ -303,10 +289,10 @@ async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
 
     const meta = result.metadata ?? {}
     const title = meta.title ?? link.title ?? null
+
+    // FIX: API returns snake_case og_image, not camelCase ogImage
     const image =
-      (typeof meta.ogImage === 'string' ? meta.ogImage : null) ??
-      (typeof meta.twitterImage === 'string' ? meta.twitterImage : null) ??
-      null
+      (typeof meta.og_image === 'string' ? meta.og_image : null) ?? null
 
     return {
       url: link.url,
@@ -342,19 +328,17 @@ Respond with ONLY a valid JSON object in this exact format (no code fences, no e
     },
   ]
 
-  const stream = await hfClient.chat.completions.create({
+  // FIX: HuggingFace router may not emit OpenAI-compatible streaming deltas.
+  // Use non-streaming to get a reliable single response body.
+  const response = await hfClient.chat.completions.create({
     model: HF_MODEL,
     messages,
-    stream: true,
+    stream: false,
     max_tokens: 1200,
     temperature: 0.6,
   })
 
-  let raw = ''
-  for await (const chunk of stream) {
-    raw += chunk.choices[0]?.delta?.content ?? ''
-  }
-
+  const raw = response.choices[0]?.message?.content ?? ''
   const clean = raw.replace(/```json|```/g, '').trim()
 
   try {
@@ -422,7 +406,7 @@ export const newsPipelineFunction = inngest.createFunction(
   { event: 'news/pipeline.requested' },
 
   async ({ step }) => {
-    // ── Step 1: Crawl ────────────────────────────────────────────────────────
+    // Step 1: Crawl
     const links = await step.run('crawl-yahoo-news', async () => {
       console.log('[inngest] Crawling Yahoo News via FireScrape API…')
       const found = await crawlYahooNewsLinks(10)
@@ -431,7 +415,7 @@ export const newsPipelineFunction = inngest.createFunction(
       return found
     })
 
-    // ── Steps 2–N: Per-article scrape → generate → save ───────────────────────
+    // Steps 2–N: Per-article scrape → generate → save
     const articles: Array<
       | { sourceUrl: string; title: string; articleId: string | null }
       | { sourceUrl: string; error: string }
@@ -453,12 +437,8 @@ export const newsPipelineFunction = inngest.createFunction(
           console.log(`[inngest] [${i + 1}/${links.length}] saving to Neon…`)
           const articleId = await saveToNeon(generated, page)
 
-          await step.sendEvent('article-processed-event', {
-            name: 'news/article.processed',
-            data: { articleId, title: generated.title, sourceUrl: link.url },
-          })
-
           console.log(`[inngest] ✓ "${generated.title}" → id:${articleId}`)
+          // FIX: return the data we need; sendEvent is called OUTSIDE step.run below
           return { sourceUrl: link.url, title: generated.title, articleId }
         })
         .catch((err: unknown) => ({
@@ -467,6 +447,19 @@ export const newsPipelineFunction = inngest.createFunction(
         }))
 
       articles.push(result)
+
+      // FIX: step.sendEvent must be called at the top level of the Inngest
+      // function handler, never nested inside a step.run callback.
+      if (!('error' in result)) {
+        await step.sendEvent(`article-processed-event-${i}`, {
+          name: 'news/article.processed',
+          data: {
+            articleId: result.articleId,
+            title: result.title,
+            sourceUrl: result.sourceUrl,
+          },
+        })
+      }
     }
 
     const done = articles.filter((r) => !('error' in r)).length
