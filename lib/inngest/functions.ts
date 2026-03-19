@@ -30,9 +30,6 @@ const YAHOO_SOURCES = [
 
 // FIX 1: Never hardcode API keys as fallback values in source code.
 // If HF_API_KEY is missing, fail loudly at startup rather than leaking a key.
-if (!process.env.HF_API_KEY) {
-  throw new Error('Missing required environment variable: HF_API_KEY')
-}
 
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
