@@ -9,6 +9,7 @@ export async function POST() {
   try {
     const result = await inngest.send({
       name: 'news/pipeline.requested',
+      
       data: {},
     })
     const eventId = result?.ids?.[0] ?? result?.id ?? null
