@@ -186,7 +186,7 @@ async function firescrapeMap(
       body:    JSON.stringify({
         url,
         include_sitemap: false,
-        max_pages:       maxPages,
+        max_pages:       100,
         same_domain:     true,
       }),
     },
