@@ -182,7 +182,11 @@ async function firescrapeMap(url: string, maxPages = 50): Promise<string[]> {
   const res = await fetch(`${FIRESCRAPE_BASE}/v1/map`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, max_pages: maxPages, same_domain: true }),
+    body: JSON.stringify({ url, 
+      include_sitemap: false,
+      max_pages:
+      maxPages, 
+      same_domain: true }),
   })
 
   if (!res.ok) {
