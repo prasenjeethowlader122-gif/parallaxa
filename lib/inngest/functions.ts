@@ -286,12 +286,13 @@ async function discoverArticleLinks(
       console.log(`[discover] A: map ${YAHOO_SOURCES[i]}`)
       const urls = await firescrapeMap(step, YAHOO_SOURCES[i], `discover-map-${i}`, 60)
       console.log(`[discover] A: map returned ${urls.length} raw URLs`)
-      urls.forEach((u) => add(u))
+      urls.forEach((u) => u)
       console.log(`[discover] A: running total ${links.length}`)
     } catch (e) {
       console.warn(`[discover] A: map failed for ${YAHOO_SOURCES[i]}: ${errMsg(e)}`)
     }
   }
+  /*
 
   // Strategy B: scrape + extract links
   if (links.length < limit) {
@@ -326,7 +327,7 @@ async function discoverArticleLinks(
     }
   }
 
-  console.log(`[discover] final: ${links.length} unique articles (limit ${limit})`)
+  console.log(`[discover] final: ${links.length} unique articles (limit ${limit})`)*/
   return links.slice(0, limit)
 }
 
