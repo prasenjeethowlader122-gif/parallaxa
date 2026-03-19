@@ -301,7 +301,7 @@ export const newsPipelineFunction = inngest.createFunction(
           try { gen = await generate(page) }
           catch (e) { throw new Error(`[generate] ${errMsg(e)}`) }
           
-          let articleId: string
+        
           
           const embedText = buildEmbedText(gen, page)
           const embedVector = await embed(embedText)
@@ -319,8 +319,6 @@ export const newsPipelineFunction = inngest.createFunction(
             dim: embedVector?.length,
           }
           
-          try { articleId = await saveArticle(gen, page) }
-          catch (e) { throw new Error(`[db] ${errMsg(e)}`) }
           
           logger.info(`[pipeline] ${tag} ✓ id:${articleId} embed_dim:${embedVector?.length ?? 'none'}`)
           return { ok: true, sourceUrl: link.url, title: gen.title, articleId, embeddingPayload }
