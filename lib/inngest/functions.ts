@@ -100,17 +100,18 @@ function errMsg(e: unknown): string {
 function isArticleUrl(raw: string): boolean {
   let u: URL
   try { u = new URL(raw) } catch { return false }
-
-  if (!u.hostname.endsWith('yahoo.com')) return false
-
-  const path = u.pathname
-  if (!path.includes('/news/')) return false
-  if (/\/(video|photos?|slideshows?|live|tag|topic|author|category|rss)\//i.test(path)) return false
-
-  const slug = path.split('/').filter(Boolean).pop() ?? ''
-  if (slug.length < 5) return false
-  if (/^(news|sports|finance|entertainment|lifestyle|health|science|technology|world|us|politics)$/.test(slug)) return false
-
+  
+  // Must be exactly www.yahoo.com
+  if (u.hostname !== 'www.yahoo.com') return false
+  
+  // Path must match /news/articles/<slug>.html exactly
+  const match = u.pathname.match(/^\/news\/articles\/([^/]+)\.html$/)
+  if (!match) return false
+  
+  // Slug must end with a numeric ID (e.g. -140445852)
+  const slug = match[1]
+  if (!/\-\d{6,}$/.test(slug)) return false
+  
   return true
 }
 
