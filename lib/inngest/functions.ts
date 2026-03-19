@@ -430,7 +430,7 @@ async function saveArticle(generated: GeneratedArticle, page: ScrapedPage): Prom
     description:   generated.description,
     content:       generated.content,
     category:      generated.category,
-    author:        'AI Pipeline',
+    author:        'Intelligence',
     date:          new Date(),
     image:         page.image ?? '',
     readTime,
@@ -455,7 +455,7 @@ async function saveArticle(generated: GeneratedArticle, page: ScrapedPage): Prom
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id:          'news-pipeline-vyz',
+    id:          'news-pipeline-vyzo',
     name:        'Yahoo News Pipeline',
     retries:     3,
     concurrency: { limit: 1 },
