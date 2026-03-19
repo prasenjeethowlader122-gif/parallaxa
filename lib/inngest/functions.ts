@@ -233,7 +233,7 @@ async function saveArticle(gen: GeneratedArticle, page: ScrapedPage): Promise < 
     allowComments: true,
     showInRss: true,
     ampEnabled: false,
-    // embedding: gen.embedding
+    embedding: gen.embedding
   })
   if (!saved?.id) throw new Error('DB insert returned no id')
   return saved.id
@@ -254,7 +254,7 @@ function buildEmbedText(gen: GeneratedArticle, page: ScrapedPage): string {
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id: 'news-pipeline-yzo00rpp',
+    id: 'news-pipeline-yzo00rppp',
     name: 'Yahoo News Pipeline',
     retries: 3,
     concurrency: { limit: 1 },
@@ -280,7 +280,7 @@ export const newsPipelineFunction = inngest.createFunction(
       sources: YAHOO_SOURCES,
       links: links.map(l => ({ url: l.url, title: l.title })),
     }))
-    logger.info(`[pipeline] ${links.length} links (fallback=${rawLinks.length === 0})`)
+   // logger.info(`[pipeline] ${links.length} links (fallback=${rawLinks.length === 0})`)
     
     // ── Steps 2–N: scrape → generate → save → embed ───────────────────────────
     const results: PipelineResult[] = []
@@ -300,8 +300,6 @@ export const newsPipelineFunction = inngest.createFunction(
           catch (e) { throw new Error(`[generate] ${errMsg(e)}`) }
           
           let articleId: string
-          try { articleId = await saveArticle(gen, page) }
-          catch (e) { throw new Error(`[db] ${errMsg(e)}`) }
           
           const embedText = buildEmbedText(gen, page)
           const embedVector = await embed(embedText)
@@ -312,6 +310,9 @@ export const newsPipelineFunction = inngest.createFunction(
             model: HF_EMBED_MODEL,
             dim: embedVector?.length,
           }
+          gen.embedding = embeddingPayload.vector;
+          try { articleId = await saveArticle(gen, page) }
+          catch (e) { throw new Error(`[db] ${errMsg(e)}`) }
           
           logger.info(`[pipeline] ${tag} ✓ id:${articleId} embed_dim:${embedVector?.length ?? 'none'}`)
           return { ok: true, sourceUrl: link.url, title: gen.title, articleId, embeddingPayload }
