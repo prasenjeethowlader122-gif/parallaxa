@@ -1,21 +1,27 @@
 import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
 import { inngest } from '@/lib/inngest/client'
 
-const INNGEST_API_KEY = process.env.INNGEST_API_KEY
-
-
-
 export async function POST() {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const result = await inngest.send({
       name: 'news/pipeline.requested',
-      
       data: {},
     })
+
     const eventId = result?.ids?.[0] ?? result?.id ?? null
 
-    // Wait up to 10s for Inngest to assign a runId
-    
+    if (!eventId) {
+      return NextResponse.json(
+        { error: 'Inngest did not return an event ID — check INNGEST_EVENT_KEY' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({ eventId }, { status: 202 })
   } catch (err) {
