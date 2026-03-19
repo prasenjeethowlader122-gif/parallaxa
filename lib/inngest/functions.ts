@@ -154,7 +154,346 @@ async function firescrapeMap(
     throw new Error(`/v1/map HTTP ${res.status}: ${await res.text().catch(() => res.statusText)}`)
   }
 
-  const data = await res.json() as { urls?: unknown }
+  const data = {
+  "url": "https://www.yahoo.com/news/",
+  "total": 64,
+  "urls": [
+    "https://www.yahoo.com/",
+    "https://www.yahoo.com/all",
+    "https://www.yahoo.com/entertainment/celebrity/articles/french-influencer-arrested-bali-alleged-231504234.html",
+    "https://www.yahoo.com/entertainment/tv/articles/only-someone-warned-joe-rogan-173446830.html",
+    "https://www.yahoo.com/finance/news/hershey-company-announces-significant-operation-160413532.html",
+    "https://www.yahoo.com/finance/news/jim-cramer-says-arm-holdings-221434823.html",
+    "https://www.yahoo.com/finance/news/m-59-wife-bought-second-095000805.html",
+    "https://www.yahoo.com/finance/news/pastor-called-off-target-boycott-172930103.html",
+    "https://www.yahoo.com/finance/news/usps-nearing-financial-breaking-point-220936916.html",
+    "https://www.yahoo.com/finance/personal-finance/banking/article/how-the-feds-rate-decision-affects-your-bank-accounts-loans-credit-cards-and-investments-220526730.html",
+    "https://www.yahoo.com/guides/originals",
+    "https://www.yahoo.com/lifestyle/article/alcohol-drink-too-much-quitting-health-change-161921000.html",
+    "https://www.yahoo.com/lifestyle/articles/driver-confronts-massive-python-constricting-193951131.html",
+    "https://www.yahoo.com/news",
+    "https://www.yahoo.com/news/articles/akron-explosion-heres-caused-loud-140032362.html",
+    "https://www.yahoo.com/news/articles/apple-warns-iphone-users-software-223956485.html",
+    "https://www.yahoo.com/news/articles/baby-father-kitchen-making-formula-133919223.html",
+    "https://www.yahoo.com/news/articles/black-pastors-arrest-alabama-supreme-210725692.html",
+    "https://www.yahoo.com/news/articles/boys-accused-gang-rape-12-181129755.html",
+    "https://www.yahoo.com/news/articles/cbs-maga-friendly-bosses-humiliated-165454674.html",
+    "https://www.yahoo.com/news/articles/china-makes-energy-security-reunification-072555778.html",
+    "https://www.yahoo.com/news/articles/colorado-police-arrest-woman-begging-160002853.html",
+    "https://www.yahoo.com/news/articles/decades-florida-canal-project-abandoned-130440366.html",
+    "https://www.yahoo.com/news/articles/department-store-set-open-myrtle-162726195.html",
+    "https://www.yahoo.com/news/articles/exclusive-irans-supreme-leader-rejects-095430432.html",
+    "https://www.yahoo.com/news/articles/fbi-says-suspicious-package-found-213210028.html",
+    "https://www.yahoo.com/news/articles/georgia-going-dump-voting-machines-183514811.html",
+    "https://www.yahoo.com/news/articles/gov-sarah-huckabee-sanders-asked-222816332.html",
+    "https://www.yahoo.com/news/articles/infant-hospitalized-herpes-circumcision-involving-054003408.html",
+    "https://www.yahoo.com/news/articles/israel-rapidly-killing-irans-top-050301191.html",
+    "https://www.yahoo.com/news/articles/justice-department-leaders-meet-lawmakers-221647830.html",
+    "https://www.yahoo.com/news/articles/leaked-video-reveals-putin-days-141003868.html",
+    "https://www.yahoo.com/news/articles/man-died-car-plunged-bay-210110741.html",
+    "https://www.yahoo.com/news/articles/married-high-school-teacher-arrested-214410267.html",
+    "https://www.yahoo.com/news/articles/mojtaba-khamenei-said-reject-ceasefire-141133172.html",
+    "https://www.yahoo.com/news/articles/nancy-guthrie-neighbor-moved-she-201358787.html",
+    "https://www.yahoo.com/news/articles/newly-discovered-whitey-bulger-writings-211301838.html",
+    "https://www.yahoo.com/news/articles/over-half-gray-wolves-released-223000352.html",
+    "https://www.yahoo.com/news/articles/parents-arrested-allegedly-forcing-daughter-171106041.html",
+    "https://www.yahoo.com/news/articles/president-donald-trump-fires-nfl-093003542.html",
+    "https://www.yahoo.com/news/articles/riyadh-residents-receive-phone-alerts-164258338.html",
+    "https://www.yahoo.com/news/articles/russian-official-ukraines-drone-development-102429761.html",
+    "https://www.yahoo.com/news/articles/serious-crash-boston-leaves-several-172635225.html",
+    "https://www.yahoo.com/news/articles/shot-him-couple-more-times-165057595.html",
+    "https://www.yahoo.com/news/articles/slain-troops-families-issue-ban-224742397.html",
+    "https://www.yahoo.com/news/articles/still-alive-woman-goes-er-130000858.html",
+    "https://www.yahoo.com/news/articles/terrify-every-american-pnw-leaders-000543599.html",
+    "https://www.yahoo.com/news/articles/trump-vows-no-more-attacks-035545052.html",
+    "https://www.yahoo.com/news/articles/trumps-failed-strong-arming-allies-140609996.html",
+    "https://www.yahoo.com/news/articles/u-attacked-iran-show-power-151200758.html",
+    "https://www.yahoo.com/news/articles/uss-gerald-r-ford-huge-195911892.html",
+    "https://www.yahoo.com/news/articles/woman-arrested-2011-cold-case-145621856.html",
+    "https://www.yahoo.com/news/articles/woman-rejects-minnesota-man-following-211421315.html",
+    "https://www.yahoo.com/news/politics",
+    "https://www.yahoo.com/news/science",
+    "https://www.yahoo.com/news/us",
+    "https://www.yahoo.com/news/us/article/nancy-guthries-disappearance-former-fbi-special-agent-says-it-appears-less-and-less-likely-that-the-motive-for-her-apparent-abduction-was-ransom-150234687.html",
+    "https://www.yahoo.com/news/videos/james-carville-suggests-trump-resign-233942019.html",
+    "https://www.yahoo.com/news/videos/slain-troops-families-issue-ban-224742434.html",
+    "https://www.yahoo.com/news/videos/unredacted-epstein-file-exposes-trump-015117607.html",
+    "https://www.yahoo.com/news/weather-news",
+    "https://www.yahoo.com/news/world",
+    "https://www.yahoo.com/organizations/yougov",
+    "https://www.yahoo.com/sports/articles/wada-delays-decision-over-potential-225717270.html"
+  ],
+  "url_details": {
+    "https://www.yahoo.com/news": {
+      "depth": 0,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/us": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/politics": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/science": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/world": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/weather-news": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/guides/originals": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/organizations/yougov": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/justice-department-leaders-meet-lawmakers-221647830.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/finance/news/pastor-called-off-target-boycott-172930103.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/finance/personal-finance/banking/article/how-the-feds-rate-decision-affects-your-bank-accounts-loans-credit-cards-and-investments-220526730.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/apple-warns-iphone-users-software-223956485.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/israel-rapidly-killing-irans-top-050301191.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/finance/news/usps-nearing-financial-breaking-point-220936916.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/black-pastors-arrest-alabama-supreme-210725692.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/boys-accused-gang-rape-12-181129755.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/colorado-police-arrest-woman-begging-160002853.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/riyadh-residents-receive-phone-alerts-164258338.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/baby-father-kitchen-making-formula-133919223.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/leaked-video-reveals-putin-days-141003868.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/newly-discovered-whitey-bulger-writings-211301838.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/mojtaba-khamenei-said-reject-ceasefire-141133172.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/u-attacked-iran-show-power-151200758.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/georgia-going-dump-voting-machines-183514811.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/married-high-school-teacher-arrested-214410267.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/infant-hospitalized-herpes-circumcision-involving-054003408.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/russian-official-ukraines-drone-development-102429761.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/shot-him-couple-more-times-165057595.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/woman-rejects-minnesota-man-following-211421315.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/china-makes-energy-security-reunification-072555778.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/over-half-gray-wolves-released-223000352.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/videos/slain-troops-families-issue-ban-224742434.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/videos/unredacted-epstein-file-exposes-trump-015117607.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/entertainment/celebrity/articles/french-influencer-arrested-bali-alleged-231504234.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/gov-sarah-huckabee-sanders-asked-222816332.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/man-died-car-plunged-bay-210110741.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/fbi-says-suspicious-package-found-213210028.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/slain-troops-families-issue-ban-224742397.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/lifestyle/articles/driver-confronts-massive-python-constricting-193951131.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/trumps-failed-strong-arming-allies-140609996.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/serious-crash-boston-leaves-several-172635225.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/nancy-guthrie-neighbor-moved-she-201358787.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/decades-florida-canal-project-abandoned-130440366.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/terrify-every-american-pnw-leaders-000543599.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/entertainment/tv/articles/only-someone-warned-joe-rogan-173446830.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/sports/articles/wada-delays-decision-over-potential-225717270.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/woman-arrested-2011-cold-case-145621856.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/cbs-maga-friendly-bosses-humiliated-165454674.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/us/article/nancy-guthries-disappearance-former-fbi-special-agent-says-it-appears-less-and-less-likely-that-the-motive-for-her-apparent-abduction-was-ransom-150234687.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/finance/news/hershey-company-announces-significant-operation-160413532.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/president-donald-trump-fires-nfl-093003542.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/videos/james-carville-suggests-trump-resign-233942019.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/akron-explosion-heres-caused-loud-140032362.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/parents-arrested-allegedly-forcing-daughter-171106041.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/trump-vows-no-more-attacks-035545052.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/uss-gerald-r-ford-huge-195911892.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/department-store-set-open-myrtle-162726195.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/lifestyle/article/alcohol-drink-too-much-quitting-health-change-161921000.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/finance/news/jim-cramer-says-arm-holdings-221434823.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/finance/news/m-59-wife-bought-second-095000805.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/exclusive-irans-supreme-leader-rejects-095430432.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/news/articles/still-alive-woman-goes-er-130000858.html": {
+      "depth": 1,
+      "source": "crawl"
+    },
+    "https://www.yahoo.com/all": {
+      "depth": 1,
+      "source": "crawl"
+    }
+  },
+  "stats": {
+    "sitemap_urls": 0,
+    "crawled_pages": 1,
+    "skipped_robots": 0,
+    "skipped_external": 15,
+    "errors": 63,
+    "depth_distribution": {
+      "0": 1,
+      "1": 63
+    }
+  }
+} as { urls?: unknown }
+
   if (!Array.isArray(data.urls)) {
     throw new Error(`/v1/map unexpected shape: ${JSON.stringify(data).slice(0, 200)}`)
   }
@@ -454,7 +793,7 @@ async function saveArticle(generated: GeneratedArticle, page: ScrapedPage): Prom
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id:          'news-pipeline',
+    id:          'news-pipeline-v',
     name:        'Yahoo News Pipeline',
     retries:     3,
     concurrency: { limit: 1 },
