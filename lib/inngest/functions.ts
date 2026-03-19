@@ -1,16 +1,17 @@
 /**
  * lib/inngest/functions.ts
  *
- * FIXES applied:
- * 1. isRealArticleUrl() - relaxed to catch more valid Yahoo article URLs
- * 2. crawlYahooNewsLinks() - added scroll + longer wait + search.yahoo.com fallback
- * 3. Multiple source strategies so one blocked page doesn't kill the whole run
+ * Uses the FireScrape API (https://parallaxa-py-1.onrender.com) instead of
+ * Playwright for all crawling and scraping.
  */
 
 import { inngest } from './client'
-import { chromium, Browser, Page } from 'playwright'
 import { OpenAI } from 'openai'
 import { createArticle } from '@/lib/db/articles'
+
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+const FIRESCRAPE_BASE = 'https://parallaxa-py-1.onrender.com'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
@@ -42,29 +43,46 @@ interface GeneratedArticle {
   category: string
 }
 
+// ─── FireScrape API types ─────────────────────────────────────────────────────
+
+interface FireScrapeMetadata {
+  title?: string
+  ogImage?: string
+  twitterImage?: string
+  [key: string]: unknown
+}
+
+interface FireScrapeScrapeResult {
+  markdown?: string
+  text?: string
+  links?: string[]
+  metadata?: FireScrapeMetadata
+  error?: string
+}
+
+interface FireScrapeCrawlJob {
+  job_id: string
+  status: string
+}
+
+interface FireScrapeCrawlStatus {
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  results?: FireScrapeScrapeResult[]
+  pages?: FireScrapeScrapeResult[]
+}
+
 // ─── URL helpers ──────────────────────────────────────────────────────────────
 
-/**
- * FIX #1: Much more permissive URL filter.
- *
- * Old version required the path to contain "/news/article" and a very specific
- * slug pattern — this excluded the majority of real Yahoo News URLs which look
- * like /news/some-headline-words-123abc.html or just /news/slug.
- */
 function isRealArticleUrl(url: string): boolean {
   try {
     const u = new URL(url)
     if (!u.hostname.includes('yahoo.com')) return false
 
     const path = u.pathname
-
-    // Must be under /news/
     if (!path.includes('/news/')) return false
 
-    // Exclude obvious non-article sections
     if (/\/(video|photos?|slideshow|live|tag|topic|section|author|category)\//i.test(path)) return false
 
-    // Exclude bare section hub pages like /news, /news/sports
     const slug = path.split('/').filter(Boolean).pop() ?? ''
     if (slug.length < 8) return false
     if (/^(news|sports|finance|entertainment|lifestyle|health|science|technology|world)$/.test(slug)) return false
@@ -75,207 +93,226 @@ function isRealArticleUrl(url: string): boolean {
   }
 }
 
-// ─── Playwright helpers ───────────────────────────────────────────────────────
-
-async function launchBrowser(): Promise<Browser> {
-  return chromium.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
-  })
-}
-
-async function newStealthPage(browser: Browser): Promise<Page> {
-  const context = await browser.newContext({
-    userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-      'Chrome/124.0.0.0 Safari/537.36',
-    extraHTTPHeaders: {
-      'Accept-Language': 'en-US,en;q=0.9',
-      Accept:
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-      'Cache-Control': 'no-cache',
-    },
-    viewport: { width: 1280, height: 900 },
-    javaScriptEnabled: true,
-  })
-  return context.newPage()
-}
+// ─── FireScrape helpers ───────────────────────────────────────────────────────
 
 /**
- * Collect links from one page URL using DOM + HTML regex strategies.
+ * Scrape a single URL via POST /v1/scrape.
+ * Returns markdown, metadata (title, images), and links.
  */
-async function collectLinksFromPage(page: Page, pageUrl: string, limit: number): Promise<ArticleLink[]> {
-  try {
-    await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+async function firescrapeUrl(url: string): Promise<FireScrapeScrapeResult> {
+  const res = await fetch(`${FIRESCRAPE_BASE}/v1/scrape`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url,
+      formats: ['markdown', 'metadata', 'links'],
+      only_main_content: true,
+      timeout: 30000,
+    }),
+  })
 
-    // FIX #2a: scroll down to trigger lazy-load of article links
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2))
-    await page.waitForTimeout(2_000)
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-    await page.waitForTimeout(1_500)
-
-    // Strategy 1: DOM <a> tags
-    const domLinks: ArticleLink[] = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('a[href]'))
-        .map((a) => ({
-          url: (a as HTMLAnchorElement).href,
-          title: (a as HTMLAnchorElement).textContent?.trim() || null,
-        }))
-        .filter((l) => l.url.startsWith('http'))
-    )
-
-    const filtered = domLinks
-      .filter((l) => isRealArticleUrl(l.url))
-      .map((l) => ({ url: l.url.split('?')[0], title: l.title }))
-      .filter((l, i, arr) => arr.findIndex((x) => x.url === l.url) === i)
-      .slice(0, limit)
-
-    console.log(`[playwright] DOM found ${filtered.length} links from ${pageUrl}`)
-    if (filtered.length >= 3) return filtered
-
-    // Strategy 2: raw HTML regex scan
-    const html = await page.content()
-    const regexMatches = [
-      ...html.matchAll(/href="(https?:\/\/[^"]*yahoo\.com\/news\/[^"]{8,})"/g),
-    ]
-    const regexLinks = regexMatches
-      .map((m) => m[1].split('?')[0])
-      .filter(isRealArticleUrl)
-      .filter((url, i, arr) => arr.indexOf(url) === i)
-      .slice(0, limit)
-      .map((url) => ({ url, title: null as null }))
-
-    console.log(`[playwright] HTML regex found ${regexLinks.length} links from ${pageUrl}`)
-    return regexLinks
-  } catch (err) {
-    console.warn(`[playwright] failed to collect links from ${pageUrl}:`, err)
-    return []
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText)
+    throw new Error(`FireScrape scrape failed for ${url}: ${res.status} ${text}`)
   }
+
+  return res.json() as Promise<FireScrapeScrapeResult>
 }
 
 /**
- * FIX #2: Multi-source crawl with fallback.
- *
- * Tries these sources in order until we have enough links:
- *  1. news.yahoo.com (homepage)
- *  2. search.yahoo.com/search?p=news+today (bypasses homepage JS guard)
- *  3. finance.yahoo.com/news (often less guarded)
- *
- * Each source uses DOM + HTML regex sub-strategies (unchanged).
+ * Start an async crawl via POST /v1/crawl, then poll until complete.
+ * Returns the list of page results.
  */
-async function crawlYahooNewsLinks(browser: Browser, limit = 10): Promise<ArticleLink[]> {
-  const SOURCES = [
-    'https://news.yahoo.com',
-    'https://search.yahoo.com/search?p=latest+news+today&fr=news',
-    'https://finance.yahoo.com/news/',
-  ]
+async function firescrapeCrawl(
+  startUrl: string,
+  maxPages = 15,
+  maxDepth = 2
+): Promise<FireScrapeScrapeResult[]> {
+  // Start the job
+  const startRes = await fetch(`${FIRESCRAPE_BASE}/v1/crawl`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url: startUrl,
+      max_pages: maxPages,
+      max_depth: maxDepth,
+      same_domain: true,
+      formats: ['links', 'metadata'],
+      include_patterns: ['.*/news/.*'],
+    }),
+  })
 
-  const collected: Map<string, ArticleLink> = new Map()
+  if (!startRes.ok) {
+    const text = await startRes.text().catch(() => startRes.statusText)
+    throw new Error(`FireScrape crawl start failed for ${startUrl}: ${startRes.status} ${text}`)
+  }
 
-  for (const source of SOURCES) {
-    if (collected.size >= limit) break
+  const { job_id }: FireScrapeCrawlJob = await startRes.json()
+  console.log(`[firescrape] crawl job started: ${job_id}`)
 
-    console.log(`[playwright] trying source: ${source}`)
-    const page = await newStealthPage(browser)
-    try {
-      const links = await collectLinksFromPage(page, source, limit)
-      for (const link of links) {
-        if (!collected.has(link.url)) collected.set(link.url, link)
-        if (collected.size >= limit) break
+  // Poll until done (max 2 minutes)
+  const deadline = Date.now() + 120_000
+  while (Date.now() < deadline) {
+    await sleep(4_000)
+
+    const pollRes = await fetch(`${FIRESCRAPE_BASE}/v1/crawl/${job_id}`)
+    if (!pollRes.ok) {
+      console.warn(`[firescrape] poll error ${pollRes.status} for job ${job_id}`)
+      continue
+    }
+
+    const status: FireScrapeCrawlStatus = await pollRes.json()
+    console.log(`[firescrape] job ${job_id} status: ${status.status}`)
+
+    if (status.status === 'completed') {
+      return status.results ?? status.pages ?? []
+    }
+    if (status.status === 'failed' || status.status === 'cancelled') {
+      throw new Error(`FireScrape crawl job ${job_id} ended with status: ${status.status}`)
+    }
+  }
+
+  throw new Error(`FireScrape crawl job ${job_id} timed out after 2 minutes`)
+}
+
+/**
+ * Use POST /v1/map for fast URL discovery without full content extraction.
+ */
+async function firescrapeMap(url: string, maxPages = 50): Promise<string[]> {
+  const res = await fetch(`${FIRESCRAPE_BASE}/v1/map`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, max_pages: maxPages, same_domain: true }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText)
+    throw new Error(`FireScrape map failed for ${url}: ${res.status} ${text}`)
+  }
+
+  const data = await res.json() as { urls?: string[]; links?: string[] }
+  return data.urls ?? data.links ?? []
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// ─── Article link discovery ───────────────────────────────────────────────────
+
+/**
+ * Discover Yahoo News article links using FireScrape.
+ *
+ * Strategy:
+ *  1. /v1/map on yahoo.com/news — fast, gets lots of URLs
+ *  2. Fall back to /v1/scrape on multiple sources for their `links` field
+ *  3. Filter to real article URLs
+ */
+async function crawlYahooNewsLinks(limit = 10): Promise<ArticleLink[]> {
+  const collected = new Map<string, ArticleLink>()
+
+  // ── Strategy 1: map yahoo.com/news ──────────────────────────────────────────
+  try {
+    console.log('[firescrape] mapping yahoo.com/news…')
+    const mapped = await firescrapeMap('https://yahoo.com/news', 60)
+    for (const url of mapped) {
+      const clean = url.split('?')[0]
+      if (isRealArticleUrl(clean) && !collected.has(clean)) {
+        collected.set(clean, { url: clean, title: null })
       }
-    } finally {
-      await page.close()
+    }
+    console.log(`[firescrape] map yielded ${collected.size} article URLs`)
+  } catch (err) {
+    console.warn('[firescrape] map failed, falling back:', err)
+  }
+
+  // ── Strategy 2: scrape link-rich pages ──────────────────────────────────────
+  if (collected.size < limit) {
+    const SOURCES = [
+      'https://yahoo.com/news',
+      'https://finance.yahoo.com/news/',
+      'https://search.yahoo.com/search?p=latest+news+today&fr=news',
+    ]
+
+    for (const source of SOURCES) {
+      if (collected.size >= limit) break
+      try {
+        console.log(`[firescrape] scraping links from ${source}…`)
+        const result = await firescrapeUrl(source)
+        const links: string[] = result.links ?? []
+
+        for (const url of links) {
+          const clean = url.split('?')[0]
+          if (isRealArticleUrl(clean) && !collected.has(clean)) {
+            collected.set(clean, { url: clean, title: null })
+          }
+          if (collected.size >= limit) break
+        }
+
+        console.log(`[firescrape] after ${source}: ${collected.size} article URLs`)
+      } catch (err) {
+        console.warn(`[firescrape] scrape-links failed for ${source}:`, err)
+      }
+    }
+  }
+
+  // ── Strategy 3: async crawl as last resort ───────────────────────────────────
+  if (collected.size < limit) {
+    try {
+      console.log('[firescrape] starting async crawl on yahoo.com/news…')
+      const pages = await firescrapeCrawl('https://yahoo.com/news', 20, 2)
+      for (const page of pages) {
+        for (const url of page.links ?? []) {
+          const clean = url.split('?')[0]
+          if (isRealArticleUrl(clean) && !collected.has(clean)) {
+            collected.set(clean, {
+              url: clean,
+              title: null,
+            })
+          }
+          if (collected.size >= limit) break
+        }
+      }
+      console.log(`[firescrape] after crawl: ${collected.size} article URLs`)
+    } catch (err) {
+      console.warn('[firescrape] crawl strategy failed:', err)
     }
   }
 
   const result = [...collected.values()].slice(0, limit)
-  console.log(`[playwright] total unique article links found: ${result.length}`)
+  console.log(`[firescrape] final unique article links: ${result.length}`)
   return result
 }
 
 // ─── Article scraping ─────────────────────────────────────────────────────────
 
-const ARTICLE_BODY_SELECTORS = [
-  'article',
-  '[data-test-locator="articleBody"]',
-  '.caas-body',
-  '.article-body',
-  '.body-text',
-  'main',
-  '#article-content',
-  '.content-body',
-  'p',
-]
-
-async function scrapeArticleWithPlaywright(
-  browser: Browser,
-  link: ArticleLink
-): Promise<ScrapedPage | null> {
-  const page = await newStealthPage(browser)
-
+async function scrapeArticle(link: ArticleLink): Promise<ScrapedPage | null> {
   try {
-    await page.goto(link.url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
-    await page.waitForTimeout(1_500)
+    console.log(`[firescrape] scraping article: ${link.url}`)
+    const result = await firescrapeUrl(link.url)
 
-    const title: string | null = await page.evaluate(() => {
-      const og = document.querySelector<HTMLMetaElement>('meta[property="og:title"]')
-      if (og?.content) return og.content
-      const tw = document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')
-      if (tw?.content) return tw.content
-      return document.title || null
-    })
-
-    const image: string | null = await page.evaluate(() => {
-      const og = document.querySelector<HTMLMetaElement>('meta[property="og:image"]')
-      if (og?.content?.startsWith('http')) return og.content
-      const tw = document.querySelector<HTMLMetaElement>('meta[name="twitter:image"]')
-      if (tw?.content?.startsWith('http')) return tw.content
-      const img = document.querySelector<HTMLImageElement>('article img[src]')
-      if (img?.src?.startsWith('http')) return img.src
-      return null
-    })
-
-    let bodyText = ''
-
-    for (const selector of ARTICLE_BODY_SELECTORS) {
-      const text: string = await page.evaluate((sel: string) => {
-        const el = document.querySelector(sel)
-        return el ? (el as HTMLElement).innerText ?? '' : ''
-      }, selector)
-
-      if (text.length >= 200) {
-        bodyText = text.slice(0, 5000)
-        break
-      }
-    }
-
-    if (bodyText.length < 200) {
-      bodyText = await page.evaluate(() =>
-        Array.from(document.querySelectorAll('p'))
-          .map((p) => (p as HTMLElement).innerText?.trim())
-          .filter(Boolean)
-          .join('\n\n')
-          .slice(0, 5000)
-      )
-    }
-
-    if (bodyText.length < 100) {
-      console.warn(`[playwright] insufficient content for ${link.url}`)
+    const markdown = result.markdown ?? result.text ?? ''
+    if (markdown.length < 100) {
+      console.warn(`[firescrape] insufficient content for ${link.url}`)
       return null
     }
 
-    return { url: link.url, title: title ?? link.title, markdown: bodyText, image }
+    const meta = result.metadata ?? {}
+    const title = meta.title ?? link.title ?? null
+    const image =
+      (typeof meta.ogImage === 'string' ? meta.ogImage : null) ??
+      (typeof meta.twitterImage === 'string' ? meta.twitterImage : null) ??
+      null
+
+    return {
+      url: link.url,
+      title,
+      markdown: markdown.slice(0, 5000),
+      image,
+    }
   } catch (err) {
-    console.warn(`[playwright] scrape failed for ${link.url}:`, err)
+    console.warn(`[firescrape] scrape failed for ${link.url}:`, err)
     return null
-  } finally {
-    await page.close()
   }
 }
 
@@ -383,16 +420,11 @@ export const newsPipelineFunction = inngest.createFunction(
   async ({ step }) => {
     // ── Step 1: Crawl ────────────────────────────────────────────────────────
     const links = await step.run('crawl-yahoo-news', async () => {
-      console.log('[inngest] Crawling Yahoo News with Playwright…')
-      const browser = await launchBrowser()
-      try {
-        const found = await crawlYahooNewsLinks(browser, 10)
-        if (!found.length) throw new Error('No article links found on Yahoo News')
-        console.log(`[inngest] Found ${found.length} links`)
-        return found
-      } finally {
-        await browser.close()
-      }
+      console.log('[inngest] Crawling Yahoo News via FireScrape API…')
+      const found = await crawlYahooNewsLinks(10)
+      if (!found.length) throw new Error('No article links found on Yahoo News')
+      console.log(`[inngest] Found ${found.length} links`)
+      return found
     })
 
     // ── Steps 2–N: Per-article scrape → generate → save ───────────────────────
@@ -408,14 +440,7 @@ export const newsPipelineFunction = inngest.createFunction(
         .run(`process-article-${i}`, async () => {
           console.log(`[inngest] [${i + 1}/${links.length}] scraping: ${link.url}`)
 
-          const browser = await launchBrowser()
-          let page: ScrapedPage | null = null
-          try {
-            page = await scrapeArticleWithPlaywright(browser, link)
-          } finally {
-            await browser.close()
-          }
-
+          const page = await scrapeArticle(link)
           if (!page) throw new Error('Could not scrape content')
 
           console.log(`[inngest] [${i + 1}/${links.length}] generating…`)
