@@ -3,8 +3,13 @@
  *
  * Yahoo News → FireScrape → HuggingFace → Neon pipeline.
  *
- * Uses step.fetch throughout for retriable, observable HTTP calls.
- * Crawl poll loop uses step.sleep to avoid memoization conflicts.
+ * KEY FIX: step.fetch / step.sleep must NEVER be called inside step.run().
+ * They must be called at the top level of the handler function.
+ *
+ * Rules:
+ *   - step.run()   → use plain fetch() inside, for retryable DB / AI calls
+ *   - step.fetch() → use at handler top level, for retryable HTTP calls
+ *   - step.sleep() → use at handler top level, for delays between polls
  */
 
 import { inngest } from './client'
@@ -14,7 +19,7 @@ import type { GetFunctionInput } from 'inngest'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FIRESCRAPE_BASE = 'https://parallaxa-py-1.onrender.com'
+const FIRESCRAPE_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
 const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
 
 const YAHOO_SOURCES = [
@@ -83,7 +88,6 @@ type PipelineResult =
   | { ok: true;  sourceUrl: string; title: string; articleId: string }
   | { ok: false; sourceUrl: string; stage: string; error: string }
 
-// step type extracted from Inngest handler context
 type InngestStep = GetFunctionInput<typeof inngest>['step']
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -92,10 +96,6 @@ function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
 }
 
-/**
- * Returns true if the URL looks like a real Yahoo News article.
- * Deliberately lenient — we'd rather scrape a few dud pages than miss articles.
- */
 function isArticleUrl(raw: string): boolean {
   let u: URL
   try { u = new URL(raw) } catch { return false }
@@ -113,24 +113,30 @@ function isArticleUrl(raw: string): boolean {
   return true
 }
 
-// ─── FireScrape: wake-up ──────────────────────────────────────────────────────
+// ─── FireScrape helpers (use step.fetch — call at handler top level only) ─────
 
+/**
+ * Wake up FireScrape's Render instance.
+ * Call directly at handler top level — NOT inside step.run().
+ */
 async function firescrapeWakeUp(step: InngestStep): Promise<void> {
-  const res = await step.fetch(
-    'wake-firescrape-health',
-    `${FIRESCRAPE_BASE}/health`,
-    { signal: AbortSignal.timeout(15_000) },
-  ).catch(() =>
-    step.fetch('wake-firescrape-root', `${FIRESCRAPE_BASE}/`, {
+  const res = await step
+    .fetch('wake-firescrape-health', `${FIRESCRAPE_BASE}/health`, {
       signal: AbortSignal.timeout(15_000),
-    }),
-  )
+    })
+    .catch(() =>
+      step.fetch('wake-firescrape-root', `${FIRESCRAPE_BASE}/`, {
+        signal: AbortSignal.timeout(15_000),
+      })
+    )
 
   if (!res.ok) throw new Error(`FireScrape health check HTTP ${res.status}`)
 }
 
-// ─── FireScrape: map ──────────────────────────────────────────────────────────
-
+/**
+ * Call FireScrape /v1/map.
+ * Call directly at handler top level — NOT inside step.run().
+ */
 async function firescrapeMap(
   step: InngestStep,
   url: string,
@@ -156,8 +162,10 @@ async function firescrapeMap(
   return (data.urls as unknown[]).filter((u): u is string => typeof u === 'string')
 }
 
-// ─── FireScrape: scrape ───────────────────────────────────────────────────────
-
+/**
+ * Call FireScrape /v1/scrape.
+ * Call directly at handler top level — NOT inside step.run().
+ */
 async function firescrapeUrl(
   step: InngestStep,
   url: string,
@@ -182,13 +190,9 @@ async function firescrapeUrl(
   return res.json() as Promise<FireScrapeScrapeResult>
 }
 
-// ─── FireScrape: crawl ────────────────────────────────────────────────────────
-
 /**
- * Starts a crawl job and polls for completion using step.fetch + step.sleep.
- * step.sleep is used between polls so Inngest can checkpoint the function —
- * this avoids the memoization trap of calling step.fetch with the same ID
- * multiple times in a tight loop.
+ * Start a crawl and poll with step.sleep.
+ * Call directly at handler top level — NOT inside step.run().
  */
 async function firescrapeCrawl(
   step: InngestStep,
@@ -197,7 +201,6 @@ async function firescrapeCrawl(
   maxPages = 20,
   maxDepth = 2,
 ): Promise<FireScrapeScrapeResult[]> {
-  // Start the crawl job
   const startRes = await step.fetch(
     `firescrape-crawl-start-${crawlIndex}`,
     `${FIRESCRAPE_BASE}/v1/crawl`,
@@ -223,12 +226,11 @@ async function firescrapeCrawl(
   const { job_id } = await startRes.json() as FireScrapeCrawlJob
   if (!job_id) throw new Error('/v1/crawl returned no job_id')
 
-  // Poll with step.sleep between each attempt so Inngest can checkpoint
-  const MAX_POLLS = 30           // 30 × 4 s = 120 s max
+  const MAX_POLLS = 30
   const POLL_INTERVAL_MS = 4_000
 
   for (let poll = 0; poll < MAX_POLLS; poll++) {
-    // Sleep first so the crawl has time to make progress
+    // step.sleep at handler top level — safe here
     await step.sleep(`crawl-poll-wait-${crawlIndex}-${poll}`, POLL_INTERVAL_MS)
 
     const pollRes = await step.fetch(
@@ -249,18 +251,16 @@ async function firescrapeCrawl(
     if (status.status === 'failed' || status.status === 'cancelled') {
       throw new Error(`Crawl job ${job_id} ended with status: ${status.status}`)
     }
-    // still pending/running — continue polling
   }
 
   throw new Error(`Crawl job ${job_id} timed out after ${MAX_POLLS} polls`)
 }
 
-// ─── Link discovery ───────────────────────────────────────────────────────────
+// ─── Link discovery (uses step.fetch / step.sleep — top-level only) ──────────
 
 /**
- * Runs all three discovery strategies in order, stopping early if `limit` is reached.
- * All step IDs are unique (include source index) to satisfy Inngest's memoization.
- * Always returns ArticleLink[] — JSON-safe across Inngest step boundaries.
+ * Discover article links using three strategies.
+ * Must be called at handler top level — NOT inside step.run().
  */
 async function discoverArticleLinks(
   step: InngestStep,
@@ -280,15 +280,14 @@ async function discoverArticleLinks(
   // Strategy A: /v1/map
   for (let i = 0; i < YAHOO_SOURCES.length; i++) {
     if (links.length >= limit) break
-    const source = YAHOO_SOURCES[i]
     try {
-      console.log(`[discover] A: map ${source}`)
-      const urls = await firescrapeMap(step, source, `discover-map-${i}`, 60)
+      console.log(`[discover] A: map ${YAHOO_SOURCES[i]}`)
+      const urls = await firescrapeMap(step, YAHOO_SOURCES[i], `discover-map-${i}`, 60)
       console.log(`[discover] A: map returned ${urls.length} raw URLs`)
       urls.forEach((u) => add(u))
       console.log(`[discover] A: running total ${links.length}`)
     } catch (e) {
-      console.warn(`[discover] A: map failed for ${source}: ${errMsg(e)}`)
+      console.warn(`[discover] A: map failed for ${YAHOO_SOURCES[i]}: ${errMsg(e)}`)
     }
   }
 
@@ -296,16 +295,15 @@ async function discoverArticleLinks(
   if (links.length < limit) {
     for (let i = 0; i < YAHOO_SOURCES.length; i++) {
       if (links.length >= limit) break
-      const source = YAHOO_SOURCES[i]
       try {
-        console.log(`[discover] B: scrape-links ${source}`)
-        const result = await firescrapeUrl(step, source, `discover-scrape-${i}`)
+        console.log(`[discover] B: scrape-links ${YAHOO_SOURCES[i]}`)
+        const result = await firescrapeUrl(step, YAHOO_SOURCES[i], `discover-scrape-${i}`)
         const raw = result.links ?? []
-        console.log(`[discover] B: got ${raw.length} links from ${source}`)
+        console.log(`[discover] B: got ${raw.length} links from ${YAHOO_SOURCES[i]}`)
         raw.forEach((u) => add(u))
         console.log(`[discover] B: running total ${links.length}`)
       } catch (e) {
-        console.warn(`[discover] B: scrape failed for ${source}: ${errMsg(e)}`)
+        console.warn(`[discover] B: scrape failed for ${YAHOO_SOURCES[i]}: ${errMsg(e)}`)
       }
     }
   }
@@ -314,15 +312,14 @@ async function discoverArticleLinks(
   if (links.length < limit) {
     for (let i = 0; i < YAHOO_SOURCES.length; i++) {
       if (links.length >= limit) break
-      const source = YAHOO_SOURCES[i]
       try {
-        console.log(`[discover] C: crawl ${source}`)
-        const pages = await firescrapeCrawl(step, source, i, 20, 2)
+        console.log(`[discover] C: crawl ${YAHOO_SOURCES[i]}`)
+        const pages = await firescrapeCrawl(step, YAHOO_SOURCES[i], i, 20, 2)
         console.log(`[discover] C: crawl returned ${pages.length} pages`)
         pages.forEach((p) => (p.links ?? []).forEach((u) => add(u)))
         console.log(`[discover] C: running total ${links.length}`)
       } catch (e) {
-        console.warn(`[discover] C: crawl failed for ${source}: ${errMsg(e)}`)
+        console.warn(`[discover] C: crawl failed for ${YAHOO_SOURCES[i]}: ${errMsg(e)}`)
       }
     }
   }
@@ -331,14 +328,30 @@ async function discoverArticleLinks(
   return links.slice(0, limit)
 }
 
-// ─── Scrape article ───────────────────────────────────────────────────────────
+// ─── Per-article helpers (plain fetch — safe inside step.run) ─────────────────
 
-async function scrapeArticle(
-  step: InngestStep,
-  link: ArticleLink,
-  articleIndex: number,
-): Promise<ScrapedPage> {
-  const result = await firescrapeUrl(step, link.url, `scrape-article-${articleIndex}`)
+/**
+ * Scrape a single article using plain fetch.
+ * Safe to call inside step.run() — does NOT use step.fetch.
+ */
+async function scrapeArticlePlain(link: ArticleLink): Promise<ScrapedPage> {
+  const res = await fetch(`${FIRESCRAPE_BASE}/v1/scrape`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url: link.url,
+      formats: ['markdown', 'metadata', 'links'],
+      only_main_content: true,
+      timeout: 30_000,
+    }),
+    signal: AbortSignal.timeout(45_000),
+  })
+
+  if (!res.ok) {
+    throw new Error(`/v1/scrape HTTP ${res.status}: ${await res.text().catch(() => res.statusText)}`)
+  }
+
+  const result = await res.json() as FireScrapeScrapeResult
 
   const markdown = (result.markdown ?? result.text ?? '').trim()
   if (markdown.length < 100) {
@@ -357,7 +370,7 @@ async function scrapeArticle(
   }
 }
 
-// ─── Generate article via HuggingFace ─────────────────────────────────────────
+// ─── Generate article via HuggingFace (plain fetch — safe inside step.run) ────
 
 const SYSTEM_PROMPT = `You are a professional news journalist.
 Write a full news article based ONLY on the provided source material.
@@ -405,7 +418,7 @@ async function generateArticle(page: ScrapedPage): Promise<GeneratedArticle> {
   return { title, description, content, category }
 }
 
-// ─── Save to Neon ─────────────────────────────────────────────────────────────
+// ─── Save to Neon (plain DB call — safe inside step.run) ──────────────────────
 
 async function saveArticle(generated: GeneratedArticle, page: ScrapedPage): Promise<string> {
   const wordCount = generated.content.split(/\s+/).length
@@ -450,38 +463,34 @@ export const newsPipelineFunction = inngest.createFunction(
 
   async ({ step, logger }) => {
 
-    // ── Step 0: Wake FireScrape (Render free tier sleeps after inactivity) ────
-    await step.run('wake-firescrape', async () => {
-      logger.info('[pipeline] Waking FireScrape API…')
-      try {
-        await firescrapeWakeUp(step)
-        logger.info('[pipeline] FireScrape is online')
-      } catch (e) {
-        // /health may not exist on all deployments — log and continue
-        logger.warn(`[pipeline] Wake-up warning (non-fatal): ${errMsg(e)}`)
-      }
-    })
+    // ── Step 0: Wake FireScrape ───────────────────────────────────────────────
+    // step.fetch is called directly at handler top level — correct.
+    logger.info('[pipeline] Waking FireScrape API…')
+    try {
+      await firescrapeWakeUp(step)
+      logger.info('[pipeline] FireScrape is online')
+    } catch (e) {
+      logger.warn(`[pipeline] Wake-up warning (non-fatal): ${errMsg(e)}`)
+    }
 
     // ── Step 1: Discover article links ────────────────────────────────────────
-    // Returns ArticleLink[] — Maps serialise to {} across Inngest step boundaries
-    const links = await step.run('discover-links', async (): Promise<ArticleLink[]> => {
-      logger.info('[pipeline] Discovering Yahoo News article links…')
+    // discoverArticleLinks uses step.fetch / step.sleep — must stay at top level.
+    // Do NOT wrap in step.run().
+    logger.info('[pipeline] Discovering Yahoo News article links…')
+    const links = await discoverArticleLinks(step, 10)
 
-      const found = await discoverArticleLinks(step, 10)
+    if (links.length === 0) {
+      throw new Error(
+        'Zero article links discovered after all three strategies (map → scrape → crawl). ' +
+        `FireScrape base URL: ${FIRESCRAPE_BASE}. ` +
+        'Check: (1) API is online, (2) Yahoo News URL structure, (3) isArticleUrl() filter.',
+      )
+    }
 
-      if (found.length === 0) {
-        throw new Error(
-          'Zero article links discovered after all three strategies (map → scrape → crawl). ' +
-          `FireScrape base URL: ${FIRESCRAPE_BASE}. ` +
-          'Check: (1) API is online, (2) Yahoo News URL structure, (3) isArticleUrl() filter.',
-        )
-      }
-
-      logger.info(`[pipeline] Discovered ${found.length} article links`)
-      return found
-    })
+    logger.info(`[pipeline] Discovered ${links.length} article links`)
 
     // ── Steps 2–N: per-article scrape → generate → save ──────────────────────
+    // These use plain fetch / HF client / DB — safe inside step.run().
     const results: PipelineResult[] = []
 
     for (let i = 0; i < links.length; i++) {
@@ -491,16 +500,16 @@ export const newsPipelineFunction = inngest.createFunction(
       const result = await step
         .run(`process-article-${i}`, async (): Promise<PipelineResult> => {
 
-          // Scrape
+          // Scrape with plain fetch (NOT step.fetch)
           logger.info(`[pipeline] ${tag} scraping ${link.url}`)
           let page: ScrapedPage
           try {
-            page = await scrapeArticle(step, link, i)
+            page = await scrapeArticlePlain(link)
           } catch (e) {
             throw new Error(`[scrape] ${errMsg(e)}`)
           }
 
-          // Generate
+          // Generate with HF client (plain HTTP under the hood)
           logger.info(`[pipeline] ${tag} generating…`)
           let generated: GeneratedArticle
           try {
@@ -509,7 +518,7 @@ export const newsPipelineFunction = inngest.createFunction(
             throw new Error(`[generate] ${errMsg(e)}`)
           }
 
-          // Save
+          // Save to DB
           logger.info(`[pipeline] ${tag} saving "${generated.title}"…`)
           let articleId: string
           try {
@@ -532,7 +541,7 @@ export const newsPipelineFunction = inngest.createFunction(
 
       results.push(result)
 
-      // sendEvent must be at handler top-level, never inside step.run
+      // sendEvent must be at handler top-level — correct here.
       if (result.ok) {
         await step.sendEvent(`article-saved-${i}`, {
           name: 'news/article.processed',
