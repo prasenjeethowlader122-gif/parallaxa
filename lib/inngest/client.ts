@@ -1,4 +1,4 @@
 import { Inngest } from 'inngest'
 
 export const inngest = new Inngest({ id: 'yahoo-news-pipeline', 
-eventKey: 'km0gcJ9ycQRfKKy-WI42lxFOxrYDLQyp8U4Jz5m59nRqcczYfok0rhxC6pO0Zv8Wlx19RCsxt8zj8Lwf_Nv4hQ',})
+eventKey: 'izQKLbCHC_T1URdRkImiM7iEXb3Vp9Cl-0THsVAsDmzlMsIgL4YnoUnHbW3eicQq3GvK547x6Sqs3bafjiIBvQ',})
