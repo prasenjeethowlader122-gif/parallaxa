@@ -12,6 +12,7 @@ export {
   getArticleBySlug,
   getArticlesByCategory,
   getFeaturedArticles,
+  searchArticlesByQuery,
   getBreakingNews,
   getTrendingArticles,
   searchArticles,

@@ -129,8 +129,10 @@ async function discoverLinksPlain(limit: number): Promise < ArticleLink[] > {
   
   const add = (url: string, title: string | null = null) => {
     const clean = url.split('?')[0].split('#')[0]
-    if (!seen.has(clean) && isArticleUrl(clean)) { seen.add(clean);
-      out.push({ url: clean, title }) }
+    if (!seen.has(clean) && isArticleUrl(clean)) {
+      seen.add(clean);
+      out.push({ url: clean, title })
+    }
   }
   
   for (let i = 0; i < YAHOO_SOURCES.length && out.length < limit; i++) {
@@ -254,7 +256,7 @@ function buildEmbedText(gen: GeneratedArticle, page: ScrapedPage): string {
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id: 'news-pipeline-yzo00rppp',
+    id: 'news-pipeline-yzo00rpppp',
     name: 'Yahoo News Pipeline',
     retries: 3,
     concurrency: { limit: 1 },
@@ -280,7 +282,7 @@ export const newsPipelineFunction = inngest.createFunction(
       sources: YAHOO_SOURCES,
       links: links.map(l => ({ url: l.url, title: l.title })),
     }))
-   // logger.info(`[pipeline] ${links.length} links (fallback=${rawLinks.length === 0})`)
+    // logger.info(`[pipeline] ${links.length} links (fallback=${rawLinks.length === 0})`)
     
     // ── Steps 2–N: scrape → generate → save → embed ───────────────────────────
     const results: PipelineResult[] = []
@@ -303,14 +305,20 @@ export const newsPipelineFunction = inngest.createFunction(
           
           const embedText = buildEmbedText(gen, page)
           const embedVector = await embed(embedText)
+          gen.embedding = embedVector // ✅ attach before save
+          
+          let articleId: string
+          try { articleId = await saveArticle(gen, page) } // ✅ embedding is included
+          catch (e) { throw new Error(`[db] ${errMsg(e)}`) }
+          
           const embeddingPayload: ArticleEmbeddingPayload = {
-            articleId,
+            articleId, // ✅ now correctly assigned
             text: embedText,
             vector: embedVector,
             model: HF_EMBED_MODEL,
             dim: embedVector?.length,
           }
-          gen.embedding = embeddingPayload.vector;
+          
           try { articleId = await saveArticle(gen, page) }
           catch (e) { throw new Error(`[db] ${errMsg(e)}`) }
           

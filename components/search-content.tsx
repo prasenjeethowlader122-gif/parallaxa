@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, searchArticles } from '@/lib/news-data'
+import { NewsArticle, searchArticlesByQuery } from '@/lib/news-data'
 import { ArrowLeft, Search as SearchIcon } from 'lucide-react'
 
 export function SearchContent() {
@@ -16,7 +16,7 @@ export function SearchContent() {
   useEffect(() => {
     async function load() {
       if (query.trim()) {
-        const found = await searchArticles(query)
+        const found = await searchArticlesByQuery(query)
         setResults(found)
       } else {
         setResults([])
