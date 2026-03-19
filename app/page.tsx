@@ -44,7 +44,7 @@ export default function Home() {
   }, [])
   
   // Sort featured articles by date descending; most recent goes in the big cell
-  const [mostRecent, second, third, fourth] = [...featuredArticles];
+  const [mostRecent, second, third, fourth] = [...latestArticles];
   
   return (
     <div className="min-h-screen bg-white flex flex-col">
