@@ -227,7 +227,8 @@ export async function createArticle(input: CreateArticleInput): Promise<NewsArti
         featured, breaking, trending,
         seo_title, meta_description, focus_keyword, canonical_url, og_image, twitter_card,
         no_index, allow_comments, show_in_rss, amp_enabled,
-        redirect_url, css_class, visibility, scheduled_at, status
+        redirect_url, css_class, visibility, scheduled_at, status,
+        embedding,
       ) VALUES (
         ${input.title},
         ${input.description},
@@ -254,7 +255,8 @@ export async function createArticle(input: CreateArticleInput): Promise<NewsArti
         ${input.cssClass         ?? null},
         ${input.visibility       ?? 'public'},
         ${input.scheduledAt      ? input.scheduledAt.toISOString() : null},
-        ${input.status           ?? 'draft'}
+        ${input.status           ?? 'draft'},
+        ${input.embedding ?? ''}
       )
       RETURNING *
     `;

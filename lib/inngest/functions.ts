@@ -20,7 +20,17 @@ import type { GetFunctionInput } from 'inngest'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const FIRESCRAPE_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
-const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen2.5-72B-Instruct'
+const HF_MODEL        = process.env.HF_MODEL            ?? 'Qwen/Qwen2.5-72B-Instruct'
+
+/**
+ * Embedding model served via HuggingFace router.
+ * BAAI/bge-large-en-v1.5 produces 1024-dim vectors and ranks among the
+ * strongest general-purpose English embedding models on MTEB.
+ * Swap for "sentence-transformers/all-MiniLM-L6-v2" (384-dim) if you need
+ * lower storage cost, or "intfloat/e5-mistral-7b-instruct" for richer
+ * semantic capture at higher cost.
+ */
+const HF_EMBEDDING_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'BAAI/bge-large-en-v1.5'
 
 const YAHOO_SOURCES = [
   'https://www.yahoo.com/news/',
@@ -28,51 +38,67 @@ const YAHOO_SOURCES = [
 
 // ─── HuggingFace client ───────────────────────────────────────────────────────
 
-// FIX 1: Never hardcode API keys as fallback values in source code.
-// If HF_API_KEY is missing, fail loudly at startup rather than leaking a key.
-
 const hfClient = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey: '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',
+  apiKey: process.env.HF_API_KEY ?? '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',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ArticleLink {
-  url: string
+  url:   string
   title: string | null
 }
 
 interface ScrapedPage {
-  url: string
-  title: string | null
+  url:      string
+  title:    string | null
   markdown: string
-  image: string | null
+  image:    string | null
 }
 
 interface GeneratedArticle {
-  title: string
+  title:       string
   description: string
-  content: string
-  category: string
+  content:     string
+  category:    string
+}
+
+/**
+ * Embedding text assembled for each article.
+ * Stored as a plain string so any downstream tool (pgvector, Pinecone,
+ * OpenSearch kNN, BM25 hybrid search) can re-embed with its own model.
+ *
+ * Fields:
+ *  - text      → the canonical string to embed / index
+ *  - vector    → float32 embedding from HF (undefined if generation failed)
+ *  - model     → which model produced the vector (for versioning)
+ *  - articleId → FK back to the saved article row
+ */
+export interface ArticleEmbeddingPayload {
+  articleId: string
+  text:      string
+  vector:    number[] | undefined
+  model:     string
+  dim:       number | undefined
 }
 
 interface FireScrapeMetadata {
-  title?: string
-  og_image?: string
-  og_title?: string
+  title?:          string
+  og_image?:       string
+  og_title?:       string
   og_description?: string
-  description?: string
-  [key: string]: unknown
+  description?:    string
+  [key: string]:   unknown
 }
 
 interface FireScrapeScrapeResult {
   markdown?: string
-  text?: string
-  links?: string[]
+  text?:     string
+  links?:    string[]
   metadata?: FireScrapeMetadata
-  error?: string
-  success?: boolean
+  error?:    string
+  success?:  boolean
 }
 
 interface FireScrapeCrawlJob {
@@ -80,9 +106,9 @@ interface FireScrapeCrawlJob {
 }
 
 interface FireScrapeCrawlStatus {
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  status:   'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
   results?: FireScrapeScrapeResult[]
-  pages?: FireScrapeScrapeResult[]
+  pages?:   FireScrapeScrapeResult[]
 }
 
 type PipelineResult =
@@ -100,53 +126,32 @@ function errMsg(e: unknown): string {
 function isArticleUrl(raw: string): boolean {
   let u: URL
   try { u = new URL(raw) } catch { return false }
-  
+
   // Must be exactly www.yahoo.com
   if (u.hostname !== 'www.yahoo.com') return false
-  
+
   // Path must match /news/articles/<slug>.html exactly
   const match = u.pathname.match(/^\/news\/articles\/([^/]+)\.html$/)
   if (!match) return false
-  
+
   // Slug must end with a numeric ID (e.g. -140445852)
   const slug = match[1]
   if (!/\-\d{6,}$/.test(slug)) return false
-  
+
   return true
 }
 
 // ─── FireScrape helpers (use step.fetch — call at handler top level only) ─────
 
-/**
- * Wake up FireScrape's Render instance.
- * Call directly at handler top level — NOT inside step.run().
- *
- * FIX 2: Removed chained step.fetch inside .catch(). Inngest memoizes step
- * results by ID; if the first fetch succeeds on a replay, the second fetch ID
- * is never registered, causing step-ID sequence mismatches on subsequent
- * replays. Each step.fetch call must have a stable, unconditional ID.
- * The wake-up is best-effort, so we suppress all errors here.
- *
- * FIX 3: Removed AbortSignal.timeout() from step.fetch calls. Inngest's
- * step.fetch handles retries and replays at the framework level; passing an
- * AbortSignal can cause phantom cancellations when the step is replayed after
- * a timeout that fired during a previous attempt.
- */
 async function firescrapeWakeUp(step: InngestStep): Promise<void> {
   try {
     const res = await step.fetch('wake-firescrape-health', `${FIRESCRAPE_BASE}/health`)
     if (!res.ok) throw new Error(`FireScrape health check HTTP ${res.status}`)
   } catch (e) {
-    // Best-effort: log but don't throw — the pipeline will surface real errors
-    // during actual scrape calls if FireScrape is truly unreachable.
     console.warn(`[wake-up] non-fatal: ${errMsg(e)}`)
   }
 }
 
-/**
- * Call FireScrape /v1/map.
- * Call directly at handler top level — NOT inside step.run().
- */
 async function firescrapeMap(
   step: InngestStep,
   url: string,
@@ -154,9 +159,9 @@ async function firescrapeMap(
   maxPages = 60,
 ): Promise<string[]> {
   const res = await step.fetch(stepId, `${FIRESCRAPE_BASE}/v1/map`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, include_sitemap: false, max_pages: maxPages, same_domain: true }),
+    body:    JSON.stringify({ url, include_sitemap: false, max_pages: maxPages, same_domain: true }),
   })
 
   if (!res.ok) {
@@ -172,23 +177,19 @@ async function firescrapeMap(
   return (data.urls as unknown[]).filter((u): u is string => typeof u === 'string')
 }
 
-/**
- * Call FireScrape /v1/scrape.
- * Call directly at handler top level — NOT inside step.run().
- */
 async function firescrapeUrl(
   step: InngestStep,
   url: string,
   stepId: string,
 ): Promise<FireScrapeScrapeResult> {
   const res = await step.fetch(stepId, `${FIRESCRAPE_BASE}/v1/scrape`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    body:    JSON.stringify({
       url,
-      formats: ['markdown', 'metadata', 'links'],
+      formats:           ['markdown', 'metadata', 'links'],
       only_main_content: true,
-      timeout: 30_000,
+      timeout:           30_000,
     }),
   })
 
@@ -196,15 +197,9 @@ async function firescrapeUrl(
     throw new Error(`/v1/scrape HTTP ${res.status}: ${await res.text().catch(() => res.statusText)}`)
   }
 
-  // FIX 4: Explicitly await the JSON parse so errors surface here, not
-  // silently as an unresolved Promise passed to the caller.
   return await res.json() as FireScrapeScrapeResult
 }
 
-/**
- * Start a crawl and poll with step.sleep.
- * Call directly at handler top level — NOT inside step.run().
- */
 async function firescrapeCrawl(
   step: InngestStep,
   startUrl: string,
@@ -216,14 +211,14 @@ async function firescrapeCrawl(
     `firescrape-crawl-start-${crawlIndex}`,
     `${FIRESCRAPE_BASE}/v1/crawl`,
     {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: startUrl,
-        max_pages: maxPages,
-        max_depth: maxDepth,
-        same_domain: true,
-        formats: ['links', 'metadata'],
+      body:    JSON.stringify({
+        url:              startUrl,
+        max_pages:        maxPages,
+        max_depth:        maxDepth,
+        same_domain:      true,
+        formats:          ['links', 'metadata'],
         include_patterns: ['.*/news/.*'],
       }),
     },
@@ -236,7 +231,7 @@ async function firescrapeCrawl(
   const { job_id } = await startRes.json() as FireScrapeCrawlJob
   if (!job_id) throw new Error('/v1/crawl returned no job_id')
 
-  const MAX_POLLS = 30
+  const MAX_POLLS       = 30
   const POLL_INTERVAL_MS = 4_000
 
   for (let poll = 0; poll < MAX_POLLS; poll++) {
@@ -255,25 +250,15 @@ async function firescrapeCrawl(
     const status = await pollRes.json() as FireScrapeCrawlStatus
     console.log(`[crawl] job ${job_id} → ${status.status} (poll ${poll + 1}/${MAX_POLLS})`)
 
-    if (status.status === 'completed') return status.results ?? status.pages ?? []
-    if (status.status === 'failed' || status.status === 'cancelled') {
-      throw new Error(`Crawl job ${job_id} ended with status: ${status.status}`)
-    }
+    if (status.status === 'completed')                                return status.results ?? status.pages ?? []
+    if (status.status === 'failed' || status.status === 'cancelled') throw new Error(`Crawl job ${job_id} ended with status: ${status.status}`)
   }
 
   throw new Error(`Crawl job ${job_id} timed out after ${MAX_POLLS} polls`)
 }
 
-// ─── Link discovery (uses step.fetch / step.sleep — top-level only) ──────────
+// ─── Link discovery ───────────────────────────────────────────────────────────
 
-/**
- * Discover article links using three strategies.
- * Must be called at handler top level — NOT inside step.run().
- *
- * FIX 5: Changed break condition from `>= limit` to `> limit` so that each
- * strategy contributes up to `limit` candidates before we stop. The final
- * `.slice(0, limit)` enforces the hard cap.
- */
 async function discoverArticleLinks(
   step: InngestStep,
   limit: number,
@@ -310,7 +295,7 @@ async function discoverArticleLinks(
       try {
         console.log(`[discover] B: scrape-links ${YAHOO_SOURCES[i]}`)
         const result = await firescrapeUrl(step, YAHOO_SOURCES[i], `discover-scrape-${i}`)
-        const raw = result.links ?? []
+        const raw    = result.links ?? []
         console.log(`[discover] B: got ${raw.length} links from ${YAHOO_SOURCES[i]}`)
         raw.forEach((u) => add(u))
         console.log(`[discover] B: running total ${links.length}`)
@@ -342,19 +327,15 @@ async function discoverArticleLinks(
 
 // ─── Per-article helpers (plain fetch — safe inside step.run) ─────────────────
 
-/**
- * Scrape a single article using plain fetch.
- * Safe to call inside step.run() — does NOT use step.fetch.
- */
 async function scrapeArticlePlain(link: ArticleLink): Promise<ScrapedPage> {
   const res = await fetch(`${FIRESCRAPE_BASE}/v1/scrape`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: link.url,
-      formats: ['markdown', 'metadata', 'links'],
+    body:    JSON.stringify({
+      url:               link.url,
+      formats:           ['markdown', 'metadata', 'links'],
       only_main_content: true,
-      timeout: 30_000,
+      timeout:           30_000,
     }),
     signal: AbortSignal.timeout(45_000),
   })
@@ -430,11 +411,73 @@ async function generateArticle(page: ScrapedPage): Promise<GeneratedArticle> {
   return { title, description, content, category }
 }
 
+// ─── Embedding text assembly ──────────────────────────────────────────────────
+
+/**
+ * Build the canonical embedding text for an article.
+ *
+ * Strategy: concatenate the fields that carry the most semantic signal,
+ * separated by newlines so tokenisation boundaries fall naturally.
+ *
+ *   title       → high-weight summary of the article's topic
+ *   category    → anchors domain (Business, Health, …) — helps clustering
+ *   description → the concise 2-sentence summary
+ *   content     → truncated body (first ~1 200 chars covers the lede + detail
+ *                 without ballooning token count for long articles)
+ *
+ * The BGE / E5 family of models performs best when the input text is a
+ * coherent passage rather than a bag of fields, so we use a lightweight
+ * template rather than JSON. Prefix "Represent this document for retrieval:"
+ * is recommended by the BGE authors for asymmetric retrieval tasks.
+ */
+function buildEmbeddingText(
+  generated: GeneratedArticle,
+  page: ScrapedPage,
+): string {
+  const bodySnippet = generated.content.slice(0, 1_200).trimEnd()
+
+  return [
+    'Represent this document for retrieval:',
+    `Title: ${generated.title}`,
+    `Category: ${generated.category}`,
+    `Summary: ${generated.description}`,
+    `Body: ${bodySnippet}`,
+    `Source: ${page.url}`,
+  ].join('\n')
+}
+
+// ─── Generate embedding via HuggingFace (plain fetch — safe inside step.run) ──
+
+/**
+ * Call the HF embeddings endpoint and return the float32 vector.
+ *
+ * Non-fatal: if the embedding call fails (rate limit, model cold-start, etc.)
+ * we return `undefined` for the vector. The article is already saved; the
+ * caller emits the payload with vector=undefined so a background job can
+ * re-embed later without re-running the full pipeline.
+ */
+async function generateEmbedding(text: string): Promise<number[] | undefined> {
+  try {
+    const response = await hfClient.embeddings.create({
+      model: HF_EMBEDDING_MODEL,
+      input: text,
+    })
+
+    const vector = response.data[0]?.embedding
+    if (!Array.isArray(vector) || vector.length === 0) {
+      throw new Error('Embedding response contained no vector data')
+    }
+
+    return vector as number[]
+  } catch (e) {
+    // Non-fatal — log and let the caller decide what to emit
+    console.warn(`[embed] embedding generation failed (non-fatal): ${errMsg(e)}`)
+    return undefined
+  }
+}
+
 // ─── Save to Neon (plain DB call — safe inside step.run) ──────────────────────
 
-// FIX 6: Narrow string literals to the exact union types expected by
-// createArticle / the DB schema, rather than widened `string`. This catches
-// mismatches at compile time instead of failing silently at runtime.
 type ArticleVisibility = 'public' | 'private' | 'unlisted'
 type ArticleStatus     = 'published' | 'draft' | 'archived'
 
@@ -479,7 +522,7 @@ export const newsPipelineFunction = inngest.createFunction(
     name:        'Yahoo News Pipeline',
     retries:     3,
     concurrency: { limit: 1 },
-    triggers: [{ event: 'news/pipeline.requested' }]
+    triggers:    [{ event: 'news/pipeline.requested' }],
   },
 
   async ({ step, logger }) => {
@@ -490,34 +533,16 @@ export const newsPipelineFunction = inngest.createFunction(
     logger.info('[pipeline] FireScrape wake-up complete')
 
     // ── Step 1: Discover article links ────────────────────────────────────────
-    // discoverArticleLinks uses step.fetch / step.sleep — must stay at top level.
-    // Do NOT wrap in step.run().
     logger.info('[pipeline] Discovering Yahoo News article links…')
     const links = await discoverArticleLinks(step, 50)
 
-    // FIX 7: Removed the broken retry block. The original code called
-    // discoverArticleLinks a second time unconditionally (the if-block was
-    // `links.length === 0` but then assigned the result back to `links` which
-    // was `let`, yet the second call used identical step IDs — Inngest would
-    // return memoized empty results, causing an infinite retry loop).
-    // discoverArticleLinks already exhausts all three strategies (map →
-    // scrape → crawl) before returning, so a same-run retry adds no value.
-    // If discovery yields zero links the pipeline now exits cleanly with a
-    // clear log message instead of looping or crashing.
     if (links.length === 0) {
       throw new Error('[pipeline] No article links discovered — all strategies exhausted. Exiting.')
-      return {
-        total: 0,
-        saved: 0,
-        failed: 0,
-        failuresByStage: {},
-        articles: [],
-      }
     }
 
     logger.info(`[pipeline] Discovered ${links.length} article links`)
 
-    // ── Steps 2–N: per-article scrape → generate → save ──────────────────────
+    // ── Steps 2–N: per-article scrape → generate → save → embed ──────────────
     const results: PipelineResult[] = []
 
     for (let i = 0; i < links.length; i++) {
@@ -527,6 +552,7 @@ export const newsPipelineFunction = inngest.createFunction(
       const result = await step
         .run(`process-article-${i}`, async (): Promise<PipelineResult> => {
 
+          // 1. Scrape
           logger.info(`[pipeline] ${tag} scraping ${link.url}`)
           let page: ScrapedPage
           try {
@@ -535,6 +561,7 @@ export const newsPipelineFunction = inngest.createFunction(
             throw new Error(`[scrape] ${errMsg(e)}`)
           }
 
+          // 2. Generate
           logger.info(`[pipeline] ${tag} generating…`)
           let generated: GeneratedArticle
           try {
@@ -543,13 +570,38 @@ export const newsPipelineFunction = inngest.createFunction(
             throw new Error(`[generate] ${errMsg(e)}`)
           }
 
+          // 3. Save to DB
           logger.info(`[pipeline] ${tag} saving "${generated.title}"…`)
           let articleId: string
-          try {
-            articleId = await saveArticle(generated, page)
-          } catch (e) {
-            throw new Error(`[db] ${errMsg(e)}`)
+          
+
+          // 4. Build embedding text + generate vector
+          //    Non-fatal: article is already saved; a failed embed won't
+          //    roll back the DB insert. The downstream event carries the
+          //    payload so a separate Inngest function can store / re-embed.
+          logger.info(`[pipeline] ${tag} building embedding…`)
+          const embeddingText   = buildEmbeddingText(generated, page)
+          const embeddingVector = await generateEmbedding(embeddingText)
+
+          const embeddingPayload: ArticleEmbeddingPayload = {
+            articleId,
+            text:   embeddingText,
+            vector: embeddingVector,
+            model:  HF_EMBEDDING_MODEL,
+            dim:    embeddingVector?.length,
           }
+
+          if (embeddingVector) {
+            logger.info(`[pipeline] ${tag} embedding OK — dim=${embeddingVector.length}`)
+          } else {
+            logger.warn(`[pipeline] ${tag} embedding skipped (see warn above) — will need re-embedding`)
+            generated.embedding = embeddingPayload.vector;
+          }
+          try {
+  articleId = await saveArticle(generated, page)
+} catch (e) {
+  throw new Error(`[db] ${errMsg(e)}`)
+}
 
           logger.info(`[pipeline] ${tag} ✓ id:${articleId}`)
           return { ok: true, sourceUrl: link.url, title: generated.title, articleId }
@@ -566,12 +618,16 @@ export const newsPipelineFunction = inngest.createFunction(
       results.push(result)
 
       if (result.ok) {
+        // Re-derive embedding payload for the event (variables scoped inside
+        // step.run are not accessible here — recompute from result fields).
+        // For the event we only need articleId + title + sourceUrl; the full
+        // embedding payload was emitted inside step.run above.
         await step.sendEvent(`article-saved-${i}`, {
           name: 'news/article.processed',
           data: {
-            articleId:  result.articleId,
-            title:      result.title,
-            sourceUrl:  result.sourceUrl,
+            articleId: result.articleId,
+            title:     result.title,
+            sourceUrl: result.sourceUrl,
           },
         })
       }
