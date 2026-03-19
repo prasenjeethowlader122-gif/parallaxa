@@ -44,14 +44,12 @@ export default function Home() {
   }, [])
   
   // Sort featured articles by date descending; most recent goes in the big cell
-  const [mostRecent, second, third, fourth] = [...featuredArticles].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
+  const [mostRecent, second, third, fourth] = [...featuredArticles];
   
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
-      <BreakingBanner />
+      
 
       <main className="flex-grow">
         {/* ── Featured Section ── */}
