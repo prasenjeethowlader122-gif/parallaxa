@@ -582,7 +582,7 @@ export const newsPipelineFunction = inngest.createFunction(
     if (links.length === 0) {
       links = [
         {
-          url : 'https://www.yahoo.com/news/us/article/nancy-guthries-disappearance-former-fbi-special-agent-says-it-appears-less-and-less-lik',
+          url : 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html',
           title: null
         }
       ]
