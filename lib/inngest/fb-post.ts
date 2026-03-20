@@ -21,7 +21,7 @@ import type { GetFunctionInput } from 'inngest'
 
 const FB_ACCESS_TOKEN =
   process.env.FB_ACCESS_TOKEN ??
-  'EAA8ZCWezHogUBQ9VKzNH7KPAyUcmdECFvrlXFH2K9UpWeI2TfOmmFZAXczNP9PUONa46CUpAwt8ELndXZBSYzn4012rrCiF5ZBJisGflJSTliT0hzD7IgZCHKIk25cTs8cV3PY3IlAJkOZCblGYDrFZBu2fa7FowlLnobBobBo7s4gNpZCoL4FZCw84rQKAgIZBrNCltAOGrmPfSPgZBxDgSFw7LMOHBfu0YZAFm1fKzn4d76gIaxolbGgb1TTOJ7jetpUDidKtv3R0NDmK6GFkpa7XfS7MFP4tmEAO629ZB8iXYZD'
+  'EAA8ZCWezHogUBQZCs5njQYhinC907W6CTFWmr8U2XUM3bdG2zQNYelGchxGu57F9OcyWmk81LKQvRVB1kaEZC76ZAgNqHz6ZAGfCsR7Sg2DCqy8NijHYkWSB0G94M9aOzoH9dglYO8KFZAPt7GmM9br586g7NXmlAL6y6ps1nBQ4R4ZBChSpZCQDBzCVaW9StWucYQsU7gSum0LMO7tTrBb0G19seZAmViX1IjSBqDt5TbrisxAqHBJtlirUelZBNfiyArKnCZAxrcOWoYppoRfZC4ZBq0yvNV5eZCxAZDZD'
 
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
 
@@ -131,10 +131,10 @@ async function uploadPhotoToFacebook(params: {
   base64: string
   mimeType: string
   caption: string
-}): Promise < string > {
-  const endpoint = `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/photos`
+}): Promise<string> {
+  const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
   const imageBytes = Buffer.from(params.base64, 'base64')
-  
+
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
@@ -144,22 +144,32 @@ async function uploadPhotoToFacebook(params: {
     new Blob([imageBytes], { type: params.mimeType }),
     'og-image.png'
   )
-  
+
   const res = await fetch(endpoint, { method: 'POST', body: form })
   const data = (await res.json()) as {
-    id ? : string
-    post_id ? : string
-    error ? : { message: string }
+    id?: string
+    post_id?: string
+    error?: { message: string; code?: number; error_subcode?: number }
   }
-  
+
   if (!res.ok || data.error) {
-    throw new Error(
-      `Facebook photo upload failed (HTTP ${res.status}): ${
-        data.error?.message ?? JSON.stringify(data)
-      }`
-    )
+    const { message, code, error_subcode } = data.error ?? {}
+    if (code === 200 || code === 10) {
+      throw new Error(
+        `Facebook permission error (${code}/${error_subcode}): ${message}. ` +
+        `Ensure FB_ACCESS_TOKEN is a PAGE ACCESS TOKEN with "pages_manage_posts" granted. ` +
+        `Re-generate at https://developers.facebook.com/tools/explorer/`
+      )
+    }
+    if (code === 190) {
+      throw new Error(
+        `Facebook token expired (${code}): ${message}. ` +
+        `Refresh your Page Access Token at https://developers.facebook.com/tools/explorer/`
+      )
+    }
+    throw new Error(`Facebook photo upload failed (HTTP ${res.status}): ${message ?? JSON.stringify(data)}`)
   }
-  
+
   const postId = data.post_id ?? data.id
   if (!postId) throw new Error('Facebook returned no post ID')
   return postId
