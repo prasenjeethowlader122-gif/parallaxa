@@ -10,7 +10,7 @@
 import { serve } from 'inngest/next'
 import { inngest } from '@/lib/inngest/client'
 import { newsPipelineFunction } from '@/lib/inngest/functions'
-import { ptpFunction } from '@/lib/inngest/ptp-function'
+import { ptpFunction } from '@/lib/inngest/fb-post'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
