@@ -50,21 +50,6 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 // ─── Helpers (plain fetch — safe inside step.run) ─────────────────────────────
 
-async function fetchOgImageBase64(
-  slug: string
-): Promise < { base64: string;mimeType: string } > {
-  const url = `${SITE_URL}/api/og/${encodeURIComponent(slug)}?slug=${encodeURIComponent(slug)}`
-  const res = await fetch(url, {
-    headers: { 'Cache-Control': 'no-store' },
-    signal: AbortSignal.timeout(25_000),
-  })
-  if (!res.ok) throw new Error(`OG image render failed: HTTP ${res.status} for ${url}`)
-  const mimeType = res.headers.get('content-type') ?? 'image/png'
-  const arrayBuffer = await res.arrayBuffer()
-  // Convert to base64 so we can safely pass it through Inngest's step boundary
-  const base64 = Buffer.from(arrayBuffer).toString('base64')
-  return { base64, mimeType }
-}
 
 async function generateCaption(article: {
   title: string
@@ -129,11 +114,10 @@ Rules:
 
 async function uploadPhotoToFacebook(params: {
   slug : string,
-  mimeType: string
   caption: string
 }): Promise<string> {
   const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
-  const imageBytes = Buffer.from(params.base64, 'base64')
+  //const imageBytes = Buffer.from(params.base64, 'base64')
 
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
