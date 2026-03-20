@@ -467,7 +467,8 @@ export default function ArticlePage() {
               <article className={`${slabo.className} text-gray-800 leading-[1.85] text-[17px] py-6 space-y-5`}>
                 {/* Drop cap on first paragraph */}
                 <p className="first-letter:text-[64px] first-letter:font-bold first-letter:float-left first-letter:leading-[0.82] first-letter:mr-2 first-letter:mt-1.5 first-letter:text-red-600">
-                  {article.content}
+                  {article.content.replace(/\[\[([^\]]+)\]\]/g, '<a href="#" class="font-medium underline">$1</a>')
+}
                 </p>
               </article>
 
