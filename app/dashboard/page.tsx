@@ -7,8 +7,12 @@ import Link from 'next/link'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
-  Icons, NavItem,
-  OverviewTab, ArticlesTab, SettingsTab,IntelligenceTab,
+  Icons,
+  NavItem,
+  OverviewTab,
+  ArticlesTab,
+  SettingsTab,
+  IntelligenceTab,
   type ArticleRow,
 } from '@/components/dashboard'
 
@@ -16,20 +20,18 @@ import {
 
 type Tab = 'overview' | 'articles' | 'settings'
 
-const NAV: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'overview', label: 'Overview',    icon: Icons.grid     },
-  { id: 'articles', label: 'My Articles', icon: Icons.file     },
-  {
-    id: 'intelligence', label:'Intelligence',
-    icon: Icons.file
-  },
-  { id: 'settings', label: 'Settings',    icon: Icons.settings },
+let NAV: { id: Tab;label: string;icon: React.ReactNode } [] = [
+  { id: 'overview', label: 'Overview', icon: Icons.grid },
+  { id: 'articles', label: 'My Articles', icon: Icons.file },
+  
+  { id: 'settings', label: 'Settings', icon: Icons.settings },
   
 ]
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function DashboardSkeleton() {
+  
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       <Header />
@@ -53,15 +55,15 @@ function DashboardSkeleton() {
 function DashboardPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [tab, setTab]           = useState<Tab>('overview')
-  const [articles, setArticles] = useState<ArticleRow[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [deleting, setDeleting] = useState<string | null>(null)
-
+  const [tab, setTab] = useState < Tab > ('overview')
+  const [articles, setArticles] = useState < ArticleRow[] > ([])
+  const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState < string | null > (null)
+  
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/signin')
   }, [status, router])
-
+  
   useEffect(() => {
     if (!session?.user) return
     const fetchArticles = async () => {
@@ -79,7 +81,16 @@ function DashboardPageContent() {
     }
     fetchArticles()
   }, [session])
-
+  useEffect(() => {
+    let role = session.user.role;
+    if (role === 'admin') {
+      NAV.push({
+        id: 'intelligence',
+        label: 'ai',
+        icon: Icons.file
+      })
+    }
+  }, [session])
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this article? This cannot be undone.')) return
     setDeleting(id)
@@ -92,13 +103,13 @@ function DashboardPageContent() {
       setDeleting(null)
     }
   }
-
+  
   if (status === 'loading' || !session?.user) return <DashboardSkeleton />
-
-  const initials = session.user.name
-    ? session.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-    : session.user.email?.charAt(0).toUpperCase() ?? 'U'
-
+  
+  const initials = session.user.name ?
+    session.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) :
+    session.user.email?.charAt(0).toUpperCase() ?? 'U'
+  
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       <Header />
@@ -204,6 +215,7 @@ function DashboardPageContent() {
                   loading={loading}
                   deleting={deleting}
                   onDelete={handleDelete}
+                userRole ={session.user.role}
                 />
               )}
               {tab === 'settings' && (

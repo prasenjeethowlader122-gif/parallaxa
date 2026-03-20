@@ -13,7 +13,7 @@ interface Props {
 
 type PtpStatus = 'idle' | 'queued' | 'running' | 'done' | 'error'
 
-export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
+export function ArticlesTab({ articles, loading, deleting, onDelete  , userRole}: Props) {
   const router = useRouter()
 
   // Per-article PTP status
@@ -166,8 +166,8 @@ export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
                   onDelete={onDelete}
                   deleting={deleting}
                 />
-
-                {/* PTP button */}
+                {userRole === 'admin' && (
+                
                 <button
                   onClick={() => handlePTP(a.id)}
                   disabled={busy}
@@ -209,6 +209,8 @@ export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
                     <><FbIcon /> PTP</>
                   )}
                 </button>
+                  
+                )}
               </div>
             )
           })}
