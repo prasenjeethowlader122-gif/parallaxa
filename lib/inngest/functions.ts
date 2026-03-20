@@ -29,7 +29,7 @@ const FS_BASE        = process.env.FIRESCRAPE_BASE_URL  ?? 'https://parallaxa-py
 const HF_MODEL       = process.env.HF_MODEL             ?? 'Qwen/Qwen2.5-72B-Instruct'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL   ?? 'sentence-transformers/all-MiniLM-L6-v2'
 const YAHOO_SOURCES  = [//'https://www.yahoo.com/news'
-'https://www.bbc.com/bengali/topics/c2dwq2nd40xt.lite'
+'https://www.thedailystar.net/news'
 ]
 const FALLBACK_URL   = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
@@ -90,7 +90,11 @@ function isArticleUrl(raw: string): boolean {
       u.hostname === 'www.bbc.com' &&
       /^\/[^/]+\/articles\/[^/]+(?:\.lite)?$/.test(u.pathname)
     
-    return isYahoo || isBBC
+    const isDailyStar =
+      u.hostname === 'www.thedailystar.net' &&
+      /^\/(?:[^/]+\/)+news\/[^/]+-\d+$/.test(u.pathname)
+    
+    return isYahoo || isBBC || isDailyStar
   } catch { return false }
 }
 
@@ -155,7 +159,7 @@ async function scrape(link: ArticleLink): Promise<ScrapedPage> {
 const SYSTEM_PROMPT = `You are a professional news journalist.
 Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
-{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , add [[text]] for every important keywords like names place country etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>" , "language" : "<bn|en>"}`
+{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , add [[text]] for every important keywords like names place country etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
 
 async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   const res = await hf.chat.completions.create({
@@ -180,7 +184,7 @@ async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
     title,
     description: String(p.description ?? '').trim(),
     content,
-    language : p.language,
+    
     category: String(p.category ?? 'World').trim(),
   }
 }
