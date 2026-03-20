@@ -290,14 +290,14 @@ export async function deleteArticle(id: string): Promise < boolean > {
 
 // ── Vector Search ─────────────────────────────────────────────────────────────
 
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'sentence-transformers/all-MiniLM-L6-v2'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'nvidia/llama-nemotron-embed-vl-1b-v2:free'
 
 async function embedQuery(query: string): Promise < number[] | null > {
   try {
     const { OpenAI } = await import('openai')
     const hf = new OpenAI({
-      baseURL: 'https://router.huggingface.co/v1',
-      apiKey: process.env.HF_API_KEY ?? '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',
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.HF_API_KEY ?? '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',
     })
     const res = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: query })
     const vector = res.data[0]?.embedding
