@@ -199,7 +199,7 @@ async function addFirstComment(postId: string, articleUrl: string): Promise < vo
 
 export const ptpFunction = inngest.createFunction(
   {
-    id: 'post-to-page',
+    id: 'post-to-page-5',
     name: 'Post Article to Facebook Page',
     retries: 2,
     concurrency: { limit: 3 },
