@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Icons } from './icons'
 import { Card, ArticleRowItem, SkeletonRows, type ArticleRow } from './ui'
 
@@ -11,51 +11,88 @@ interface Props {
   onDelete: (id: string) => void
 }
 
+type PtpStatus = 'idle' | 'queued' | 'running' | 'done' | 'error'
+
 export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
   const router = useRouter()
-  
-  // Track which article is currently being PTP'd (null = none)
-  const [ptping, setPtping] = useState < string | null > (null)
-  // Track per-article result: 'done' | 'error' | null
-  const [ptpResult, setPtpResult] = useState < Record < string, 'done' | 'error' >> ({})
-  
-  const byStatus = {
-    published: articles.filter(a => a.status === 'published').length,
-    draft: articles.filter(a => a.status === 'draft').length,
-    scheduled: articles.filter(a => a.status === 'scheduled').length,
+
+  // Per-article PTP status
+  const [ptpStatus, setPtpStatus] = useState<Record<string, PtpStatus>>({})
+  // Polling interval refs per article
+  const pollRefs = useRef<Record<string, ReturnType<typeof setInterval>>>({})
+
+  function setStatus(id: string, s: PtpStatus) {
+    setPtpStatus(prev => ({ ...prev, [id]: s }))
   }
-  
+
+  function startPolling(articleId: string, eventId: string) {
+    // Clear any existing interval for this article
+    if (pollRefs.current[articleId]) clearInterval(pollRefs.current[articleId])
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/pipeline/${eventId}`)
+        if (!res.ok) return
+
+        const data = await res.json() as { status: string }
+
+        if (data.status === 'done') {
+          clearInterval(pollRefs.current[articleId])
+          delete pollRefs.current[articleId]
+          setStatus(articleId, 'done')
+          setTimeout(() => setStatus(articleId, 'idle'), 5_000)
+        } else if (data.status === 'failed') {
+          clearInterval(pollRefs.current[articleId])
+          delete pollRefs.current[articleId]
+          setStatus(articleId, 'error')
+          setTimeout(() => setStatus(articleId, 'idle'), 5_000)
+        }
+        // 'pending' | 'running' — keep polling
+      } catch {
+        // network blip — keep polling
+      }
+    }, 2_500)
+
+    pollRefs.current[articleId] = interval
+  }
+
   async function handlePTP(articleId: string) {
-    if (ptping) return // prevent concurrent PTP calls
-    setPtping(articleId)
-    setPtpResult(prev => ({ ...prev, [articleId]: undefined as any }))
-    
+    const current = ptpStatus[articleId] ?? 'idle'
+    if (current === 'queued' || current === 'running') return
+
+    setStatus(articleId, 'queued')
+
     try {
       const res = await fetch('/api/ptp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId }),
       })
-      
-      if (res.ok) {
-        setPtpResult(prev => ({ ...prev, [articleId]: 'done' }))
-        // Clear the success indicator after 4 seconds
-        setTimeout(() => setPtpResult(prev => ({ ...prev, [articleId]: undefined as any })), 4000)
-      } else {
-        const data = await res.json().catch(() => ({}))
-        console.error('[PTP] failed:', data.error)
-        setPtpResult(prev => ({ ...prev, [articleId]: 'error' }))
-        setTimeout(() => setPtpResult(prev => ({ ...prev, [articleId]: undefined as any })), 4000)
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string }
+        console.error('[PTP] failed to queue:', data.error)
+        setStatus(articleId, 'error')
+        setTimeout(() => setStatus(articleId, 'idle'), 4_000)
+        return
       }
+
+      const { eventId } = await res.json() as { eventId: string }
+      setStatus(articleId, 'running')
+      startPolling(articleId, eventId)
     } catch (e) {
       console.error('[PTP] network error:', e)
-      setPtpResult(prev => ({ ...prev, [articleId]: 'error' }))
-      setTimeout(() => setPtpResult(prev => ({ ...prev, [articleId]: undefined as any })), 4000)
-    } finally {
-      setPtping(null)
+      setStatus(articleId, 'error')
+      setTimeout(() => setStatus(articleId, 'idle'), 4_000)
     }
   }
-  
+
+  const byStatus = {
+    published: articles.filter(a => a.status === 'published').length,
+    draft:     articles.filter(a => a.status === 'draft').length,
+    scheduled: articles.filter(a => a.status === 'scheduled').length,
+  }
+
   return (
     <Card
       title={`All articles (${articles.length})`}
@@ -116,64 +153,65 @@ export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
         </div>
       ) : (
         <div>
-          {articles.map(a => (
-            <div key={a.id} style={{ position: 'relative' }}>
-              <ArticleRowItem
-                article={a}
-                showActions
-                onEdit={id => router.push(`/write?edit=${id}`)}
-                onDelete={onDelete}
-                deleting={deleting}
-              />
+          {articles.map(a => {
+            const status = ptpStatus[a.id] ?? 'idle'
+            const busy = status === 'queued' || status === 'running'
 
-              {/* PTP button — overlaid on the right of each row */}
-              <button
-                onClick={() => handlePTP(a.id)}
-                disabled={!!ptping}
-                title="Post to Page (Facebook)"
-                style={{
-                  position: 'absolute',
-                  right: 56,          // sit just left of the existing action buttons
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '3px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  cursor: ptping ? 'not-allowed' : 'pointer',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  fontFamily: "'Syne', sans-serif",
-                  transition: 'background 0.2s, color 0.2s',
-                  ...(ptpResult[a.id] === 'done'
-                    ? { background: '#EAF3DE', color: '#3B6D11' }
-                    : ptpResult[a.id] === 'error'
-                    ? { background: '#FEE2E2', color: '#991B1B' }
-                    : ptping === a.id
-                    ? { background: '#E6F1FB', color: '#185FA5' }
-                    : { background: '#F3F4F6', color: '#374151' }),
-                }}
-              >
-                {ptping === a.id ? (
-                  <>
-                    <SpinnerIcon />
-                    Posting…
-                  </>
-                ) : ptpResult[a.id] === 'done' ? (
-                  <>✓ Posted</>
-                ) : ptpResult[a.id] === 'error' ? (
-                  <>✗ Failed</>
-                ) : (
-                  <>
-                    <FbIcon />
-                    PTP
-                  </>
-                )}
-              </button>
-            </div>
-          ))}
+            return (
+              <div key={a.id} style={{ position: 'relative' }}>
+                <ArticleRowItem
+                  article={a}
+                  showActions
+                  onEdit={id => router.push(`/write?edit=${id}`)}
+                  onDelete={onDelete}
+                  deleting={deleting}
+                />
+
+                {/* PTP button */}
+                <button
+                  onClick={() => handlePTP(a.id)}
+                  disabled={busy}
+                  title="Post to Page (Facebook)"
+                  style={{
+                    position: 'absolute',
+                    right: 56,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '3px 10px',
+                    borderRadius: 6,
+                    border: 'none',
+                    cursor: busy ? 'not-allowed' : 'pointer',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fontFamily: "'Syne', sans-serif",
+                    transition: 'background 0.2s, color 0.2s',
+                    ...(status === 'done'
+                      ? { background: '#EAF3DE', color: '#3B6D11' }
+                      : status === 'error'
+                      ? { background: '#FEE2E2', color: '#991B1B' }
+                      : busy
+                      ? { background: '#E6F1FB', color: '#185FA5' }
+                      : { background: '#F3F4F6', color: '#374151' }),
+                  }}
+                >
+                  {status === 'queued' ? (
+                    <><SpinnerIcon /> Queued…</>
+                  ) : status === 'running' ? (
+                    <><SpinnerIcon /> Posting…</>
+                  ) : status === 'done' ? (
+                    <>✓ Posted</>
+                  ) : status === 'error' ? (
+                    <>✗ Failed</>
+                  ) : (
+                    <><FbIcon /> PTP</>
+                  )}
+                </button>
+              </div>
+            )
+          })}
         </div>
       )}
     </Card>
