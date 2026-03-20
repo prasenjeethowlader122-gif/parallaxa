@@ -123,7 +123,7 @@ async function discoverLinksPlain(limit: number): Promise<ArticleLink[]> {
       const r = await fetch(`${FS_BASE}/v1/map`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: YAHOO_SOURCES[i], include_sitemap: false, max_pages: 20, same_domain: true }),
+        body: JSON.stringify({ url: YAHOO_SOURCES[i], include_sitemap: false, max_pages: 60, same_domain: true }),
         signal: AbortSignal.timeout(65_000),
       })
       if (!r.ok) throw new Error(`/v1/map HTTP ${r.status}`)
