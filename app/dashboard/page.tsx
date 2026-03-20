@@ -18,20 +18,17 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'articles' | 'settings'
+type Tab = 'overview' | 'articles' | 'settings' | 'intelligence'
 
-let NAV: { id: Tab;label: string;icon: React.ReactNode } [] = [
+const BASE_NAV: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: 'Overview', icon: Icons.grid },
   { id: 'articles', label: 'My Articles', icon: Icons.file },
-  
   { id: 'settings', label: 'Settings', icon: Icons.settings },
-  
 ]
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function DashboardSkeleton() {
-  
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       <Header />
@@ -55,16 +52,25 @@ function DashboardSkeleton() {
 function DashboardPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [tab, setTab] = useState < Tab > ('overview')
-  const [articles, setArticles] = useState < ArticleRow[] > ([])
+  const [tab, setTab] = useState<Tab>('overview')
+  const [articles, setArticles] = useState<ArticleRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [deleting, setDeleting] = useState < string | null > (null)
-  
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  // FIX 1: Build nav dynamically based on role, never mutate the module-level array
+  const nav = [
+    ...BASE_NAV,
+    ...(session?.user?.role === 'admin'
+      ? [{ id: 'intelligence' as Tab, label: 'AI', icon: Icons.file }]
+      : []),
+  ]
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/signin')
   }, [status, router])
-  
+
   useEffect(() => {
+    // FIX 2: Guard against null session before accessing session.user
     if (!session?.user) return
     const fetchArticles = async () => {
       try {
@@ -81,16 +87,7 @@ function DashboardPageContent() {
     }
     fetchArticles()
   }, [session])
-  useEffect(() => {
-    let role = session.user.role;
-    if (role === 'admin') {
-      NAV.push({
-        id: 'intelligence',
-        label: 'ai',
-        icon: Icons.file
-      })
-    }
-  }, [session])
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this article? This cannot be undone.')) return
     setDeleting(id)
@@ -103,13 +100,13 @@ function DashboardPageContent() {
       setDeleting(null)
     }
   }
-  
+
   if (status === 'loading' || !session?.user) return <DashboardSkeleton />
-  
-  const initials = session.user.name ?
-    session.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) :
-    session.user.email?.charAt(0).toUpperCase() ?? 'U'
-  
+
+  const initials = session.user.name
+    ? session.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : session.user.email?.charAt(0).toUpperCase() ?? 'U'
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       <Header />
@@ -137,7 +134,7 @@ function DashboardPageContent() {
 
           {/* Mobile tab pills */}
           <div className="lg:hidden flex gap-2 mb-6 overflow-x-auto pb-1">
-            {NAV.map(({ id, label }) => (
+            {nav.map(({ id, label }) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -159,7 +156,7 @@ function DashboardPageContent() {
 
             {/* Sidebar — desktop only */}
             <aside className="hidden lg:flex flex-col gap-1 w-48 flex-shrink-0">
-              {NAV.map(({ id, label, icon }) => (
+              {nav.map(({ id, label, icon }) => (
                 <NavItem key={id} icon={icon} label={label} active={tab === id} onClick={() => setTab(id)} />
               ))}
 
@@ -204,18 +201,16 @@ function DashboardPageContent() {
                   onSwitchArticles={() => setTab('articles')}
                 />
               )}
-              {
-                tab === 'intelligence' && (
-                  <IntelligenceTab/>
-                )
-              }
+              {tab === 'intelligence' && (
+                <IntelligenceTab />
+              )}
               {tab === 'articles' && (
                 <ArticlesTab
                   articles={articles}
                   loading={loading}
                   deleting={deleting}
                   onDelete={handleDelete}
-                userRole ={session.user.role}
+                  userRole={session.user.role}
                 />
               )}
               {tab === 'settings' && (

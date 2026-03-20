@@ -4,16 +4,18 @@ import { useState, useRef } from 'react'
 import { Icons } from './icons'
 import { Card, ArticleRowItem, SkeletonRows, type ArticleRow } from './ui'
 
+// FIX: Added missing `userRole` to Props interface
 interface Props {
   articles: ArticleRow[]
   loading: boolean
   deleting: string | null
   onDelete: (id: string) => void
+  userRole?: string
 }
 
 type PtpStatus = 'idle' | 'queued' | 'running' | 'done' | 'error'
 
-export function ArticlesTab({ articles, loading, deleting, onDelete  , userRole}: Props) {
+export function ArticlesTab({ articles, loading, deleting, onDelete, userRole }: Props) {
   const router = useRouter()
 
   // Per-article PTP status
@@ -167,49 +169,47 @@ export function ArticlesTab({ articles, loading, deleting, onDelete  , userRole}
                   deleting={deleting}
                 />
                 {userRole === 'admin' && (
-                
-                <button
-                  onClick={() => handlePTP(a.id)}
-                  disabled={busy}
-                  title="Post to Page (Facebook)"
-                  style={{
-                    position: 'absolute',
-                    right: 56,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    padding: '3px 10px',
-                    borderRadius: 6,
-                    border: 'none',
-                    cursor: busy ? 'not-allowed' : 'pointer',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    fontFamily: "'Syne', sans-serif",
-                    transition: 'background 0.2s, color 0.2s',
-                    ...(status === 'done'
-                      ? { background: '#EAF3DE', color: '#3B6D11' }
-                      : status === 'error'
-                      ? { background: '#FEE2E2', color: '#991B1B' }
-                      : busy
-                      ? { background: '#E6F1FB', color: '#185FA5' }
-                      : { background: '#F3F4F6', color: '#374151' }),
-                  }}
-                >
-                  {status === 'queued' ? (
-                    <><SpinnerIcon /> Queued…</>
-                  ) : status === 'running' ? (
-                    <><SpinnerIcon /> Posting…</>
-                  ) : status === 'done' ? (
-                    <>✓ Posted</>
-                  ) : status === 'error' ? (
-                    <>✗ Failed</>
-                  ) : (
-                    <><FbIcon /> PTP</>
-                  )}
-                </button>
-                  
+                  <button
+                    onClick={() => handlePTP(a.id)}
+                    disabled={busy}
+                    title="Post to Page (Facebook)"
+                    style={{
+                      position: 'absolute',
+                      right: 56,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '3px 10px',
+                      borderRadius: 6,
+                      border: 'none',
+                      cursor: busy ? 'not-allowed' : 'pointer',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      fontFamily: "'Syne', sans-serif",
+                      transition: 'background 0.2s, color 0.2s',
+                      ...(status === 'done'
+                        ? { background: '#EAF3DE', color: '#3B6D11' }
+                        : status === 'error'
+                        ? { background: '#FEE2E2', color: '#991B1B' }
+                        : busy
+                        ? { background: '#E6F1FB', color: '#185FA5' }
+                        : { background: '#F3F4F6', color: '#374151' }),
+                    }}
+                  >
+                    {status === 'queued' ? (
+                      <><SpinnerIcon /> Queued…</>
+                    ) : status === 'running' ? (
+                      <><SpinnerIcon /> Posting…</>
+                    ) : status === 'done' ? (
+                      <>✓ Posted</>
+                    ) : status === 'error' ? (
+                      <>✗ Failed</>
+                    ) : (
+                      <><FbIcon /> PTP</>
+                    )}
+                  </button>
                 )}
               </div>
             )

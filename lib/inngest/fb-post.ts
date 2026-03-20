@@ -50,7 +50,6 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 // ─── Helpers (plain fetch — safe inside step.run) ─────────────────────────────
 
-
 async function generateCaption(article: {
   title: string
   description: string
@@ -113,27 +112,26 @@ Rules:
 }
 
 async function uploadPhotoToFacebook(params: {
-  slug : string,
+  slug: string
   caption: string
-}): Promise<string> {
+}): Promise < string > {
   const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
-  //const imageBytes = Buffer.from(params.base64, 'base64')
-
+  
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
   form.append('caption', params.caption)
-  form.append(
-    'url', SITE_URL + '/api/og/ptp/' + [slug]
-  )
-
+  // FIX: Use params.slug instead of the undefined bare `slug` variable,
+  //      and remove the erroneous array wrapper `[slug]`
+  form.append('url', `${SITE_URL}/api/og/ptp/${params.slug}`)
+  
   const res = await fetch(endpoint, { method: 'POST', body: form })
   const data = (await res.json()) as {
-    id?: string
-    post_id?: string
-    error?: { message: string; code?: number; error_subcode?: number }
+    id ? : string
+    post_id ? : string
+    error ? : { message: string;code ? : number;error_subcode ? : number }
   }
-
+  
   if (!res.ok || data.error) {
     const { message, code, error_subcode } = data.error ?? {}
     if (code === 200 || code === 10) {
@@ -151,7 +149,7 @@ async function uploadPhotoToFacebook(params: {
     }
     throw new Error(`Facebook photo upload failed (HTTP ${res.status}): ${message ?? JSON.stringify(data)}`)
   }
-
+  
   const postId = data.post_id ?? data.id
   if (!postId) throw new Error('Facebook returned no post ID')
   return postId
@@ -201,9 +199,6 @@ export const ptpFunction = inngest.createFunction(
     const articleUrl = `${SITE_URL}/news/${article.slug}`
     logger.info(`[ptp] processing articleId:${articleId} slug:${article.slug}`)
     
-    // ── Step 2: Render OG image → base64 ──────────────────────────────────
-    // Uses step.fetch so Inngest handles retries on network failures
-    
     // ── Step 3: Generate bilingual caption ────────────────────────────────
     const caption = await step.run('generate-caption', async () => {
       logger.info('[ptp] generating bilingual caption via HuggingFace…')
@@ -231,7 +226,6 @@ export const ptpFunction = inngest.createFunction(
       logger.info('[ptp] uploading photo to Facebook page…')
       const id = await uploadPhotoToFacebook({
         slug: article.slug,
-        
         caption: postText,
       })
       logger.info(`[ptp] ✓ photo posted — postId: ${id}`)
