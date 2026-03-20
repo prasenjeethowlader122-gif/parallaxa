@@ -247,7 +247,7 @@ export const ptpFunction = inngest.createFunction(
       logger.info('[ptp] uploading photo to Facebook page…')
       const id = await uploadPhotoToFacebook({
         slug: article.slug,
-        mimeType,
+        
         caption: postText,
       })
       logger.info(`[ptp] ✓ photo posted — postId: ${id}`)
