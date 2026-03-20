@@ -28,7 +28,9 @@ import type { GetFunctionInput } from 'inngest'
 const FS_BASE        = process.env.FIRESCRAPE_BASE_URL  ?? 'https://parallaxa-py-1.onrender.com'
 const HF_MODEL       = process.env.HF_MODEL             ?? 'Qwen/Qwen2.5-72B-Instruct'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL   ?? 'sentence-transformers/all-MiniLM-L6-v2'
-const YAHOO_SOURCES  = ['https://www.yahoo.com/news']
+const YAHOO_SOURCES  = [//'https://www.yahoo.com/news'
+'https://www.bbc.com/bengali/topics/c2dwq2nd40xt.lite'
+]
 const FALLBACK_URL   = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 /**
@@ -79,7 +81,16 @@ const errMsg = (e: unknown) => e instanceof Error ? e.message : String(e)
 function isArticleUrl(raw: string): boolean {
   try {
     const u = new URL(raw)
-    return u.hostname === 'www.yahoo.com' && /^\/news\/articles\/[^/]+\.html$/.test(u.pathname)
+    
+    const isYahoo =
+      u.hostname === 'www.yahoo.com' &&
+      /^\/news\/articles\/[^/]+\.html$/.test(u.pathname)
+    
+    const isBBC =
+      u.hostname === 'www.bbc.com' &&
+      /^\/[^/]+\/articles\/[^/]+(?:\.lite)?$/.test(u.pathname)
+    
+    return isYahoo || isBBC
   } catch { return false }
 }
 
@@ -108,7 +119,7 @@ async function discoverLinksPlain(limit: number): Promise<ArticleLink[]> {
       const r = await fetch(`${FS_BASE}/v1/map`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: YAHOO_SOURCES[i], include_sitemap: false, max_pages: 100, same_domain: true }),
+        body: JSON.stringify({ url: YAHOO_SOURCES[i], include_sitemap: false, max_pages: 20, same_domain: true }),
         signal: AbortSignal.timeout(65_000),
       })
       if (!r.ok) throw new Error(`/v1/map HTTP ${r.status}`)
@@ -144,7 +155,7 @@ async function scrape(link: ArticleLink): Promise<ScrapedPage> {
 const SYSTEM_PROMPT = `You are a professional news journalist.
 Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
-{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , add [[text]] for every important keywords like names place country etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
+{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , add [[text]] for every important keywords like names place country etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>" , "language" : "<bn|en>"}`
 
 async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   const res = await hf.chat.completions.create({
@@ -169,6 +180,7 @@ async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
     title,
     description: String(p.description ?? '').trim(),
     content,
+    language : p.language,
     category: String(p.category ?? 'World').trim(),
   }
 }
