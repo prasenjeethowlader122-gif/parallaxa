@@ -128,7 +128,7 @@ Rules:
 }
 
 async function uploadPhotoToFacebook(params: {
-  base64: string
+  slug : string,
   mimeType: string
   caption: string
 }): Promise<string> {
@@ -140,9 +140,7 @@ async function uploadPhotoToFacebook(params: {
   form.append('published', 'true')
   form.append('caption', params.caption)
   form.append(
-    'source',
-    new Blob([imageBytes], { type: params.mimeType }),
-    'og-image.png'
+    'url', SITE_URL + '/api/og/ptp/' + [slug]
   )
 
   const res = await fetch(endpoint, { method: 'POST', body: form })
@@ -221,17 +219,6 @@ export const ptpFunction = inngest.createFunction(
     
     // ── Step 2: Render OG image → base64 ──────────────────────────────────
     // Uses step.fetch so Inngest handles retries on network failures
-    const { base64: imageBase64, mimeType } = await step.run(
-      'render-og-image',
-      async () => {
-        logger.info(`[ptp] rendering OG image for slug: ${article.slug}`)
-        const result = await fetchOgImageBase64(article.slug)
-        logger.info(
-          `[ptp] OG image ready — ${Buffer.from(result.base64, 'base64').length} bytes`
-        )
-        return result
-      }
-    )
     
     // ── Step 3: Generate bilingual caption ────────────────────────────────
     const caption = await step.run('generate-caption', async () => {
@@ -250,7 +237,7 @@ export const ptpFunction = inngest.createFunction(
       const postText = [
         caption.english,
         '',
-        '— — —',
+        '\n',
         '',
         caption.bangla,
         '',
@@ -259,7 +246,7 @@ export const ptpFunction = inngest.createFunction(
       
       logger.info('[ptp] uploading photo to Facebook page…')
       const id = await uploadPhotoToFacebook({
-        base64: imageBase64,
+        slug: article.slug,
         mimeType,
         caption: postText,
       })
