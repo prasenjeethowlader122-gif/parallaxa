@@ -144,7 +144,7 @@ async function scrape(link: ArticleLink): Promise<ScrapedPage> {
 const SYSTEM_PROMPT = `You are a professional news journalist.
 Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
-{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
+{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , add [[text]] for every important keywords like names place country etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
 
 async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   const res = await hf.chat.completions.create({
@@ -201,7 +201,7 @@ async function saveArticle(gen: GeneratedArticle, page: ScrapedPage): Promise<st
     description: gen.description,
     content: gen.content,
     category: gen.category,
-    author: 'Intelligence',
+    author: 'Prasenjeet Howlader',
     date: new Date(),
     image: page.image ?? '',
     readTime,

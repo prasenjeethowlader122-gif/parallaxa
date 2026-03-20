@@ -193,7 +193,8 @@ export async function createArticle(input: CreateArticleInput): Promise<NewsArti
         no_index, allow_comments, show_in_rss, amp_enabled,
         redirect_url, css_class, visibility, scheduled_at, status,
         source_url,
-        embedding
+        embedding,
+        user_id,
       ) VALUES (
         ${input.title},
         ${input.description},
@@ -222,7 +223,8 @@ export async function createArticle(input: CreateArticleInput): Promise<NewsArti
         ${input.scheduledAt      ? input.scheduledAt.toISOString() : null},
         ${input.status           ?? 'draft'},
         ${input.sourceUrl        ?? null},
-        ${embeddingValue}
+        ${embeddingValue},
+        ${input.userId ?? 'd785d4d5-d04c-4602-853b-63a089a55e76'}
       )
       RETURNING *`
     return rows[0] ? mapRow(rows[0]) : null
