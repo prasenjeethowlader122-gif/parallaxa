@@ -14,14 +14,15 @@
 
 import { inngest } from './client'
 import { OpenAI } from 'openai'
-import { getArticleById } from '@/lib/db/articles'
+import { getArticleById, updateArticle } from '@/lib/db/articles'
+
 import type { GetFunctionInput } from 'inngest'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const FB_ACCESS_TOKEN =
   process.env.FB_ACCESS_TOKEN ??
-  'EAA8ZCWezHogUBQ7CrZCq3mq9nJIQdIfA5wJm2uPb3ob6bqhs67d0LBb4AZC2DdRiHPoZCd4Sp5JIPxvweljc6PZCxfM6bXStpZCjzSctU4HDfhij1omLTWjAxxrF1APE7kduACt8JUpC86I0qhOLGQZCNeSzcJgRX6OUNnZBMICTxwCZBsaCO5Ygj7eTh45sLvpm9HNfNYYPKEZAZA4QKgdZCZBKPZBpA8xy9AniGSfktMLTeayphcZBZCNuGM6NtHENZBwWWxQecxPXWEGnxrIuuZA5ek8vBTqNTGCl0eC2jFZCRp1FDcZD'
+  'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
 
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
 
@@ -228,6 +229,12 @@ export const ptpFunction = inngest.createFunction(
         slug: article.slug,
         caption: postText,
       })
+      if (id) {
+        // update fi...
+        await updateArticle(articleId, {
+          ptpLinks : JSON.stringify([id])
+        })
+      }
       logger.info(`[ptp] ✓ photo posted — postId: ${id}`)
       return id
     })

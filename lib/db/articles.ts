@@ -230,6 +230,7 @@ export async function createArticle(input: CreateArticleInput): Promise < NewsAr
 }
 
 export async function updateArticle(id: string, input: UpdateArticleInput): Promise < NewsArticle | null > {
+  
   const fieldMap: Record < string, string > = {
     title: 'title',
     description: 'description',
@@ -257,7 +258,9 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
     visibility: 'visibility',
     scheduledAt: 'scheduled_at',
     status: 'status',
-    sourceUrl: 'source_url', // ✅ NEW
+    sourceUrl: 'source_url',
+    ptpLinks: 'ptp_links'
+    // ✅ NEW
   }
   
   const fields: string[] = []

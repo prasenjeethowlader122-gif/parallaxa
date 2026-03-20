@@ -22,16 +22,17 @@ import {
   searchArticlesByVector,
 } from '@/lib/db/articles'
 import type { GetFunctionInput } from 'inngest'
+import { auth } from '@/auth'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const FS_BASE        = process.env.FIRESCRAPE_BASE_URL  ?? 'https://parallaxa-py-1.onrender.com'
-const HF_MODEL       = process.env.HF_MODEL             ?? 'nvidia/nemotron-3-super-120b-a12b:free'
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL   ?? 'nvidia/llama-nemotron-embed-vl-1b-v2:free'
-const YAHOO_SOURCES  = [//'https://www.yahoo.com/news'
-'https://www.thedailystar.net/news'
+const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
+const HF_MODEL = process.env.HF_MODEL ?? 'nvidia/nemotron-3-super-120b-a12b:free'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'nvidia/llama-nemotron-embed-vl-1b-v2:free'
+const YAHOO_SOURCES = [ //'https://www.yahoo.com/news'
+  'https://www.thedailystar.net/news'
 ]
-const FALLBACK_URL   = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
+const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 /**
  * Cosine-distance threshold for vector duplicate detection.
@@ -47,32 +48,39 @@ const hf = new OpenAI({
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface ArticleLink { url: string; title: string | null }
+export interface ArticleLink { url: string;title: string | null }
 export interface ArticleEmbeddingPayload {
-  articleId: string; text: string; vector: number[] | undefined; model: string; dim: number | undefined
+  articleId: string;text: string;vector: number[] | undefined;model: string;dim: number | undefined
 }
 
-interface ScrapedPage { url: string; title: string | null; markdown: string; image: string | null }
+interface ScrapedPage { url: string;title: string | null;markdown: string;image: string | null }
 
 interface GeneratedArticle {
   title: string
   description: string
   content: string
   category: string
-  embedding?: number[]   // ✅ attached before save
+  embedding ? : number[] // ✅ attached before save
 }
 
-interface FsMeta { title?: string; og_image?: string; [k: string]: unknown }
-interface FsScrape { markdown?: string; text?: string; links?: string[]; metadata?: FsMeta }
+interface FsMeta {
+  title ? : string;
+  og_image ? : string;
+  [k: string]: unknown
+}
+interface FsScrape {
+  markdown ? : string;
+  text ? : string;
+  links ? : string[];
+  metadata ? : FsMeta
+}
 interface FsJob { job_id: string }
-interface FsMapStatus { status: string; urls?: string[] }
-interface FsCrawlStatus { status: string; results?: FsScrape[]; pages?: FsScrape[] }
+interface FsMapStatus { status: string;urls ? : string[] }
+interface FsCrawlStatus { status: string;results ? : FsScrape[];pages ? : FsScrape[] }
 
-type PipelineResult =
-  | { ok: true;  sourceUrl: string; title: string; articleId: string; embeddingPayload: ArticleEmbeddingPayload }
-  | { ok: false; sourceUrl: string; stage: string; error: string }
+type PipelineResult = | { ok: true;sourceUrl: string;title: string;articleId: string;embeddingPayload: ArticleEmbeddingPayload } | { ok: false;sourceUrl: string;stage: string;error: string }
 
-type Step = GetFunctionInput<typeof inngest>['step']
+type Step = GetFunctionInput < typeof inngest > ['step']
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -100,7 +108,7 @@ function isArticleUrl(raw: string): boolean {
 
 // ─── FireScrape: step.fetch helpers (top-level only) ─────────────────────────
 
-async function fsWakeUp(step: Step): Promise<void> {
+async function fsWakeUp(step: Step): Promise < void > {
   try {
     const r = await step.fetch('wake-firescrape', `${FS_BASE}/health`)
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
@@ -109,15 +117,18 @@ async function fsWakeUp(step: Step): Promise<void> {
 
 // ─── Plain-fetch helpers (safe inside step.run) ───────────────────────────────
 
-async function discoverLinksPlain(limit: number): Promise<ArticleLink[]> {
-  const seen = new Set<string>()
+async function discoverLinksPlain(limit: number): Promise < ArticleLink[] > {
+  const seen = new Set < string > ()
   const out: ArticleLink[] = []
-
+  
   const add = (url: string, title: string | null = null) => {
     const clean = url.split('?')[0].split('#')[0]
-    if (!seen.has(clean) && isArticleUrl(clean)) { seen.add(clean); out.push({ url: clean, title }) }
+    if (!seen.has(clean) && isArticleUrl(clean)) {
+      seen.add(clean);
+      out.push({ url: clean, title })
+    }
   }
-
+  
   for (let i = 0; i < YAHOO_SOURCES.length && out.length < limit; i++) {
     try {
       const r = await fetch(`${FS_BASE}/v1/map`, {
@@ -132,11 +143,11 @@ async function discoverLinksPlain(limit: number): Promise<ArticleLink[]> {
         data.urls.filter((u): u is string => typeof u === 'string').forEach(u => add(u))
     } catch (e) { console.warn(`[discover] map[${i}]: ${errMsg(e)}`) }
   }
-
+  
   return out.slice(0, limit)
 }
 
-async function scrape(link: ArticleLink): Promise<ScrapedPage> {
+async function scrape(link: ArticleLink): Promise < ScrapedPage > {
   const r = await fetch(`${FS_BASE}/v1/scrape`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -161,7 +172,7 @@ Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
 {"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , add [[text]] for every important keywords like names place country etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
 
-async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
+async function generate(page: ScrapedPage): Promise < GeneratedArticle > {
   const res = await hf.chat.completions.create({
     model: HF_MODEL,
     stream: false,
@@ -175,8 +186,8 @@ async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   const raw = res.choices[0]?.message?.content ?? ''
   if (!raw.trim()) throw new Error('Empty model response')
   const clean = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-  let p: Record<string, unknown>
-  try { p = JSON.parse(clean) } catch { throw new Error(`Invalid JSON: ${raw.slice(0, 400)}`) }
+  let p: Record < string, unknown >
+    try { p = JSON.parse(clean) } catch { throw new Error(`Invalid JSON: ${raw.slice(0, 400)}`) }
   const title = String(p.title ?? page.title ?? 'Untitled').trim()
   const content = String(p.content ?? '').trim()
   if (!title || !content) throw new Error(`Missing title/content. Keys: ${Object.keys(p).join(', ')}`)
@@ -189,7 +200,7 @@ async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   }
 }
 
-async function embed(text: string): Promise<number[] | undefined> {
+async function embed(text: string): Promise < number[] | undefined > {
   try {
     const r = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: text })
     const v = r.data[0]?.embedding
@@ -209,7 +220,8 @@ function buildEmbedText(gen: GeneratedArticle, page: ScrapedPage): string {
   ].join('\n')
 }
 
-async function saveArticle(gen: GeneratedArticle, page: ScrapedPage): Promise<string> {
+async function saveArticle(gen: GeneratedArticle, page: ScrapedPage): Promise < string > {
+  const session = await auth()
   console.log('[saveArticle] embedding present:', !!gen.embedding, 'length:', gen.embedding?.length)
   const readTime = Math.max(1, Math.ceil(gen.content.split(/\s+/).length / 200))
   const saved = await createArticle({
@@ -232,10 +244,16 @@ async function saveArticle(gen: GeneratedArticle, page: ScrapedPage): Promise<st
     allowComments: true,
     showInRss: true,
     ampEnabled: false,
-    sourceUrl: page.url,        // ✅ save source URL for Layer-1 future checks
-    embedding: gen.embedding,   // ✅ already number[] — createArticle converts to pgvector literal
+    sourceUrl: page.url, // ✅ save source URL for Layer-1 future checks
+    embedding: gen.embedding, // ✅ already number[] — createArticle converts to pgvector literal
   })
+  
   if (!saved?.id) throw new Error('DB insert returned no id')
+  
+  const result = await inngest.send({
+    name: 'news/ptp.requested',
+    data: { articleId: saved.id, userId: session.user.id },
+  })
   return saved.id
 }
 
@@ -249,68 +267,68 @@ export const newsPipelineFunction = inngest.createFunction(
     concurrency: { limit: 1 },
     triggers: [{ event: 'news/pipeline.requested' }],
   },
-
+  
   async ({ step, logger }) => {
-
+    
     // ── Step 0: Wake FireScrape ─────────────────────────────────────────────
     await firescrapeWakeUp(step)
-
+    
     // ── Step 1: Discover links ──────────────────────────────────────────────
     const links = await step.run('discover-links', async () => {
       const found = await discoverLinksPlain(30)
       return found.length > 0 ? found : [{ url: FALLBACK_URL, title: null }]
     })
-
+    
     await step.run('discovery-summary', async () => ({
       total: links.length,
       usedFallback: links.length === 1 && links[0].url === FALLBACK_URL,
       sources: YAHOO_SOURCES,
       links: links.map(l => ({ url: l.url, title: l.title })),
     }))
-
+    
     // ── Steps 2–N: per-article pipeline ────────────────────────────────────
     const results: PipelineResult[] = []
-
+    
     for (let i = 0; i < links.length; i++) {
       const link = links[i]
-      const tag  = `[${i + 1}/${links.length}]`
-
+      const tag = `[${i + 1}/${links.length}]`
+      
       const result = await step
-        .run(`process-article-${i}`, async (): Promise<PipelineResult> => {
-
+        .run(`process-article-${i}`, async (): Promise < PipelineResult > => {
+          
           // ── Layer 1: URL duplicate check (cheapest — before any network call) ──
           const byUrl = await getArticleBySourceUrl(link.url)
           if (byUrl) {
             logger.info(`[pipeline] ${tag} ⏭ duplicate (url) id:${byUrl.id} | ${link.url}`)
             return { ok: false, sourceUrl: link.url, stage: 'duplicate', error: `URL exists: "${byUrl.title}"` }
           }
-
+          
           // ── Scrape ────────────────────────────────────────────────────────
           let page: ScrapedPage
           try { page = await scrape(link) }
           catch (e) { throw new Error(`[scrape] ${errMsg(e)}`) }
-
+          
           // ── Generate ──────────────────────────────────────────────────────
           let gen: GeneratedArticle
           try { gen = await generate(page) }
           catch (e) { throw new Error(`[generate] ${errMsg(e)}`) }
-
+          
           // ── Layer 2: Title duplicate check ────────────────────────────────
           const byTitle = await getArticleByTitle(gen.title)
           if (byTitle) {
             logger.info(`[pipeline] ${tag} ⏭ duplicate (title) id:${byTitle.id} | "${gen.title}"`)
             return { ok: false, sourceUrl: link.url, stage: 'duplicate', error: `Title exists: "${byTitle.title}"` }
           }
-
+          
           // ── Embed ─────────────────────────────────────────────────────────
-          const embedText   = buildEmbedText(gen, page)
+          const embedText = buildEmbedText(gen, page)
           const embedVector = await embed(embedText)
-
+          
           // ── Layer 3: Vector similarity duplicate check ────────────────────
           if (embedVector) {
             const similar = await searchArticlesByVector(
               embedVector,
-              1,                          // only need the closest match
+              1, // only need the closest match
               VECTOR_DUPLICATE_THRESHOLD,
             )
             if (similar.length > 0) {
@@ -328,14 +346,14 @@ export const newsPipelineFunction = inngest.createFunction(
             // embed failed — log but continue (don't block saves when HF times out)
             logger.warn(`[pipeline] ${tag} ⚠ embedding failed — skipping vector duplicate check`)
           }
-
+          
           // ── All checks passed — save ──────────────────────────────────────
           gen.embedding = embedVector
-
+          
           let articleId: string
           try { articleId = await saveArticle(gen, page) }
           catch (e) { throw new Error(`[db] ${errMsg(e)}`) }
-
+          
           const embeddingPayload: ArticleEmbeddingPayload = {
             articleId,
             text: embedText,
@@ -343,21 +361,21 @@ export const newsPipelineFunction = inngest.createFunction(
             model: HF_EMBED_MODEL,
             dim: embedVector?.length,
           }
-
+          
           logger.info(`[pipeline] ${tag} ✓ id:${articleId} embed_dim:${embedVector?.length ?? 'none'}`)
           return { ok: true, sourceUrl: link.url, title: gen.title, articleId, embeddingPayload }
         })
         .catch((e: unknown): PipelineResult => {
-          const raw   = errMsg(e)
+          const raw = errMsg(e)
           const match = raw.match(/^\[(\w+)\]\s*/)
           const stage = match?.[1] ?? 'unknown'
           const error = match ? raw.slice(match[0].length) : raw
           logger.error(`[pipeline] ${tag} ✗ stage=${stage} | ${link.url} | ${error}`)
           return { ok: false, sourceUrl: link.url, stage, error }
         })
-
+      
       results.push(result)
-
+      
       if (result.ok) {
         await step.sendEvent(`article-saved-${i}`, {
           name: 'news/article.processed',
@@ -370,21 +388,23 @@ export const newsPipelineFunction = inngest.createFunction(
         })
       }
     }
-
+    
     // ── Final summary ───────────────────────────────────────────────────────
-    const ok         = results.filter((r): r is Extract<PipelineResult, { ok: true }>  => r.ok)
-    const failed     = results.filter((r): r is Extract<PipelineResult, { ok: false }> => !r.ok)
+    const ok = results.filter((r): r is Extract < PipelineResult, { ok: true } > => r.ok)
+    const failed = results.filter((r): r is Extract < PipelineResult, { ok: false } > => !r.ok)
     const duplicates = failed.filter(r => r.stage === 'duplicate')
-    const errors     = failed.filter(r => r.stage !== 'duplicate')
-
-    const byStage = failed.reduce<Record<string, number>>((acc, r) => {
-      acc[r.stage] = (acc[r.stage] ?? 0) + 1; return acc
-    }, {})
-
+    const errors = failed.filter(r => r.stage !== 'duplicate')
+    
+    const byStage = failed.reduce < Record < string,
+      number >> ((acc, r) => {
+        acc[r.stage] = (acc[r.stage] ?? 0) + 1;
+        return acc
+      }, {})
+    
     logger.info(
       `[pipeline] done — saved:${ok.length} skipped(dup):${duplicates.length} failed:${errors.length} | byStage:${JSON.stringify(byStage)}`
     )
-
+    
     return {
       total: links.length,
       saved: ok.length,
@@ -397,4 +417,4 @@ export const newsPipelineFunction = inngest.createFunction(
 )
 
 // ─── Re-export wake-up under old name ────────────────────────────────────────
-async function firescrapeWakeUp(step: Step): Promise<void> { await fsWakeUp(step) }
+async function firescrapeWakeUp(step: Step): Promise < void > { await fsWakeUp(step) }
