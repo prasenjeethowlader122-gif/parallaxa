@@ -42,7 +42,7 @@ const VECTOR_DUPLICATE_THRESHOLD = 0.15
 
 const hf = new OpenAI({
   baseURL: 'https://router.huggingface.co/v1',
-  apiKey: process.env.HF_API_KEY ?? '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',
+  apiKey: process.env.HF_API_KEY ?? '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',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────

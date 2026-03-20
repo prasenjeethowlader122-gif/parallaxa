@@ -297,7 +297,7 @@ async function embedQuery(query: string): Promise < number[] | null > {
     const { OpenAI } = await import('openai')
     const hf = new OpenAI({
       baseURL: 'https://router.huggingface.co/v1',
-      apiKey: process.env.HF_API_KEY ?? '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',
+      apiKey: process.env.HF_API_KEY ?? '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',
     })
     const res = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: query })
     const vector = res.data[0]?.embedding
