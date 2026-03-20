@@ -58,11 +58,11 @@ export async function GET(request: Request) {
         {/* Watermark — top left */}
         <img
           src={profilePicSrc}
-          width={150}
+          width={100}
           style={{
             position: 'absolute',
-            top: 20,
-            left: 20,
+            top: 15,
+            left: 15,
             filter: 'invert(100%)',
           }}
           alt="logo"

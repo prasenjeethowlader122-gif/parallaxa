@@ -188,9 +188,9 @@ export default function SignInPage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
        <Link href="/" className="flex items-center gap-2 mt-8">
               <div className="flex items-center justify-center">
-                <Image src={'https://v0-parallaxa.vercel.app/New Project 25 [4D921DE].png'} alt="logo" height={45} />
+                <Image src={'https://v0-parallaxa.vercel.app/New Project 25 [4D921DE].png'} alt="logo" height={25} />
               </div>
-              <span className="text-[17px] font-semibold text-gray-900 tracking-tight">
+              <span className="text-[12px] font-semibold text-gray-900 tracking-tight">
                 Parallaxa<span className="text-red-600">.</span>
               </span>
             </Link>
