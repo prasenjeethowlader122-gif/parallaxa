@@ -10,9 +10,20 @@ import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, getAllArticles, getArticleBySlug } from '@/lib/news-data'
 import {
-  ArrowLeft, Share2, Printer, Twitter, Facebook,
-  Linkedin, Link2, Check, Eye, Clock, Bookmark,
-  BookmarkCheck, Volume2, ChevronRight,
+  ArrowLeft,
+  Share2,
+  Printer,
+  Twitter,
+  Facebook,
+  Linkedin,
+  Link2,
+  Check,
+  Eye,
+  Clock,
+  Bookmark,
+  BookmarkCheck,
+  Volume2,
+  ChevronRight,
 } from 'lucide-react'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -34,7 +45,10 @@ function formatRelativeTime(dateStr: string): string {
 
 function formatFullDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   })
 }
 
@@ -48,9 +62,9 @@ function toAuthorSlug(name: string): string {
 
 // ── Reading progress bar ───────────────────────────────────────────────────────
 
-function useReadingProgress(ref: React.RefObject<HTMLElement | null>) {
+function useReadingProgress(ref: React.RefObject < HTMLElement | null > ) {
   const [progress, setProgress] = useState(0)
-
+  
   useEffect(() => {
     const onScroll = () => {
       const el = ref.current
@@ -63,7 +77,7 @@ function useReadingProgress(ref: React.RefObject<HTMLElement | null>) {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [ref])
-
+  
   return progress
 }
 
@@ -147,19 +161,19 @@ function RelatedItem({ article }: { article: NewsArticle }) {
 export default function ArticlePage() {
   const params = useParams()
   const slug = params.slug as string
-
-  const [article, setArticle] = useState<NewsArticle | null>(null)
-  const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>([])
-  const [mostRead, setMostRead] = useState<NewsArticle[]>([])
+  
+  const [article, setArticle] = useState < NewsArticle | null > (null)
+  const [relatedArticles, setRelatedArticles] = useState < NewsArticle[] > ([])
+  const [mostRead, setMostRead] = useState < NewsArticle[] > ([])
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
-
-  const shareRef = useRef<HTMLDivElement>(null)
-  const mainRef = useRef<HTMLDivElement>(null)
+  
+  const shareRef = useRef < HTMLDivElement > (null)
+  const mainRef = useRef < HTMLDivElement > (null)
   const progress = useReadingProgress(mainRef)
-
+  
   // Load article data
   useEffect(() => {
     const load = async () => {
@@ -186,7 +200,7 @@ export default function ArticlePage() {
     }
     load()
   }, [slug])
-
+  
   // Close share dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -197,30 +211,30 @@ export default function ArticlePage() {
     if (shareOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [shareOpen])
-
+  
   // Share handlers
   const handleCopyLink = useCallback(async () => {
     await navigator.clipboard.writeText(window.location.href)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [])
-
+  
   const handleShareTwitter = useCallback(() => {
     const text = encodeURIComponent(article?.title ?? '')
     const url = encodeURIComponent(window.location.href)
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank')
   }, [article])
-
+  
   const handleShareFacebook = useCallback(() => {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')
   }, [])
-
+  
   const handleShareLinkedin = useCallback(() => {
     const url = encodeURIComponent(window.location.href)
     const title = encodeURIComponent(article?.title ?? '')
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}`, '_blank')
   }, [article])
-
+  
   const handleNativeShare = useCallback(async () => {
     if (navigator.share) {
       await navigator.share({ title: article?.title, text: article?.description, url: window.location.href })
@@ -228,9 +242,9 @@ export default function ArticlePage() {
       setShareOpen((prev) => !prev)
     }
   }, [article])
-
+  
   const handlePrint = () => window.print()
-
+  
   // ── Loading ──
   if (isLoading) {
     return (
@@ -243,7 +257,7 @@ export default function ArticlePage() {
       </div>
     )
   }
-
+  
   // ── Not found ──
   if (!article) {
     return (
@@ -262,10 +276,10 @@ export default function ArticlePage() {
       </div>
     )
   }
-
+  
   const readTime = estimateReadTime(article.content)
   const authorSlug = toAuthorSlug(article.author)
-
+  
   // ── Page ──
   return (
     <div className="min-h-screen bg-white flex flex-col" ref={mainRef}>
@@ -464,13 +478,17 @@ export default function ArticlePage() {
               ) */}
 
               {/* ── Article body ── */}
-              <article className={`${slabo.className} text-gray-800 leading-[1.85] text-[17px] py-6 space-y-5`}>
-                {/* Drop cap on first paragraph */}
-                <p className="first-letter:text-[64px] first-letter:font-bold first-letter:float-left first-letter:leading-[0.82] first-letter:mr-2 first-letter:mt-1.5 first-letter:text-red-600">
-                  {article.content.replace(/\[\[([^\]]+)\]\]/g, '<a href="#" class="font-medium underline">$1</a>')
-}
-                </p>
-              </article>
+            <article className={`${slabo.className} text-gray-800 leading-[1.85] text-[17px] py-6 space-y-5`}>
+  <p
+    className="first-letter:text-[64px] first-letter:font-bold first-letter:float-left first-letter:leading-[0.82] first-letter:mr-2 first-letter:mt-1.5 first-letter:text-red-600"
+    dangerouslySetInnerHTML={{
+      __html: article.content.replace(
+        /\[\[([^\]]+)\]\]/g,
+        '<a href="#" class="font-medium underline">$1</a>'
+      )
+    }}
+  />
+</article>
 
               {/* ── Bottom share bar ── */}
               <div className="no-print pt-2
