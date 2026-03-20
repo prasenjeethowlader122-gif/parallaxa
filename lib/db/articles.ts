@@ -223,8 +223,8 @@ export async function createArticle(input: CreateArticleInput): Promise<NewsArti
         ${input.scheduledAt      ? input.scheduledAt.toISOString() : null},
         ${input.status           ?? 'draft'},
         ${input.sourceUrl        ?? null},
-        ${embeddingValue},
-        ${input.userId ?? 'd785d4d5-d04c-4602-853b-63a089a55e76'}
+         ${embeddingValue},
+        'd785d4d5-d04c-4602-853b-63a089a55e76'
       )
       RETURNING *`
     return rows[0] ? mapRow(rows[0]) : null
