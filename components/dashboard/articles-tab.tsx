@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import {useState , useEffect} from 'react'
 import { Icons } from './icons'
 import { Card, ArticleRowItem, SkeletonRows, type ArticleRow } from './ui'
 
@@ -18,11 +19,25 @@ export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
     draft:     articles.filter(a => a.status === 'draft').length,
     scheduled: articles.filter(a => a.status === 'scheduled').length,
   }
-
+  const [PTPAction , setPTPaction] = useState(false)
+  
+  useEffect(()=>{
+    if (PTPAction) {
+      try{
+      const dtPTPWork = await fetch('/api/ptp',{method : 'POST'});
+      if (dtPTPWork.ok) {
+         
+      }
+      } catch (e){
+        
+      }
+    }
+  })
+  
   return (
     <Card
       title={`All articles (${articles.length})`}
-      action={
+      action={<>
         <Link
           href="/write"
           className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
@@ -30,6 +45,10 @@ export function ArticlesTab({ articles, loading, deleting, onDelete }: Props) {
         >
           {Icons.plus} New
         </Link>
+        <button className = 'p-2 px-3 rounded-lg bg-gray-100 text-black ' onClick = {()=>setPTPaction(!PTPAction)}>
+          PTP
+        </button>
+        </>
       }
     >
       {/* Status summary pills */}
