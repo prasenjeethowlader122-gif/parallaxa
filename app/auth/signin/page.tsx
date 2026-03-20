@@ -3,7 +3,7 @@
 'use client'
 
 import Image from 'next/image'
-import profilePic from '../public/New Project 25 [4D921DE].png'
+import profilePic from '../../public/New Project 25 [4D921DE].png'
 import { useState, useEffect, Suspense } from 'react' // add Suspense
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
