@@ -13,15 +13,23 @@ const POSITIONS = [
   { x: 0, scale: 0.65, opacity: 0, z: 10 },
 ]
 
+// Fully hidden position for cards beyond the visible range
+const HIDDEN_POSITION = { x: 0, scale: 0.5, opacity: 0, z: 0 }
+
 function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
   const [current, setCurrent] = useState(0)
   const total = articles.length
   const timerRef = useRef < ReturnType < typeof setInterval > | null > (null)
   const startXRef = useRef(0)
   
+  // Guard: don't render if no articles
+  if (total === 0) return null
+  
   function getPos(cardIdx: number) {
     let offset = (cardIdx - current + total) % total
-    if (offset >= POSITIONS.length) offset = POSITIONS.length - 1
+    if (offset >= POSITIONS.length) {
+      return HIDDEN_POSITION // truly hidden, not opacity:0 with z-index issues
+    }
     return POSITIONS[offset]
   }
   
@@ -33,10 +41,15 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
     if (timerRef.current) clearInterval(timerRef.current)
   }
   
-  useEffect(() => {
+  function startAuto() {
+    stopAuto()
     timerRef.current = setInterval(() => {
       setCurrent(c => (c + 1) % total)
     }, 3000)
+  }
+  
+  useEffect(() => {
+    startAuto()
     return () => stopAuto()
   }, [total])
   
@@ -78,7 +91,9 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
                 transform: `translateX(${p.x}px) scale(${p.scale})`,
                 opacity: p.opacity,
                 zIndex: p.z,
-                transition: 'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
+                transition:
+                  'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
+                pointerEvents: p.opacity === 0 ? 'none' : 'auto', // prevent hidden cards from intercepting clicks
               }}
               className="absolute w-60 rounded-2xl overflow-hidden border border-gray-100 bg-white cursor-pointer"
             >
@@ -91,7 +106,10 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
     { /* Nav row */ }
     <div className="flex items-center justify-center gap-5 py-3">
         <button
-          onClick={() => { stopAuto(); goTo(current - 1) }}
+          onClick={() => {
+            stopAuto()
+            goTo(current - 1)
+          }}
           className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
           aria-label="Previous"
         >
@@ -103,7 +121,10 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
         </span>
 
         <button
-          onClick={() => { stopAuto(); goTo(current + 1) }}
+          onClick={() => {
+            stopAuto()
+            goTo(current + 1)
+          }}
           className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
           aria-label="Next"
         >
@@ -159,7 +180,7 @@ export default function Home() {
             <FeaturedSkeleton />
           ) : (
             <>
-              {/* ── Mobile: Cover Flow Slider ── */}
+              {/* ── Mobile: Cover Flow Slider — only render after articles are loaded ── */}
               <CoverFlowSlider articles={latestArticles.slice(0, 4)} />
 
               {/* ── Desktop: original grid ── */}
