@@ -95,7 +95,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
                   'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
                 pointerEvents: p.opacity === 0 ? 'none' : 'auto', // prevent hidden cards from intercepting clicks
               }}
-              className="absolute w-60 rounded-2xl overflow-hidden border border-gray-100 bg-white cursor-pointer"
+              className="absolute h-full w-60 rounded-2xl overflow-hidden border border-gray-100 bg-white cursor-pointer"
             >
               <NewsCard article={article} variant="featured" className="h-full" />
             </div>
