@@ -540,8 +540,8 @@ export default function ArticlePage() {
 
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
-                <section className="no-print mt-2 pt-6 border-t">
-                  <h2 className="text-[11px] font-semibold  tracking-widest text-gray-900 mb-5">
+                <section className="no-print mt-2 pt-6 ">
+                  <h2 className="text-md font-semibold  tracking-widest text-gray-900 mb-5">
                     More in {article.category}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">

@@ -95,8 +95,8 @@ export function Card({
 }) {
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: 'var(--card-bg)', border: '1px solid var(--border)' }}
+      className="rounded-xl overflow-hidden bg-white"
+      style={{ background: 'var(--card-bg)' }}
     >
       {title && (
         <div
