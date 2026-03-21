@@ -293,14 +293,14 @@ export async function deleteArticle(id: string): Promise < boolean > {
 
 // ── Vector Search ─────────────────────────────────────────────────────────────
 
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'nvidia/llama-nemotron-embed-vl-1b-v2:free'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'Alibaba-NLP/gte-Qwen2-7B-instruct'
 
 async function embedQuery(query: string): Promise < number[] | null > {
   try {
     const { OpenAI } = await import('openai')
     const hf = new OpenAI({
-      baseURL: 'https://openrouter.ai/api/v1',
-      apiKey: process.env.HF_API_KEY ?? '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',
+      baseURL: 'https://api.bytez.com/models/v2/openai/v1',
+      apiKey: process.env.HF_API_KEY ?? '8e5d3c99666ab5c262a21bb68f9fb626',
     })
     const res = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: query })
     const vector = res.data[0]?.embedding
