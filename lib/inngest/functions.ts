@@ -29,7 +29,7 @@ import { auth } from '@/auth'
 const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
 const HF_MODEL = process.env.HF_MODEL ?? 'nvidia/nemotron-3-super-120b-a12b:free'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'nvidia/llama-nemotron-embed-vl-1b-v2:free'
-const YAHOO_SOURCES = [ 'https://www.yahoo.com/news'
+const YAHOO_SOURCES = [ 'https://www.yahoo.com/news/world/'
  // 'https://www.thedailystar.net/news'
 ]
 const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'

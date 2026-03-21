@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import {useIsMobile} from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -56,7 +57,7 @@ function DashboardPageContent() {
   const [articles, setArticles] = useState<ArticleRow[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
-
+  const isMobile = useIsMobile()
   // FIX 1: Build nav dynamically based on role, never mutate the module-level array
   const nav = [
     ...BASE_NAV,
@@ -133,6 +134,7 @@ function DashboardPageContent() {
           </div>
 
           {/* Mobile tab pills */}
+          {isMobile &&  (
           <div className="lg:hidden flex gap-2 mb-6 overflow-x-auto pb-1">
             {nav.map(({ id, label }) => (
               <button
@@ -149,13 +151,14 @@ function DashboardPageContent() {
                 {label}
               </button>
             ))}
-          </div>
+          </div>)}
 
           {/* Body: sidebar + content */}
           <div className="flex items-start gap-6">
 
             {/* Sidebar — desktop only */}
-            <aside className="hidden lg:flex flex-col gap-1 w-48 flex-shrink-0">
+            {!isMobile && (
+            <aside className=" flex-col gap-1 w-48 flex-shrink-0">
               {nav.map(({ id, label, icon }) => (
                 <NavItem key={id} icon={icon} label={label} active={tab === id} onClick={() => setTab(id)} />
               ))}
@@ -189,7 +192,7 @@ function DashboardPageContent() {
                 danger
                 onClick={() => signOut({ redirect: true, redirectUrl: '/' })}
               />
-            </aside>
+            </aside>)}
 
             {/* Tab content */}
             <div className="flex-1 min-w-0">
