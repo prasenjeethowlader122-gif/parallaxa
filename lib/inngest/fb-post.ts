@@ -1,15 +1,14 @@
 /**
- * lib/inngest/ptp-function.ts
+ * lib/inngest/fb-post.ts
  * Post-To-Page pipeline as an Inngest background function.
  *
  * Triggered by:  news/ptp.requested  { articleId: string, userId: string }
  *
  * Steps:
  *   1. fetch-article      — load article from DB
- *   2. generate-caption   — OpenRouter bilingual caption + hashtags + headline
+ *   2. generate-caption   — Gemini bilingual caption + hashtags + headline
  *                           (falls back to description snippet if AI fails)
  *   3. upload-to-facebook — POST multipart photo to Graph API (OG image with headline)
- *   4. add-first-comment  — post article URL as first comment
  */
 
 import { inngest } from './client'
@@ -20,13 +19,9 @@ import type { GetFunctionInput } from 'inngest'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const FB_ACCESS_TOKEN =
-  process.env.FB_ACCESS_TOKEN ??
-  'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
-
+const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN ?? 'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
-
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-2.0-flash-lite'
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'
@@ -58,15 +53,14 @@ function buildFallbackCaption(article: {
   description: string
   category: string
 }): CaptionResult {
-  // Take first ~300 chars of description as the caption body
   const snippet =
     article.description.length > 300
       ? article.description.slice(0, 300).trimEnd() + '…'
       : article.description
 
   return {
-    english: `${snippet}\n\nবিস্তারিত কমেন্টে 👇 / Details in the comment below 👇`,
-    bangla: `${snippet}\n\nবিস্তারিত কমেন্টে দেখুন 👇`,
+    english: snippet,
+    bangla: snippet,
     hashtags: [article.category, 'News', 'BreakingNews', 'বাংলাদেশ', 'সংবাদ'],
     imageHeadline: article.title,
   }
@@ -99,7 +93,7 @@ Rules:
 - imageHeadline must be short, bold, news-ticker style — perfect for display on a photo
 - Hashtags: 3-4 English + 2-3 Bangla script tags, no # prefix in the JSON values
 - Both captions feel natural for a Facebook news page, not robotic
-- Do NOT include the article URL in the caption`
+- Do NOT include the article URL in the caption — it will be appended separately`
 
   const res = await hf.chat.completions.create({
     model: HF_MODEL,
@@ -132,15 +126,12 @@ Rules:
     return JSON.parse(clean) as CaptionResult
   } catch {
     console.warn('[ptp-fn] caption JSON parse failed. Raw:', raw.slice(0, 200))
-    // JSON parse failed — treat as AI error and use fallback
     return buildFallbackCaption(article)
   }
 }
 
 interface FacebookUploadResult {
-  /** The photo object ID — used for saving to DB */
   photoId: string
-  /** The post ID — used for adding comments. May equal photoId if post_id absent. */
   postId: string
 }
 
@@ -189,37 +180,25 @@ async function uploadPhotoToFacebook(params: {
   const photoId = data.id
   if (!photoId) throw new Error('Facebook returned no photo ID')
 
-  // post_id format: "{PAGE_ID}_{PHOTO_ID}" — this is what comments endpoint needs.
-  // If Facebook didn't return it, construct it manually.
   const postId = data.post_id ?? `${FB_PAGE_ID}_${photoId}`
-
   return { photoId, postId }
 }
 
-async function addFirstComment(postId: string, articleUrl: string): Promise<void> {
-  // Use the same API version as photo upload
-  const endpoint = `https://graph.facebook.com/v21.0/${postId}/comments`
-  const form = new FormData()
-  form.append('access_token', FB_ACCESS_TOKEN)
-  form.append(
-    'message',
-    `🔗 পুরো খবর পড়ুন / Read the full article:\n${articleUrl}`
-  )
+// ─── Build final post text ────────────────────────────────────────────────────
 
-  try {
-    const res = await fetch(endpoint, { method: 'POST', body: form })
-    const data = (await res.json()) as { id?: string; error?: { message: string; code?: number } }
-    if (!res.ok || data.error) {
-      console.error(
-        `[ptp-fn] first comment failed (HTTP ${res.status}): `,
-        data.error?.message ?? JSON.stringify(data)
-      )
-    } else {
-      console.info(`[ptp-fn] comment posted — id: ${data.id}`)
-    }
-  } catch (e) {
-    console.error('[ptp-fn] first comment network error:', e)
-  }
+function buildPostText(caption: CaptionResult, articleUrl: string): string {
+  const hashtagLine = caption.hashtags.map((t) => `#${t}`).join('  ')
+
+  return [
+    caption.english,
+    '',
+    caption.bangla,
+    '',
+    `🔗 পুরো খবর পড়ুন / Read the full article:`,
+    articleUrl,
+    '',
+    hashtagLine,
+  ].join('\n')
 }
 
 // ─── Inngest function ─────────────────────────────────────────────────────────
@@ -247,8 +226,6 @@ export const ptpFunction = inngest.createFunction(
     logger.info(`[ptp] processing articleId:${articleId} slug:${article.slug}`)
 
     // ── Step 2: Generate bilingual caption + image headline ───────────────
-    //    If the AI call throws for any reason, fall back to a plain
-    //    description-snippet caption so the post still goes out.
     const caption = await step.run('generate-caption', async () => {
       logger.info('[ptp] generating bilingual caption + image headline…')
       try {
@@ -272,14 +249,9 @@ export const ptpFunction = inngest.createFunction(
 
     logger.info(`[ptp] imageHeadline: "${caption.imageHeadline}"`)
 
-    // ── Step 3: Upload photo to Facebook (with headline baked into OG URL) ─
+    // ── Step 3: Upload photo to Facebook ───────────────────────────────────
     const { photoId, postId } = await step.run('upload-to-facebook', async () => {
-      const hashtagLine = caption.hashtags.map((t) => `#${t}`).join('  ')
-      const postText = [
-        caption.english,
-        '\n',
-        caption.bangla
-      ].join('\n')
+      const postText = buildPostText(caption, articleUrl)
 
       logger.info('[ptp] uploading photo to Facebook page…')
       const result = await uploadPhotoToFacebook({
@@ -294,12 +266,6 @@ export const ptpFunction = inngest.createFunction(
 
       logger.info(`[ptp] ✓ photo posted — photoId: ${result.photoId}  postId: ${result.postId}`)
       return result
-    })
-
-    // ── Step 4: Add article link as first comment ─────────────────────────
-    await step.run('add-first-comment', async () => {
-      await addFirstComment(postId, articleUrl)
-      logger.info('[ptp] ✓ first comment added')
     })
 
     return {

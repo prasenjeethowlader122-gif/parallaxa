@@ -3,9 +3,16 @@ import { getArticleBySlug } from '@/lib/news-data'
 
 export const runtime = 'edge'
 
-/** Naively detect if a string contains Bengali Unicode characters */
+/** Detect if a string contains Bengali Unicode characters */
 function hasBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text)
+}
+
+/** Truncate text to a max number of words */
+function truncateWords(text: string, max: number): string {
+  const words = text.trim().split(/\s+/)
+  if (words.length <= max) return text
+  return words.slice(0, max).join(' ') + '…'
 }
 
 export async function GET(request: Request) {
@@ -17,44 +24,60 @@ export async function GET(request: Request) {
     return new Response('Missing slug parameter', { status: 400 })
   }
 
-  // ── Load assets in parallel ───────────────────────────────────────────────
-  const [profilePicData, tiroBanglaData, playfairData] = await Promise.all([
-    fetch(new URL('/New Project 25 [4D921DE].png', origin)).then((r) =>
-      r.arrayBuffer()
-    ),
-    // Tiro Bangla Bold — Bengali serif
-    fetch(
-      'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5gmA.woff2'
-    ).then((r) => r.arrayBuffer()),
-    // Playfair Display Bold — English serif
-    fetch(
-      'https://v0-parallaxa.vercel.app/local/philosopher-font/Philosopher-Bold.ttf'
-    ).then((r) => r.arrayBuffer()),
-  ])
-
-  const profilePicSrc = `data:image/png;base64,${Buffer.from(profilePicData).toString('base64')}`
-
   const article = await getArticleBySlug(slug)
-
   if (!article) {
     return new Response('Article not found', { status: 404 })
   }
 
-  const displayHeadline = headline || article.title
+  // ── Load assets in parallel ─────────────────────────────────────────────
+  const [logoData, tiroBanglaData, playfairData, notoSansBengaliData] =
+    await Promise.all([
+      fetch(new URL('/New Project 25 [4D921DE].png', origin)).then((r) =>
+        r.arrayBuffer()
+      ),
+      // Tiro Bangla Bold — Bengali serif headline
+      fetch(
+        'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5gmA.woff2'
+      ).then((r) => r.arrayBuffer()),
+      // Playfair Display Bold — English serif headline
+      fetch(
+        'https://v0-parallaxa.vercel.app/local/philosopher-font/Philosopher-Bold.ttf'
+      ).then((r) => r.arrayBuffer()),
+      // Noto Sans Bengali — clean Bengali UI text
+      fetch(
+        'https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fOicyxLAFBgOHFWoEA.woff2'
+      ).then((r) => r.arrayBuffer()),
+    ])
+
+  const logoSrc = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
+
+  const displayHeadline = truncateWords(headline || article.title, 18)
   const isBangla = hasBengali(displayHeadline)
-  const headlineFont ='"Playfair Display"'
+  const headlineFont = isBangla ? '"Tiro Bangla"' : '"Playfair Display"'
+  const headlineFontSize = isBangla ? 58 : 62
+
+  const formattedDate = new Date(article.date).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+  const categoryLabel = article.category.toUpperCase()
 
   return new ImageResponse(
     (
       <div
         style={{
           display: 'flex',
-          width: '100%',
-          height: '100%',
+          width: '1080px',
+          height: '1080px',
           position: 'relative',
+          backgroundColor: '#0a0a0a',
+          fontFamily: '"Playfair Display"',
+          overflow: 'hidden',
         }}
       >
-        {/* Background image */}
+        {/* ── Background image ── */}
         <img
           src={article.image}
           style={{
@@ -63,115 +86,187 @@ export async function GET(request: Request) {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
+            objectPosition: 'center top',
+            opacity: 0.55,
           }}
         />
 
-        {/* Top dark overlay */}
+        {/* ── Cinematic vignette: top ── */}
         <div
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: '260px',
+            height: '320px',
             background:
-              'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
+              'linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.40) 60%, rgba(0,0,0,0) 100%)',
             display: 'flex',
           }}
         />
 
-        {/* Bottom dark overlay */}
+        {/* ── Cinematic vignette: bottom ── */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            height: '420px',
+            height: '560px',
             background:
-              'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.60) 55%, rgba(0,0,0,0) 100%)',
+              'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.80) 40%, rgba(0,0,0,0.40) 70%, rgba(0,0,0,0) 100%)',
             display: 'flex',
           }}
         />
 
-        {/* Logo — top left */}
-        <img
-          src={profilePicSrc}
-          width={110}
+        {/* ── Side vignettes for depth ── */}
+        <div
           style={{
             position: 'absolute',
-            top: 22,
-            left: 22,
-            filter: 'invert(100%)',
+            inset: 0,
+            background:
+              'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%)',
+            display: 'flex',
           }}
-          alt="logo"
         />
 
-        {/* Date — top right */}
+        {/* ── TOP BAR ── */}
         <div
           style={{
             position: 'absolute',
-            top: 28,
-            right: 32,
-            display: 'flex',
-            fontSize: '24px',
-            fontWeight: '500',
-            color: 'rgba(255, 255, 255, 0.80)',
-          }}
-        >
-          {new Date(article.date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </div>
-
-        {/* Bottom content — category badge + headline */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
+            top: 0,
             left: 0,
             right: 0,
-            padding: '0 52px 56px 52px',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '28px 44px',
           }}
         >
-          {/* Category badge */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          {/* Logo */}
+          <img
+            src={logoSrc}
+            width={96}
+            style={{
+              filter: 'brightness(0) invert(1)',
+              opacity: 0.95,
+            }}
+            alt="logo"
+          />
+
+          {/* Top right: category pill + date */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: '10px',
+            }}
+          >
+            {/* Category badge */}
             <div
               style={{
-                
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#E63946',
                 color: '#ffffff',
-                padding: '8px 20px',
-                borderRadius: '6px',
-                fontSize: '22px',
+                padding: '7px 18px',
+                borderRadius: '4px',
+                fontSize: '19px',
                 fontWeight: 'bold',
-                letterSpacing: '0.04em',
+                letterSpacing: '0.08em',
+                fontFamily: '"Playfair Display"',
               }}
             >
-              {article.category.toUpperCase()}
+              {categoryLabel}
+            </div>
+
+            {/* Date */}
+            <div
+              style={{
+                display: 'flex',
+                fontSize: '21px',
+                fontWeight: '400',
+                color: 'rgba(255, 255, 255, 0.70)',
+                letterSpacing: '0.02em',
+                fontFamily: '"Playfair Display"',
+              }}
+            >
+              {formattedDate}
             </div>
           </div>
+        </div>
 
-          {/* Headline — Tiro Bangla (Bengali) or Playfair Display (English) */}
+        {/* ── BOTTOM CONTENT ── */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '0 52px 52px 52px',
+            gap: '0px',
+          }}
+        >
+          {/* Accent line */}
+          <div
+            style={{
+              display: 'flex',
+              width: '64px',
+              height: '5px',
+              backgroundColor: '#E63946',
+              borderRadius: '3px',
+              marginBottom: '22px',
+            }}
+          />
+
+          {/* Headline */}
           <div
             style={{
               fontFamily: headlineFont,
-              fontSize: '64px',
+              fontSize: `${headlineFontSize}px`,
               fontWeight: 'bold',
               color: '#ffffff',
-              lineHeight: '1.30',
+              lineHeight: isBangla ? 1.45 : 1.25,
               display: '-webkit-box',
-              WebkitLineClamp: 3,
+              WebkitLineClamp: 4,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              textShadow: '0 2px 14px rgba(0,0,0,0.55)',
+              textShadow: '0 2px 20px rgba(0,0,0,0.70)',
+              letterSpacing: isBangla ? '0.01em' : '-0.01em',
             }}
           >
             {displayHeadline}
+          </div>
+
+          {/* Bottom rule + site name */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: '28px',
+              gap: '16px',
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: '1px',
+                backgroundColor: 'rgba(255,255,255,0.18)',
+                display: 'flex',
+              }}
+            />
+
+            <div
+              style={{
+                flex: 1,
+                height: '1px',
+                backgroundColor: 'rgba(255,255,255,0.18)',
+                display: 'flex',
+              }}
+            />
           </div>
         </div>
       </div>
@@ -191,6 +286,12 @@ export async function GET(request: Request) {
           data: playfairData,
           style: 'normal',
           weight: 700,
+        },
+        {
+          name: 'Noto Sans Bengali',
+          data: notoSansBengaliData,
+          style: 'normal',
+          weight: 400,
         },
       ],
     }
