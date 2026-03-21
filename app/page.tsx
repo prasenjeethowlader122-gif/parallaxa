@@ -235,7 +235,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <div className="flex flex-row items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-8">World</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">World</h2>
                   <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
                 </div>
                 {isLoading ? (
@@ -268,7 +268,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <div className="flex flex-row items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-8">Tech</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Tech</h2>
                   <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
                 </div>
                 {isLoading ? (
