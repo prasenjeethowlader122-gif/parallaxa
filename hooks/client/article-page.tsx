@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import PinwheelLoader from '@/components/logo';
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -250,8 +252,8 @@ export default function ArticlePage() {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse text-gray-400 text-sm">Loading article…</div>
+        <div className="flex-1 h-full flex items-center justify-center">
+          <PinwheelLoader/>
         </div>
         <Footer />
       </div>
