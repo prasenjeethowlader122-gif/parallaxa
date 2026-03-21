@@ -112,7 +112,7 @@ function DashboardPageContent() {
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       <Header />
 
-      <main className="flex-grow bg-gray-100">
+      <main className="flex-grow">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Page header */}
