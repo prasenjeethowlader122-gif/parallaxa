@@ -149,6 +149,7 @@ export default function Home() {
   const [latestArticles, setLatestArticles] = useState < NewsArticle[] > ([])
   const [isLoading, setIsLoading] = useState(true)
   const [worlsNews, setWorldNews] = useState<NewsArticle[]>([])
+  const [TechnologyNews, setTechnologyNews] = useState<NewsArticle[]>([])
   useEffect(() => {
     async function loadData() {
       try {
@@ -160,7 +161,9 @@ export default function Home() {
         setIsLoading(false)
       }
       try {
-        const world = (await getArticlesByCategory('World')).filter(Boolean).slice(0,6)
+        const world = (await getArticlesByCategory('World')).filter(Boolean).slice(0,4)
+        const tech = (getArticlesByCategory('Technology')).filter(Boolean).slince(0,4)
+        setTechnologyNews(tech)
         setWorldNews(world)
       } catch (e) {}
     }
@@ -222,7 +225,11 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
+                <div className='flex flex-row items-center justify-between'>
                 <h2 className="text-2xl font-bold text-gray-900 mb-8">World</h2>
+                <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+        
+                </div>
                 {isLoading ? (
                   <div className="space-y-6">
                     {[...Array(6)].map((_, i) => (
@@ -232,6 +239,37 @@ export default function Home() {
                 ) : (
                   <div className="space-y-6">
                     {worlsNews.map(article => (
+                      <NewsCard
+                        key={article.id ?? 'null'}
+                        article={article}
+                        variant="horizontal"
+                        className="my-2"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+                <section className="bg-gray-50 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <div className='flex flex-row items-center justify-between'>
+                <h2 className="text-2xl font-bold text-gray-900 mb-8">Tech</h2>
+                <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+        
+                </div>
+                {isLoading ? (
+                  <div className="space-y-6">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="bg-white rounded-lg h-32 animate-pulse" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {TechnologyNews.map(article => (
                       <NewsCard
                         key={article.id ?? 'null'}
                         article={article}
