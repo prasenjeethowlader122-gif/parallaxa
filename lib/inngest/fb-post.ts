@@ -7,6 +7,7 @@
  * Steps:
  *   1. fetch-article      — load article from DB
  *   2. generate-caption   — OpenRouter bilingual caption + hashtags + headline
+ *                           (falls back to description snippet if AI fails)
  *   3. upload-to-facebook — POST multipart photo to Graph API (OG image with headline)
  *   4. add-first-comment  — post article URL as first comment
  */
@@ -49,6 +50,27 @@ interface CaptionResult {
 type Step = GetFunctionInput<typeof inngest>['step']
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))
+
+// ─── Fallback caption (no AI) ─────────────────────────────────────────────────
+
+function buildFallbackCaption(article: {
+  title: string
+  description: string
+  category: string
+}): CaptionResult {
+  // Take first ~300 chars of description as the caption body
+  const snippet =
+    article.description.length > 300
+      ? article.description.slice(0, 300).trimEnd() + '…'
+      : article.description
+
+  return {
+    english: `${snippet}\n\nবিস্তারিত কমেন্টে 👇 / Details in the comment below 👇`,
+    bangla: `${snippet}\n\nবিস্তারিত কমেন্টে দেখুন 👇`,
+    hashtags: [article.category, 'News', 'BreakingNews', 'বাংলাদেশ', 'সংবাদ'],
+    imageHeadline: article.title,
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -110,12 +132,8 @@ Rules:
     return JSON.parse(clean) as CaptionResult
   } catch {
     console.warn('[ptp-fn] caption JSON parse failed. Raw:', raw.slice(0, 200))
-    return {
-      english: article.title,
-      bangla: article.title,
-      hashtags: [article.category, 'News', 'BreakingNews', 'বাংলাদেশ'],
-      imageHeadline: article.title,
-    }
+    // JSON parse failed — treat as AI error and use fallback
+    return buildFallbackCaption(article)
   }
 }
 
@@ -229,14 +247,27 @@ export const ptpFunction = inngest.createFunction(
     logger.info(`[ptp] processing articleId:${articleId} slug:${article.slug}`)
 
     // ── Step 2: Generate bilingual caption + image headline ───────────────
+    //    If the AI call throws for any reason, fall back to a plain
+    //    description-snippet caption so the post still goes out.
     const caption = await step.run('generate-caption', async () => {
       logger.info('[ptp] generating bilingual caption + image headline…')
-      return generateCaption({
-        title: article.title ?? '',
-        description: article.description ?? '',
-        category: article.category ?? 'News',
-        content: article.content ?? '',
-      })
+      try {
+        return await generateCaption({
+          title: article.title ?? '',
+          description: article.description ?? '',
+          category: article.category ?? 'News',
+          content: article.content ?? '',
+        })
+      } catch (aiErr) {
+        logger.warn(
+          `[ptp] AI caption failed (${errMsg(aiErr)}), using fallback description caption.`
+        )
+        return buildFallbackCaption({
+          title: article.title ?? '',
+          description: article.description ?? '',
+          category: article.category ?? 'News',
+        })
+      }
     })
 
     logger.info(`[ptp] imageHeadline: "${caption.imageHeadline}"`)
