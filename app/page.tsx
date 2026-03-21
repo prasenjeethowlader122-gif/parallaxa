@@ -66,7 +66,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
 
       {/* Stage */}
       <div
-        className="relative h-[300px] flex items-center justify-center overflow-hidden"
+        className="relative h-[220px] flex items-center justify-center overflow-hidden"
         onPointerDown={e => {
           startXRef.current = e.clientX
           stopAuto()
@@ -96,7 +96,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
                   'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
                 pointerEvents: p.opacity === 0 ? 'none' : 'auto',
               }}
-              className="absolute h-full w-80 overflow-hidden bg-white cursor-pointer"
+              className="absolute h-full rounded-xl w-80 overflow-hidden bg-white cursor-pointer"
             >
               <NewsCard article={article} variant="featured" className="h-full" />
             </div>
