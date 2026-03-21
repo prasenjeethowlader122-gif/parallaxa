@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useRef } from "react";
 
 const PETAL_PATH =
