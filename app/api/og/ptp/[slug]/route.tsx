@@ -16,284 +16,306 @@ function truncateWords(text: string, max: number): string {
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const slug = searchParams.get('slug')
-  const headline = searchParams.get('headline') ?? ''
+  try {
+    const { searchParams, origin } = new URL(request.url)
+    const slug = searchParams.get('slug')
+    const headline = searchParams.get('headline') ?? ''
 
-  if (!slug) {
-    return new Response('Missing slug parameter', { status: 400 })
-  }
+    if (!slug) {
+      return new Response('Missing slug parameter', { status: 400 })
+    }
 
-  const article = await getArticleBySlug(slug)
-  if (!article) {
-    return new Response('Article not found', { status: 404 })
-  }
+    const article = await getArticleBySlug(slug)
+    if (!article) {
+      return new Response('Article not found', { status: 404 })
+    }
 
-  // ── Load assets in parallel ─────────────────────────────────────────────
-  const [logoData, tiroBanglaData, playfairData, notoSansBengaliData] =
-    await Promise.all([
-      fetch(new URL('/New Project 25 [4D921DE].png', origin)).then((r) =>
-        r.arrayBuffer()
-      ),
-      // Tiro Bangla Bold — Bengali serif headline
-      fetch(
-        'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5gmA.woff2'
-      ).then((r) => r.arrayBuffer()),
-      // Playfair Display Bold — English serif headline
-      fetch(
-        'https://v0-parallaxa.vercel.app/local/philosopher-font/Philosopher-Bold.ttf'
-      ).then((r) => r.arrayBuffer()),
-      // Noto Sans Bengali — clean Bengali UI text
-      fetch(
-        'https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fOicyxLAFBgOHFWoEA.woff2'
-      ).then((r) => r.arrayBuffer()),
-    ])
+    // ── Load assets in parallel ─────────────────────────────────────────────
+    // FIX 1: All fonts must be .ttf — ImageResponse does NOT support .woff2
+    // FIX 2: Logo filename URL-encoded (spaces + brackets)
+    const [logoData, tiroBanglaData, playfairData, notoSansBengaliData] =
+      await Promise.all([
+        fetch(
+          new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)
+        ).then((r) => {
+          if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
+          return r.arrayBuffer()
+        }),
 
-  const logoSrc = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
+        // Tiro Bangla Bold — Bengali serif headline (.ttf)
+        fetch(
+          'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5pnCxPsA.ttf'
+        ).then((r) => {
+          if (!r.ok) throw new Error(`Tiro Bangla fetch failed: ${r.status}`)
+          return r.arrayBuffer()
+        }),
 
-  const displayHeadline = truncateWords(headline || article.title, 18)
-  const isBangla = hasBengali(displayHeadline)
-  const headlineFont = isBangla ? '"Tiro Bangla"' : '"Playfair Display"'
-  const headlineFontSize = isBangla ? 58 : 62
+        // Philosopher Bold — English serif headline (.ttf)
+        fetch(
+          'https://fonts.gstatic.com/s/philosopher/v20/vEFV2_5QCwIS4_Dhez5jcVBpRUwU08qe.ttf'
+        ).then((r) => {
+          if (!r.ok) throw new Error(`Philosopher fetch failed: ${r.status}`)
+          return r.arrayBuffer()
+        }),
 
-  const formattedDate = new Date(article.date).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+        // Noto Sans Bengali Regular — clean Bengali UI text (.ttf)
+        fetch(
+          'https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fOicyxLAFBgOHFWoEA8o8TW4.ttf'
+        ).then((r) => {
+          if (!r.ok)
+            throw new Error(`Noto Sans Bengali fetch failed: ${r.status}`)
+          return r.arrayBuffer()
+        }),
+      ])
 
-  const categoryLabel = article.category.toUpperCase()
+    const logoSrc = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          display: 'flex',
-          width: '1080px',
-          height: '1080px',
-          position: 'relative',
-          backgroundColor: '#0a0a0a',
-          fontFamily: '"Playfair Display"',
-          overflow: 'hidden',
-        }}
-      >
-        {/* ── Background image ── */}
-        <img
-          src={article.image}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center top',
-            opacity: 0.55,
-          }}
-        />
+    const displayHeadline = truncateWords(headline || article.title, 18)
+    const isBangla = hasBengali(displayHeadline)
+    const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
+    const headlineFontSize = isBangla ? 58 : 62
 
-        {/* ── Cinematic vignette: top ── */}
+    const formattedDate = new Date(article.date).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+
+    const categoryLabel = article.category.toUpperCase()
+
+    return new ImageResponse(
+      (
         <div
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '320px',
-            background:
-              'linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.40) 60%, rgba(0,0,0,0) 100%)',
             display: 'flex',
-          }}
-        />
-
-        {/* ── Cinematic vignette: bottom ── */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '560px',
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.80) 40%, rgba(0,0,0,0.40) 70%, rgba(0,0,0,0) 100%)',
-            display: 'flex',
-          }}
-        />
-
-        {/* ── Side vignettes for depth ── */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background:
-              'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%)',
-            display: 'flex',
-          }}
-        />
-
-        {/* ── TOP BAR ── */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '28px 44px',
+            width: '1080px',
+            height: '1080px',
+            position: 'relative',
+            backgroundColor: '#0a0a0a',
+            fontFamily: '"Philosopher"',
+            overflow: 'hidden',
           }}
         >
-          {/* Logo */}
+          {/* ── Background image ── */}
           <img
-            src={logoSrc}
-            width={96}
+            src={article.image}
             style={{
-              filter: 'brightness(0) invert(1)',
-              opacity: 0.95,
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+              opacity: 0.55,
             }}
-            alt="logo"
           />
 
-          {/* Top right: category pill + date */}
+          {/* ── Cinematic vignette: top ── */}
           <div
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '320px',
+              background:
+                'linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.40) 60%, rgba(0,0,0,0) 100%)',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: '10px',
+            }}
+          />
+
+          {/* ── Cinematic vignette: bottom ── */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '560px',
+              background:
+                'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.80) 40%, rgba(0,0,0,0.40) 70%, rgba(0,0,0,0) 100%)',
+              display: 'flex',
+            }}
+          />
+
+          {/* ── Side vignettes for depth ── */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%)',
+              display: 'flex',
+            }}
+          />
+
+          {/* ── TOP BAR ── */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '28px 44px',
             }}
           >
-            {/* Category badge */}
+            {/* Logo */}
+            <img
+              src={logoSrc}
+              width={96}
+              style={{
+                filter: 'brightness(0) invert(1)',
+                opacity: 0.95,
+              }}
+              alt="logo"
+            />
+
+            {/* Top right: category pill + date */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '10px',
+              }}
+            >
+              {/* Category badge */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: '#E63946',
+                  color: '#ffffff',
+                  padding: '7px 18px',
+                  borderRadius: '4px',
+                  fontSize: '19px',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.08em',
+                  fontFamily: '"Philosopher"',
+                }}
+              >
+                {categoryLabel}
+              </div>
+
+              {/* Date */}
+              <div
+                style={{
+                  display: 'flex',
+                  fontSize: '21px',
+                  fontWeight: '400',
+                  color: 'rgba(255, 255, 255, 0.70)',
+                  letterSpacing: '0.02em',
+                  fontFamily: '"Philosopher"',
+                }}
+              >
+                {formattedDate}
+              </div>
+            </div>
+          </div>
+
+          {/* ── BOTTOM CONTENT ── */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '0 52px 52px 52px',
+              gap: '0px',
+            }}
+          >
+            {/* Accent line */}
+            <div
+              style={{
+                display: 'flex',
+                width: '64px',
+                height: '5px',
+                backgroundColor: '#E63946',
+                borderRadius: '3px',
+                marginBottom: '22px',
+              }}
+            />
+
+            {/* FIX 3: Removed -webkit-box / WebkitLineClamp — not supported by Satori.
+                      truncateWords(18) already handles overflow. */}
+            <div
+              style={{
+                fontFamily: headlineFont,
+                fontSize: `${headlineFontSize}px`,
+                fontWeight: 'bold',
+                color: '#ffffff',
+                lineHeight: isBangla ? 1.45 : 1.25,
+                textShadow: '0 2px 20px rgba(0,0,0,0.70)',
+                letterSpacing: isBangla ? '0.01em' : '-0.01em',
+              }}
+            >
+              {displayHeadline}
+            </div>
+
+            {/* Bottom rule */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                backgroundColor: '#E63946',
-                color: '#ffffff',
-                padding: '7px 18px',
-                borderRadius: '4px',
-                fontSize: '19px',
-                fontWeight: 'bold',
-                letterSpacing: '0.08em',
-                fontFamily: '"Playfair Display"',
+                marginTop: '28px',
+                gap: '16px',
               }}
             >
-              {categoryLabel}
-            </div>
-
-            {/* Date */}
-            <div
-              style={{
-                display: 'flex',
-                fontSize: '21px',
-                fontWeight: '400',
-                color: 'rgba(255, 255, 255, 0.70)',
-                letterSpacing: '0.02em',
-                fontFamily: '"Playfair Display"',
-              }}
-            >
-              {formattedDate}
+              <div
+                style={{
+                  flex: 1,
+                  height: '1px',
+                  backgroundColor: 'rgba(255,255,255,0.18)',
+                  display: 'flex',
+                }}
+              />
+              <div
+                style={{
+                  flex: 1,
+                  height: '1px',
+                  backgroundColor: 'rgba(255,255,255,0.18)',
+                  display: 'flex',
+                }}
+              />
             </div>
           </div>
         </div>
-
-        {/* ── BOTTOM CONTENT ── */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '0 52px 52px 52px',
-            gap: '0px',
-          }}
-        >
-          {/* Accent line */}
-          <div
-            style={{
-              display: 'flex',
-              width: '64px',
-              height: '5px',
-              backgroundColor: '#E63946',
-              borderRadius: '3px',
-              marginBottom: '22px',
-            }}
-          />
-
-          {/* Headline */}
-          <div
-            style={{
-              fontFamily: headlineFont,
-              fontSize: `${headlineFontSize}px`,
-              fontWeight: 'bold',
-              color: '#ffffff',
-              lineHeight: isBangla ? 1.45 : 1.25,
-              display: '-webkit-box',
-              WebkitLineClamp: 4,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textShadow: '0 2px 20px rgba(0,0,0,0.70)',
-              letterSpacing: isBangla ? '0.01em' : '-0.01em',
-            }}
-          >
-            {displayHeadline}
-          </div>
-
-          {/* Bottom rule + site name */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginTop: '28px',
-              gap: '16px',
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                height: '1px',
-                backgroundColor: 'rgba(255,255,255,0.18)',
-                display: 'flex',
-              }}
-            />
-
-            <div
-              style={{
-                flex: 1,
-                height: '1px',
-                backgroundColor: 'rgba(255,255,255,0.18)',
-                display: 'flex',
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    ),
-    {
-      width: 1080,
-      height: 1080,
-      fonts: [
-        {
-          name: 'Tiro Bangla',
-          data: tiroBanglaData,
-          style: 'normal',
-          weight: 700,
-        },
-        {
-          name: 'Playfair Display',
-          data: playfairData,
-          style: 'normal',
-          weight: 700,
-        },
-        {
-          name: 'Noto Sans Bengali',
-          data: notoSansBengaliData,
-          style: 'normal',
-          weight: 400,
-        },
-      ],
-    }
-  )
+      ),
+      {
+        width: 1080,
+        height: 1080,
+        fonts: [
+          {
+            name: 'Tiro Bangla',
+            data: tiroBanglaData,
+            style: 'normal',
+            weight: 700,
+          },
+          {
+            name: 'Philosopher',
+            data: playfairData,
+            style: 'normal',
+            weight: 700,
+          },
+          {
+            name: 'Noto Sans Bengali',
+            data: notoSansBengaliData,
+            style: 'normal',
+            weight: 400,
+          },
+        ],
+      }
+    )
+  } catch (err) {
+    // FIX 4: Catch and surface errors instead of returning an empty response
+    console.error('[OG /ptp] Error:', err)
+    return new Response(`OG generation failed: ${String(err)}`, {
+      status: 500,
+    })
+  }
 }
