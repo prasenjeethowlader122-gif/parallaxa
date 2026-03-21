@@ -95,7 +95,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
                   'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
                 pointerEvents: p.opacity === 0 ? 'none' : 'auto', // prevent hidden cards from intercepting clicks
               }}
-              className="absolute h-full w-60 rounded-2xl overflow-hidden border border-gray-100 bg-white cursor-pointer"
+              className="absolute h-full w-90 rounded-2xl overflow-hidden border border-gray-100 bg-white cursor-pointer"
             >
               <NewsCard article={article} variant="featured" className="h-full" />
             </div>
@@ -160,7 +160,7 @@ export default function Home() {
         setIsLoading(false)
       }
       try {
-        const world = (await getArticlesByCategory('world')).filter(Boolean).slice(0,6)
+        const world = (await getArticlesByCategory('World')).filter(Boolean).slice(0,6)
         setWorldNews(world)
       } catch (e) {}
     }
