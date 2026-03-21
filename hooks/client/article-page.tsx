@@ -253,9 +253,8 @@ export default function ArticlePage() {
       <div className="min-h-screen bg-white flex flex-col">
         <Header />
         <div className="flex-1 h-full flex items-center justify-center">
-          <PinwheelLoader/>
+          <PinwheelLoader size = {100} color = '#A8A8A8'/>
         </div>
-        <Footer />
       </div>
     )
   }
