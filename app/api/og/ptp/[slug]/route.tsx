@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     // ── Load assets in parallel ─────────────────────────────────────────────
     // FIX 1: All fonts must be .ttf — ImageResponse does NOT support .woff2
     // FIX 2: Logo filename URL-encoded (spaces + brackets)
-    const [logoData, tiroBanglaData, playfairData, notoSansBengaliData] =
+    const [logoData, tiroBanglaData, playfairData] =
       await Promise.all([
         fetch(
           new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)
@@ -44,23 +44,18 @@ export async function GET(request: Request) {
 
         // Tiro Bangla Bold — Bengali serif headline (.ttf)
         fetch(
-          'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5pnCxPsA.ttf'
+          new URL('/local/font/Ekush-Regular.ttf',origin)
         ).then((r) => {
           if (!r.ok) throw new Error(`Tiro Bangla fetch failed: ${r.status}`)
           return r.arrayBuffer()
         }),
 
         // Philosopher Bold — English serif headline (.ttf)
-        fetch(
-          'https://fonts.gstatic.com/s/philosopher/v20/vEFV2_5QCwIS4_Dhez5jcVBpRUwU08qe.ttf'
-        ).then((r) => {
-          if (!r.ok) throw new Error(`Philosopher fetch failed: ${r.status}`)
-          return r.arrayBuffer()
-        }),
+        
 
         // Noto Sans Bengali Regular — clean Bengali UI text (.ttf)
         fetch(
-          'https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fOicyxLAFBgOHFWoEA8o8TW4.ttf'
+          new URL('/local/philosopher-font/Philosopher-Bold.ttf',origin)
         ).then((r) => {
           if (!r.ok)
             throw new Error(`Noto Sans Bengali fetch failed: ${r.status}`)
