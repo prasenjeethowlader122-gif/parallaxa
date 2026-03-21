@@ -3,27 +3,47 @@ import { getArticleBySlug } from '@/lib/news-data'
 
 export const runtime = 'edge'
 
+/** Naively detect if a string contains Bengali Unicode characters */
+function hasBengali(text: string): boolean {
+  return /[\u0980-\u09FF]/.test(text)
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const slug = searchParams.get('slug')
   const headline = searchParams.get('headline') ?? ''
-  
+
   if (!slug) {
     return new Response('Missing slug parameter', { status: 400 })
   }
-  
-  const profilePicData = await fetch(
-    new URL('/New Project 25 [4D921DE].png', origin)
-  ).then((res) => res.arrayBuffer())
-  
+
+  // ── Load assets in parallel ───────────────────────────────────────────────
+  const [profilePicData, tiroBanglaData, playfairData] = await Promise.all([
+    fetch(new URL('/New Project 25 [4D921DE].png', origin)).then((r) =>
+      r.arrayBuffer()
+    ),
+    // Tiro Bangla Bold — Bengali serif
+    fetch(
+      'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5gmA.woff2'
+    ).then((r) => r.arrayBuffer()),
+    // Playfair Display Bold — English serif
+    fetch(
+      'https://v0-parallaxa.vercel.app/local/philosopher-font/Philosopher-Bold.ttf'
+    ).then((r) => r.arrayBuffer()),
+  ])
+
   const profilePicSrc = `data:image/png;base64,${Buffer.from(profilePicData).toString('base64')}`
-  
+
   const article = await getArticleBySlug(slug)
-  
+
   if (!article) {
     return new Response('Article not found', { status: 404 })
   }
-  
+
+  const displayHeadline = headline || article.title
+  const isBangla = hasBengali(displayHeadline)
+  const headlineFont ='"Playfair Display"'
+
   return new ImageResponse(
     (
       <div
@@ -46,7 +66,7 @@ export async function GET(request: Request) {
           }}
         />
 
-        {/* Top dark overlay (gradient) */}
+        {/* Top dark overlay */}
         <div
           style={{
             position: 'absolute',
@@ -54,12 +74,13 @@ export async function GET(request: Request) {
             left: 0,
             right: 0,
             height: '260px',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
+            background:
+              'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
             display: 'flex',
           }}
         />
 
-        {/* Bottom dark overlay (gradient) */}
+        {/* Bottom dark overlay */}
         <div
           style={{
             position: 'absolute',
@@ -67,7 +88,8 @@ export async function GET(request: Request) {
             left: 0,
             right: 0,
             height: '420px',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.60) 55%, rgba(0,0,0,0) 100%)',
+            background:
+              'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.60) 55%, rgba(0,0,0,0) 100%)',
             display: 'flex',
           }}
         />
@@ -118,15 +140,10 @@ export async function GET(request: Request) {
           }}
         >
           {/* Category badge */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <div
               style={{
-                backgroundColor: '#dc2626',
+                
                 color: '#ffffff',
                 padding: '8px 20px',
                 borderRadius: '6px',
@@ -139,46 +156,43 @@ export async function GET(request: Request) {
             </div>
           </div>
 
-          {/* AI-generated headline */}
-          {headline ? (
-            <div
-              style={{
-                fontSize: '52px',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                lineHeight: '1.25',
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textShadow: '0 2px 12px rgba(0,0,0,0.5)',
-              }}
-            >
-              {headline}
-            </div>
-          ) : (
-            <div
-              style={{
-                fontSize: '52px',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                lineHeight: '1.25',
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textShadow: '0 2px 12px rgba(0,0,0,0.5)',
-              }}
-            >
-              {article.title}
-            </div>
-          )}
+          {/* Headline — Tiro Bangla (Bengali) or Playfair Display (English) */}
+          <div
+            style={{
+              fontFamily: headlineFont,
+              fontSize: '64px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              lineHeight: '1.30',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textShadow: '0 2px 14px rgba(0,0,0,0.55)',
+            }}
+          >
+            {displayHeadline}
+          </div>
         </div>
       </div>
     ),
     {
       width: 1080,
       height: 1080,
+      fonts: [
+        {
+          name: 'Tiro Bangla',
+          data: tiroBanglaData,
+          style: 'normal',
+          weight: 700,
+        },
+        {
+          name: 'Playfair Display',
+          data: playfairData,
+          style: 'normal',
+          weight: 700,
+        },
+      ],
     }
   )
 }

@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     ).then((r) => r.arrayBuffer()),
     // Playfair Display Bold — English serif
     fetch(
-      'https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xRbPQ.woff2'
+      'https://v0-parallaxa.vercel.app/local/philosopher-font/Philosopher-Bold.ttf'
     ).then((r) => r.arrayBuffer()),
   ])
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
-  const headlineFont = isBangla ? '"Tiro Bangla"' : '"Playfair Display"'
+  const headlineFont ='"Playfair Display"'
 
   return new ImageResponse(
     (
@@ -143,7 +143,7 @@ export async function GET(request: Request) {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div
               style={{
-                backgroundColor: '#dc2626',
+                
                 color: '#ffffff',
                 padding: '8px 20px',
                 borderRadius: '6px',
@@ -160,7 +160,7 @@ export async function GET(request: Request) {
           <div
             style={{
               fontFamily: headlineFont,
-              fontSize: '54px',
+              fontSize: '64px',
               fontWeight: 'bold',
               color: '#ffffff',
               lineHeight: '1.30',
