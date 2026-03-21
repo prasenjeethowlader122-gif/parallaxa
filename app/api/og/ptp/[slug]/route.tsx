@@ -297,12 +297,7 @@ export async function GET(request: Request) {
             style: 'normal',
             weight: 700,
           },
-          {
-            name: 'Noto Sans Bengali',
-            data: notoSansBengaliData,
-            style: 'normal',
-            weight: 400,
-          },
+        
         ],
       }
     )
