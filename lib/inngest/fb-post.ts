@@ -6,10 +6,9 @@
  *
  * Steps:
  *   1. fetch-article      — load article from DB
- *   2. render-og-image    — self-fetch /api/og/[slug] → raw PNG bytes (base64)
- *   3. generate-caption   — HuggingFace bilingual caption + hashtags
- *   4. upload-to-facebook — POST multipart photo to Graph API
- *   5. add-first-comment  — post article URL as first comment
+ *   2. generate-caption   — OpenRouter bilingual caption + hashtags + headline
+ *   3. upload-to-facebook — POST multipart photo to Graph API (OG image with headline)
+ *   4. add-first-comment  — post article URL as first comment
  */
 
 import { inngest } from './client'
@@ -43,40 +42,47 @@ interface CaptionResult {
   english: string
   bangla: string
   hashtags: string[]
+  /** Short punchy Bangla headline for the OG image (max ~12 words) */
+  imageHeadline: string
 }
 
-type Step = GetFunctionInput < typeof inngest > ['step']
+type Step = GetFunctionInput<typeof inngest>['step']
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
-// ─── Helpers (plain fetch — safe inside step.run) ─────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function generateCaption(article: {
   title: string
   description: string
   category: string
   content: string
-}): Promise < CaptionResult > {
+}): Promise<CaptionResult> {
   const SYSTEM = `You are a social media manager for a Bengali/English bilingual news page.
-Given a news article, write a Facebook post caption in BOTH English and Bangla, plus 5-7 hashtags.
+Given a news article, produce:
+1. A Facebook post caption in BOTH English and Bangla
+2. 5–7 hashtags
+3. A short punchy Bangla headline for an image overlay (max 12 words, Bengali Unicode script)
 
 Respond ONLY with a valid JSON object — no markdown fences, no preamble, no trailing text:
 {
-  "english":  "<2-3 sentence punchy English caption that hooks the reader>",
-  "bangla":   "<2-3 sentence Bangla caption in real Bengali Unicode script — NOT transliteration>",
-  "hashtags": ["tag1","tag2","tag3","tag4","tag5"]
+  "english":       "<2-3 sentence punchy English caption>",
+  "bangla":        "<2-3 sentence Bangla caption in Bengali Unicode script — NOT transliteration>",
+  "hashtags":      ["tag1","tag2","tag3","tag4","tag5"],
+  "imageHeadline": "<max 12-word Bangla headline in Bengali Unicode script for image overlay>"
 }
 
 Rules:
-- Bangla must use proper Bengali script (বাংলা), never Romanised Bangla
+- Bangla fields must use proper Bengali script (বাংলা), never Romanised Bangla
+- imageHeadline must be short, bold, news-ticker style — perfect for display on a photo
 - Hashtags: 3-4 English + 2-3 Bangla script tags, no # prefix in the JSON values
-- Both captions should feel natural for a Facebook news page, not robotic
-- Do NOT include the article URL in the caption — it goes in the first comment`
-  
+- Both captions feel natural for a Facebook news page, not robotic
+- Do NOT include the article URL in the caption`
+
   const res = await hf.chat.completions.create({
     model: HF_MODEL,
     stream: false,
-    max_tokens: 700,
+    max_tokens: 800,
     temperature: 0.7,
     messages: [
       { role: 'system', content: SYSTEM },
@@ -93,13 +99,13 @@ Rules:
       },
     ],
   })
-  
+
   const raw = res.choices[0]?.message?.content ?? ''
   const clean = raw
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/, '')
     .trim()
-  
+
   try {
     return JSON.parse(clean) as CaptionResult
   } catch {
@@ -108,68 +114,90 @@ Rules:
       english: article.title,
       bangla: article.title,
       hashtags: [article.category, 'News', 'BreakingNews', 'বাংলাদেশ'],
+      imageHeadline: article.title,
     }
   }
+}
+
+interface FacebookUploadResult {
+  /** The photo object ID — used for saving to DB */
+  photoId: string
+  /** The post ID — used for adding comments. May equal photoId if post_id absent. */
+  postId: string
 }
 
 async function uploadPhotoToFacebook(params: {
   slug: string
   caption: string
-}): Promise < string > {
+  imageHeadline: string
+}): Promise<FacebookUploadResult> {
   const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
-  
+
+  const encodedHeadline = encodeURIComponent(params.imageHeadline)
+  const imageUrl = `${SITE_URL}/api/og/ptp/${params.slug}?slug=${params.slug}&headline=${encodedHeadline}`
+
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
   form.append('caption', params.caption)
-  // FIX: Use params.slug instead of the undefined bare `slug` variable,
-  //      and remove the erroneous array wrapper `[slug]`
-  form.append('url', `${SITE_URL}/api/og/ptp/${params.slug}`)
-  
+  form.append('url', imageUrl)
+
   const res = await fetch(endpoint, { method: 'POST', body: form })
   const data = (await res.json()) as {
-    id ? : string
-    post_id ? : string
-    error ? : { message: string;code ? : number;error_subcode ? : number }
+    id?: string
+    post_id?: string
+    error?: { message: string; code?: number; error_subcode?: number }
   }
-  
+
   if (!res.ok || data.error) {
     const { message, code, error_subcode } = data.error ?? {}
     if (code === 200 || code === 10) {
       throw new Error(
         `Facebook permission error (${code}/${error_subcode}): ${message}. ` +
-        `Ensure FB_ACCESS_TOKEN is a PAGE ACCESS TOKEN with "pages_manage_posts" granted. ` +
-        `Re-generate at https://developers.facebook.com/tools/explorer/`
+          `Ensure FB_ACCESS_TOKEN is a PAGE ACCESS TOKEN with "pages_manage_posts" granted.`
       )
     }
     if (code === 190) {
       throw new Error(
         `Facebook token expired (${code}): ${message}. ` +
-        `Refresh your Page Access Token at https://developers.facebook.com/tools/explorer/`
+          `Refresh your Page Access Token at https://developers.facebook.com/tools/explorer/`
       )
     }
-    throw new Error(`Facebook photo upload failed (HTTP ${res.status}): ${message ?? JSON.stringify(data)}`)
+    throw new Error(
+      `Facebook photo upload failed (HTTP ${res.status}): ${message ?? JSON.stringify(data)}`
+    )
   }
-  
-  const postId = data.post_id ?? data.id
-  if (!postId) throw new Error('Facebook returned no post ID')
-  return postId
+
+  const photoId = data.id
+  if (!photoId) throw new Error('Facebook returned no photo ID')
+
+  // post_id format: "{PAGE_ID}_{PHOTO_ID}" — this is what comments endpoint needs.
+  // If Facebook didn't return it, construct it manually.
+  const postId = data.post_id ?? `${FB_PAGE_ID}_${photoId}`
+
+  return { photoId, postId }
 }
 
-async function addFirstComment(postId: string, articleUrl: string): Promise < void > {
-  const endpoint = `https://graph.facebook.com/v19.0/${postId}/comments`
+async function addFirstComment(postId: string, articleUrl: string): Promise<void> {
+  // Use the same API version as photo upload
+  const endpoint = `https://graph.facebook.com/v21.0/${postId}/comments`
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append(
     'message',
     `🔗 পুরো খবর পড়ুন / Read the full article:\n${articleUrl}`
   )
-  
+
   try {
     const res = await fetch(endpoint, { method: 'POST', body: form })
-    const data = (await res.json()) as { error ? : { message: string } }
+    const data = (await res.json()) as { id?: string; error?: { message: string; code?: number } }
     if (!res.ok || data.error) {
-      console.error(`[ptp-fn] first comment failed: ${data.error?.message ?? JSON.stringify(data)}`)
+      console.error(
+        `[ptp-fn] first comment failed (HTTP ${res.status}): `,
+        data.error?.message ?? JSON.stringify(data)
+      )
+    } else {
+      console.info(`[ptp-fn] comment posted — id: ${data.id}`)
     }
   } catch (e) {
     console.error('[ptp-fn] first comment network error:', e)
@@ -186,23 +214,23 @@ export const ptpFunction = inngest.createFunction(
     concurrency: { limit: 3 },
     triggers: [{ event: 'news/ptp.requested' }],
   },
-  
+
   async ({ event, step, logger }) => {
     const { articleId } = event.data as { articleId: string }
-    
+
     // ── Step 1: Fetch article ──────────────────────────────────────────────
     const article = await step.run('fetch-article', async () => {
       const a = await getArticleById(articleId)
       if (!a) throw new Error(`Article not found: ${articleId}`)
       return a
     })
-    
+
     const articleUrl = `${SITE_URL}/news/${article.slug}`
     logger.info(`[ptp] processing articleId:${articleId} slug:${article.slug}`)
-    
-    // ── Step 3: Generate bilingual caption ────────────────────────────────
+
+    // ── Step 2: Generate bilingual caption + image headline ───────────────
     const caption = await step.run('generate-caption', async () => {
-      logger.info('[ptp] generating bilingual caption via HuggingFace…')
+      logger.info('[ptp] generating bilingual caption + image headline…')
       return generateCaption({
         title: article.title ?? '',
         description: article.description ?? '',
@@ -210,9 +238,11 @@ export const ptpFunction = inngest.createFunction(
         content: article.content ?? '',
       })
     })
-    
-    // ── Step 4: Upload photo to Facebook ──────────────────────────────────
-    const postId = await step.run('upload-to-facebook', async () => {
+
+    logger.info(`[ptp] imageHeadline: "${caption.imageHeadline}"`)
+
+    // ── Step 3: Upload photo to Facebook (with headline baked into OG URL) ─
+    const { photoId, postId } = await step.run('upload-to-facebook', async () => {
       const hashtagLine = caption.hashtags.map((t) => `#${t}`).join('  ')
       const postText = [
         caption.english,
@@ -223,30 +253,31 @@ export const ptpFunction = inngest.createFunction(
         '',
         hashtagLine,
       ].join('\n')
-      
+
       logger.info('[ptp] uploading photo to Facebook page…')
-      const id = await uploadPhotoToFacebook({
+      const result = await uploadPhotoToFacebook({
         slug: article.slug,
         caption: postText,
+        imageHeadline: caption.imageHeadline,
       })
-      if (id) {
-        // update fi...
-        await updateArticle(articleId, {
-          ptpLinks : JSON.stringify([id])
-        })
-      }
-      logger.info(`[ptp] ✓ photo posted — postId: ${id}`)
-      return id
+
+      await updateArticle(articleId, {
+        ptpLinks: JSON.stringify([result.postId]),
+      })
+
+      logger.info(`[ptp] ✓ photo posted — photoId: ${result.photoId}  postId: ${result.postId}`)
+      return result
     })
-    
-    // ── Step 5: Add article link as first comment ─────────────────────────
+
+    // ── Step 4: Add article link as first comment ─────────────────────────
     await step.run('add-first-comment', async () => {
       await addFirstComment(postId, articleUrl)
       logger.info('[ptp] ✓ first comment added')
     })
-    
+
     return {
       success: true,
+      photoId,
       postId,
       articleUrl,
       caption,
