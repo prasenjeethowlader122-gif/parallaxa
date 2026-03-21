@@ -277,9 +277,8 @@ export const ptpFunction = inngest.createFunction(
       const hashtagLine = caption.hashtags.map((t) => `#${t}`).join('  ')
       const postText = [
         caption.english,
-        '',
         '\n',
-       // hashtagLine,
+        caption.bangla
       ].join('\n')
 
       logger.info('[ptp] uploading photo to Facebook page…')
