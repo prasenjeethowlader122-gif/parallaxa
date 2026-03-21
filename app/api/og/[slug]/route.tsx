@@ -3,144 +3,196 @@ import { getArticleBySlug } from '@/lib/news-data'
 
 export const runtime = 'edge'
 
+/** Naively detect if a string contains Bengali Unicode characters */
+function hasBengali(text: string): boolean {
+  return /[\u0980-\u09FF]/.test(text)
+}
+
 export async function GET(request: Request) {
-  const { searchParams , origin} = new URL(request.url)
+  const { searchParams, origin } = new URL(request.url)
   const slug = searchParams.get('slug')
-  
+  const headline = searchParams.get('headline') ?? ''
+
   if (!slug) {
     return new Response('Missing slug parameter', { status: 400 })
   }
-  const profilePicData = await fetch(
-    new URL('/New Project 20 [79DB18E].png', origin)
-  ).then((res) => res.arrayBuffer());
+
+  // ── Load assets in parallel ───────────────────────────────────────────────
+  const [profilePicData, tiroBanglaData, playfairData] = await Promise.all([
+    fetch(new URL('/New Project 25 [4D921DE].png', origin)).then((r) =>
+      r.arrayBuffer()
+    ),
+    // Tiro Bangla Bold — Bengali serif
+    fetch(
+      'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5gmA.woff2'
+    ).then((r) => r.arrayBuffer()),
+    // Playfair Display Bold — English serif
+    fetch(
+      'https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xRbPQ.woff2'
+    ).then((r) => r.arrayBuffer()),
+  ])
+
+  const profilePicSrc = `data:image/png;base64,${Buffer.from(profilePicData).toString('base64')}`
+
   const article = await getArticleBySlug(slug)
-  
+
   if (!article) {
     return new Response('Article not found', { status: 404 })
   }
-  
+
+  const displayHeadline = headline || article.title
+  const isBangla = hasBengali(displayHeadline)
+  const headlineFont = isBangla ? '"Tiro Bangla"' : '"Playfair Display"'
+
   return new ImageResponse(
     (
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
           width: '100%',
           height: '100%',
-          backgroundColor: '#ffffff',
-          backgroundImage: `url(${article.image})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
           position: 'relative',
         }}
       >
-        
-        {/* Dark overlay */}
+        {/* Background image */}
+        <img
+          src={article.image}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+
+        {/* Top dark overlay */}
         <div
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
+            height: '260px',
+            background:
+              'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
+            display: 'flex',
+          }}
+        />
+
+        {/* Bottom dark overlay */}
+        <div
+          style={{
+            position: 'absolute',
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            left: 0,
+            right: 0,
+            height: '420px',
+            background:
+              'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.60) 55%, rgba(0,0,0,0) 100%)',
+            display: 'flex',
+          }}
+        />
+
+        {/* Logo — top left */}
+        <img
+          src={profilePicSrc}
+          width={110}
+          style={{
+            position: 'absolute',
+            top: 22,
+            left: 22,
+            filter: 'invert(100%)',
+          }}
+          alt="logo"
+        />
+
+        {/* Date — top right */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 28,
+            right: 32,
+            display: 'flex',
+            fontSize: '24px',
+            fontWeight: '500',
+            color: 'rgba(255, 255, 255, 0.80)',
+          }}
+        >
+          {new Date(article.date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </div>
+
+        {/* Bottom content — category badge + headline */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '0 52px 56px 52px',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'flex-end',
-            padding: '60px',
+            gap: '20px',
           }}
         >
           {/* Category badge */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginBottom: '24px',
-            }}
-          >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <div
               style={{
                 backgroundColor: '#dc2626',
                 color: '#ffffff',
-                padding: '8px 16px',
+                padding: '8px 20px',
                 borderRadius: '6px',
-                fontSize: '16px',
+                fontSize: '22px',
                 fontWeight: 'bold',
+                letterSpacing: '0.04em',
               }}
             >
-              {article.category}
+              {article.category.toUpperCase()}
             </div>
-            {article.breaking && (
-              <div
-                style={{
-                  backgroundColor: '#991b1b',
-                  color: '#ffffff',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                }}
-              >
-                BREAKING
-              </div>
-            )}
           </div>
 
-          {/* Title */}
-          <h1
+          {/* Headline — Tiro Bangla (Bengali) or Playfair Display (English) */}
+          <div
             style={{
-              fontSize: '56px',
+              fontFamily: headlineFont,
+              fontSize: '54px',
               fontWeight: 'bold',
               color: '#ffffff',
-              margin: '0 0 24px 0',
-              lineHeight: '1.2',
+              lineHeight: '1.30',
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              textShadow: '0 2px 14px rgba(0,0,0,0.55)',
             }}
           >
-            {article.title}
-          </h1>
-
-          {/* Meta info */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '24px',
-              fontSize: '18px',
-              color: '#e5e7eb',
-              fontWeight: '500',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>👤</span>
-              <span>{article.author}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>📅</span>
-              <span>{new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            </div>
+            {displayHeadline}
           </div>
-        </div> <img src = { profilePicData as any } style = {
-        {
-        filter: 'invert(100%)',
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-        
-        }
-      }
-      width = "150"
-      alt = "profile" />
+        </div>
       </div>
     ),
     {
-      width: 1200,
-      height: 630,
+      width: 1080,
+      height: 1080,
+      fonts: [
+        {
+          name: 'Tiro Bangla',
+          data: tiroBanglaData,
+          style: 'normal',
+          weight: 700,
+        },
+        {
+          name: 'Playfair Display',
+          data: playfairData,
+          style: 'normal',
+          weight: 700,
+        },
+      ],
     }
   )
 }
