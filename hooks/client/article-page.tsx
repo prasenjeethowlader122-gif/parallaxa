@@ -541,11 +541,11 @@ export default function ArticlePage() {
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
                 <section className="no-print mt-2 pt-6 border-t">
-                  <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-900 mb-5">
+                  <h2 className="text-[11px] font-semibold  tracking-widest text-gray-900 mb-5">
                     More in {article.category}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    {relatedArticles.map((a) => (
+                    {relatedArticles.slice(0,2).map((a) => (
                       <NewsCard key={a.id} article={a} variant="default" />
                     ))}
                   </div>
