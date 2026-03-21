@@ -26,15 +26,15 @@ const FB_ACCESS_TOKEN =
 
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
 
-const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen3-8B'
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'
 ).replace(/\/$/, '')
 
 const hf = new OpenAI({
-  baseURL: 'https://api.bytez.com/models/v2/openai/v1',
-  apiKey: process.env.HF_API_KEY ?? '8e5d3c99666ab5c262a21bb68f9fb626',
+  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+  apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────

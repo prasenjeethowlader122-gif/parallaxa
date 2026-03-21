@@ -27,8 +27,8 @@ import { auth } from '@/auth'
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
-const HF_MODEL = process.env.HF_MODEL ?? 'Qwen/Qwen3-8B'
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'Alibaba-NLP/gte-Qwen2-7B-instruct'
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'gemini-embedding-2-preview'
 const YAHOO_SOURCES = [ 'https://www.yahoo.com/news/world/'
  // 'https://www.thedailystar.net/news'
 ]
@@ -42,8 +42,8 @@ const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-st
 const VECTOR_DUPLICATE_THRESHOLD = 0.15
 
 const hf = new OpenAI({
-  baseURL: 'https://api.bytez.com/models/v2/openai/v1',
-  apiKey: process.env.HF_API_KEY ?? '8e5d3c99666ab5c262a21bb68f9fb626',
+  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+  apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────

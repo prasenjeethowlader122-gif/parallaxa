@@ -293,14 +293,14 @@ export async function deleteArticle(id: string): Promise < boolean > {
 
 // ── Vector Search ─────────────────────────────────────────────────────────────
 
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'Alibaba-NLP/gte-Qwen2-7B-instruct'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'gemini-embedding-2-preview'
 
 async function embedQuery(query: string): Promise < number[] | null > {
   try {
     const { OpenAI } = await import('openai')
     const hf = new OpenAI({
-      baseURL: 'https://api.bytez.com/models/v2/openai/v1',
-      apiKey: process.env.HF_API_KEY ?? '8e5d3c99666ab5c262a21bb68f9fb626',
+      baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
     })
     const res = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: query })
     const vector = res.data[0]?.embedding
