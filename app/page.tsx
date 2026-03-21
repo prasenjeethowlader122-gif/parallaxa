@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, getAllArticles } from '@/lib/db/articles'
+import { NewsArticle, getAllArticles ,getArticlesByCategory} from '@/lib/db/articles'
 
 const POSITIONS = [
   { x: 0, scale: 1, opacity: 1, z: 30 },
@@ -148,7 +148,7 @@ function FeaturedSkeleton() {
 export default function Home() {
   const [latestArticles, setLatestArticles] = useState < NewsArticle[] > ([])
   const [isLoading, setIsLoading] = useState(true)
-  
+  const [worlsNews, setWorldNews] = useState<NewsArticle[]>([])
   useEffect(() => {
     async function loadData() {
       try {
@@ -159,6 +159,10 @@ export default function Home() {
       } finally {
         setIsLoading(false)
       }
+      try {
+        const world = (await getArticlesByCategory('world')).filter(Boolean).slice(0,6)
+        setWorldNews(world)
+      } catch (e) {}
     }
     loadData()
   }, [])
@@ -213,12 +217,12 @@ export default function Home() {
           )}
         </section>
 
-        {/* ── Latest News ── */}
+        {/* ──World News ── */}
         <section className="bg-gray-50 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8">Latest News</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-8">World</h2>
                 {isLoading ? (
                   <div className="space-y-6">
                     {[...Array(6)].map((_, i) => (
@@ -227,7 +231,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {latestArticles.map(article => (
+                    {worlsNews.map(article => (
                       <NewsCard
                         key={article.id ?? 'null'}
                         article={article}
