@@ -32,7 +32,7 @@ const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onren
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-2.5-flash'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004'
 
-const YAHOO_SOURCES = ['https://www.yahoo.com/news/world']
+const YAHOO_SOURCES = ['https://indianexpress.com/article/world/']
 const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 /**
@@ -105,10 +105,14 @@ function isArticleUrl(raw: string): boolean {
       /^\/[^/]+\/articles\/[^/]+(?:\.lite)?$/.test(u.pathname)
 
     const isDailyStar =
-      u.hostname === 'www.thedailystar.net' &&
-      /^\/(?:[^/]+\/)+news\/[^/]+-\d+$/.test(u.pathname)
+  u.hostname === 'www.thedailystar.net' &&
+  /^\/(?:[^/]+\/)+news\/[^/]+-\d+$/.test(u.pathname)
 
-    return isYahoo || isBBC || isDailyStar
+const isIndianExpress =
+  u.hostname === 'indianexpress.com' &&
+  /^\/article\/(?:[^/]+\/)+[^/]+-\d+\/?$/.test(u.pathname)
+
+return isYahoo || isBBC || isDailyStar || isIndianExpress
   } catch { return false }
 }
 
