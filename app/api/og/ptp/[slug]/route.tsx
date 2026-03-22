@@ -62,7 +62,7 @@ export async function GET(
   const isBangla = hasBengali(displayHeadline)
   const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
   const headlineFontSize = isBangla ? 51 : 56
-  const headlineFontWeight = 700
+  const headlineFontWeight = 400
   
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
