@@ -197,7 +197,7 @@ async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   const res = await hf.chat.completions.create({
     model: HF_MODEL,
     stream: false,
-    max_tokens: 1_200,
+    max_tokens: 2_500,
     temperature: 0.6,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
