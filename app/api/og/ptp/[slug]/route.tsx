@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
 
   // Font size: slightly smaller for Bangla to avoid overflow with longer lines
-  const headlineFontSize = isBangla ? 48 : 56
+  const headlineFontSize = isBangla ? 51 : 56
 
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
