@@ -279,7 +279,7 @@ async function saveArticle(
 
 export const newsPipelineFunction = inngest.createFunction(
   {
-    id: 'news-pipeline-yzo00r0',
+    id: 'news-pipeline-o00r0',
     name: 'Yahoo News Pipeline',
     retries: 3,
     concurrency: { limit: 1 },
