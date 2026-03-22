@@ -21,7 +21,7 @@ import type { GetFunctionInput } from 'inngest'
 
 const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN ?? 'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-2.0-flash-lite'
+const HF_MODEL = process.env.HF_MODEL ?? 'models/gemini-2.5-flash'
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'

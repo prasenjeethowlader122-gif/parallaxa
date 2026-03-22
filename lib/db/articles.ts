@@ -293,7 +293,7 @@ export async function deleteArticle(id: string): Promise < boolean > {
 
 // ── Vector Search ─────────────────────────────────────────────────────────────
 
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'gemini-embedding-2-preview'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'models/gemini-embedding-2-preview'
 
 async function embedQuery(query: string): Promise < number[] | null > {
   try {

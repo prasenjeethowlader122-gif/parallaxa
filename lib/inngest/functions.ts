@@ -27,8 +27,8 @@ import { auth } from '@/auth'
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'gemini-embedding-2-preview'
+const HF_MODEL = process.env.HF_MODEL ?? 'models/gemini-2.5-flash'
+const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'models/gemini-embedding-2-preview'
 const YAHOO_SOURCES = [ 'https://www.yahoo.com/news/world/'
  // 'https://www.thedailystar.net/news'
 ]
