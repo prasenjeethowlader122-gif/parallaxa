@@ -21,14 +21,17 @@ import type { GetFunctionInput } from 'inngest'
 
 const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN ?? 'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
-const HF_MODEL = process.env.HF_MODEL ?? 'models/gemini-2.5-flash'
+
+// ✅ FIX: No "models/" prefix for OpenAI-compat layer
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-2.5-flash'
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'
 ).replace(/\/$/, '')
 
+// ✅ FIX: No trailing slash on baseURL
 const hf = new OpenAI({
-  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
   apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
 })
 
@@ -42,7 +45,7 @@ interface CaptionResult {
   imageHeadline: string
 }
 
-type Step = GetFunctionInput<typeof inngest>['step']
+type Step = GetFunctionInput < typeof inngest > ['step']
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
@@ -54,10 +57,10 @@ function buildFallbackCaption(article: {
   category: string
 }): CaptionResult {
   const snippet =
-    article.description.length > 300
-      ? article.description.slice(0, 300).trimEnd() + '…'
-      : article.description
-
+    article.description.length > 300 ?
+    article.description.slice(0, 300).trimEnd() + '…' :
+    article.description
+  
   return {
     english: snippet,
     bangla: snippet,
@@ -73,7 +76,7 @@ async function generateCaption(article: {
   description: string
   category: string
   content: string
-}): Promise<CaptionResult> {
+}): Promise < CaptionResult > {
   const SYSTEM = `You are a social media manager for a Bengali/English bilingual news page.
 Given a news article, produce:
 1. A Facebook post caption in BOTH English and Bangla
@@ -94,7 +97,7 @@ Rules:
 - Hashtags: 3-4 English + 2-3 Bangla script tags, no # prefix in the JSON values
 - Both captions feel natural for a Facebook news page, not robotic
 - Do NOT include the article URL in the caption — it will be appended separately`
-
+  
   const res = await hf.chat.completions.create({
     model: HF_MODEL,
     stream: false,
@@ -115,13 +118,13 @@ Rules:
       },
     ],
   })
-
+  
   const raw = res.choices[0]?.message?.content ?? ''
   const clean = raw
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/, '')
     .trim()
-
+  
   try {
     return JSON.parse(clean) as CaptionResult
   } catch {
@@ -139,47 +142,47 @@ async function uploadPhotoToFacebook(params: {
   slug: string
   caption: string
   imageHeadline: string
-}): Promise<FacebookUploadResult> {
+}): Promise < FacebookUploadResult > {
   const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
-
+  
   const encodedHeadline = encodeURIComponent(params.imageHeadline)
   const imageUrl = `${SITE_URL}/api/og/ptp/${params.slug}?slug=${params.slug}&headline=${encodedHeadline}`
-
+  
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
   form.append('caption', params.caption)
   form.append('url', imageUrl)
-
+  
   const res = await fetch(endpoint, { method: 'POST', body: form })
   const data = (await res.json()) as {
-    id?: string
-    post_id?: string
-    error?: { message: string; code?: number; error_subcode?: number }
+    id ? : string
+    post_id ? : string
+    error ? : { message: string;code ? : number;error_subcode ? : number }
   }
-
+  
   if (!res.ok || data.error) {
     const { message, code, error_subcode } = data.error ?? {}
     if (code === 200 || code === 10) {
       throw new Error(
         `Facebook permission error (${code}/${error_subcode}): ${message}. ` +
-          `Ensure FB_ACCESS_TOKEN is a PAGE ACCESS TOKEN with "pages_manage_posts" granted.`
+        `Ensure FB_ACCESS_TOKEN is a PAGE ACCESS TOKEN with "pages_manage_posts" granted.`
       )
     }
     if (code === 190) {
       throw new Error(
         `Facebook token expired (${code}): ${message}. ` +
-          `Refresh your Page Access Token at https://developers.facebook.com/tools/explorer/`
+        `Refresh your Page Access Token at https://developers.facebook.com/tools/explorer/`
       )
     }
     throw new Error(
       `Facebook photo upload failed (HTTP ${res.status}): ${message ?? JSON.stringify(data)}`
     )
   }
-
+  
   const photoId = data.id
   if (!photoId) throw new Error('Facebook returned no photo ID')
-
+  
   const postId = data.post_id ?? `${FB_PAGE_ID}_${photoId}`
   return { photoId, postId }
 }
@@ -188,7 +191,7 @@ async function uploadPhotoToFacebook(params: {
 
 function buildPostText(caption: CaptionResult, articleUrl: string): string {
   const hashtagLine = caption.hashtags.map((t) => `#${t}`).join('  ')
-
+  
   return [
     caption.english,
     '',
@@ -211,20 +214,20 @@ export const ptpFunction = inngest.createFunction(
     concurrency: { limit: 3 },
     triggers: [{ event: 'news/ptp.requested' }],
   },
-
+  
   async ({ event, step, logger }) => {
     const { articleId } = event.data as { articleId: string }
-
+    
     // ── Step 1: Fetch article ──────────────────────────────────────────────
     const article = await step.run('fetch-article', async () => {
       const a = await getArticleById(articleId)
       if (!a) throw new Error(`Article not found: ${articleId}`)
       return a
     })
-
-    const articleUrl = `${SITE_URL}/news/${article.slug}`
+    
+    const articleUrl = `${SITE_URL}/article/${article.slug}`
     logger.info(`[ptp] processing articleId:${articleId} slug:${article.slug}`)
-
+    
     // ── Step 2: Generate bilingual caption + image headline ───────────────
     const caption = await step.run('generate-caption', async () => {
       logger.info('[ptp] generating bilingual caption + image headline…')
@@ -246,28 +249,28 @@ export const ptpFunction = inngest.createFunction(
         })
       }
     })
-
+    
     logger.info(`[ptp] imageHeadline: "${caption.imageHeadline}"`)
-
+    
     // ── Step 3: Upload photo to Facebook ───────────────────────────────────
     const { photoId, postId } = await step.run('upload-to-facebook', async () => {
       const postText = buildPostText(caption, articleUrl)
-
+      
       logger.info('[ptp] uploading photo to Facebook page…')
       const result = await uploadPhotoToFacebook({
         slug: article.slug,
         caption: postText,
         imageHeadline: caption.imageHeadline,
       })
-
+      
       await updateArticle(articleId, {
         ptpLinks: JSON.stringify([result.postId]),
       })
-
+      
       logger.info(`[ptp] ✓ photo posted — photoId: ${result.photoId}  postId: ${result.postId}`)
       return result
     })
-
+    
     return {
       success: true,
       photoId,
@@ -275,5 +278,5 @@ export const ptpFunction = inngest.createFunction(
       articleUrl,
       caption,
     }
-  }
+  },
 )
