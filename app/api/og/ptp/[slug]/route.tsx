@@ -3,57 +3,76 @@ import { getArticleBySlug } from '@/lib/news-data'
 
 export const runtime = 'edge'
 
+// Edge runtime does not have Buffer — use a pure-JS base64 encoder
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
 function hasBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text)
 }
 
 export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
+  request: Request, { params }: { params: Promise < { slug: string } > }
 ) {
+  // Next.js 15+: params is a Promise and must be awaited
+  const { slug } = await params
   const { searchParams, origin } = new URL(request.url)
-  // FIX 1: Read slug from route params, not searchParams
-  const slug = params.slug
   const headline = searchParams.get('headline') ?? ''
-
+  
   if (!slug) return new Response('Missing slug', { status: 400 })
-
+  
   const article = await getArticleBySlug(slug)
   if (!article) return new Response('Not found', { status: 404 })
-
-  const [logoData, playfairData, tiroBanglaData] = await Promise.all([
-    fetch(new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)).then(r => {
-      if (!r.ok) throw new Error(`Logo: ${r.status}`)
-      return r.arrayBuffer()
-    }),
-    fetch(new URL('/local/philosopher-font/Philosopher-Bold.ttf', origin)).then(r => {
-      if (!r.ok) throw new Error(`Philosopher: ${r.status}`)
-      return r.arrayBuffer()
-    }),
-    fetch(new URL('/local/font/NotoSerifBengali-VariableFont_wdth,wght.ttf', origin)).then(r => {
-      if (!r.ok) throw new Error(`Ekush: ${r.status}`)
-      return r.arrayBuffer()
-    }),
-  ])
-
-  const logoSrc = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`
-
+  
+  let logoData: ArrayBuffer
+  let playfairData: ArrayBuffer
+  let tiroBanglaData: ArrayBuffer
+  
+  try {
+    ;
+    [logoData, playfairData, tiroBanglaData] = await Promise.all([
+      fetch(new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)).then(r => {
+        if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
+        return r.arrayBuffer()
+      }),
+      fetch(new URL('/local/philosopher-font/Philosopher-Bold.ttf', origin)).then(r => {
+        if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
+        return r.arrayBuffer()
+      }),
+      fetch(new URL('/local/font/NotoSerifBengali-VariableFont_wdth,wght.ttf', origin)).then(r => {
+        if (!r.ok) throw new Error(`Noto Serif Bengali font fetch failed: ${r.status}`)
+        return r.arrayBuffer()
+      }),
+    ])
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Asset fetch failed'
+    return new Response(message, { status: 500 })
+  }
+  
+  // Edge-safe base64 (no Buffer in the edge runtime)
+  const logoSrc = `data:image/png;base64,${arrayBufferToBase64(logoData)}`
+  
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
   const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
-
   const headlineFontSize = isBangla ? 51 : 56
-
-  // FIX 2: Use weight 700 for Bangla headline (matches font registration below)
   const headlineFontWeight = 700
-
+  
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
-
+  
   const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   })
-
+  
   return new ImageResponse(
     (
       <div
@@ -72,7 +91,9 @@ export async function GET(
             src={article.image}
             style={{
               position: 'absolute',
-              top: 0, left: 0, right: 0,
+              top: 0,
+              left: 0,
+              right: 0,
               width: '100%',
               height: '62%',
               objectFit: 'cover',
@@ -83,7 +104,9 @@ export async function GET(
           <div
             style={{
               position: 'absolute',
-              top: 0, left: 0, right: 0,
+              top: 0,
+              left: 0,
+              right: 0,
               height: '62%',
               background: 'linear-gradient(135deg, #b8cfe8 0%, #8aaccc 40%, #6b90b8 100%)',
               display: 'flex',
@@ -95,9 +118,12 @@ export async function GET(
         <div
           style={{
             position: 'absolute',
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             height: '62%',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.06) 55%, rgba(0,0,0,0.36) 100%)',
+            background:
+              'linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.06) 55%, rgba(0,0,0,0.36) 100%)',
             display: 'flex',
           }}
         />
@@ -106,7 +132,9 @@ export async function GET(
         <div
           style={{
             position: 'absolute',
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -136,7 +164,9 @@ export async function GET(
         <div
           style={{
             position: 'absolute',
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             height: '40%',
             backgroundColor: '#FAFAF7',
             display: 'flex',
@@ -167,7 +197,8 @@ export async function GET(
             </div>
             <div
               style={{
-                flex: 1, height: '1px',
+                flex: 1,
+                height: '1px',
                 backgroundColor: '#e0ddd6',
                 display: 'flex',
               }}
@@ -239,18 +270,13 @@ export async function GET(
               @parallaxa
             </div>
           </div>
-        </div>
-      </div>
+        </div> </div>
     ),
     {
       width: 1080,
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        // FIX 3: Register Tiro Bangla at weight 700 with explicit style/weight fields.
-        // Satori matches fontWeight exactly — if the headline uses 700 but the font
-        // is registered without a weight, Satori may not resolve it and falls back
-        // to a system font with no Bengali glyphs, producing tofu (□□□).
         { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 700 },
       ],
     }
