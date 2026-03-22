@@ -144,7 +144,7 @@ async function discoverLinksPlain(limit: number): Promise<ArticleLink[]> {
         body: JSON.stringify({
           url: YAHOO_SOURCES[i],
           include_sitemap: false,
-          max_pages: 60,
+          max_pages: 5,
           same_domain: true,
         }),
         signal: AbortSignal.timeout(65_000),
