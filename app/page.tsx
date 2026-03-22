@@ -244,7 +244,6 @@ export default function Home() {
             <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
           </div>
 
-          // in the Top Stories section, replace the isLoading branch:
 {isLoading ? (
   <>
     <CoverFlowSkeleton />                    {/* mobile */}
