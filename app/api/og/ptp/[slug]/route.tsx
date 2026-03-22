@@ -37,7 +37,9 @@ export async function GET(request: Request) {
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
   const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
-  const headlineFontSize = isBangla ? 52 : 56
+
+  // Font size: slightly smaller for Bangla to avoid overflow with longer lines
+  const headlineFontSize = isBangla ? 48 : 56
 
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
@@ -177,14 +179,16 @@ export async function GET(request: Request) {
             </div>
           </div>
 
-          {/* Headline only — no description */}
+          {/* Headline */}
           <div
             style={{
               fontFamily: headlineFont,
               fontSize: `${headlineFontSize}px`,
-              fontWeight: 'bold',
+              // ✅ KEY FIX: use weight 400 for Bangla (matches loaded font weight)
+              // bold (700) has no matching Bangla font → Satori falls back to system font → tofu
+              fontWeight: isBangla ? 400 : 700,
               color: '#111111',
-              lineHeight: isBangla ? 1.45 : 1.16,
+              lineHeight: isBangla ? 1.6 : 1.16,
               letterSpacing: isBangla ? '0.01em' : '-0.02em',
               display: '-webkit-box',
               WebkitLineClamp: 3,
@@ -239,7 +243,11 @@ export async function GET(request: Request) {
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
+        // ✅ KEY FIX: register same font data for BOTH weight 400 AND 700
+        // Satori matches fontWeight exactly — if headline uses 700 but only 400 is
+        // registered, it falls back to a system font that has no Bengali glyphs.
         { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 400 },
+        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 700 },
       ],
     }
   )
