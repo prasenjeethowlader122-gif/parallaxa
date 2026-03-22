@@ -45,7 +45,7 @@ export async function GET(
         if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-      fetch(new URL('/local/font/NotoSerifBengali-VariableFont_wdth,wght.ttf', origin)).then(r => {
+      fetch(new URL('/local/font/Ekush-Regular.ttf', origin)).then(r => {
         if (!r.ok) throw new Error(`Noto Serif Bengali font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
@@ -224,7 +224,7 @@ export async function GET(
               fontWeight: headlineFontWeight,
               color: '#111111',
               lineHeight: isBangla ? 1.6 : 1.16,
-              letterSpacing: isBangla ? '0.01em' : '-0.02em',
+              letterSpacing: isBangla ? '0' : '-0.02em',
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
@@ -277,7 +277,7 @@ export async function GET(
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 700 },
+        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 400 },
       ],
     }
   )
