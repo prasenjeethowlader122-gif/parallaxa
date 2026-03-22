@@ -9,17 +9,11 @@ export const spacegrotesk = localFont({
 export const slabo = localFont({
   src: [
     {
-      path: '../public/local/font/AbhayaLibre-Regular.ttf',
+      path: '../public/local/font/PlaypenSans[wght].ttf',
       weight: '400',
       style: 'normal',
     },
-    {
-      
-      path: '../public/local/font/AbhayaLibre-Bold.ttf',
-      weight: '600',
-      style: 'normal',
     
-    }
     
   ],
   variable: '--font-slabo',

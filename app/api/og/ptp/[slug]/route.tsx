@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       if (!r.ok) throw new Error(`Philosopher: ${r.status}`)
       return r.arrayBuffer()
     }),
-    fetch(new URL('/local/font/Ekush-Regular.ttf', origin)).then(r => {
+    fetch(new URL('/local/font/TiroBangla-Regular.ttf', origin)).then(r => {
       if (!r.ok) throw new Error(`Ekush: ${r.status}`)
       return r.arrayBuffer()
     }),
