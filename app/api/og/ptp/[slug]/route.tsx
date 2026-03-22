@@ -7,9 +7,13 @@ function hasBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text)
 }
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { slug: string } }
+) {
   const { searchParams, origin } = new URL(request.url)
-  const slug = searchParams.get('slug')
+  // FIX 1: Read slug from route params, not searchParams
+  const slug = params.slug
   const headline = searchParams.get('headline') ?? ''
 
   if (!slug) return new Response('Missing slug', { status: 400 })
@@ -38,8 +42,10 @@ export async function GET(request: Request) {
   const isBangla = hasBengali(displayHeadline)
   const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
 
-  // Font size: slightly smaller for Bangla to avoid overflow with longer lines
   const headlineFontSize = isBangla ? 51 : 56
+
+  // FIX 2: Use weight 700 for Bangla headline (matches font registration below)
+  const headlineFontWeight = 700
 
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
@@ -184,9 +190,7 @@ export async function GET(request: Request) {
             style={{
               fontFamily: headlineFont,
               fontSize: `${headlineFontSize}px`,
-              // ✅ KEY FIX: use weight 400 for Bangla (matches loaded font weight)
-              // bold (700) has no matching Bangla font → Satori falls back to system font → tofu
-              fontWeight: isBangla ? 700 : 700,
+              fontWeight: headlineFontWeight,
               color: '#111111',
               lineHeight: isBangla ? 1.6 : 1.16,
               letterSpacing: isBangla ? '0.01em' : '-0.02em',
@@ -243,12 +247,11 @@ export async function GET(request: Request) {
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        // ✅ KEY FIX: register same font data for BOTH weight 400 AND 700
-        // Satori matches fontWeight exactly — if headline uses 700 but only 400 is
-        // registered, it falls back to a system font that has no Bengali glyphs.
-        { name: 'Tiro Bangla', data: tiroBanglaData
-          
-        },
+        // FIX 3: Register Tiro Bangla at weight 700 with explicit style/weight fields.
+        // Satori matches fontWeight exactly — if the headline uses 700 but the font
+        // is registered without a weight, Satori may not resolve it and falls back
+        // to a system font with no Bengali glyphs, producing tofu (□□□).
+        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 700 },
       ],
     }
   )
