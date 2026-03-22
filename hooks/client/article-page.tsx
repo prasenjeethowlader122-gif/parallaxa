@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import PinwheelLoader from '@/components/logo';
-
+import Markdown from 'react-markdown'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -480,15 +480,7 @@ export default function ArticlePage() {
 
               {/* ── Article body ── */}
             <article className={`${slabo.className} text-gray-800 leading-[1.85] text-[17px] py-6 space-y-5`}>
-  <p
-    className="first-letter:text-[64px] first-letter:font-bold first-letter:float-left first-letter:leading-[0.82] first-letter:mr-2 first-letter:mt-1.5 first-letter:text-red-600"
-    dangerouslySetInnerHTML={{
-      __html: article.content.replace(
-        /\[\[([^\]]+)\]\]/g,
-        '<a href="#" class="font-medium underline">$1</a>'
-      )
-    }}
-  />
+              <Markdown>{article.content}</Markdown>
 </article>
 
               {/* ── Bottom share bar ── */}
