@@ -29,10 +29,10 @@ import { auth } from '@/auth'
 const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
 
 // ✅ FIX: No "models/" prefix — required for OpenAI-compat layer
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite'
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004'
 
-const YAHOO_SOURCES = ['https://indianexpress.com/article/world/']
+const YAHOO_SOURCES = ['https://timesofindia.indiatimes.com/india']
 const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 /**
@@ -148,7 +148,7 @@ async function discoverLinksPlain(limit: number): Promise<ArticleLink[]> {
         body: JSON.stringify({
           url: YAHOO_SOURCES[i],
           include_sitemap: false,
-          max_pages: 60,
+          max_pages: 30,
           same_domain: true,
         }),
         signal: AbortSignal.timeout(65_000),
