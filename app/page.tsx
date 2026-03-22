@@ -13,18 +13,71 @@ const POSITIONS = [
   { x: 0, scale: 0.65, opacity: 0, z: 10 },
 ]
 
+function CoverFlowSkeleton() {
+  return (
+    <div className="md:hidden">
+      {/* Progress bar */}
+      <div className="h-0.5 bg-gray-200 mx-4 rounded-full overflow-hidden mb-2 animate-pulse" />
+
+      {/* Stage */}
+      <div className="relative h-[220px] flex items-center justify-center overflow-hidden">
+        {/* Left ghost card */}
+        <div
+          className="absolute rounded-xl bg-gray-200 animate-pulse"
+          style={{
+            width: 320,
+            height: 200,
+            transform: 'translateX(-210px) scale(0.82)',
+            opacity: 0.45,
+          }}
+        />
+
+        {/* Centre card */}
+        <div
+          className="absolute rounded-xl bg-gray-200 animate-pulse overflow-hidden"
+          style={{ width: 320, height: 200, zIndex: 10 }}
+        >
+          {/* Inner text lines sit at the bottom, mimicking NewsCard */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 space-y-2 bg-gradient-to-t from-gray-200">
+            <div className="h-3 w-16 rounded bg-gray-300" />
+            <div className="h-4 w-[90%] rounded bg-gray-300" />
+            <div className="h-4 w-[70%] rounded bg-gray-300" />
+          </div>
+        </div>
+
+        {/* Right ghost card */}
+        <div
+          className="absolute rounded-xl bg-gray-200 animate-pulse"
+          style={{
+            width: 320,
+            height: 200,
+            transform: 'translateX(210px) scale(0.82)',
+            opacity: 0.45,
+          }}
+        />
+      </div>
+
+      {/* Nav row */}
+      <div className="flex items-center justify-center gap-5 py-3">
+        <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
+        <div className="w-9 h-3.5 rounded bg-gray-200 animate-pulse" />
+        <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
+      </div>
+    </div>
+  )
+}
 // Fully hidden position for cards beyond the visible range
 const HIDDEN_POSITION = { x: 0, scale: 0.5, opacity: 0, z: 0 }
 
 function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
   const [current, setCurrent] = useState(0)
   const total = articles.length
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timerRef = useRef < ReturnType < typeof setInterval > | null > (null)
   const startXRef = useRef(0)
-
+  
   // Guard: don't render if no articles
   if (total === 0) return null
-
+  
   function getPos(cardIdx: number) {
     let offset = (cardIdx - current + total) % total
     if (offset >= POSITIONS.length) {
@@ -32,28 +85,28 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
     }
     return POSITIONS[offset]
   }
-
+  
   function goTo(i: number) {
     setCurrent((i + total) % total)
   }
-
+  
   // FIX 5: Wrap stopAuto and startAuto in useCallback to stabilise references
   const stopAuto = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
   }, [])
-
+  
   const startAuto = useCallback(() => {
     stopAuto()
     timerRef.current = setInterval(() => {
       setCurrent(c => (c + 1) % total)
     }, 3000)
   }, [total, stopAuto])
-
+  
   useEffect(() => {
     startAuto()
     return () => stopAuto()
   }, [startAuto, stopAuto]) // FIX 5: proper dependency array
-
+  
   return (
     <div className="md:hidden">
       {/* Progress bar */}
@@ -103,9 +156,9 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
           )
         })}
       </div>
-
-      {/* Nav row */}
-      <div className="flex items-center justify-center gap-5 py-3">
+    
+    { /* Nav row */ }
+    <div className="flex items-center justify-center gap-5 py-3">
         <button
           onClick={() => {
             stopAuto()
@@ -131,8 +184,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
         >
           <span className="block w-2 h-2 border-r border-b border-gray-500 -rotate-45 -translate-x-px" />
         </button>
-      </div>
-    </div>
+      </div> </div>
   )
 }
 
@@ -148,12 +200,12 @@ function FeaturedSkeleton() {
 }
 
 export default function Home() {
-  const [latestArticles, setLatestArticles] = useState<NewsArticle[]>([])
+  const [latestArticles, setLatestArticles] = useState < NewsArticle[] > ([])
   const [isLoading, setIsLoading] = useState(true)
   // FIX 3: consistent naming — was `worlsNews`
-  const [worldNews, setWorldNews] = useState<NewsArticle[]>([])
-  const [technologyNews, setTechnologyNews] = useState<NewsArticle[]>([])
-
+  const [worldNews, setWorldNews] = useState < NewsArticle[] > ([])
+  const [technologyNews, setTechnologyNews] = useState < NewsArticle[] > ([])
+  
   useEffect(() => {
     async function loadData() {
       try {
@@ -164,7 +216,7 @@ export default function Home() {
       } finally {
         setIsLoading(false)
       }
-
+      
       try {
         const world = (await getArticlesByCategory('World')).filter(Boolean).slice(0, 4)
         // FIX 1 & 2: was `.slince()` (typo) and missing `await`
@@ -178,9 +230,9 @@ export default function Home() {
     }
     loadData()
   }, [])
-
+  
   const [mostRecent, second, third, fourth] = latestArticles
-
+  
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
@@ -192,15 +244,16 @@ export default function Home() {
             <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
           </div>
 
-          {isLoading ? (
-            <FeaturedSkeleton />
-          ) : (
-            <>
-              {/* Mobile: Cover Flow Slider */}
-              <CoverFlowSlider articles={latestArticles.slice(0, 4)} />
-
-              {/* Desktop: original grid */}
-              <div
+          // in the Top Stories section, replace the isLoading branch:
+{isLoading ? (
+  <>
+    <CoverFlowSkeleton />                    {/* mobile */}
+    <FeaturedSkeleton />                     {/* desktop (already hidden on mobile via hidden md:block) */}
+  </>
+) : (
+  <>
+    <CoverFlowSlider articles={latestArticles.slice(0, 4)} />
+ <div
                 className="hidden md:grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
                 style={{ gridTemplateRows: 'repeat(2, 260px)' }}
               >
@@ -226,7 +279,8 @@ export default function Home() {
                 )}
               </div>
             </>
-          )}
+
+)}
         </section>
 
         {/* World News */}
