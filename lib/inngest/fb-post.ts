@@ -23,7 +23,7 @@ const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN ?? 'EAA8ZCWezHogUBQZCwmNXg8C
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
 
 // ✅ FIX: No "models/" prefix for OpenAI-compat layer
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-2.5-flash'
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite'
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'

@@ -29,7 +29,7 @@ import { auth } from '@/auth'
 const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
 
 // ✅ FIX: No "models/" prefix — required for OpenAI-compat layer
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-2.5-flash'
+const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004'
 
 const YAHOO_SOURCES = ['https://indianexpress.com/article/world/']
@@ -191,7 +191,7 @@ async function scrape(link: ArticleLink): Promise<ScrapedPage> {
 const SYSTEM_PROMPT = `You are a professional news journalist.
 Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
-{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body, add [[text]] for every important keyword like names, places, countries etc>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
+{"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , must be markdown format>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
 
 async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   const res = await hf.chat.completions.create({
