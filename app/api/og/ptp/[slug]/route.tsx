@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       if (!r.ok) throw new Error(`Philosopher: ${r.status}`)
       return r.arrayBuffer()
     }),
-    fetch(new URL('/local/font/TiroBangla-Regular.ttf', origin)).then(r => {
+    fetch(new URL('/local/font/NotoSerifBengali-VariableFont_wdth,wght.ttf', origin)).then(r => {
       if (!r.ok) throw new Error(`Ekush: ${r.status}`)
       return r.arrayBuffer()
     }),
@@ -186,7 +186,7 @@ export async function GET(request: Request) {
               fontSize: `${headlineFontSize}px`,
               // ✅ KEY FIX: use weight 400 for Bangla (matches loaded font weight)
               // bold (700) has no matching Bangla font → Satori falls back to system font → tofu
-              fontWeight: isBangla ? 400 : 700,
+              fontWeight: isBangla ? 700 : 700,
               color: '#111111',
               lineHeight: isBangla ? 1.6 : 1.16,
               letterSpacing: isBangla ? '0.01em' : '-0.02em',
@@ -246,8 +246,9 @@ export async function GET(request: Request) {
         // ✅ KEY FIX: register same font data for BOTH weight 400 AND 700
         // Satori matches fontWeight exactly — if headline uses 700 but only 400 is
         // registered, it falls back to a system font that has no Bengali glyphs.
-        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 400 },
-        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 700 },
+        { name: 'Tiro Bangla', data: tiroBanglaData
+          
+        },
       ],
     }
   )
