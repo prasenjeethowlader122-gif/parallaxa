@@ -410,7 +410,7 @@ export default function ArticlePage() {
 
               {/* Standfirst / description */}
               <p className="text-md text-gray-600 leading-relaxed mb-4">
-                {article.description}
+                {article.description.slice(0,150) + '....'}
               </p>
 
               {/* ── Author + meta row ── */}
