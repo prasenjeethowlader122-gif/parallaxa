@@ -81,7 +81,7 @@ async function generateCaption(article: {
 Given a news article, produce:
 1. A Facebook post caption in BOTH English and Bangla
 2. 5–7 hashtags
-3. A short punchy English headline for an image overlay 
+3. A short punchy Bangla headline for an image overlay 
 
 Respond ONLY with a valid JSON object — no markdown fences, no preamble, no trailing text:
 {
@@ -146,8 +146,9 @@ async function uploadPhotoToFacebook(params: {
   const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
   
   const encodedHeadline = encodeURIComponent(params.imageHeadline)
-  const imageUrl = `${SITE_URL}/api/og/ptp/${params.slug}?slug=${params.slug}&headline=${encodedHeadline}`
-  
+  const imageUrl = `https: //parallaxa-py-1.onrender.com/og/ptp/${params.slug}?headline=${encodedHeadline}&category=${}&date=${}&image_url=${}&word_count=${}`
+
+
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
