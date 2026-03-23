@@ -236,10 +236,10 @@ export function Header() {
           </div>
         </div>
       </div>
-
+      
       {/* ── TICKER ── */}
       <div className="bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden">
-        <div className="flex items-center gap-1 px-4 h-full bg-red-600 text-white flex-shrink-0">
+        <div className="flex items-center gap-1 px-4 h-full bg-black text-white flex-shrink-0">
           <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
           <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
         </div>

@@ -246,12 +246,12 @@ export default function Home() {
 
 {isLoading ? (
   <>
-    <CoverFlowSkeleton />                    {/* mobile */}
+    <CoverFlowSkeleton/>                    {/* mobile */}
     <FeaturedSkeleton />                     {/* desktop (already hidden on mobile via hidden md:block) */}
   </>
 ) : (
   <>
-  
+  <CoverFlowSlider articles = {latestArticles}/>
  <div
                 className="hidden md:grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
                 style={{ gridTemplateRows: 'repeat(2, 260px)' }}

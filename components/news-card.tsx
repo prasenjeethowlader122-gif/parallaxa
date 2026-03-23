@@ -8,7 +8,33 @@ interface NewsCardProps {
   variant ? : 'default' | 'featured' | 'horizontal'
   className ? : string
 }
-
+const toDigitalNumber = (numbers: number, suffix ? : string, locale: "en" | "sa" = "en"): string => {
+  if (numbers > 0) {
+    if (locale === "sa") {
+      if (numbers >= 10000000) {
+        const crore = numbers / 10000000;
+        const formatted = crore % 1 === 0 ? crore : parseFloat(crore.toFixed(2));
+        return `${formatted}Cr${suffix ?? ""}`;
+      } else if (numbers >= 100000) {
+        const lakh = numbers / 100000;
+        const formatted = lakh % 1 === 0 ? lakh : parseFloat(lakh.toFixed(2));
+        return `${formatted}L${suffix ?? ""}`;
+      } else if (numbers >= 1000) {
+        const thousand = numbers / 1000;
+        const formatted = thousand % 1 === 0 ? thousand : parseFloat(thousand.toFixed(2));
+        return `${formatted}K${suffix ?? ""}`;
+      }
+      return suffix ? `${numbers}${suffix}` : String(numbers);
+    }
+    
+    const formatted = new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      compactDisplay: "short",
+    }).format(numbers);
+    return suffix ? `${formatted}${suffix}` : formatted;
+  }
+  return String(numbers);
+};
 export function NewsCard({ article, variant = 'default', className }: NewsCardProps) {
   if (!article || !article.id) return null
   
@@ -85,7 +111,9 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
                 <Eye className="w-3 h-3" />
-                {(article.views / 1000).toFixed(1)}K views
+                {
+                  toDigitalNumber(article.views)
+                }
               </div>
             </div>
           </div>
