@@ -208,20 +208,21 @@ export async function GET(
           </div>
 
           {/* Headline */}
-          <div
-            style={{
-              fontFamily: headlineFont,
-              fontSize: headlineFontSize,
-              lineHeight: isBangla ? 1.5 : 1.2,
-              color: '#111',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {displayHeadline}
-          </div>
+        <div
+  style={{
+    display: 'flex',
+    fontFamily: headlineFont,
+    fontSize: headlineFontSize,
+    lineHeight: isBangla ? 1.5 : 1.2,
+    color: '#111',
+    overflow: 'hidden',
+    maxHeight: isBangla
+      ? `${headlineFontSize * 1.5 * 3}px`
+      : `${headlineFontSize * 1.2 * 3}px`,
+  }}
+>
+  {displayHeadline}
+</div>
 
           {/* Footer */}
           <div
