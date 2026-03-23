@@ -251,7 +251,7 @@ export default function Home() {
   </>
 ) : (
   <>
-  <CoverFlowSlider articles = {latestArticles}/>
+  <CoverFlowSlider articles = {latestArticles.slice(0,6)}/>
  <div
                 className="hidden md:grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
                 style={{ gridTemplateRows: 'repeat(2, 260px)' }}
