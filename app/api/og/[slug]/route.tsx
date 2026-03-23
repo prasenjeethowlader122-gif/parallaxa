@@ -1,198 +1,199 @@
-import { ImageResponse } from 'next/og'
+// app/api/og/ptp/[slug]/route.tsx
+
+// ❌ edge runtime সরিয়ে দিন — Node.js runtime ব্যবহার হবে
+// export const runtime = 'edge'   <-- এই লাইনটা DELETE করুন
+
+import { NextResponse } from 'next/server'
 import { getArticleBySlug } from '@/lib/news-data'
+import sharp from 'sharp'
+import fs from 'fs'
+import path from 'path'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'  // ✅ Node.js runtime
 
-/** Naively detect if a string contains Bengali Unicode characters */
 function hasBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text)
 }
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const slug = searchParams.get('slug')
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
+// headline কে lines-এ ভাগ করা (approximate, SVG foreignObject ছাড়া)
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(' ')
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    if ((current + ' ' + word).trim().length > maxChars) {
+      if (current) lines.push(current.trim())
+      current = word
+    } else {
+      current = (current + ' ' + word).trim()
+    }
+    if (lines.length === 3) break
+  }
+  if (current && lines.length < 3) lines.push(current.trim())
+  return lines.slice(0, 3)
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params
+  const { searchParams } = new URL(request.url)
   const headline = searchParams.get('headline') ?? ''
 
-  if (!slug) {
-    return new Response('Missing slug parameter', { status: 400 })
-  }
-
-  // ── Load assets in parallel ───────────────────────────────────────────────
-  const [profilePicData, tiroBanglaData, playfairData] = await Promise.all([
-    fetch(new URL('/New Project 25 [4D921DE].png', origin)).then((r) =>
-      r.arrayBuffer()
-    ),
-    // Tiro Bangla Bold — Bengali serif
-    fetch(
-      'https://fonts.gstatic.com/s/tirobangla/v7/CFnDOJlBFWMCOHABvfxFcQh6QA5gmA.woff2'
-    ).then((r) => r.arrayBuffer()),
-    // Playfair Display Bold — English serif
-    fetch(
-      'https://v0-parallaxa.vercel.app/local/philosopher-font/Philosopher-Bold.ttf'
-    ).then((r) => r.arrayBuffer()),
-  ])
-
-  const profilePicSrc = `data:image/png;base64,${Buffer.from(profilePicData).toString('base64')}`
+  if (!slug) return new NextResponse('Missing slug', { status: 400 })
 
   const article = await getArticleBySlug(slug)
-
-  if (!article) {
-    return new Response('Article not found', { status: 404 })
-  }
+  if (!article) return new NextResponse('Not found', { status: 404 })
 
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
-  const headlineFont ='"Playfair Display"'
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-        }}
-      >
-        {/* Background image */}
-        <img
-          src={article.image}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
+  const wordCount = article.content?.split(/\s+/).length ?? 0
+  const readTime = Math.max(1, Math.ceil(wordCount / 200))
+  const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  })
 
-        {/* Top dark overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '260px',
-            background:
-              'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%)',
-            display: 'flex',
-          }}
-        />
+  // ── Font embed (base64) ──
+  const fontPath = isBangla
+    ? path.join(process.cwd(), 'public/local/font/NotoSerifBengali-Regular.ttf')
+    : path.join(process.cwd(), 'public/local/philosopher-font/Philosopher-Bold.ttf')
 
-        {/* Bottom dark overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '420px',
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.60) 55%, rgba(0,0,0,0) 100%)',
-            display: 'flex',
-          }}
-        />
+  const fontBase64 = fs.readFileSync(fontPath).toString('base64')
+  const fontMime = 'font/truetype'
+  const fontFamily = isBangla ? 'NotoSerifBengali' : 'Philosopher'
+  const fontSize = isBangla ? 48 : 54
+  const lineHeight = isBangla ? 1.65 : 1.2
 
-        {/* Logo — top left */}
-        <img
-          src={profilePicSrc}
-          width={110}
-          style={{
-            position: 'absolute',
-            top: 22,
-            left: 22,
-            filter: 'invert(100%)',
-          }}
-          alt="logo"
-        />
+  // Logo
+  const logoPath = path.join(process.cwd(), 'public/New Project 25 [4D921DE].png')
+  const logoBase64 = fs.readFileSync(logoPath).toString('base64')
 
-        {/* Date — top right */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 28,
-            right: 32,
-            display: 'flex',
-            fontSize: '24px',
-            fontWeight: '500',
-            color: 'rgba(255, 255, 255, 0.80)',
-          }}
-        >
-          {new Date(article.date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </div>
+  // Article image (fetch করে base64)
+  let articleImgTag = ''
+  if (article.image) {
+    try {
+      const imgRes = await fetch(article.image)
+      if (imgRes.ok) {
+        const imgBuf = Buffer.from(await imgRes.arrayBuffer())
+        const imgB64 = imgBuf.toString('base64')
+        const ct = imgRes.headers.get('content-type') ?? 'image/jpeg'
+        articleImgTag = `<image href="data:${ct};base64,${imgB64}" x="0" y="0" width="1080" height="670" preserveAspectRatio="xMidYMid slice"/>`
+      }
+    } catch { /* fallback gradient */ }
+  }
 
-        {/* Bottom content — category badge + headline */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '0 52px 56px 52px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-          }}
-        >
-          {/* Category badge */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div
-              style={{
-                
-                color: '#ffffff',
-                padding: '8px 20px',
-                borderRadius: '6px',
-                fontSize: '22px',
-                fontWeight: 'bold',
-                letterSpacing: '0.04em',
-              }}
-            >
-              {article.category.toUpperCase()}
-            </div>
-          </div>
+  const lines = wrapText(displayHeadline, isBangla ? 22 : 32)
+  const lineHeightPx = fontSize * lineHeight
+  const textBlockY = 720  // white panel শুরু হয় ~670px এ
 
-          {/* Headline — Tiro Bangla (Bengali) or Playfair Display (English) */}
-          <div
-            style={{
-              fontFamily: headlineFont,
-              fontSize: '64px',
-              fontWeight: 'bold',
-              color: '#ffffff',
-              lineHeight: '1.30',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textShadow: '0 2px 14px rgba(0,0,0,0.55)',
-            }}
-          >
-            {displayHeadline}
-          </div>
-        </div>
-      </div>
-    ),
-    {
-      width: 1080,
-      height: 1080,
-      fonts: [
-        {
-          name: 'Tiro Bangla',
-          data: tiroBanglaData,
-          style: 'normal',
-          weight: 700,
-        },
-        {
-          name: 'Playfair Display',
-          data: playfairData,
-          style: 'normal',
-          weight: 700,
-        },
-      ],
-    }
-  )
+  const svgLines = lines
+    .map((line, i) =>
+      `<text
+        x="48" y="${textBlockY + 80 + i * lineHeightPx}"
+        font-family="${fontFamily}"
+        font-size="${fontSize}"
+        fill="#111111"
+        xml:lang="${isBangla ? 'bn' : 'en'}"
+      >${escapeXml(line)}</text>`
+    )
+    .join('\n')
+
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1080" height="1080">
+  <defs>
+    <style>
+      @font-face {
+        font-family: '${fontFamily}';
+        src: url('data:${fontMime};base64,${fontBase64}') format('truetype');
+      }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1080" height="1080" fill="#FAFAF7"/>
+
+  <!-- Article photo or gradient -->
+  ${articleImgTag || `<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#b8cfe8"/>
+    <stop offset="100%" stop-color="#6b90b8"/>
+  </linearGradient></defs>
+  <rect width="1080" height="670" fill="url(#bg)"/>`}
+
+  <!-- Photo scrim -->
+  <defs>
+    <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(0,0,0,0.28)"/>
+      <stop offset="55%"  stop-color="rgba(0,0,0,0.06)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.36)"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="670" fill="url(#scrim)"/>
+
+  <!-- Logo -->
+  <image href="data:image/png;base64,${logoBase64}"
+         x="48" y="36" width="100" height="100"
+         style="filter: brightness(0) invert(1); opacity:0.95"/>
+
+  <!-- Date -->
+  <text x="1032" y="68" text-anchor="end"
+        font-family="Philosopher" font-size="20"
+        fill="rgba(255,255,255,0.82)">${escapeXml(formattedDate)}</text>
+
+  <!-- White bottom panel -->
+  <rect x="0" y="670" width="1080" height="410" fill="#FAFAF7"/>
+
+  <!-- Category -->
+  <text x="48" y="718" font-family="Philosopher" font-size="17"
+        font-weight="bold" letter-spacing="2" fill="#C0392B">
+    ${escapeXml(article.category.toUpperCase())}
+  </text>
+
+  <!-- Divider line -->
+  <line x1="220" y1="712" x2="960" y2="712" stroke="#e0ddd6" stroke-width="1"/>
+
+  <!-- Read time -->
+  <text x="1032" y="718" text-anchor="end"
+        font-family="Philosopher" font-size="16" fill="#aaaaaa">
+    ${readTime} min read
+  </text>
+
+  <!-- Headline lines -->
+  ${svgLines}
+
+  <!-- Footer divider -->
+  <line x1="48" y1="1040" x2="1032" y2="1040" stroke="#e8e8e2" stroke-width="1"/>
+
+  <!-- Footer left -->
+  <text x="48" y="1065" font-family="Philosopher" font-size="16"
+        font-weight="bold" letter-spacing="2" fill="#bbbbbb">PARALLAXA.COM</text>
+
+  <!-- Footer right -->
+  <text x="1032" y="1065" text-anchor="end"
+        font-family="Philosopher" font-size="16" fill="#C0392B">@parallaxa</text>
+</svg>`
+
+  // SVG → PNG via sharp
+  const png = await sharp(Buffer.from(svg))
+    .png()
+    .toBuffer()
+
+  return new NextResponse(png, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+    },
+  })
 }
