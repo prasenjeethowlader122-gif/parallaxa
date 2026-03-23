@@ -3,51 +3,7 @@ import { getArticleBySlug } from '@/lib/news-data'
 
 export const runtime = 'edge'
 
-// ── Google Font loader ────────────────────────────────────────────────────────
-async function loadGoogleFont(
-  family: string,
-  text: string,
-  options ? : { noSubset ? : boolean;unicodeRange ? : string }
-): Promise < ArrayBuffer > {
-  const base = `https://fonts.googleapis.com/css2?family=${family}`
-  const url = options?.noSubset ? base : `${base}&text=${encodeURIComponent(text)}`
-  
-  const css = await fetch(url, {
-    headers: {
-      // Spoof an older UA — forces Google to return TTF/OTF instead of WOFF2
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36',
-    },
-  }).then(r => {
-    if (!r.ok) throw new Error(`Google Fonts CSS fetch failed (${r.status}): ${url}`)
-    return r.text()
-  })
-  
-  let fontUrl: string | undefined
-  
-  // AFTER
-  if (options?.unicodeRange) {
-    const blocks = css.split('@font-face')
-    const targetBlock = blocks.find(b => b.includes(options.unicodeRange!))
-    if (targetBlock) {
-      // TTF/OTF only — @vercel/og rejects WOFF2
-      const m = targetBlock.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
-      fontUrl = m?.[1]
-    }
-  }
-  
-  // Fallback: TTF/OTF only — never use woff2, @vercel/og doesn't support it
-  if (!fontUrl) {
-    const ttfMatch = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
-    fontUrl = ttfMatch?.[1]
-  }
-  
-  
-  const fontRes = await fetch(fontUrl)
-  if (!fontRes.ok) throw new Error(`Failed to fetch font file: ${fontUrl}`)
-  return fontRes.arrayBuffer()
-}
-
-// ── Edge-safe base64 encoder ──────────────────────────────────────────────────
+// Edge runtime does not have Buffer — use a pure-JS base64 encoder
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -57,15 +13,14 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary)
 }
 
-// ── Bengali detector ──────────────────────────────────────────────────────────
 function hasBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text)
 }
 
-// ── Route ─────────────────────────────────────────────────────────────────────
 export async function GET(
   request: Request, { params }: { params: Promise < { slug: string } > }
 ) {
+  // Next.js 15+: params is a Promise and must be awaited
   const { slug } = await params
   const { searchParams, origin } = new URL(request.url)
   const headline = searchParams.get('headline') ?? ''
@@ -75,66 +30,40 @@ export async function GET(
   const article = await getArticleBySlug(slug)
   if (!article) return new Response('Not found', { status: 404 })
   
-  const displayHeadline = headline || article.title
-  const isBangla = hasBengali(displayHeadline)
-  
-  // ── Asset + font loading ──────────────────────────────────────────────────
   let logoData: ArrayBuffer
-  let philosopherData: ArrayBuffer
+  let playfairData: ArrayBuffer
   let tiroBanglaData: ArrayBuffer
   
   try {
     ;
-    [logoData, philosopherData, tiroBanglaData] = await Promise.all([
-      // Site logo
+    [logoData, playfairData, tiroBanglaData] = await Promise.all([
       fetch(new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)).then(r => {
         if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-      
-      // Philosopher Bold — subsetted to headline glyphs (works fine)
-       fetch(new URL('/local/philosopher-font/Philosopher-Bold.ttf', origin)).then(r => {
-        if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
+      fetch(new URL('/local/philosopher-font/Philosopher-Bold.ttf', origin)).then(r => {
+        if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-      
-      // Tiro Bangla — fetch full CSS (noSubset), target the Bengali unicode-range block
-      // "U+0980" is present in the Bengali subset block; this avoids grabbing the Latin block
       fetch(new URL('/local/font/Ekush-Regular.ttf', origin)).then(r => {
-  if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
-  return r.arrayBuffer()
-}),
+        if (!r.ok) throw new Error(`Noto Serif Bengali font fetch failed: ${r.status}`)
+        return r.arrayBuffer()
+      }),
     ])
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Asset fetch failed'
     return new Response(message, { status: 500 })
   }
   
+  // Edge-safe base64 (no Buffer in the edge runtime)
   const logoSrc = `data:image/png;base64,${arrayBufferToBase64(logoData)}`
   
-  // ── Article image ─────────────────────────────────────────────────────────
-  // @vercel/og does NOT support WebP — fall back to gradient if WebP or fetch fails.
-  let articleImageSrc: string | null = null
-  if (article.image) {
-    try {
-      const imgRes = await fetch(article.image)
-      if (imgRes.ok) {
-        const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg'
-        if (!contentType.includes('webp')) {
-          const imgBuffer = await imgRes.arrayBuffer()
-          articleImageSrc = `data:${contentType};base64,${arrayBufferToBase64(imgBuffer)}`
-        }
-      }
-    } catch {
-      // silently fall back to gradient placeholder
-    }
-  }
+  const displayHeadline = headline || article.title
+  const isBangla = hasBengali(displayHeadline)
+  const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
+  const headlineFontSize = isBangla ? 51 : 56
+  const headlineFontWeight = 400
   
-  // ── Typography ────────────────────────────────────────────────────────────
-  const headlineFont = isBangla ? 'TiroBangla' : 'Philosopher'
-  const headlineFontSize = isBangla ? 52 : 56
-  
-  // ── Meta ──────────────────────────────────────────────────────────────────
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   
@@ -144,7 +73,6 @@ export async function GET(
     year: 'numeric',
   })
   
-  // ── Render ────────────────────────────────────────────────────────────────
   return new ImageResponse(
     (
       <div
@@ -157,19 +85,19 @@ export async function GET(
           overflow: 'hidden',
         }}
       >
-        {/* Top Image */}
-        {articleImageSrc ? (
+        {/* ── TOP: Article photo (62% height) ── */}
+        {article.image ? (
           <img
-            src={articleImageSrc}
-            width={1080}
-            height={670}
+            src={article.image}
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
+              right: 0,
               width: '100%',
               height: '62%',
               objectFit: 'cover',
+              objectPosition: 'center top',
             }}
           />
         ) : (
@@ -177,84 +105,111 @@ export async function GET(
             style={{
               position: 'absolute',
               top: 0,
-              width: '100%',
+              left: 0,
+              right: 0,
               height: '62%',
-              background: 'linear-gradient(135deg, #b8cfe8, #6b90b8)',
+              background: 'linear-gradient(135deg, #b8cfe8 0%, #8aaccc 40%, #6b90b8 100%)',
               display: 'flex',
             }}
           />
         )}
 
-        {/* Overlay */}
+        {/* ── Subtle dark scrim over photo ── */}
         <div
           style={{
             position: 'absolute',
             top: 0,
-            width: '100%',
+            left: 0,
+            right: 0,
             height: '62%',
             background:
-              'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.1), rgba(0,0,0,0.4))',
+              'linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.06) 55%, rgba(0,0,0,0.36) 100%)',
             display: 'flex',
           }}
         />
 
-        {/* Top Bar */}
+        {/* ── TOP BAR (on photo) ── */}
         <div
           style={{
             position: 'absolute',
             top: 0,
-            width: '100%',
+            left: 0,
+            right: 0,
             display: 'flex',
             justifyContent: 'space-between',
-            padding: '36px 48px',
             alignItems: 'center',
+            padding: '36px 48px',
           }}
         >
-          <img src={logoSrc} width={100} height={100} style={{ filter: 'invert(1)' }} />
+          <img
+            src={logoSrc}
+            width={100}
+            style={{ filter: 'brightness(0) invert(1)', opacity: 0.95 }}
+            alt="logo"
+          />
           <div
             style={{
-              color: 'white',
-              fontSize: 20,
-              fontFamily: 'Philosopher',
+              display: 'flex',
+              fontSize: '20px',
+              color: 'rgba(255,255,255,0.82)',
+              fontFamily: '"Philosopher"',
+              letterSpacing: '0.04em',
             }}
           >
             {formattedDate}
           </div>
         </div>
 
-        {/* Bottom Panel */}
+        {/* ── WHITE BOTTOM PANEL (38% height) ── */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
-            width: '100%',
+            left: 0,
+            right: 0,
             height: '40%',
             backgroundColor: '#FAFAF7',
-            padding: '32px 48px',
             display: 'flex',
             flexDirection: 'column',
+            padding: '28px 48px 36px',
           }}
         >
-          {/* Meta row */}
-          <div style={{ display: 'flex', marginBottom: 16 }}>
+          {/* Category + read time row */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '18px',
+            }}
+          >
             <div
               style={{
+                display: 'flex',
+                fontSize: '17px',
+                fontWeight: 'bold',
+                letterSpacing: '0.14em',
                 color: '#C0392B',
-                fontFamily: 'Philosopher',
-                letterSpacing: '0.12em',
-                fontSize: 16,
+                fontFamily: '"Philosopher"',
               }}
             >
               {article.category.toUpperCase()}
             </div>
-
-            <div style={{ flex: 1 }} />
-
             <div
               style={{
-                color: '#999',
-                fontFamily: 'Philosopher',
-                fontSize: 15,
+                flex: 1,
+                height: '1px',
+                backgroundColor: '#e0ddd6',
+                display: 'flex',
+              }}
+            />
+            <div
+              style={{
+                display: 'flex',
+                fontSize: '16px',
+                color: '#aaaaaa',
+                fontFamily: '"Philosopher"',
+                letterSpacing: '0.04em',
               }}
             >
               {readTime} min read
@@ -263,17 +218,19 @@ export async function GET(
 
           {/* Headline */}
           <div
-            lang='bn-BD'
+           lang='bn-BD'
             style={{
-              display: 'flex',
               fontFamily: headlineFont,
-              fontSize: headlineFontSize,
-              lineHeight: isBangla ? 1.5 : 1.2,
-              color: '#111',
+              fontSize: `${headlineFontSize}px`,
+              fontWeight: headlineFontWeight,
+              color: '#111111',
+              lineHeight: isBangla ? 1.6 : 1.16,
+              letterSpacing: isBangla ? '0' : '-0.02em',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              maxHeight: isBangla
-                ? `${headlineFontSize * 1.5 * 3}px`
-                : `${headlineFontSize * 1.2 * 3}px`,
+              flex: 1,
             }}
           >
             {displayHeadline}
@@ -282,16 +239,37 @@ export async function GET(
           {/* Footer */}
           <div
             style={{
-              marginTop: 'auto',
               display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
-              borderTop: '1px solid #eee',
-              paddingTop: 16,
-              fontFamily: 'Philosopher',
+              paddingTop: '16px',
+              borderTop: '1px solid #e8e8e2',
+              marginTop: 'auto',
             }}
           >
-            <div style={{ color: '#bbb' }}>PARALLAXA.COM</div>
-            <div style={{ color: '#C0392B' }}>@parallaxa</div>
+            <div
+              style={{
+                display: 'flex',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                letterSpacing: '0.12em',
+                color: '#bbbbbb',
+                fontFamily: '"Philosopher"',
+              }}
+            >
+              PARALLAXA.COM
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                fontSize: '16px',
+                color: '#C0392B',
+                fontFamily: '"Philosopher"',
+                letterSpacing: '0.06em',
+              }}
+            >
+              @parallaxa
+            </div>
           </div>
         </div> </div>
     ),
@@ -299,18 +277,9 @@ export async function GET(
       width: 1080,
       height: 1080,
       fonts: [
-      {
-        name: 'Philosopher',
-        data: philosopherData,
-        weight: 700,
-        style: 'normal',
-      },
-      {
-        name: 'Ekush-Regular',
-        data: tiroBanglaData,
-        weight: 400,
-        style: 'normal',
-      }, ],
+        { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
+        { name: 'Tiro Bangla', data: tiroBanglaData, style: 'normal', weight: 400 },
+      ],
     }
   )
 }
