@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import {toDigitalNumber} from '@/components/news-card'
 import PinwheelLoader from '@/components/logo';
 import Markdown from 'react-markdown'
 import Image from 'next/image'
@@ -413,21 +414,10 @@ export default function ArticlePage() {
               </p>
 
               {/* ── Author + meta row ── */}
-              <div className="flex items-center justify-between gap-4 py-4 border-t border-b border-gray-100 mb-6 flex-wrap">
-                <Link href={`/author/${authorSlug}`} className="flex items-center gap-3 group">
-                  <div className="w-10 h-10 rounded-full bg-gray-900 group-hover:bg-black transition-colors flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                    {authorInitials(article.author)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 group-hover:underline leading-tight">
-                      {article.author}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {formatFullDate(article.date)}
-                    </p>
-                  </div>
-                </Link>
-
+              <div className="flex items-center justify-between gap-4 py-4 pt-2 border-b border-gray-100 mb-6 flex-wrap">
+                <span className = 'flex flex-row items-center text-gray-700'>
+                  written by  <Link href = '/' className = 'font-bold text-black'>{' ' + article.author}</Link>
+                </span>
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
@@ -435,9 +425,7 @@ export default function ArticlePage() {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Eye className="w-3.5 h-3.5" />
-                    {article.views >= 1000
-                      ? `${(article.views / 1000).toFixed(1)}K views`
-                      : `${article.views} views`}
+                    {toDigitalNumber(article.views)}
                   </span>
                   <span className="text-gray-300">·</span>
                   <span className="text-gray-400">{formatRelativeTime(article.date)}</span>

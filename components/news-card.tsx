@@ -8,7 +8,7 @@ interface NewsCardProps {
   variant ? : 'default' | 'featured' | 'horizontal'
   className ? : string
 }
-const toDigitalNumber = (numbers: number, suffix ? : string, locale: "en" | "sa" = "en"): string => {
+export const toDigitalNumber = (numbers: number, suffix ? : string, locale: "en" | "sa" = "en"): string => {
   if (numbers > 0) {
     if (locale === "sa") {
       if (numbers >= 10000000) {
