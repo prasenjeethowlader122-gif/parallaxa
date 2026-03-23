@@ -21,6 +21,7 @@ import {
   Linkedin,
   Link2,
   Check,
+  ArrowRight,
   Eye,
   Clock,
   Bookmark,
@@ -526,14 +527,20 @@ export default function ArticlePage() {
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
                 <section className="no-print mt-2 pt-6 ">
-                  <h2 className="text-md font-semibold  tracking-widest text-gray-900 mb-5">
-                    More in {article.category}
+                  <h2 className="text-md font-semibold  tracking-widest text-gray-900 mb-5 flex flex-row items-center justify-between">
+                  <div>  More in {article.category} </div>  
+                  {
+                  relatedArticles.length > 2 && (
+                  <ArrowRight className='h-5 w-5'/>
+  )
+ }
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     {relatedArticles.slice(0,2).map((a) => (
                       <NewsCard key={a.id} article={a} variant="default" />
                     ))}
                   </div>
+                 
                 </section>
               )}
             </div>
