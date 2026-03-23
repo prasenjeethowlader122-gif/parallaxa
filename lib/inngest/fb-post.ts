@@ -81,7 +81,7 @@ async function generateCaption(article: {
 Given a news article, produce:
 1. A Facebook post caption in BOTH English and Bangla
 2. 5–7 hashtags
-3. A short punchy Bangla headline for an image overlay (max 12 words, Bengali Unicode script)
+3. A short punchy English headline for an image overlay 
 
 Respond ONLY with a valid JSON object — no markdown fences, no preamble, no trailing text:
 {
