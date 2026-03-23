@@ -7,10 +7,8 @@ export const runtime = 'edge'
 async function loadGoogleFont(
   family: string,
   text: string,
-  options?: { noSubset?: boolean }
+  options?: { noSubset?: boolean; unicodeRange?: string }
 ): Promise<ArrayBuffer> {
-  // Some families (e.g. Noto Serif Bengali) don't return TTF with text= subsetting.
-  // Pass noSubset: true to fetch the full font CSS instead.
   const base = `https://fonts.googleapis.com/css2?family=${family}`
   const url = options?.noSubset ? base : `${base}&text=${encodeURIComponent(text)}`
 
@@ -25,10 +23,27 @@ async function loadGoogleFont(
     return r.text()
   })
 
-  // Match opentype or truetype first, then fall back to woff2
-  const ttfMatch = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
-  const woff2Match = css.match(/src: url\((.+?)\) format\('woff2'\)/)
-  const fontUrl = ttfMatch?.[1] ?? woff2Match?.[1]
+  let fontUrl: string | undefined
+
+  if (options?.unicodeRange) {
+    // Split into @font-face blocks and find the one whose unicode-range
+    // covers the requested range (e.g. Bengali U+0980-09FF)
+    const blocks = css.split('@font-face')
+    const targetBlock = blocks.find(b => b.includes(options.unicodeRange!))
+    if (targetBlock) {
+      const m =
+        targetBlock.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/) ??
+        targetBlock.match(/src: url\((.+?)\) format\('woff2'\)/)
+      fontUrl = m?.[1]
+    }
+  }
+
+  // Fallback: first TTF/OTF match, then first woff2 match
+  if (!fontUrl) {
+    const ttfMatch = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
+    const woff2Match = css.match(/src: url\((.+?)\) format\('woff2'\)/)
+    fontUrl = ttfMatch?.[1] ?? woff2Match?.[1]
+  }
 
   if (!fontUrl) throw new Error(`Failed to parse Google Font CSS for: ${family}`)
 
@@ -72,10 +87,10 @@ export async function GET(
   // ── Asset + font loading ──────────────────────────────────────────────────
   let logoData: ArrayBuffer
   let philosopherData: ArrayBuffer
-  let notoSerifBanglaData: ArrayBuffer
+  let tiroBanglaData: ArrayBuffer
 
   try {
-    ;[logoData, philosopherData, notoSerifBanglaData] = await Promise.all([
+    ;[logoData, philosopherData, tiroBanglaData] = await Promise.all([
       // Site logo
       fetch(new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)).then(r => {
         if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
@@ -85,9 +100,12 @@ export async function GET(
       // Philosopher Bold — subsetted to headline glyphs (works fine)
       loadGoogleFont('Philosopher:wght@700', displayHeadline),
 
-      // Noto Serif Bengali — noSubset: true because Google doesn't return
-      // TTF with text= subsetting for this family; fetch the full CSS instead
-      loadGoogleFont('Noto+Serif+Bengali', displayHeadline, { noSubset: true }),
+      // Tiro Bangla — fetch full CSS (noSubset), target the Bengali unicode-range block
+      // "U+0980" is present in the Bengali subset block; this avoids grabbing the Latin block
+      loadGoogleFont('Tiro+Bangla', displayHeadline, {
+        noSubset: true,
+        unicodeRange: 'U+0980',
+      }),
     ])
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Asset fetch failed'
@@ -115,7 +133,7 @@ export async function GET(
   }
 
   // ── Typography ────────────────────────────────────────────────────────────
-  const headlineFont = isBangla ? 'NotoSerifBengali' : 'Philosopher'
+  const headlineFont = isBangla ? 'TiroBangla' : 'Philosopher'
   const headlineFontSize = isBangla ? 52 : 56
 
   // ── Meta ──────────────────────────────────────────────────────────────────
@@ -290,8 +308,8 @@ export async function GET(
           style: 'normal',
         },
         {
-          name: 'NotoSerifBengali',
-          data: notoSerifBanglaData,
+          name: 'TiroBangla',
+          data: tiroBanglaData,
           weight: 400,
           style: 'normal',
         },
