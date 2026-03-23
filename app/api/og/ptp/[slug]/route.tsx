@@ -227,8 +227,7 @@ export async function GET(
               lineHeight: isBangla ? 1.6 : 1.16,
               letterSpacing: isBangla ? '0' : '-0.02em',
               display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
+            
               overflow: 'hidden',
               flex: 1,
             }}
@@ -278,7 +277,7 @@ export async function GET(
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        { name: 'NotoSerifBengali', data: tiroBanglaData, style: 'normal', weight: 400 },
+        { name: 'NotoSerifBengali', data: tiroBanglaData, style: 'normal', weight: 700 },
       ],
     }
   )
