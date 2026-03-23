@@ -45,7 +45,7 @@ export async function GET(
         if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-      fetch(new URL('/local/font/TiroBangla-Regular.ttf', origin)).then(r => {
+      fetch(new URL('/local/font/NotoSerifBengali-Regular.ttf', origin)).then(r => {
         if (!r.ok) throw new Error(`Noto Serif Bengali font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
@@ -278,7 +278,7 @@ export async function GET(
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        { name: 'TiroBangla-Regular', data: tiroBanglaData, style: 'normal', weight: 400 },
+        { name: 'NotoSerifBengali-Regular', data: tiroBanglaData, style: 'normal', weight: 400 },
       ],
     }
   )
