@@ -22,14 +22,12 @@ import type { GetFunctionInput } from 'inngest'
 const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN ?? 'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
 const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
 
-// ✅ FIX: No "models/" prefix for OpenAI-compat layer
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'
 ).replace(/\/$/, '')
 
-// ✅ FIX: No trailing slash on baseURL
 const hf = new OpenAI({
   baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
   apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
@@ -41,7 +39,7 @@ interface CaptionResult {
   english: string
   bangla: string
   hashtags: string[]
-  /** Short punchy Bangla headline for the OG image (max ~12 words) */
+  /** Short punchy headline for the OG image (max ~12 words) */
   imageHeadline: string
 }
 
@@ -142,18 +140,21 @@ async function uploadPhotoToFacebook(params: {
   slug: string
   caption: string
   imageHeadline: string
+  category: string
+  date: string
+  imageUrl: string
+  wordCount: number
 }): Promise < FacebookUploadResult > {
   const endpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
   
   const encodedHeadline = encodeURIComponent(params.imageHeadline)
-  const imageUrl = `https: //parallaxa-py-1.onrender.com/og/ptp/${params.slug}?headline=${encodedHeadline}&category=${}&date=${}&image_url=${}&word_count=${}`
-
-
+  const ogImageUrl = `https://parallaxa-py-1.onrender.com/og/ptp/${params.slug}?headline=${encodedHeadline}&category=${encodeURIComponent(params.category)}&date=${encodeURIComponent(params.date)}&image_url=${encodeURIComponent(params.imageUrl)}&word_count=${params.wordCount}`
+  
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
   form.append('caption', params.caption)
-  form.append('url', imageUrl)
+  form.append('url', ogImageUrl)
   
   const res = await fetch(endpoint, { method: 'POST', body: form })
   const data = (await res.json()) as {
@@ -262,6 +263,12 @@ export const ptpFunction = inngest.createFunction(
         slug: article.slug,
         caption: postText,
         imageHeadline: caption.imageHeadline,
+        category: article.category ?? 'News',
+        date: article.publishedAt ?
+          new Date(article.publishedAt).toISOString().split('T')[0] :
+          new Date().toISOString().split('T')[0],
+        imageUrl: article.ogImage ?? article.imageUrl ?? '',
+        wordCount: article.content ? article.content.split(/\s+/).length : 0,
       })
       
       await updateArticle(articleId, {
@@ -279,5 +286,5 @@ export const ptpFunction = inngest.createFunction(
       articleUrl,
       caption,
     }
-  },
+  }
 )
