@@ -101,27 +101,7 @@ export function NavItem({
   return (
     <button
       onClick={onClick}
-      style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '9px 12px',
-        borderRadius: 10,
-        fontSize: 13,
-        fontWeight: active ? 600 : 400,
-        background: active ? 'var(--text-primary)' : 'transparent',
-        color: active
-          ? 'var(--bg-primary)'
-          : danger
-          ? '#dc2626'
-          : 'var(--text-secondary)',
-        border: 'none',
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'background 0.15s, color 0.15s',
-        fontFamily: "'DM Sans', sans-serif",
-      }}
+      className = {`rounded-full p-2 px-4 ${active ? 'bg-black text-whitw' : 'bg-none border border-gray-400'}`}
       onMouseEnter={e => {
         if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--hover-bg)'
       }}
