@@ -3,7 +3,25 @@ import { getArticleBySlug } from '@/lib/news-data'
 
 export const runtime = 'edge'
 
-// Edge-safe base64 encoder
+// ── Google Font loader ────────────────────────────────────────────────────────
+async function loadGoogleFont(family: string, text: string): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}&text=${encodeURIComponent(text)}`
+  const css = await fetch(url, {
+    headers: {
+      // Satori needs opentype/truetype — spoof an older UA so Google returns TTF not WOFF2
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    },
+  }).then(r => r.text())
+
+  const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/)
+  if (!resource) throw new Error(`Failed to parse Google Font CSS for: ${family}`)
+
+  const fontRes = await fetch(resource[1])
+  if (!fontRes.ok) throw new Error(`Failed to fetch font file: ${resource[1]}`)
+  return fontRes.arrayBuffer()
+}
+
+// ── Edge-safe base64 encoder ──────────────────────────────────────────────────
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -13,10 +31,12 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary)
 }
 
+// ── Bengali detector ──────────────────────────────────────────────────────────
 function hasBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text)
 }
 
+// ── Route ─────────────────────────────────────────────────────────────────────
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -30,26 +50,27 @@ export async function GET(
   const article = await getArticleBySlug(slug)
   if (!article) return new Response('Not found', { status: 404 })
 
+  const displayHeadline = headline || article.title
+  const isBangla = hasBengali(displayHeadline)
+
+  // ── Asset + font loading ──────────────────────────────────────────────────
   let logoData: ArrayBuffer
   let philosopherData: ArrayBuffer
   let notoSerifBanglaData: ArrayBuffer
 
   try {
     ;[logoData, philosopherData, notoSerifBanglaData] = await Promise.all([
+      // Site logo
       fetch(new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)).then(r => {
         if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
 
-      fetch(new URL('/local/philosopher-font/Philosopher-Bold.ttf', origin)).then(r => {
-        if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
-        return r.arrayBuffer()
-      }),
+      // Philosopher Bold — loaded from Google Fonts, subsetted to the headline glyphs
+      loadGoogleFont('Philosopher:wght@700', displayHeadline),
 
-      fetch(new URL('/local/font/NotoSerifBengali-Regular.ttf', origin)).then(r => {
-        if (!r.ok) throw new Error(`Noto Serif Bengali fetch failed: ${r.status}`)
-        return r.arrayBuffer()
-      }),
+      // Noto Serif Bengali — loaded from Google Fonts, subsetted to the headline glyphs
+      loadGoogleFont('Noto+Serif+Bengali', displayHeadline),
     ])
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Asset fetch failed'
@@ -58,7 +79,7 @@ export async function GET(
 
   const logoSrc = `data:image/png;base64,${arrayBufferToBase64(logoData)}`
 
-  // Fetch article image and re-encode as base64.
+  // ── Article image ─────────────────────────────────────────────────────────
   // @vercel/og does NOT support WebP — fall back to gradient if WebP or fetch fails.
   let articleImageSrc: string | null = null
   if (article.image) {
@@ -76,12 +97,11 @@ export async function GET(
     }
   }
 
-  const displayHeadline = headline || article.title
-  const isBangla = hasBengali(displayHeadline)
-
+  // ── Typography ────────────────────────────────────────────────────────────
   const headlineFont = isBangla ? 'NotoSerifBengali' : 'Philosopher'
   const headlineFontSize = isBangla ? 52 : 56
 
+  // ── Meta ──────────────────────────────────────────────────────────────────
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
 
@@ -91,6 +111,7 @@ export async function GET(
     year: 'numeric',
   })
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return new ImageResponse(
     (
       <div
@@ -181,7 +202,7 @@ export async function GET(
             flexDirection: 'column',
           }}
         >
-          {/* Meta */}
+          {/* Meta row */}
           <div style={{ display: 'flex', marginBottom: 16 }}>
             <div
               style={{
@@ -208,21 +229,21 @@ export async function GET(
           </div>
 
           {/* Headline */}
-        <div
-  style={{
-    display: 'flex',
-    fontFamily: headlineFont,
-    fontSize: headlineFontSize,
-    lineHeight: isBangla ? 1.5 : 1.2,
-    color: '#111',
-    overflow: 'hidden',
-    maxHeight: isBangla
-      ? `${headlineFontSize * 1.5 * 3}px`
-      : `${headlineFontSize * 1.2 * 3}px`,
-  }}
->
-  {displayHeadline}
-</div>
+          <div
+            style={{
+              display: 'flex',
+              fontFamily: headlineFont,
+              fontSize: headlineFontSize,
+              lineHeight: isBangla ? 1.5 : 1.2,
+              color: '#111',
+              overflow: 'hidden',
+              maxHeight: isBangla
+                ? `${headlineFontSize * 1.5 * 3}px`
+                : `${headlineFontSize * 1.2 * 3}px`,
+            }}
+          >
+            {displayHeadline}
+          </div>
 
           {/* Footer */}
           <div
