@@ -32,7 +32,7 @@ const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onren
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004'
 
-const YAHOO_SOURCES = ['https://www.yahoo.com/news/']
+const YAHOO_SOURCES = ['https://scroll.in/latest/']
 const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 /**
@@ -95,27 +95,31 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))
 function isArticleUrl(raw: string): boolean {
   try {
     const u = new URL(raw)
-
+    
     const isYahoo =
       u.hostname === 'www.yahoo.com' &&
       /^\/news\/articles\/[^/]+\.html$/.test(u.pathname)
-
+    
     const isBBC =
       u.hostname === 'www.bbc.com' &&
       /^\/[^/]+\/articles\/[^/]+(?:\.lite)?$/.test(u.pathname)
-
+    
     const isDailyStar =
-  u.hostname === 'www.thedailystar.net' &&
-  /^\/(?:[^/]+\/)+news\/[^/]+-\d+$/.test(u.pathname)
-
-const isIndianExpress =
-  u.hostname === 'indianexpress.com' &&
-  /^\/article\/(?:[^/]+\/)+[^/]+-\d+\/?$/.test(u.pathname)
-
-return isYahoo || isBBC || isDailyStar || isIndianExpress
+      u.hostname === 'www.thedailystar.net' &&
+      /^\/(?:[^/]+\/)+news\/[^/]+-\d+$/.test(u.pathname)
+    
+    const isIndianExpress =
+      u.hostname === 'indianexpress.com' &&
+      /^\/article\/(?:[^/]+\/)+[^/]+-\d+\/?$/.test(u.pathname)
+    
+    // New logic for Scroll.in
+    const isScroll =
+      u.hostname === 'scroll.in' &&
+      /^\/article\/\d+\/[^/]+$/.test(u.pathname)
+    
+    return isYahoo || isBBC || isDailyStar || isIndianExpress || isScroll
   } catch { return false }
 }
-
 // ─── FireScrape: step.fetch helpers (top-level only) ─────────────────────────
 
 // ✅ FIX: Defined BEFORE use (moved above createFunction)
