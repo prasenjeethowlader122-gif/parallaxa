@@ -7,46 +7,41 @@ export const runtime = 'edge'
 async function loadGoogleFont(
   family: string,
   text: string,
-  options?: { noSubset?: boolean; unicodeRange?: string }
-): Promise<ArrayBuffer> {
+  options ? : { noSubset ? : boolean;unicodeRange ? : string }
+): Promise < ArrayBuffer > {
   const base = `https://fonts.googleapis.com/css2?family=${family}`
   const url = options?.noSubset ? base : `${base}&text=${encodeURIComponent(text)}`
-
+  
   const css = await fetch(url, {
     headers: {
       // Spoof an older UA — forces Google to return TTF/OTF instead of WOFF2
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36',
     },
   }).then(r => {
     if (!r.ok) throw new Error(`Google Fonts CSS fetch failed (${r.status}): ${url}`)
     return r.text()
   })
-
+  
   let fontUrl: string | undefined
-
+  
+  // AFTER
   if (options?.unicodeRange) {
-    // Split into @font-face blocks and find the one whose unicode-range
-    // covers the requested range (e.g. Bengali U+0980-09FF)
     const blocks = css.split('@font-face')
     const targetBlock = blocks.find(b => b.includes(options.unicodeRange!))
     if (targetBlock) {
-      const m =
-        targetBlock.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/) ??
-        targetBlock.match(/src: url\((.+?)\) format\('woff2'\)/)
+      // TTF/OTF only — @vercel/og rejects WOFF2
+      const m = targetBlock.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
       fontUrl = m?.[1]
     }
   }
-
-  // Fallback: first TTF/OTF match, then first woff2 match
+  
+  // Fallback: TTF/OTF only — never use woff2, @vercel/og doesn't support it
   if (!fontUrl) {
     const ttfMatch = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
-    const woff2Match = css.match(/src: url\((.+?)\) format\('woff2'\)/)
-    fontUrl = ttfMatch?.[1] ?? woff2Match?.[1]
+    fontUrl = ttfMatch?.[1]
   }
-
-  if (!fontUrl) throw new Error(`Failed to parse Google Font CSS for: ${family}`)
-
+  
+  
   const fontRes = await fetch(fontUrl)
   if (!fontRes.ok) throw new Error(`Failed to fetch font file: ${fontUrl}`)
   return fontRes.arrayBuffer()
@@ -69,37 +64,37 @@ function hasBengali(text: string): boolean {
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  request: Request, { params }: { params: Promise < { slug: string } > }
 ) {
   const { slug } = await params
   const { searchParams, origin } = new URL(request.url)
   const headline = searchParams.get('headline') ?? ''
-
+  
   if (!slug) return new Response('Missing slug', { status: 400 })
-
+  
   const article = await getArticleBySlug(slug)
   if (!article) return new Response('Not found', { status: 404 })
-
+  
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
-
+  
   // ── Asset + font loading ──────────────────────────────────────────────────
   let logoData: ArrayBuffer
   let philosopherData: ArrayBuffer
   let tiroBanglaData: ArrayBuffer
-
+  
   try {
-    ;[logoData, philosopherData, tiroBanglaData] = await Promise.all([
+    ;
+    [logoData, philosopherData, tiroBanglaData] = await Promise.all([
       // Site logo
       fetch(new URL('/New%20Project%2025%20%5B4D921DE%5D.png', origin)).then(r => {
         if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-
+      
       // Philosopher Bold — subsetted to headline glyphs (works fine)
       loadGoogleFont('Philosopher:wght@700', displayHeadline),
-
+      
       // Tiro Bangla — fetch full CSS (noSubset), target the Bengali unicode-range block
       // "U+0980" is present in the Bengali subset block; this avoids grabbing the Latin block
       loadGoogleFont('Tiro+Bangla', displayHeadline, {
@@ -111,9 +106,9 @@ export async function GET(
     const message = err instanceof Error ? err.message : 'Asset fetch failed'
     return new Response(message, { status: 500 })
   }
-
+  
   const logoSrc = `data:image/png;base64,${arrayBufferToBase64(logoData)}`
-
+  
   // ── Article image ─────────────────────────────────────────────────────────
   // @vercel/og does NOT support WebP — fall back to gradient if WebP or fetch fails.
   let articleImageSrc: string | null = null
@@ -131,21 +126,21 @@ export async function GET(
       // silently fall back to gradient placeholder
     }
   }
-
+  
   // ── Typography ────────────────────────────────────────────────────────────
   const headlineFont = isBangla ? 'TiroBangla' : 'Philosopher'
   const headlineFontSize = isBangla ? 52 : 56
-
+  
   // ── Meta ──────────────────────────────────────────────────────────────────
   const wordCount = article.content?.split(/\s+/).length ?? 0
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
-
+  
   const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
-
+  
   // ── Render ────────────────────────────────────────────────────────────────
   return new ImageResponse(
     (
@@ -294,26 +289,24 @@ export async function GET(
             <div style={{ color: '#bbb' }}>PARALLAXA.COM</div>
             <div style={{ color: '#C0392B' }}>@parallaxa</div>
           </div>
-        </div>
-      </div>
+        </div> </div>
     ),
     {
       width: 1080,
       height: 1080,
       fonts: [
-        {
-          name: 'Philosopher',
-          data: philosopherData,
-          weight: 700,
-          style: 'normal',
-        },
-        {
-          name: 'TiroBangla',
-          data: tiroBanglaData,
-          weight: 400,
-          style: 'normal',
-        },
-      ],
+      {
+        name: 'Philosopher',
+        data: philosopherData,
+        weight: 700,
+        style: 'normal',
+      },
+      {
+        name: 'TiroBangla',
+        data: tiroBanglaData,
+        weight: 400,
+        style: 'normal',
+      }, ],
     }
   )
 }
