@@ -59,12 +59,12 @@ function DashboardPageContent() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const isMobile = useIsMobile()
   // FIX 1: Build nav dynamically based on role, never mutate the module-level array
-  /**const nav = [
+  const nav = [
     ...BASE_NAV,
     ...(session?.user?.role === 'admin'
       ? [{ id: 'intelligence' as Tab, label: 'AI', icon: Icons.file }]
       : []),
-  ]**/
+  ]
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/signin')
