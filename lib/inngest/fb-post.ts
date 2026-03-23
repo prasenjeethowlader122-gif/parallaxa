@@ -86,7 +86,7 @@ Respond ONLY with a valid JSON object — no markdown fences, no preamble, no tr
   "english":       "<2-3 sentence punchy English caption>",
   "bangla":        "<2-3 sentence Bangla caption in Bengali Unicode script — NOT transliteration>",
   "hashtags":      ["tag1","tag2","tag3","tag4","tag5"],
-  "imageHeadline": "<max 12-word English headline for image overlay>"
+  "imageHeadline": "<max 12-word Bangla headline for image overlay>"
 }
 
 Rules:
