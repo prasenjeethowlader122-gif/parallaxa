@@ -4,20 +4,36 @@ import { getArticleBySlug } from '@/lib/news-data'
 export const runtime = 'edge'
 
 // ── Google Font loader ────────────────────────────────────────────────────────
-async function loadGoogleFont(family: string, text: string): Promise<ArrayBuffer> {
-  const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}&text=${encodeURIComponent(text)}`
+async function loadGoogleFont(
+  family: string,
+  text: string,
+  options?: { noSubset?: boolean }
+): Promise<ArrayBuffer> {
+  // Some families (e.g. Noto Serif Bengali) don't return TTF with text= subsetting.
+  // Pass noSubset: true to fetch the full font CSS instead.
+  const base = `https://fonts.googleapis.com/css2?family=${family}`
+  const url = options?.noSubset ? base : `${base}&text=${encodeURIComponent(text)}`
+
   const css = await fetch(url, {
     headers: {
-      // Satori needs opentype/truetype — spoof an older UA so Google returns TTF not WOFF2
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      // Spoof an older UA — forces Google to return TTF/OTF instead of WOFF2
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36',
     },
-  }).then(r => r.text())
+  }).then(r => {
+    if (!r.ok) throw new Error(`Google Fonts CSS fetch failed (${r.status}): ${url}`)
+    return r.text()
+  })
 
-  const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/)
-  if (!resource) throw new Error(`Failed to parse Google Font CSS for: ${family}`)
+  // Match opentype or truetype first, then fall back to woff2
+  const ttfMatch = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)
+  const woff2Match = css.match(/src: url\((.+?)\) format\('woff2'\)/)
+  const fontUrl = ttfMatch?.[1] ?? woff2Match?.[1]
 
-  const fontRes = await fetch(resource[1])
-  if (!fontRes.ok) throw new Error(`Failed to fetch font file: ${resource[1]}`)
+  if (!fontUrl) throw new Error(`Failed to parse Google Font CSS for: ${family}`)
+
+  const fontRes = await fetch(fontUrl)
+  if (!fontRes.ok) throw new Error(`Failed to fetch font file: ${fontUrl}`)
   return fontRes.arrayBuffer()
 }
 
@@ -66,11 +82,12 @@ export async function GET(
         return r.arrayBuffer()
       }),
 
-      // Philosopher Bold — loaded from Google Fonts, subsetted to the headline glyphs
+      // Philosopher Bold — subsetted to headline glyphs (works fine)
       loadGoogleFont('Philosopher:wght@700', displayHeadline),
 
-      // Noto Serif Bengali — loaded from Google Fonts, subsetted to the headline glyphs
-      loadGoogleFont('Noto+Serif+Bengali', displayHeadline),
+      // Noto Serif Bengali — noSubset: true because Google doesn't return
+      // TTF with text= subsetting for this family; fetch the full CSS instead
+      loadGoogleFont('Noto+Serif+Bengali', displayHeadline, { noSubset: true }),
     ])
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Asset fetch failed'
