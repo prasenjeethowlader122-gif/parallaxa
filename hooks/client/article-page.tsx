@@ -409,14 +409,14 @@ export default function ArticlePage() {
               </h1>
 
               {/* Standfirst / description */}
-              <p className="text-md text-gray-600 leading-relaxed mb-4">
+              <p className="text-md text-gray-600 leading-relaxed mb-2">
                 {article.description.slice(0,150) + '....'}
               </p>
 
               {/* ── Author + meta row ── */}
-              <div className="flex items-center justify-between gap-4 py-2 border-b border-gray-100 mb-2 flex-wrap">
+              <div className="flex items-center justify-between gap-4 py-2 pt-0 border-b border-gray-100 mb-4 flex-wrap">
                 <span className = 'flex flex-row items-center gap-2'>
-                 <small>written by</small><Link href = '/' className = 'font-bold text-blue-600'>{article.author}</Link>
+                 <small className = 'text-sm'>written by</small><Link href = '/' className = 'font-medium text-blue-600'>{article.author}</Link>
                 </span>
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1.5">
