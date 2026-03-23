@@ -414,9 +414,9 @@ export default function ArticlePage() {
               </p>
 
               {/* ── Author + meta row ── */}
-              <div className="flex items-center justify-between gap-4 py-2 pt-0 border-b border-gray-100 mb-4 flex-wrap">
+              <div className="flex items-center justify-between gap-4 py-2 pt-0 border-b border-t border-gray-100 mb-4 flex-wrap">
                 <span className = 'flex flex-row items-center gap-2'>
-                 <small className = 'text-sm'>written by</small><Link href = '/' className = 'font-medium text-blue-600'>{article.author}</Link>
+                 <small className = 'text-sm text-gray-400'>by</small><Link href = '/' className = 'text-black'>{article.author}</Link>
                 </span>
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1.5">
