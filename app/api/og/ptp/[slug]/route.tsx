@@ -45,7 +45,7 @@ export async function GET(
         if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-      fetch(new URL('/local/font/NotoSerifBengali-Regular.ttf', origin)).then(r => {
+      fetch(new URL('/local/font/NotoSerifBengali-Bold.ttf', origin)).then(r => {
         if (!r.ok) throw new Error(`Noto Serif Bengali font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
@@ -60,7 +60,7 @@ export async function GET(
   
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
-  const headlineFont = isBangla ? '"Tiro Bangla"' : '"Philosopher"'
+  const headlineFont = isBangla ? '"NotoSerifBengali"' : '"Philosopher"'
   const headlineFontSize = isBangla ? 51 : 56
   const headlineFontWeight = 400
   
@@ -278,7 +278,7 @@ export async function GET(
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        { name: 'NotoSerifBengali-Regular', data: tiroBanglaData, style: 'normal', weight: 400 },
+        { name: 'NotoSerifBengali', data: tiroBanglaData, style: 'normal', weight: 400 },
       ],
     }
   )
