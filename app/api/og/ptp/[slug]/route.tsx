@@ -46,7 +46,6 @@ export async function GET(
         return r.arrayBuffer()
       }),
 
-      // ✅ FIXED: Use Noto Serif Bengali
       fetch(new URL('/local/font/NotoSerifBengali-Regular.ttf', origin)).then(r => {
         if (!r.ok) throw new Error(`Noto Serif Bengali fetch failed: ${r.status}`)
         return r.arrayBuffer()
@@ -59,14 +58,28 @@ export async function GET(
 
   const logoSrc = `data:image/png;base64,${arrayBufferToBase64(logoData)}`
 
+  // Fetch article image and re-encode as base64.
+  // @vercel/og does NOT support WebP — fall back to gradient if WebP or fetch fails.
+  let articleImageSrc: string | null = null
+  if (article.image) {
+    try {
+      const imgRes = await fetch(article.image)
+      if (imgRes.ok) {
+        const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg'
+        if (!contentType.includes('webp')) {
+          const imgBuffer = await imgRes.arrayBuffer()
+          articleImageSrc = `data:${contentType};base64,${arrayBufferToBase64(imgBuffer)}`
+        }
+      }
+    } catch {
+      // silently fall back to gradient placeholder
+    }
+  }
+
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
 
-  // ✅ FIXED: Proper font selection
-  const headlineFont = isBangla
-    ? 'NotoSerifBengali'
-    : 'Philosopher'
-
+  const headlineFont = isBangla ? 'NotoSerifBengali' : 'Philosopher'
   const headlineFontSize = isBangla ? 52 : 56
 
   const wordCount = article.content?.split(/\s+/).length ?? 0
@@ -91,9 +104,11 @@ export async function GET(
         }}
       >
         {/* Top Image */}
-        {article.image ? (
+        {articleImageSrc ? (
           <img
-            src={article.image}
+            src={articleImageSrc}
+            width={1080}
+            height={670}
             style={{
               position: 'absolute',
               top: 0,
@@ -111,6 +126,7 @@ export async function GET(
               width: '100%',
               height: '62%',
               background: 'linear-gradient(135deg, #b8cfe8, #6b90b8)',
+              display: 'flex',
             }}
           />
         )}
@@ -124,6 +140,7 @@ export async function GET(
             height: '62%',
             background:
               'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.1), rgba(0,0,0,0.4))',
+            display: 'flex',
           }}
         />
 
@@ -139,7 +156,7 @@ export async function GET(
             alignItems: 'center',
           }}
         >
-          <img src={logoSrc} width={100} style={{ filter: 'invert(1)' }} />
+          <img src={logoSrc} width={100} height={100} style={{ filter: 'invert(1)' }} />
           <div
             style={{
               color: 'white',
@@ -234,7 +251,6 @@ export async function GET(
           style: 'normal',
         },
         {
-          // ✅ Bengali font registered properly
           name: 'NotoSerifBengali',
           data: notoSerifBanglaData,
           weight: 400,
