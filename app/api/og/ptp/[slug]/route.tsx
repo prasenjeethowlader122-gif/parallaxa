@@ -93,14 +93,17 @@ export async function GET(
       }),
       
       // Philosopher Bold — subsetted to headline glyphs (works fine)
-      loadGoogleFont('Philosopher:wght@700', displayHeadline),
+       fetch(new URL('/local/philosopher-font/Philosopher-Bold.ttf', origin)).then(r => {
+        if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
+        return r.arrayBuffer()
+      }),
       
       // Tiro Bangla — fetch full CSS (noSubset), target the Bengali unicode-range block
       // "U+0980" is present in the Bengali subset block; this avoids grabbing the Latin block
-      loadGoogleFont('Tiro+Bangla', displayHeadline, {
-        noSubset: true,
-        unicodeRange: 'U+0980',
-      }),
+      fetch(new URL('/local/font/Ekush-Regular.ttf', origin)).then(r => {
+  if (!r.ok) throw new Error(`Logo fetch failed: ${r.status}`)
+  return r.arrayBuffer()
+}),
     ])
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Asset fetch failed'
@@ -260,6 +263,7 @@ export async function GET(
 
           {/* Headline */}
           <div
+            lang='bn-BD'
             style={{
               display: 'flex',
               fontFamily: headlineFont,
@@ -302,7 +306,7 @@ export async function GET(
         style: 'normal',
       },
       {
-        name: 'TiroBangla',
+        name: 'Ekush-Regular',
         data: tiroBanglaData,
         weight: 400,
         style: 'normal',
