@@ -4,7 +4,7 @@ import { Header } from '@/components/header'
 import { slabo } from '@/lib/font'
 import PinwheelLoader from '@/components/logo'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
-import { useState, useRef, KeyboardEvent } from 'react'
+import { useState, useRef, KeyboardEvent, useEffect } from 'react'
 import remarkGfm from 'remark-gfm'
 import Markdown from 'react-markdown'
 
@@ -96,11 +96,18 @@ function groupToolPairs(segments: Segment[]): ToolPair[] {
     if (seg.type === 'tool_call') {
       const next = segments[i + 1]
       const done = next?.type === 'tool_result'
+      
+      // Safely extract summary for TS
+      let summary = 'done'
+      if (done && next && 'summary' in next && next.summary) {
+        summary = next.summary
+      }
+
       pairs.push({
         tool: seg.tool,
         args: seg.args,
         done,
-        summary: done ? (next as any).summary ?? 'done' : 'running…',
+        summary: done ? summary : 'running…',
       })
       if (done) i++
     }
@@ -143,7 +150,6 @@ function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
 
   return (
     <div className="my-2">
-      {/* toggle row */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-500 transition-colors"
@@ -154,7 +160,6 @@ function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
         <span>{label}</span>
       </button>
 
-      {/* tool lines */}
       {open && (
         <div className="mt-1 pl-4 flex flex-col gap-0.5">
           {pairs.map((p, i) => (
@@ -196,42 +201,38 @@ function MessageContent({
     return <span className="text-gray-400 italic text-xs">Typing…</span>
   }
 
-  // Extract tool pairs to render as a single collapsed feed
   const toolPairs = groupToolPairs(segments)
   const hasTools = toolPairs.length > 0
 
-  // Text + think segments only (tool segments handled by ToolFeed)
-  const textSegments = segments.filter(
-    (s) => s.type === 'text' || s.type === 'think'
-  )
-
   return (
-    <div className="flex flex-col gap-1">
-      {/* render think blocks first */}
+    <div className="flex flex-col gap-1 w-full">
       {segments
         .filter((s) => s.type === 'think')
         .map((s, i) =>
           s.type === 'think' ? <ThinkBlock key={i} content={s.content} /> : null
         )}
 
-      {/* single tool feed for all tool calls */}
       {hasTools && <ToolFeed pairs={toolPairs} />}
 
-      {/* text segments */}
       {segments
         .filter((s) => s.type === 'text')
         .map((s, i) =>
           s.type === 'text' && s.content.trim() ? (
-            <Markdown key={i} className="w-full flex-warp  prose prose-sm max-w-none" remarkPlugins={[remarkGfm]}>
+            <Markdown 
+              key={i} 
+              // FIXED: typo flex-warp -> flex-wrap
+              className="w-full flex-wrap prose prose-sm max-w-none" 
+              remarkPlugins={[remarkGfm]}
+            >
               {s.content}
             </Markdown>
           ) : null
         )}
 
       {isStreaming && (
-        <>
-        <PinwheelLoader size = {20}/>
-        </>
+        <div className="mt-2">
+           <PinwheelLoader size={20}/>
+        </div>
       )}
     </div>
   )
@@ -250,6 +251,11 @@ export default function AiInterfaceChat() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  // FIXED: Auto-scroll continuously when messages state updates (crucial for streaming)
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleSubmit = async () => {
     const trimmedQuery = query.trim()
@@ -332,7 +338,6 @@ export default function AiInterfaceChat() {
       ])
     } finally {
       setIsLoading(false)
-      scrollToBottom()
       inputRef.current?.focus()
     }
   }
@@ -350,7 +355,7 @@ export default function AiInterfaceChat() {
 
       <main className="flex-1 flex flex-col items-center overflow-hidden bg-white">
         {/* Messages */}
-        <div className="flex-1 w-full flex flex-col items-center px-4 py-10">
+        <div className="flex-1 w-full flex flex-col items-center overflow-y-auto px-4 py-10">
           <div className={`${slabo.className} flex flex-col gap-6 w-full max-w-2xl`}>
             {messages.length === 0 ? (
               <div className={`${slabo.className} text-center py-20 text-gray-400`}>
@@ -358,8 +363,7 @@ export default function AiInterfaceChat() {
               </div>
             ) : (
               messages.map((m, index) => {
-                const isLastAi =
-                  m.from === 'ai' && index === messages.length - 1
+                const isLastAi = m.from === 'ai' && index === messages.length - 1
                 return (
                   <div
                     key={index}
@@ -368,21 +372,24 @@ export default function AiInterfaceChat() {
                     } animate-fade-in`}
                   >
                     <div
-                      className={`flex flex-col gap-1.5 max-w-[80%] ${
+                      className={`flex flex-col gap-1 max-w-[85%] ${
                         m.from === 'user' ? 'items-end' : 'items-start'
                       }`}
                     >
-                      <small className="italic text-gray-400 text-[11px] px-1">
-                        {m.from === 'user' ? (<>
-                        <div className='w-5 h-5 p-2 rounded-full bg-gray-100'></div>
-                        </>) : (<>
-                        <div className='w-5 h-5 p-2 rounded-full bg-blue-100'></div>
-                        </>)}
-                      </small>
+                      {/* FIXED: Changed <small> to <div> to avoid HTML block-in-inline errors */}
+                      <div className="flex items-center text-[11px] px-1">
+                        {m.from === 'user' ? (
+                          <div className='w-6 h-6 rounded-full bg-gray-200' title="User"></div>
+                        ) : (
+                          <div className='w-6 h-6 rounded-full bg-blue-100' title="AI"></div>
+                        )}
+                      </div>
+                      
+                      {/* FIXED: Added a distinct bubble style for the user message */}
                       <div
                         className={`text-sm text-gray-800 ${
-                          m.from === 'ai'
-                            ? 'w-full'
+                          m.from === 'user' 
+                            ? 'bg-gray-100 px-4 py-2.5 rounded-2xl rounded-tr-sm whitespace-pre-wrap' 
                             : 'w-full'
                         }`}
                       >
@@ -400,12 +407,12 @@ export default function AiInterfaceChat() {
                 )
               })
             )}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} className="h-4" />
           </div>
         </div>
 
         {/* Input */}
-        <div className="w-full pt-4 pb-6 px-4 flex flex-col items-center">
+        <div className="w-full pt-4 pb-6 px-4 flex flex-col items-center bg-white border-t border-transparent">
           <div className="w-full max-w-xl">
             <div
               className={`
@@ -443,7 +450,7 @@ export default function AiInterfaceChat() {
                 `}
               >
                 <ArrowRight
-                  className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`}
+                  className={`w-4 h-4 ${isLoading ? 'animate-spin opacity-50' : ''}`}
                 />
               </button>
             </div>
