@@ -2,6 +2,7 @@
 
 import { Header } from '@/components/header'
 import PinwheelLoader from '@/components/logo'
+import { slabo } from '@/lib/font'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
 import { useState, useRef, KeyboardEvent, useEffect, useCallback } from 'react'
 import remarkGfm from 'remark-gfm'
@@ -406,7 +407,7 @@ export default function AiInterfaceChat() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center overflow-hidden bg-white">
+      <main className={"flex-1 flex flex-col items-center overflow-hidden bg-white " + slabo.className}>
         {/* Messages */}
         <div className="flex-1 w-full flex flex-col items-center overflow-y-auto px-4 py-10">
           <div className="flex flex-col gap-6 w-full max-w-2xl">
@@ -433,7 +434,7 @@ export default function AiInterfaceChat() {
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-blue-100" title="AI" />
+                          <div className='flex items-center justify-start gap-2'><div className="w-6 h-6 rounded-full bg-blue-100" title="AI" /><p className='font-bold'>{isStreaming ? 'Genareting...' : 'Genareted'}</p></div>
                         )}
                       </div>
 
