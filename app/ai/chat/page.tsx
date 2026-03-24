@@ -372,7 +372,7 @@ export default function AiInterfaceChat() {
                     } animate-fade-in`}
                   >
                     <div
-                      className={`flex flex-col gap-1 max-w-[100%] ${
+                      className={`flex flex-col gap-1 max-w-[100%] text-md ${
                         m.from === 'user' ? 'items-end' : 'items-start w-full'
                       }`}
                     >
@@ -387,7 +387,7 @@ export default function AiInterfaceChat() {
                       
                       {/* FIXED: Added a distinct bubble style for the user message */}
                       <div
-                        className={`text-sm text-gray-800 ${
+                        className={`text-md text-gray-800 ${
                           m.from === 'user' 
                             ? 'bg-gray-100 px-4 py-2.5 rounded-2xl rounded-tr-sm whitespace-pre-wrap' 
                             : 'min-w-full'
