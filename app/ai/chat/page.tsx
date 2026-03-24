@@ -129,7 +129,7 @@ export default function AiInterfaceChat() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center overflow-hidden">
+      <main className="flex-1 flex flex-col items-center overflow-hidden bg-white">
         
         {/* Messages Container - scrollable */}
         <div className="flex-1 w-full flex flex-col items-center px-4 py-10">
