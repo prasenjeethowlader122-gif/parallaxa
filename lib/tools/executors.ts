@@ -1,4 +1,22 @@
-/**
+
+
+import {categories,
+  getAllArticles,
+  getPublishedArticles,
+  getArticleById,
+  getArticleBySlug,
+  getArticlesByCategory,
+  getFeaturedArticles,
+  searchArticlesByQuery,
+  getBreakingNews,
+  getTrendingArticles,
+  searchArticles,
+  incrementArticleViews,
+  createArticle,
+  updateArticle,
+  deleteArticle,
+} from '@lib/db/articles'
+ /**
  * app/api/ai/tools/executors.ts
  *
  * Actual implementation of every AI tool.
@@ -40,13 +58,12 @@ export async function toolSearchArticles(
 ): Promise<string> {
   try {
     const limit = parseInt(limitStr ?? '5', 10) || 5
-    const res = await fetch(`${BASE_URL}/api/articles`, {
-      headers: serviceHeaders(),
-      cache: 'no-store',
-    })
-    if (!res.ok) return `Article search failed: ${res.statusText}`
+    const res = await searchArticlesByQuery(
+      query,
+      limit
+    )
 
-    const articles: any[] = await res.json()
+    const articles: any[] = res
     const q = query.toLowerCase()
 
     let filtered = articles.filter((a) => {
