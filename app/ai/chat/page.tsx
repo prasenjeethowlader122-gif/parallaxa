@@ -146,12 +146,12 @@ export default function AiInterfaceChat() {
                   className={`flex w-full ${m.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
                   <div className={`flex flex-col items-start justify-center gap-3 max-w-[80%]  ${m.from === 'user' ? 'flex-roe-reverse' : 'flex-col'}`}>
-                    <small className = 'italic text-gray-600'>
+                    <small className = 'italic text-gray-600 rounded-full bg-gray-50 p-2 px-3'>
                       {
                         m.from === 'user' ? 'You' : 'Parallaxa.ai'
                       }
                     </small>
-                    <div className={`px-4 py-2 rounded-2xl text-sm ${
+                    <div className={`px-3 border-l border-gray-700 rounded-2xl text-sm ${
                       m.from === 'user' 
                         ? 'text-gray-800' 
                         : ' text-gray-800'
@@ -159,8 +159,8 @@ export default function AiInterfaceChat() {
                       {m.content ? (
                         <Markdown className='w-full overflow-x-scroll' remarkPlugins={[remarkGfm]}>{m.content}</Markdown>
                       ) : (
-                        <span className="text-gray-400 italic">Typing...</span>
-                      )}
+                        <span className="text-gray-400 italic">Typing...</span> 
+                      ) || isLoading &&                         <span className="text-gray-400 italic">Typing...</span> }
                     </div>
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export default function AiInterfaceChat() {
         </div>
 
         {/* Input area - fixed at bottom */}
-        <div className="w-full bg-gradient-to-t from-gray-50 to-transparent pt-4 pb-6 px-4 flex flex-col items-center border-t border-gray-200">
+        <div className="w-full pt-4 pb-6 px-4 flex flex-col items-center">
           <div className="w-full max-w-xl">
             <div
               className={`
