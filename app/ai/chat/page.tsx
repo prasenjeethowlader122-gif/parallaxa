@@ -169,7 +169,7 @@ function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
               key={i}
               className="flex items-baseline gap-0 text-[11px] whitespace-nowrap overflow-hidden"
             >
-              <span className="text-gray-400 flex-shrink-0">↳&nbsp;</span>
+              <span className="text-gray-400 flex-shrink-0" h-5 w-2 bg-transparent border-l border-b rounded-lb-md></span>
               <span className="font-mono text-gray-500 flex-shrink-0">{p.tool}</span>
               <span className="text-gray-300 px-1.5 flex-shrink-0">·</span>
               <span className="font-mono text-gray-400 overflow-hidden text-ellipsis flex-1 min-w-0">
