@@ -3,6 +3,7 @@
 import { Header } from '@/components/header'
 import { ArrowRight, User, Bot } from 'lucide-react'
 import { useState, useRef, KeyboardEvent } from 'react'
+import Markdown from 'react-markdown'
 
 interface Message {
   from: 'ai' | 'user'
@@ -123,13 +124,13 @@ export default function AiInterfaceChat() {
   }
   
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans overflow-hidden">
-      <Header includeTinker={false} />
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header />
 
-      <main className="flex-1 bg-gray-50 flex flex-col items-center overflow-hidden">
+      <main className="flex-1 flex flex-col items-center overflow-hidden">
         
         {/* Messages Container - scrollable */}
-        <div className="flex-1 w-full overflow-y-auto flex flex-col items-center px-4 py-10">
+        <div className="flex-1 w-full flex flex-col items-center px-4 py-10">
           <div className="flex flex-col gap-4 w-full max-w-2xl">
             {messages.length === 0 ? (
               <div className="text-center py-20 text-gray-400">
@@ -141,18 +142,18 @@ export default function AiInterfaceChat() {
                   key={index}
                   className={`flex w-full ${m.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
-                  <div className={`flex gap-3 max-w-[80%] ${m.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex flex-col gap-3 max-w-[80%]  ${m.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className={`p-2 rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0 ${m.from === 'user' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
                       {m.from === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
                     <div className={`px-4 py-2 rounded-2xl text-sm ${
                       m.from === 'user' 
-                        ? 'bg-blue-600 text-white rounded-tr-none' 
-                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
+                        ? 'text-gray-800' 
+                        : ' text-gray-800'
                     }`}>
-                      {m.content || (
+                    <Markdown> {m.content || (
                         <span className="text-gray-400 italic">Typing...</span>
-                      )}
+                      )}</Markdown>
                     </div>
                   </div>
                 </div>
