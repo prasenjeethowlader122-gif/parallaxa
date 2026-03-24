@@ -6,7 +6,7 @@ import { executeTool } from '@/lib/tools/executors'
 // Configuration - Use Environment Variables for Production
 const API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk'
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai'
-const MODEL = 'gemini-2.0-flash' // Best for tool calling + high rate limits
+const MODEL = 'gemini-3.1-flash-lite-preview' // Best for tool calling + high rate limits
 
 const openai = new OpenAI({
   apiKey: API_KEY,
