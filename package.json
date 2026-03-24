@@ -66,6 +66,7 @@
     "react-markdown":" latest",
     "sharp": "latest",
     "opentype.js": "latest",
+    "remark-gfm": "latest",
     "chromium" : "latest",
     "playwright" : "latest",
     "vaul": "^1.1.2",

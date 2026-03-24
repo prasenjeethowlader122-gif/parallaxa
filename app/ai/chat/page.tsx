@@ -3,6 +3,8 @@
 import { Header } from '@/components/header'
 import { ArrowRight, User, Bot } from 'lucide-react'
 import { useState, useRef, KeyboardEvent } from 'react'
+import remarkGfm from 'remark-gfm'
+
 import Markdown from 'react-markdown'
 
 interface Message {
@@ -143,17 +145,19 @@ export default function AiInterfaceChat() {
                   key={index}
                   className={`flex w-full ${m.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
-                  <div className={`flex flex-col gap-3 max-w-[80%]  ${m.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`p-2 rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0 ${m.from === 'user' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
-                      {m.from === 'user' ? <User size={16} /> : <Bot size={16} />}
-                    </div>
+                  <div className={`flex flex-col items-center justify-start gap-3 max-w-[80%]  ${m.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <small className = 'italic text-gray-600'>
+                      {
+                        m.from === 'user' ? 'You' : 'Parallaxa.ai'
+                      }
+                    </small>
                     <div className={`px-4 py-2 rounded-2xl text-sm ${
                       m.from === 'user' 
                         ? 'text-gray-800' 
                         : ' text-gray-800'
                     }`}>
                       {m.content ? (
-                        <Markdown>{m.content}</Markdown>
+                        <Markdown className='w-full overflow-x-scroll' remarkPlugins={[remarkGfm]}>{m.content}</Markdown>
                       ) : (
                         <span className="text-gray-400 italic">Typing...</span>
                       )}
