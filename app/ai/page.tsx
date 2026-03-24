@@ -41,11 +41,11 @@ export default function AiInterface() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Header includeTinker={false} />
 
-      <main className="flex-1 bg-gray-50 flex flex-col items-center justify-center px-4 py-16 gap-10">
+      <main className="flex-1  flex flex-col items-center justify-center px-4 py-16 gap-10">
 
         {/* Logo + tagline */}
         <div className="flex flex-col items-center gap-3 animate-fade-in">
-          <Image src={ParallaxaLogoSvg} height={40} alt="Parallaxa logo" priority />
+          <Image src={ParallaxaLogoSvg} height={120} className = 'fill-blue-400' alt="Parallaxa logo" priority />
           <p className="text-sm text-gray-400 tracking-wide">
             What would you like to explore?
           </p>
@@ -90,21 +90,13 @@ export default function AiInterface() {
         </div>
 
         {/* Suggestion chips */}
-        <div className="flex flex-wrap gap-2 justify-center max-w-lg animate-fade-in-up">
-          {SUGGESTIONS.map((s) => (
-            <button
-              key={s}
-              onClick={() => handleSuggestion(s)}
-              className="text-xs text-gray-500 bg-white border border-gray-200 rounded-full px-4 py-2 hover:border-gray-400 hover:text-gray-800 transition-all duration-150 active:scale-95"
-            >
-              {s}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-2 justify-center max-w-lg animate-fade-in-up text-xs text-gray-400">
+          {'Using third-party llm model for this interface'}
         </div>
 
       </main>
 
-      <Footer />
+    
 
       <style jsx>{`
         @keyframes fade-in {
