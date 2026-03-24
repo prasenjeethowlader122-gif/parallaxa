@@ -372,8 +372,8 @@ export default function AiInterfaceChat() {
                     } animate-fade-in`}
                   >
                     <div
-                      className={`flex flex-col gap-1 max-w-[85%] ${
-                        m.from === 'user' ? 'items-end' : 'items-start'
+                      className={`flex flex-col gap-1 max-w-[100%] ${
+                        m.from === 'user' ? 'items-end' : 'items-start w-full'
                       }`}
                     >
                       {/* FIXED: Changed <small> to <div> to avoid HTML block-in-inline errors */}
