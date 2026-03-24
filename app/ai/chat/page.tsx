@@ -65,7 +65,8 @@ function parseSegments(raw: string): Segment[] {
           : remaining.slice(toolCallIdx + 2, lineEnd)
 
      // Change this line in parseSegments:
-    const toolMatch = line.match(/>\*\*Calling tool:\*\* `([^`]+)`(?:\s*with\s*(.+))?/)
+    // UPDATE ONLY THIS PART in your parseSegments function:
+    const toolMatch = line.match(/>\*\*Calling tool:\*\* `([^`]+)` with (.*)/)
 
       const tool = toolMatch?.[1] ?? 'unknown'
       const args = toolMatch?.[2] ?? ''
