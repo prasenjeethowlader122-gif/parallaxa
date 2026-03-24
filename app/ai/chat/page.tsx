@@ -356,9 +356,9 @@ export default function AiInterfaceChat() {
       <main className="flex-1 flex flex-col items-center overflow-hidden bg-white">
         {/* Messages */}
         <div className="flex-1 w-full flex flex-col items-center overflow-y-auto px-4 py-10">
-          <div className={`${slabo.className} flex flex-col gap-6 w-full max-w-2xl`}>
+          <div className={` flex flex-col gap-6 w-full max-w-2xl`}>
             {messages.length === 0 ? (
-              <div className={`${slabo.className} text-center py-20 text-gray-400`}>
+              <div className={` text-center py-20 text-gray-400`}>
                 <p className="text-xl font-medium">How can I help you today?</p>
               </div>
             ) : (
