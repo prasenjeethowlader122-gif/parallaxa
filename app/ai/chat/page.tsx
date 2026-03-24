@@ -2,6 +2,7 @@
 
 import { Header } from '@/components/header'
 import { slabo } from '@/lib/font'
+import PinwheelLoader from '@/components/logo'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
 import { useState, useRef, KeyboardEvent } from 'react'
 import remarkGfm from 'remark-gfm'
@@ -221,14 +222,16 @@ function MessageContent({
         .filter((s) => s.type === 'text')
         .map((s, i) =>
           s.type === 'text' && s.content.trim() ? (
-            <Markdown key={i} className="w-full overflow-x-auto prose prose-sm max-w-none" remarkPlugins={[remarkGfm]}>
+            <Markdown key={i} className="w-full flex-warp  prose prose-sm max-w-none" remarkPlugins={[remarkGfm]}>
               {s.content}
             </Markdown>
           ) : null
         )}
 
       {isStreaming && (
-        <span className="inline-block w-1.5 h-3.5 bg-gray-400 animate-pulse rounded-sm ml-0.5 align-middle" />
+        <>
+        <PinwheelLoader size = {20}/>
+        </>
       )}
     </div>
   )
@@ -370,12 +373,16 @@ export default function AiInterfaceChat() {
                       }`}
                     >
                       <small className="italic text-gray-400 text-[11px] px-1">
-                        {m.from === '@user' ? 'you' : '@parallaxa.ai'}
+                        {m.from === 'user' ? (<>
+                        <div className='w-5 h-5 p-2 rounded-full bg-gray-100'></div>
+                        </>) : (<>
+                        <div className='w-5 h-5 p-2 rounded-full bg-blue-100'></div>
+                        </>)}
                       </small>
                       <div
                         className={`text-sm text-gray-800 ${
                           m.from === 'ai'
-                            ? 'border-l border-gray-200 pl-3'
+                            ? 'bg-blue-50 rounded-xl  p-3'
                             : ''
                         }`}
                       >
