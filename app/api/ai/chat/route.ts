@@ -12,7 +12,7 @@ import { executeTool } from '@/lib/tools/executors'
 
 const ACCOUNT_ID = '342bdd8fddcbe228eb8c1d289d73da5a'
 const API_TOKEN  = 'cfut_HcLxCCwJqdOs7Ma6hBPHIusyjh13pTHzhLOKjj6H7630b643'
-const MODEL      = process.env.CLOUDFLARE_AI_MODEL ?? '@cf/moonshotai/kimi-k2.5'
+const MODEL      = process.env.CLOUDFLARE_AI_MODEL ?? '@cf/openai/gpt-oss-20b'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
