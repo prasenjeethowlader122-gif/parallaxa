@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { TOOLS } from '@/lib/tools/definitions'
-import { executeTool } from '@/lib/tools/definitions'
+import { executeTool } from '@/lib/tools/executors'
 
 const ACCOUNT_ID = '342bdd8fddcbe228eb8c1d289d73da5a'
 const API_TOKEN  = 'cfut_HcLxCCwJqdOs7Ma6hBPHIusyjh13pTHzhLOKjj6H7630b643'
