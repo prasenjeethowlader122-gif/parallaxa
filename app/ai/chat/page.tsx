@@ -13,28 +13,28 @@ interface Message {
 
 // ─── Parse content into segments ─────────────────────────────────────────────
 
-type Segment =
-  | { type: 'text'; content: string }
-  | { type: 'think'; content: string }
-  | { type: 'tool_call'; tool: string; args: string }
-  | { type: 'tool_result' }
+type Segment = |
+  { type: 'text';content: string } |
+  { type: 'think';content: string } |
+  { type: 'tool_call';tool: string;args: string } |
+  { type: 'tool_result' }
 
 function parseSegments(raw: string): Segment[] {
   const segments: Segment[] = []
-
+  
   // We process in order: <think>...</think>, tool-call markers, then plain text
   // Tool call marker format (from route.ts):
   //   > 🔧 **Calling tool:** `tool_name` with {...}
   //   > ✅ **Tool result received**
-
+  
   let remaining = raw
-
+  
   while (remaining.length > 0) {
     // 1. <think>...</think>
     const thinkStart = remaining.indexOf('<think>')
-    const toolCallIdx = remaining.indexOf('\n\n> 🔧 **Calling tool:**')
-    const toolResultIdx = remaining.indexOf('\n\n> ✅ **Tool result received**')
-
+    const toolCallIdx = remaining.indexOf('\n\n>**Calling tool:**')
+    const toolResultIdx = remaining.indexOf('\n\n>**Tool result received**')
+    
     // Find the earliest special marker
     const candidates = [
       thinkStart !== -1 ? thinkStart : Infinity,
@@ -42,19 +42,19 @@ function parseSegments(raw: string): Segment[] {
       toolResultIdx !== -1 ? toolResultIdx : Infinity,
     ]
     const earliest = Math.min(...candidates)
-
+    
     if (earliest === Infinity) {
       // No more special markers
       if (remaining.trim()) segments.push({ type: 'text', content: remaining })
       break
     }
-
+    
     // Push text before the marker
     if (earliest > 0) {
       const before = remaining.slice(0, earliest)
       if (before.trim()) segments.push({ type: 'text', content: before })
     }
-
+    
     if (earliest === thinkStart) {
       const thinkEnd = remaining.indexOf('</think>', thinkStart + 7)
       if (thinkEnd === -1) {
@@ -70,12 +70,12 @@ function parseSegments(raw: string): Segment[] {
     } else if (earliest === toolCallIdx) {
       // Extract the tool call line
       const lineEnd = remaining.indexOf('\n', toolCallIdx + 2)
-      const line = lineEnd === -1
-        ? remaining.slice(toolCallIdx + 2)
-        : remaining.slice(toolCallIdx + 2, lineEnd)
-
+      const line = lineEnd === -1 ?
+        remaining.slice(toolCallIdx + 2) :
+        remaining.slice(toolCallIdx + 2, lineEnd)
+      
       // Parse: > 🔧 **Calling tool:** `tool_name` with {...}
-      const toolMatch = line.match(/🔧 \*\*Calling tool:\*\* `([^`]+)` with (.+)/)
+      const toolMatch = line.match(/\*\*Calling tool:\*\* `([^`]+)` with (.+)/)
       const tool = toolMatch?.[1] ?? 'unknown'
       const args = toolMatch?.[2] ?? ''
       segments.push({ type: 'tool_call', tool, args })
@@ -87,7 +87,7 @@ function parseSegments(raw: string): Segment[] {
       remaining = lineEnd === -1 ? '' : remaining.slice(lineEnd)
     }
   }
-
+  
   return segments
 }
 
@@ -118,10 +118,10 @@ function ThinkBlock({ content }: { content: string }) {
 
 // ─── Tool call badge ──────────────────────────────────────────────────────────
 
-function ToolCallBadge({ tool, args }: { tool: string; args: string }) {
+function ToolCallBadge({ tool, args }: { tool: string;args: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="my-2 rounded-xl border border-blue-100 bg-blue-50 overflow-hidden">
+    <div className="my-2 rounded-full px-3 bg-gray-50 overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 w-full px-3 py-2 text-xs text-blue-600 hover:text-blue-800 transition-colors"
@@ -155,17 +155,17 @@ function ToolResultBadge() {
 
 // ─── Rendered message content ─────────────────────────────────────────────────
 
-function MessageContent({ content, isStreaming }: { content: string; isStreaming?: boolean }) {
+function MessageContent({ content, isStreaming }: { content: string;isStreaming ? : boolean }) {
   if (!content) {
     return <span className="text-gray-400 italic">Typing…</span>
   }
-
+  
   const segments = parseSegments(content)
-
+  
   if (segments.length === 0) {
     return <span className="text-gray-400 italic">Typing…</span>
   }
-
+  
   return (
     <div className="flex flex-col gap-1">
       {segments.map((seg, i) => {
@@ -197,30 +197,30 @@ function MessageContent({ content, isStreaming }: { content: string; isStreaming
 export default function AiInterfaceChat() {
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState < Message[] > ([])
   const [isLoading, setIsLoading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
+  const inputRef = useRef < HTMLInputElement > (null)
+  const messagesEndRef = useRef < HTMLDivElement > (null)
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
-
+  
   const handleSubmit = async () => {
     const trimmedQuery = query.trim()
     if (!trimmedQuery || isLoading) return
-
+    
     const userMsg: Message = { from: 'user', content: trimmedQuery }
     setMessages((prev) => [...prev, userMsg])
     setQuery('')
     setIsLoading(true)
-
+    
     try {
       const conversationHistory = messages.map((m) => ({
         role: m.from === 'user' ? 'user' : 'assistant',
         content: m.content,
       }))
-
+      
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -233,36 +233,36 @@ export default function AiInterfaceChat() {
           temperature: 0.7,
         }),
       })
-
+      
       if (!response.ok) {
         throw new Error(`API error: ${response.statusText}`)
       }
-
+      
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let aiContent = ''
-
+      
       // Add empty AI message placeholder
       setMessages((prev) => [...prev, { from: 'ai', content: '' }])
-
+      
       if (reader) {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-
+          
           const chunk = decoder.decode(value)
           const lines = chunk.split('\n')
-
+          
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               const data = line.slice(6).trim()
               if (data === '[DONE]') continue
-
+              
               try {
                 const parsed = JSON.parse(data)
                 if (parsed.content) {
                   aiContent += parsed.content
-
+                  
                   setMessages((prev) => {
                     const newMessages = [...prev]
                     if (newMessages[newMessages.length - 1].from === 'ai') {
@@ -293,14 +293,14 @@ export default function AiInterfaceChat() {
       inputRef.current?.focus()
     }
   }
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  
+  const handleKeyDown = (e: KeyboardEvent < HTMLInputElement > ) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
     }
   }
-
+  
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />

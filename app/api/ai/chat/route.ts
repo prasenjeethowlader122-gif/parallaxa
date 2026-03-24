@@ -329,9 +329,9 @@ async function runAgentLoop(
 
     // Execute each tool call and stream status updates
     for (const tc of toolCalls) {
-      enqueue(`\n\n> 🔧 **Calling tool:** \`${tc.name}\` with ${JSON.stringify(tc.args)}\n\n`)
+      enqueue(`\n\n>**Calling tool:** \`${tc.name}\` with ${JSON.stringify(tc.args)}\n\n`)
       const result = await executeTool(tc.name, tc.args)
-      enqueue(`> ✅ **Tool result received**\n\n`)
+      enqueue(`>**Tool result received**\n\n`)
       // Add tool result as a user message (tool_result role not supported by all models)
       agentMessages.push({
         role: 'user',
