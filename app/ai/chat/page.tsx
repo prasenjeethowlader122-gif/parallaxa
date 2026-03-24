@@ -42,14 +42,14 @@ export default function AiInterfaceChat() {
   }
   
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
+    <div className="min-h-screen bg-white flex flex-col font-sans overflow-hidden">
       <Header includeTinker={false} />
 
       {/* Changed justify-center to justify-start for chat flow */}
       <main className="flex-1 bg-gray-50 flex flex-col items-center justify-start px-4 py-10 gap-6 overflow-y-auto">
         
         {/* Message Display Area */}
-        <div className="flex flex-col gap-4 w-full max-w-2xl">
+        <div className="flex flex-col gap-4 w-full max-w-2xl overflow-y-auto">
           {messages.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               <p className="text-xl font-medium">How can I help you today?</p>
@@ -78,7 +78,7 @@ export default function AiInterfaceChat() {
         </div>
 
         {/* Search input - Stick to bottom or keep in flow */}
-        <div className="sticky bottom-10 w-full max-w-xl mt-auto">
+        <div className="sticky bottom-0 py-4 w-full max-w-xl mt-auto">
           <div
             className={`
               flex flex-row items-center gap-2 bg-white rounded-full 
