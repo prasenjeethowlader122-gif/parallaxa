@@ -7,8 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { TOOLS } from '../tools/definitions'
-import { executeTool } from '../tools/executors'
+import { TOOLS } from '@/lib/tools/definitions'
+import { executeTool } from '@/lib/tools/definitions'
 
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID!
 const API_TOKEN  = process.env.CLOUDFLARE_API_TOKEN!
