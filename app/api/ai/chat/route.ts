@@ -1,174 +1,398 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Readable } from 'stream'
 
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '342bdd8fddcbe228eb8c1d289d73da5a'
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || 'cfut_HcLxCCwJqdOs7Ma6hBPHIusyjh13pTHzhLOKjj6H7630b643'
 const MODEL = process.env.CLOUDFLARE_AI_MODEL || '@cf/moonshotai/kimi-k2.5'
+const SERPER_API_KEY = process.env.SERPER_API_KEY || ''
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
 }
 
+// ─── Tool Definitions ────────────────────────────────────────────────────────
+
+const TOOLS = [
+  {
+    name: 'web_search',
+    description: 'Search the web for current information, news, facts, or any topic. Use this when the user asks about recent events, needs factual info, or requests research.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'The search query to look up' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'fetch_url',
+    description: 'Fetch and read the content of a URL. Use when the user shares a link or asks to summarize/analyze a webpage.',
+    parameters: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'The URL to fetch' },
+      },
+      required: ['url'],
+    },
+  },
+  {
+    name: 'read_file',
+    description: 'Read and analyze a file that the user has uploaded. Supports text, JSON, CSV, and code files.',
+    parameters: {
+      type: 'object',
+      properties: {
+        filename: { type: 'string', description: 'Name of the uploaded file' },
+        content: { type: 'string', description: 'Base64 encoded file content' },
+        mimeType: { type: 'string', description: 'MIME type of the file' },
+      },
+      required: ['filename', 'content'],
+    },
+  },
+  {
+    name: 'run_code',
+    description: 'Execute JavaScript/TypeScript code and return the result. Useful for calculations, data transformations, and logic tasks.',
+    parameters: {
+      type: 'object',
+      properties: {
+        code: { type: 'string', description: 'JavaScript code to execute' },
+        language: { type: 'string', description: 'Language: javascript or typescript', default: 'javascript' },
+      },
+      required: ['code'],
+    },
+  },
+  {
+    name: 'get_weather',
+    description: 'Get current weather for a location.',
+    parameters: {
+      type: 'object',
+      properties: {
+        location: { type: 'string', description: 'City name or location' },
+      },
+      required: ['location'],
+    },
+  },
+]
+
+// ─── Tool Executors ───────────────────────────────────────────────────────────
+
+async function executeTool(name: string, args: Record<string, any>): Promise<string> {
+  switch (name) {
+    case 'web_search':
+      return await toolWebSearch(args.query)
+    case 'fetch_url':
+      return await toolFetchUrl(args.url)
+    case 'read_file':
+      return await toolReadFile(args.filename, args.content, args.mimeType)
+    case 'run_code':
+      return toolRunCode(args.code)
+    case 'get_weather':
+      return await toolGetWeather(args.location)
+    default:
+      return `Unknown tool: ${name}`
+  }
+}
+
+async function toolWebSearch(query: string): Promise<string> {
+  try {
+    if (SERPER_API_KEY) {
+      const res = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: { 'X-API-KEY': SERPER_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: query, num: 5 }),
+      })
+      const data = await res.json()
+      const results = data.organic?.slice(0, 5).map((r: any, i: number) =>
+        `[${i + 1}] ${r.title}\n${r.snippet}\nURL: ${r.link}`
+      ).join('\n\n')
+      return `Search results for "${query}":\n\n${results || 'No results found.'}`
+    }
+
+    // Fallback: DuckDuckGo instant answer API
+    const res = await fetch(
+      `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`
+    )
+    const data = await res.json()
+    const answer = data.AbstractText || data.Answer || data.Definition || ''
+    const related = data.RelatedTopics?.slice(0, 3).map((t: any) => t.Text || '').filter(Boolean).join('\n') || ''
+    return `Search results for "${query}":\n\n${answer}\n\n${related}`.trim() || 'No results found.'
+  } catch (e) {
+    return `Search failed: ${e instanceof Error ? e.message : 'Unknown error'}`
+  }
+}
+
+async function toolFetchUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ParallaxaBot/1.0)' },
+      signal: AbortSignal.timeout(10000),
+    })
+    const html = await res.text()
+    // Strip HTML tags naively
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s{3,}/g, '\n\n')
+      .slice(0, 4000)
+    return `Content from ${url}:\n\n${text}`
+  } catch (e) {
+    return `Failed to fetch URL: ${e instanceof Error ? e.message : 'Unknown error'}`
+  }
+}
+
+async function toolReadFile(filename: string, content: string, mimeType?: string): Promise<string> {
+  try {
+    const decoded = Buffer.from(content, 'base64').toString('utf-8')
+    const ext = filename.split('.').pop()?.toLowerCase()
+
+    if (ext === 'json') {
+      const parsed = JSON.parse(decoded)
+      return `File "${filename}" (JSON):\n\n${JSON.stringify(parsed, null, 2).slice(0, 3000)}`
+    }
+    if (ext === 'csv') {
+      const lines = decoded.split('\n').slice(0, 50)
+      return `File "${filename}" (CSV, first 50 rows):\n\n${lines.join('\n')}`
+    }
+    return `File "${filename}":\n\n${decoded.slice(0, 4000)}`
+  } catch (e) {
+    return `Failed to read file: ${e instanceof Error ? e.message : 'Unknown error'}`
+  }
+}
+
+function toolRunCode(code: string): string {
+  try {
+    // Safe sandbox — only allow pure computation
+    const banned = ['require', 'import', 'fetch', 'fs.', 'process.', 'eval', 'Function', 'XMLHttpRequest']
+    for (const b of banned) {
+      if (code.includes(b)) return `Execution blocked: "${b}" is not allowed for security reasons.`
+    }
+    // eslint-disable-next-line no-new-func
+    const fn = new Function(`
+      "use strict";
+      const console = { log: (...a) => _logs.push(a.map(String).join(' ')), error: (...a) => _logs.push('[error] ' + a.map(String).join(' ')) };
+      const _logs = [];
+      ${code}
+      return _logs;
+    `)
+    const logs = fn()
+    return `Code output:\n${logs.join('\n') || '(no output)'}`
+  } catch (e) {
+    return `Code error: ${e instanceof Error ? e.message : 'Unknown error'}`
+  }
+}
+
+async function toolGetWeather(location: string): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://wttr.in/${encodeURIComponent(location)}?format=j1`,
+      { signal: AbortSignal.timeout(5000) }
+    )
+    const data = await res.json()
+    const cur = data.current_condition?.[0]
+    if (!cur) return `Could not get weather for "${location}"`
+    const desc = cur.weatherDesc?.[0]?.value || 'Unknown'
+    return `Weather in ${location}: ${desc}, ${cur.temp_C}°C (feels like ${cur.FeelsLikeC}°C), humidity ${cur.humidity}%, wind ${cur.windspeedKmph} km/h`
+  } catch (e) {
+    return `Weather fetch failed: ${e instanceof Error ? e.message : 'Unknown error'}`
+  }
+}
+
+// ─── Tool-call parsing for models that emit XML-style or JSON tool calls ──────
+
+interface ToolCall {
+  name: string
+  args: Record<string, any>
+}
+
+function parseToolCalls(text: string): ToolCall[] {
+  const calls: ToolCall[] = []
+
+  // Pattern 1: <tool_call>{"name":"...","arguments":{...}}</tool_call>
+  const xmlPattern = /<tool_call>([\s\S]*?)<\/tool_call>/g
+  let m
+  while ((m = xmlPattern.exec(text)) !== null) {
+    try {
+      const obj = JSON.parse(m[1])
+      calls.push({ name: obj.name, args: obj.arguments || obj.args || {} })
+    } catch {}
+  }
+
+  // Pattern 2: {"tool":"...","args":{...}} anywhere in text
+  const jsonPattern = /\{"tool"\s*:\s*"([^"]+)"\s*,\s*"args"\s*:\s*(\{[\s\S]*?\})\}/g
+  while ((m = jsonPattern.exec(text)) !== null) {
+    try {
+      calls.push({ name: m[1], args: JSON.parse(m[2]) })
+    } catch {}
+  }
+
+  return calls
+}
+
+// ─── System Prompt ────────────────────────────────────────────────────────────
+
+function buildSystemPrompt(): string {
+  return `You are Parallaxa.ai, an intelligent assistant with tool-calling capabilities. Today is ${new Date().toUTCString()}.
+
+You have access to the following tools. When you need to use a tool, emit a tool call in this exact XML format — nothing else on that line:
+<tool_call>{"name":"<tool_name>","arguments":{<json_args>}}</tool_call>
+
+Available tools:
+${TOOLS.map(t => `- ${t.name}: ${t.description}`).join('\n')}
+
+Rules:
+1. Call tools when the user's request requires real-time data, web content, file analysis, or code execution.
+2. After calling a tool, wait for the result, then continue your response incorporating the result naturally.
+3. You may call multiple tools in sequence.
+4. When NOT using tools, respond normally in Markdown.
+5. Be concise and helpful. Cite sources when using web search.`
+}
+
+// ─── Agentic Loop ─────────────────────────────────────────────────────────────
+
+async function runAgentLoop(
+  messages: Message[],
+  temperature: number,
+  enqueue: (chunk: string) => void
+): Promise<void> {
+  const maxIterations = 5
+  let iteration = 0
+  const agentMessages: Message[] = [
+    { role: 'system', content: buildSystemPrompt() },
+    ...messages,
+  ]
+
+  while (iteration < maxIterations) {
+    iteration++
+    const cfUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/${MODEL}`
+
+    const response = await fetch(cfUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: agentMessages,
+        stream: true,
+        temperature,
+        max_tokens: 2048,
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
+
+    if (!response.ok) {
+      enqueue(`\n\n**API error:** ${response.statusText}`)
+      return
+    }
+
+    // Stream and collect the full response text
+    const reader = response.body?.getReader()
+    const decoder = new TextDecoder()
+    let fullText = ''
+
+    if (!reader) { enqueue('No response body'); return }
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunk = decoder.decode(value, { stream: true })
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data: ')) continue
+        const data = line.slice(6).trim()
+        if (data === '[DONE]') continue
+        if (!data) continue
+        try {
+          const parsed = JSON.parse(data)
+          let content = ''
+          if (parsed.choices?.[0]?.delta?.content) content = parsed.choices[0].delta.content
+          else if (parsed.response) content = parsed.response
+          else if (typeof parsed === 'string') content = parsed
+          if (content) {
+            fullText += content
+            // Stream non-tool-call text chunks directly to client
+            enqueue(content)
+          }
+        } catch {}
+      }
+    }
+
+    // Check if the model made tool calls
+    const toolCalls = parseToolCalls(fullText)
+    if (toolCalls.length === 0) {
+      // No tool calls — we're done
+      break
+    }
+
+    // Remove the tool-call XML from the streamed output (already sent, but we'll send a separator)
+    // Add assistant message to history
+    agentMessages.push({ role: 'assistant', content: fullText })
+
+    // Execute each tool call and stream status updates
+    for (const tc of toolCalls) {
+      enqueue(`\n\n> 🔧 **Calling tool:** \`${tc.name}\` with ${JSON.stringify(tc.args)}\n\n`)
+      const result = await executeTool(tc.name, tc.args)
+      enqueue(`> ✅ **Tool result received**\n\n`)
+      // Add tool result as a user message (tool_result role not supported by all models)
+      agentMessages.push({
+        role: 'user',
+        content: `[Tool result for ${tc.name}]:\n${result}`,
+      })
+    }
+
+    // Loop again so the model can use the tool results
+  }
+}
+
+// ─── Route Handler ────────────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
   try {
-    if (!ACCOUNT_ID || !API_TOKEN) {
-      return NextResponse.json(
-        { error: 'Cloudflare credentials not configured' },
-        { status: 500 }
-      )
-    }
-
     const body = await req.json()
-    const { messages, model = MODEL, temperature = 0.7 } = body
+    const { messages, temperature = 0.7 } = body
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Messages array is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Messages array is required' }, { status: 400 })
     }
 
-    // Validate messages format
-    const validMessages: Message[] = messages.map((msg: any) => ({
-      role: msg.role || 'user',
-      content: msg.content || '',
+    const validMessages: Message[] = messages.map((m: any) => ({
+      role: m.role || 'user',
+      content: m.content || '',
     }))
 
-    if (validMessages.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one message is required' },
-        { status: 400 }
-      )
-    }
-
-    // Call Cloudflare AI API with streaming
-    const cfUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/${model}`
-
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
-
-    try {
-      const response = await fetch(cfUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: validMessages,
-          stream: true,
-          temperature,
-          max_tokens: 1024,
-        }),
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        const error = await response.text()
-        console.error('Cloudflare API error:', error)
-        return NextResponse.json(
-          { error: `Cloudflare AI API error: ${response.statusText}` },
-          { status: response.status }
-        )
-      }
-
-      // Handle streaming response
-      const stream = new ReadableStream({
-        async start(controller) {
-          try {
-            const reader = response.body?.getReader()
-            const decoder = new TextDecoder()
-
-            if (!reader) {
-              controller.error(new Error('No response body'))
-              return
-            }
-
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-
-              const chunk = decoder.decode(value, { stream: true })
-              const lines = chunk.split('\n')
-
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const data = line.slice(6).trim()
-
-                  if (data === '[DONE]') {
-                    controller.enqueue(
-                      new TextEncoder().encode('data: [DONE]\n\n')
-                    )
-                    continue
-                  }
-
-                  if (data) {
-                    try {
-                      const parsed = JSON.parse(data)
-                      
-                      // Handle different streaming response formats
-                      let content = ''
-                      
-                      if (parsed.choices?.[0]?.delta?.content) {
-                        // OpenAI-compatible format
-                        content = parsed.choices[0].delta.content
-                      } else if (parsed.response) {
-                        // Direct response format
-                        content = parsed.response
-                      } else if (typeof parsed === 'string') {
-                        content = parsed
-                      }
-
-                      if (content) {
-                        controller.enqueue(
-                          new TextEncoder().encode(
-                            `data: ${JSON.stringify({ content })}\n\n`
-                          )
-                        )
-                      }
-                    } catch (e) {
-                      console.error('Parse error:', e)
-                    }
-                  }
-                }
-              }
-            }
-
-            controller.close()
-          } catch (error) {
-            console.error('Stream error:', error)
-            controller.error(error)
-          }
-        },
-      })
-
-      return new NextResponse(stream, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
-          'Transfer-Encoding': 'chunked',
-        },
-      })
-    } catch (error) {
-      clearTimeout(timeoutId)
-      throw error
-    }
-  } catch (error) {
-    console.error('AI API Error:', error)
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Internal server error',
+    const stream = new ReadableStream({
+      async start(controller) {
+        const enqueue = (text: string) => {
+          controller.enqueue(
+            new TextEncoder().encode(`data: ${JSON.stringify({ content: text })}\n\n`)
+          )
+        }
+        try {
+          await runAgentLoop(validMessages, temperature, enqueue)
+        } catch (err) {
+          enqueue(`\n\n**Error:** ${err instanceof Error ? err.message : 'Unknown error'}`)
+        } finally {
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
+          controller.close()
+        }
       },
+    })
+
+    return new NextResponse(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-export async function OPTIONS(req: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
