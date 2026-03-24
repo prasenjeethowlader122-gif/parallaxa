@@ -107,7 +107,6 @@ async function toolWebSearch(query: string): Promise<string> {
       return `Search results for "${query}":\n\n${results || 'No results found.'}`
     }
 
-    // Fallback: DuckDuckGo instant answer API
     const res = await fetch(
       `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`
     )
@@ -127,7 +126,6 @@ async function toolFetchUrl(url: string): Promise<string> {
       signal: AbortSignal.timeout(10000),
     })
     const html = await res.text()
-    // Strip HTML tags naively
     const text = html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
@@ -144,7 +142,6 @@ async function toolReadFile(filename: string, content: string, mimeType?: string
   try {
     const decoded = Buffer.from(content, 'base64').toString('utf-8')
     const ext = filename.split('.').pop()?.toLowerCase()
-
     if (ext === 'json') {
       const parsed = JSON.parse(decoded)
       return `File "${filename}" (JSON):\n\n${JSON.stringify(parsed, null, 2).slice(0, 3000)}`
@@ -161,7 +158,6 @@ async function toolReadFile(filename: string, content: string, mimeType?: string
 
 function toolRunCode(code: string): string {
   try {
-    // Safe sandbox — only allow pure computation
     const banned = ['require', 'import', 'fetch', 'fs.', 'process.', 'eval', 'Function', 'XMLHttpRequest']
     for (const b of banned) {
       if (code.includes(b)) return `Execution blocked: "${b}" is not allowed for security reasons.`
@@ -197,7 +193,7 @@ async function toolGetWeather(location: string): Promise<string> {
   }
 }
 
-// ─── Tool-call parsing for models that emit XML-style or JSON tool calls ──────
+// ─── Tool-call parsing ────────────────────────────────────────────────────────
 
 interface ToolCall {
   name: string
@@ -207,7 +203,6 @@ interface ToolCall {
 function parseToolCalls(text: string): ToolCall[] {
   const calls: ToolCall[] = []
 
-  // Pattern 1: <tool_call>{"name":"...","arguments":{...}}</tool_call>
   const xmlPattern = /<tool_call>([\s\S]*?)<\/tool_call>/g
   let m
   while ((m = xmlPattern.exec(text)) !== null) {
@@ -217,7 +212,6 @@ function parseToolCalls(text: string): ToolCall[] {
     } catch {}
   }
 
-  // Pattern 2: {"tool":"...","args":{...}} anywhere in text
   const jsonPattern = /\{"tool"\s*:\s*"([^"]+)"\s*,\s*"args"\s*:\s*(\{[\s\S]*?\})\}/g
   while ((m = jsonPattern.exec(text)) !== null) {
     try {
@@ -226,6 +220,20 @@ function parseToolCalls(text: string): ToolCall[] {
   }
 
   return calls
+}
+
+// ─── Strip tool_call XML from text ───────────────────────────────────────────
+// Removes complete <tool_call>...</tool_call> blocks and any partial opening
+// tag that is still streaming in (so it never leaks to the client).
+
+function stripToolCallXml(text: string): string {
+  // Remove complete blocks
+  let cleaned = text.replace(/<tool_call>[\s\S]*?<\/tool_call>/g, '')
+  // Remove partial opening tag that hasn't closed yet (still streaming)
+  cleaned = cleaned.replace(/<tool_call>[\s\S]*$/, '')
+  // Remove any leftover orphan closing tag
+  cleaned = cleaned.replace(/<\/tool_call>/g, '')
+  return cleaned
 }
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
@@ -244,7 +252,8 @@ Rules:
 2. After calling a tool, wait for the result, then continue your response incorporating the result naturally.
 3. You may call multiple tools in sequence.
 4. When NOT using tools, respond normally in Markdown.
-5. Be concise and helpful. Cite sources when using web search.`
+5. Be concise and helpful. Cite sources when using web search.
+6. NEVER show raw <tool_call> tags in your final response text. Tool calls are internal only.`
 }
 
 // ─── Agentic Loop ─────────────────────────────────────────────────────────────
@@ -285,61 +294,84 @@ async function runAgentLoop(
       return
     }
 
-    // Stream and collect the full response text
     const reader = response.body?.getReader()
     const decoder = new TextDecoder()
     let fullText = ''
+    // Buffer holds text that might be a partial <tool_call> tag still streaming in
+    let streamBuffer = ''
 
     if (!reader) { enqueue('No response body'); return }
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
+
       const chunk = decoder.decode(value, { stream: true })
+
       for (const line of chunk.split('\n')) {
         if (!line.startsWith('data: ')) continue
         const data = line.slice(6).trim()
         if (data === '[DONE]') continue
         if (!data) continue
+
         try {
           const parsed = JSON.parse(data)
           let content = ''
           if (parsed.choices?.[0]?.delta?.content) content = parsed.choices[0].delta.content
           else if (parsed.response) content = parsed.response
           else if (typeof parsed === 'string') content = parsed
+
           if (content) {
             fullText += content
-            // Stream non-tool-call text chunks directly to client
-            enqueue(content)
+            streamBuffer += content
+
+            // Flush everything that is definitely not part of an opening <tool_call> tag.
+            // We hold back text once we see a '<' that could be starting a tool_call block.
+            const tagStart = streamBuffer.indexOf('<tool_call>')
+            if (tagStart === -1) {
+              // No tool_call tag anywhere in buffer — but hold back last 11 chars
+              // in case '<tool_call>' is split across two chunks.
+              const safe = streamBuffer.slice(0, -11)
+              if (safe.length > 0) {
+                enqueue(safe)
+                streamBuffer = streamBuffer.slice(-11)
+              }
+            } else if (tagStart > 0) {
+              // Flush text before the tag, hold back the rest
+              enqueue(streamBuffer.slice(0, tagStart))
+              streamBuffer = streamBuffer.slice(tagStart)
+            }
+            // else: tagStart === 0 — entire buffer is inside a tool_call, hold it all
           }
         } catch {}
       }
     }
 
+    // Flush any remaining buffer, stripping tool_call XML
+    if (streamBuffer) {
+      const flushed = stripToolCallXml(streamBuffer)
+      if (flushed.trim()) enqueue(flushed)
+    }
+
     // Check if the model made tool calls
     const toolCalls = parseToolCalls(fullText)
     if (toolCalls.length === 0) {
-      // No tool calls — we're done
       break
     }
 
-    // Remove the tool-call XML from the streamed output (already sent, but we'll send a separator)
-    // Add assistant message to history
+    // Add assistant message to history (with the raw tool calls intact for history)
     agentMessages.push({ role: 'assistant', content: fullText })
 
-    // Execute each tool call and stream status updates
+    // Execute each tool call and stream status to client
     for (const tc of toolCalls) {
       enqueue(`\n\n>**Calling tool:** \`${tc.name}\` with ${JSON.stringify(tc.args)}\n\n`)
       const result = await executeTool(tc.name, tc.args)
       enqueue(`>**Tool result received**\n\n`)
-      // Add tool result as a user message (tool_result role not supported by all models)
       agentMessages.push({
         role: 'user',
         content: `[Tool result for ${tc.name}]:\n${result}`,
       })
     }
-
-    // Loop again so the model can use the tool results
   }
 }
 
