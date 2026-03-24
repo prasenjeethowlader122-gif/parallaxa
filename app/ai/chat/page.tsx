@@ -1,10 +1,9 @@
 'use client'
 
 import { Header } from '@/components/header'
-import { slabo } from '@/lib/font'
 import PinwheelLoader from '@/components/logo'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
-import { useState, useRef, KeyboardEvent, useEffect } from 'react'
+import { useState, useRef, KeyboardEvent, useEffect, useCallback } from 'react'
 import remarkGfm from 'remark-gfm'
 import Markdown from 'react-markdown'
 
@@ -96,8 +95,7 @@ function groupToolPairs(segments: Segment[]): ToolPair[] {
     if (seg.type === 'tool_call') {
       const next = segments[i + 1]
       const done = next?.type === 'tool_result'
-      
-      // Safely extract summary for TS
+
       let summary = 'done'
       if (done && next && 'summary' in next && next.summary) {
         summary = next.summary
@@ -140,7 +138,7 @@ function ThinkBlock({ content }: { content: string }) {
   )
 }
 
-// ─── Tool feed (collapsible, no-wrap lines) ───────────────────────────────────
+// ─── Tool feed ────────────────────────────────────────────────────────────────
 
 function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
   const [open, setOpen] = useState(false)
@@ -218,10 +216,9 @@ function MessageContent({
         .filter((s) => s.type === 'text')
         .map((s, i) =>
           s.type === 'text' && s.content.trim() ? (
-            <Markdown 
-              key={i} 
-              // FIXED: typo flex-warp -> flex-wrap
-              className="min-w-full  flex-wrap prose prose-sm max-w-none" 
+            <Markdown
+              key={i}
+              className="min-w-full flex-wrap prose prose-sm max-w-none"
               remarkPlugins={[remarkGfm]}
             >
               {s.content}
@@ -231,7 +228,7 @@ function MessageContent({
 
       {isStreaming && (
         <div className="mt-2">
-           <PinwheelLoader size={30}/>
+          <PinwheelLoader size={30} />
         </div>
       )}
     </div>
@@ -245,39 +242,64 @@ export default function AiInterfaceChat() {
   const [focused, setFocused] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  // FIX 1: Use a ref to track in-flight request — prevents double-submit
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  // FIXED: Auto-scroll continuously when messages state updates (crucial for streaming)
+  // FIX 2: Accumulate streamed content in a ref; only flush to state on a
+  //         rAF tick so we don't call setMessages on every single SSE chunk.
+  const streamBufferRef = useRef('')
+  const rafRef = useRef<number | null>(null)
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, scrollToBottom])
+
+  // Cancel any pending animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+      abortControllerRef.current?.abort()
+    }
+  }, [])
 
   const handleSubmit = async () => {
     const trimmedQuery = query.trim()
+
+    // FIX 3: Hard guard — don't fire while already loading
     if (!trimmedQuery || isLoading) return
+
+    // Snapshot history BEFORE appending the new user message
+    // so we don't accidentally include the empty AI placeholder in history
+    const historySnapshot = messages.map((m) => ({
+      role: m.from === 'user' ? 'user' : 'assistant',
+      content: m.content,
+    }))
 
     const userMsg: Message = { from: 'user', content: trimmedQuery }
     setMessages((prev) => [...prev, userMsg])
     setQuery('')
     setIsLoading(true)
 
-    try {
-      const conversationHistory = messages.map((m) => ({
-        role: m.from === 'user' ? 'user' : 'assistant',
-        content: m.content,
-      }))
+    // FIX 4: Fresh AbortController per request so we can cancel cleanly
+    const controller = new AbortController()
+    abortControllerRef.current = controller
 
+    try {
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           messages: [
-            ...conversationHistory,
+            ...historySnapshot,
             { role: 'user', content: trimmedQuery },
           ],
           model: '@cf/moonshotai/kimi-k2.5',
@@ -286,48 +308,75 @@ export default function AiInterfaceChat() {
       })
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`)
+        throw new Error(`API error ${response.status}: ${response.statusText}`)
       }
 
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
-      let aiContent = ''
 
+      // Add empty AI message once, then mutate via ref+rAF
       setMessages((prev) => [...prev, { from: 'ai', content: '' }])
+      streamBufferRef.current = ''
+
+      // FIX 5: Batch DOM updates — flush accumulated content on animation frames
+      //         instead of calling setMessages for every SSE event
+      const scheduleFlush = () => {
+        if (rafRef.current !== null) return // already scheduled
+        rafRef.current = requestAnimationFrame(() => {
+          rafRef.current = null
+          const buffered = streamBufferRef.current
+          setMessages((prev) => {
+            const next = [...prev]
+            const last = next[next.length - 1]
+            if (last?.from === 'ai') {
+              next[next.length - 1] = { ...last, content: buffered }
+            }
+            return next
+          })
+        })
+      }
 
       if (reader) {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
 
-          const chunk = decoder.decode(value)
-          const lines = chunk.split('\n')
+          const chunk = decoder.decode(value, { stream: true })
+          for (const line of chunk.split('\n')) {
+            if (!line.startsWith('data: ')) continue
+            const data = line.slice(6).trim()
+            if (!data || data === '[DONE]') continue
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim()
-              if (data === '[DONE]') continue
-
-              try {
-                const parsed = JSON.parse(data)
-                if (parsed.content) {
-                  aiContent += parsed.content
-                  setMessages((prev) => {
-                    const newMessages = [...prev]
-                    if (newMessages[newMessages.length - 1].from === 'ai') {
-                      newMessages[newMessages.length - 1].content = aiContent
-                    }
-                    return newMessages
-                  })
-                }
-              } catch {
-                // skip parse errors
+            try {
+              const parsed = JSON.parse(data)
+              if (parsed.content) {
+                streamBufferRef.current += parsed.content
+                scheduleFlush()
               }
+            } catch {
+              // skip malformed SSE lines
             }
           }
         }
+
+        // Final flush — ensure last chunk is written
+        if (rafRef.current !== null) {
+          cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+        const finalContent = streamBufferRef.current
+        setMessages((prev) => {
+          const next = [...prev]
+          const last = next[next.length - 1]
+          if (last?.from === 'ai') {
+            next[next.length - 1] = { ...last, content: finalContent }
+          }
+          return next
+        })
       }
     } catch (error) {
+      if ((error as Error).name === 'AbortError') return // user navigated away
+
       console.error('Chat error:', error)
       setMessages((prev) => [
         ...prev,
@@ -338,6 +387,7 @@ export default function AiInterfaceChat() {
       ])
     } finally {
       setIsLoading(false)
+      abortControllerRef.current = null
       inputRef.current?.focus()
     }
   }
@@ -356,9 +406,9 @@ export default function AiInterfaceChat() {
       <main className="flex-1 flex flex-col items-center overflow-hidden bg-white">
         {/* Messages */}
         <div className="flex-1 w-full flex flex-col items-center overflow-y-auto px-4 py-10">
-          <div className={` flex flex-col gap-6 w-full max-w-2xl`}>
+          <div className="flex flex-col gap-6 w-full max-w-2xl">
             {messages.length === 0 ? (
-              <div className={` text-center py-20 text-gray-400`}>
+              <div className="text-center py-20 text-gray-400">
                 <p className="text-xl font-medium">How can I help you today?</p>
               </div>
             ) : (
@@ -376,20 +426,18 @@ export default function AiInterfaceChat() {
                         m.from === 'user' ? 'items-end' : 'items-start w-full'
                       }`}
                     >
-                      {/* FIXED: Changed <small> to <div> to avoid HTML block-in-inline errors */}
                       <div className="flex items-center text-[11px] px-1">
                         {m.from === 'user' ? (
-                          <div className='w-6 h-6 rounded-full bg-gray-200' title="User"></div>
+                          <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
-                          <div className='w-6 h-6 rounded-full bg-blue-100' title="AI"></div>
+                          <div className="w-6 h-6 rounded-full bg-blue-100" title="AI" />
                         )}
                       </div>
-                      
-                      {/* FIXED: Added a distinct bubble style for the user message */}
+
                       <div
                         className={`text-md text-gray-800 ${
-                          m.from === 'user' 
-                            ? 'bg-gray-100 px-4 py-2.5 rounded-2xl rounded-tr-sm whitespace-pre-wrap' 
+                          m.from === 'user'
+                            ? 'bg-gray-100 px-4 py-2.5 rounded-2xl rounded-tr-sm whitespace-pre-wrap'
                             : 'min-w-full'
                         }`}
                       >
