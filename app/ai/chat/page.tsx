@@ -145,7 +145,7 @@ export default function AiInterfaceChat() {
                   key={index}
                   className={`flex w-full ${m.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
-                  <div className={`flex flex-col items-center justify-start gap-3 max-w-[80%]  ${m.from === 'user' ? 'flex-col-reverse' : 'flex-col'}`}>
+                  <div className={`flex flex-col items-start justify-center gap-3 max-w-[80%]  ${m.from === 'user' ? 'flex-roe-reverse' : 'flex-col'}`}>
                     <small className = 'italic text-gray-600'>
                       {
                         m.from === 'user' ? 'You' : 'Parallaxa.ai'
