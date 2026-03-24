@@ -3,153 +3,143 @@ import OpenAI from 'openai'
 import { TOOLS } from '@/lib/tools/definitions'
 import { executeTool } from '@/lib/tools/executors'
 
-// Configuration - Move these to .env in production!
-const API_TOKEN = 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk'
-const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai'
-const MODEL = process.env.CLOUDFLARE_AI_MODEL ?? 'gemini-2.0-flash'
-
 const openai = new OpenAI({
-  apiKey: API_TOKEN,
-  baseURL: BASE_URL,
+  apiKey: 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
+  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
 })
 
-interface Message {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
-
-// ─── System Prompt ────────────────────────────────────────────────────────────
-
-function buildSystemPrompt(): string {
-  const toolList = TOOLS.map((t) => `- ${t.name}: ${t.description}`).join('\n')
-  return `You are Parallaxa.ai, an intelligent news-management assistant. Today is ${new Date().toUTCString()}.
-
-You have access to the following tools. When you need to use a tool emit ONLY this XML:
-<tool_call>{"name":"<tool_name>","arguments":{<json_args>}}</tool_call>
-
-Available tools:
-${toolList}
-
-Rules:
-1. Use tools for news searches, reading, or pipeline actions.
-2. Respond in Markdown. 
-3. NEVER show raw <tool_call> tags to the user.
-4. Confirm destructive actions (run_news_pipeline) first.`
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function parseToolCalls(text: string) {
-  const pattern = /<tool_call>([\s\S]*?)<\/tool_call>/g
-  const calls = []
-  let m
-  while ((m = pattern.exec(text)) !== null) {
-    try {
-      const obj = JSON.parse(m[1])
-      calls.push({ name: obj.name, args: obj.arguments ?? obj.args ?? {} })
-    } catch { /* skip */ }
-  }
-  return calls
-}
-
-// ─── Agent Loop ───────────────────────────────────────────────────────────────
+/**
+ * Maps your existing TOOLS to the OpenAI Function format.
+ * Gemini 2.0/2.5 Flash strictly follows JSON Schema for parameters.
+ */
+const formattedTools: OpenAI.Chat.Completions.ChatCompletionTool[] = TOOLS.map((t) => ({
+  type: 'function',
+  function: {
+    name: t.name,
+    description: t.description,
+    parameters: t.parameters,
+  },
+}))
 
 async function runAgentLoop(
-  messages: Message[],
+  messages: any[],
   temperature: number,
   enqueue: (chunk: string) => void
 ) {
   const MAX_ITERATIONS = 6
-  const history: any[] = [{ role: 'system', content: buildSystemPrompt() }, ...messages]
+  // Use 'system' role as usual; Gemini maps this correctly
+  const history: any[] = [
+    { role: 'system', content: `You are Parallaxa.ai. Use tools for news management.` },
+    ...messages,
+  ]
   
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const stream = await openai.chat.completions.create({
-      model: MODEL,
+      model: process.env.CLOUDFLARE_AI_MODEL ?? 'gemini-2.0-flash',
       messages: history,
-      temperature,
+      tools: formattedTools,
+      tool_choice: 'auto',
       stream: true,
+      temperature,
     })
     
     let fullText = ''
-    let buffer = ''
+    let toolCalls: any[] = []
     
     for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || ''
-      if (!content) continue
+      const delta = chunk.choices[0]?.delta
       
-      fullText += content
-      buffer += content
+      // 1. Regular text content
+      if (delta?.content) {
+        fullText += delta.content
+        enqueue(delta.content)
+      }
       
-      // Streaming logic: Avoid leaking <tool_call> tags to the UI
-      const tagStart = buffer.indexOf('<tool_call>')
-      if (tagStart === -1) {
-        // No tag found: send everything except the last 11 chars (length of "<tool_call>")
-        // to prevent flickering if a tag is just about to start.
-        if (buffer.length > 11) {
-          enqueue(buffer.slice(0, -11))
-          buffer = buffer.slice(-11)
+      // 2. Handle streaming tool calls
+      if (delta?.tool_calls) {
+        for (const tc of delta.tool_calls) {
+          // Gemini compatibility fix: default to index 0 if missing
+          const idx = tc.index ?? 0
+          
+          if (!toolCalls[idx]) {
+            toolCalls[idx] = { id: tc.id, name: '', args: '' }
+          }
+          if (tc.id) toolCalls[idx].id = tc.id
+          if (tc.function?.name) toolCalls[idx].name = tc.function.name
+          if (tc.function?.arguments) toolCalls[idx].args += tc.function.arguments
         }
-      } else if (tagStart > 0) {
-        // Tag found: send everything before the tag and clear it from buffer
-        enqueue(buffer.slice(0, tagStart))
-        buffer = buffer.slice(tagStart)
       }
     }
     
-    // Flush remaining non-XML text
-    const finalDisplay = buffer.replace(/<tool_call>[\s\S]*?<\/tool_call>/g, '').replace(/<tool_call>[\s\S]*$/, '')
-    if (finalDisplay) enqueue(finalDisplay)
-    
-    const toolCalls = parseToolCalls(fullText)
+    // Exit loop if the model just provided a text response
     if (toolCalls.length === 0) break
     
-    history.push({ role: 'assistant', content: fullText })
+    // IMPORTANT: Add the assistant's call to history before the tool result
+    const assistantMsg = {
+      role: 'assistant',
+      content: fullText || null,
+      tool_calls: toolCalls.map(tc => ({
+        id: tc.id,
+        type: 'function',
+        function: { name: tc.name, arguments: tc.args }
+      }))
+    }
+    history.push(assistantMsg)
     
+    // 3. Execute the tools
     for (const tc of toolCalls) {
       enqueue(`\n\n>**Calling tool:** \`${tc.name}\`...`)
-      const result = await executeTool(tc.name, tc.args)
-      enqueue(`\n\n>**Tool result received**\n\n`)
       
-      history.push({
-        role: 'user',
-        content: `[Tool result for ${tc.name}]:\n${result}`,
-      })
+      try {
+        const args = JSON.parse(tc.args || '{}')
+        const result = await executeTool(tc.name, args)
+        
+        enqueue(`\n\n>**Tool result received**\n\n`)
+        
+        // Use role: 'tool' for the response
+        history.push({
+          role: 'tool',
+          tool_call_id: tc.id,
+          content: typeof result === 'string' ? result : JSON.stringify(result),
+        })
+      } catch (e) {
+        history.push({
+          role: 'tool',
+          tool_call_id: tc.id,
+          content: `Error: ${e instanceof Error ? e.message : 'Tool execution failed'}`,
+        })
+      }
     }
+    // The loop repeats, feeding the tool results back to Gemini for the final summary
   }
 }
 
-// ─── Main Route ───────────────────────────────────────────────────────────────
-
 export async function POST(req: NextRequest) {
-  try {
-    const { messages, temperature = 0.7 } = await req.json()
-    
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder()
-        const enqueue = (text: string) => {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: text })}\n\n`))
-        }
-        
-        try {
-          await runAgentLoop(messages, temperature, enqueue)
-        } catch (err: any) {
-          enqueue(`\n\n**Error:** ${err.message}`)
-        } finally {
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-          controller.close()
-        }
-      },
-    })
-    
-    return new NextResponse(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
-  }
+  const { messages, temperature = 0.7 } = await req.json()
+  
+  const stream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder()
+      const enqueue = (text: string) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: text })}\n\n`))
+      }
+      
+      try {
+        await runAgentLoop(messages, temperature, enqueue)
+      } catch (err: any) {
+        enqueue(`\n\n**Error:** ${err.message}`)
+      } finally {
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+        controller.close()
+      }
+    },
+  })
+  
+  return new NextResponse(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  })
 }
