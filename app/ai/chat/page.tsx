@@ -13,33 +13,119 @@ export default function AiInterfaceChat() {
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
   const [messages, setMessages] = useState < Message[] > ([])
+  const [isLoading, setIsLoading] = useState(false)
   const inputRef = useRef < HTMLInputElement > (null)
+  const messagesEndRef = useRef < HTMLDivElement > (null)
   
-  const handleSubmit = () => {
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+  
+  const handleSubmit = async () => {
     const trimmedQuery = query.trim()
-    if (!trimmedQuery) return
+    if (!trimmedQuery || isLoading) return
     
+    // Add user message
     const userMsg: Message = { from: 'user', content: trimmedQuery }
-    setQuery('')
     setMessages((prev) => [...prev, userMsg])
+    setQuery('')
+    setIsLoading(true)
     
-    setTimeout(() => {
+    try {
+      // Create conversation history for context
+      const conversationHistory = messages.map((m) => ({
+        role: m.from === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      }))
+      
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...conversationHistory,
+            { role: 'user', content: trimmedQuery },
+          ],
+          model: '@cf/moonshotai/kimi-k2.5',
+          temperature: 0.7,
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`)
+      }
+      
+      // Handle streaming response
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let aiContent = ''
+      
+      // Add empty AI message placeholder
+      setMessages((prev) => [...prev, { from: 'ai', content: '' }])
+      
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          
+          const chunk = decoder.decode(value)
+          const lines = chunk.split('\n')
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim()
+              if (data === '[DONE]') continue
+              
+              try {
+                const parsed = JSON.parse(data)
+                if (parsed.content) {
+                  aiContent += parsed.content
+                  
+                  // Update the last message with streaming content
+                  setMessages((prev) => {
+                    const newMessages = [...prev]
+                    if (newMessages[newMessages.length - 1].from === 'ai') {
+                      newMessages[newMessages.length - 1].content = aiContent
+                    }
+                    return newMessages
+                  })
+                }
+              } catch (e) {
+                // Skip parse errors
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Chat error:', error)
       setMessages((prev) => [
         ...prev,
-        { from: 'ai', content: `I received: "${trimmedQuery}". How can I help further?` }
+        {
+          from: 'ai',
+          content: 'Sorry, I encountered an error. Please try again.',
+        },
       ])
-    }, 600)
+    } finally {
+      setIsLoading(false)
+      scrollToBottom()
+      inputRef.current?.focus()
+    }
   }
   
   const handleKeyDown = (e: KeyboardEvent < HTMLInputElement > ) => {
-    if (e.key === 'Enter') handleSubmit()
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
   }
   
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans overflow-hidden">
       <Header includeTinker={false} />
 
-      {/* Main container with proper flex layout */}
       <main className="flex-1 bg-gray-50 flex flex-col items-center overflow-hidden">
         
         {/* Messages Container - scrollable */}
@@ -55,21 +141,24 @@ export default function AiInterfaceChat() {
                   key={index}
                   className={`flex w-full ${m.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
-                  <div className={`flex flex-col  gap-3 max-w-[80%] ${m.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex gap-3 max-w-[80%] ${m.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className={`p-2 rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0 ${m.from === 'user' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
                       {m.from === 'user' ? <User size={16} /> : <Bot size={16} />}
                     </div>
                     <div className={`px-4 py-2 rounded-2xl text-sm ${
                       m.from === 'user' 
-                        ? 'text-black' 
-                        : 'text-black'
+                        ? 'bg-blue-600 text-white rounded-tr-none' 
+                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
                     }`}>
-                      {m.content}
+                      {m.content || (
+                        <span className="text-gray-400 italic">Typing...</span>
+                      )}
                     </div>
                   </div>
                 </div>
               ))
             )}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
@@ -95,24 +184,25 @@ export default function AiInterfaceChat() {
                 onBlur={() => setFocused(false)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask anything…"
-                className="flex-1 outline-none border-none bg-transparent text-sm text-gray-800 placeholder:text-gray-400 min-w-0"
+                disabled={isLoading}
+                className="flex-1 outline-none border-none bg-transparent text-sm text-gray-800 placeholder:text-gray-400 min-w-0 disabled:opacity-60"
               />
               <button
                 onClick={handleSubmit}
-                disabled={!query.trim()}
+                disabled={!query.trim() || isLoading}
                 className={`
                   rounded-full p-2 flex items-center justify-center transition-all duration-150 flex-shrink-0
-                  ${query.trim()
+                  ${query.trim() && !isLoading
                     ? 'bg-gray-900 text-white hover:bg-gray-700 active:scale-95'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }
                 `}
               >
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
             </div>
             <p className="text-[10px] text-gray-400 text-center mt-3">
-              We are using third-party LLM models for this interface
+              Powered by Cloudflare AI (Kimi K2.5) with streaming responses
             </p>
           </div>
         </div>
