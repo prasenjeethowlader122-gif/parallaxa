@@ -11,8 +11,9 @@ import { TOOLS } from '@/lib/tools/definitions'
 import { executeTool } from '@/lib/tools/executors'
 
 const ACCOUNT_ID = '342bdd8fddcbe228eb8c1d289d73da5a'
-const API_TOKEN  = 'cfut_HcLxCCwJqdOs7Ma6hBPHIusyjh13pTHzhLOKjj6H7630b643'
-const MODEL      = process.env.CLOUDFLARE_AI_MODEL ?? '@cf/openai/gpt-oss-20b'
+const API_TOKEN  = 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk'
+//'cfut_HcLxCCwJqdOs7Ma6hBPHIusyjh13pTHzhLOKjj6H7630b643'
+const MODEL      = process.env.CLOUDFLARE_AI_MODEL ?? 'gemini-2.5-flash'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -76,7 +77,8 @@ async function runAgentLoop(
   enqueue: (chunk: string) => void
 ): Promise<void> {
   const MAX_ITERATIONS = 6
-  const cfUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/${MODEL}`
+  const cfUrl = 'https://generativelanguage.googleapis.com/v1beta/openai'
+  //`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/${MODEL}`
 
   const history: Message[] = [
     { role: 'system', content: buildSystemPrompt() },
