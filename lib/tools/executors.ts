@@ -1,6 +1,7 @@
 
 
-import {categories,
+import {
+  categories,
   getAllArticles,
   getPublishedArticles,
   getArticleById,
@@ -15,7 +16,7 @@ import {categories,
   createArticle,
   updateArticle,
   deleteArticle,
-} from '@lib/db/articles'
+} from '@/lib/db/articles'
  /**
  * app/api/ai/tools/executors.ts
  *
