@@ -1,6 +1,7 @@
 'use client'
 
 import { Header } from '@/components/header'
+import { slabo } from '@/lib/font'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
 import { useState, useRef, KeyboardEvent } from 'react'
 import remarkGfm from 'remark-gfm'
@@ -349,7 +350,7 @@ export default function AiInterfaceChat() {
         <div className="flex-1 w-full flex flex-col items-center px-4 py-10">
           <div className="flex flex-col gap-6 w-full max-w-2xl">
             {messages.length === 0 ? (
-              <div className="text-center py-20 text-gray-400">
+              <div className={`${slabo.className} text-center py-20 text-gray-400`}>
                 <p className="text-xl font-medium">How can I help you today?</p>
               </div>
             ) : (
@@ -369,7 +370,7 @@ export default function AiInterfaceChat() {
                       }`}
                     >
                       <small className="italic text-gray-400 text-[11px] px-1">
-                        {m.from === 'user' ? 'you' : 'parallaxa.ai'}
+                        {m.from === '@user' ? 'you' : '@parallaxa.ai'}
                       </small>
                       <div
                         className={`text-sm text-gray-800 ${
