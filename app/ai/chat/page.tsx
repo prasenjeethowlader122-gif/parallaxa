@@ -64,7 +64,9 @@ function parseSegments(raw: string): Segment[] {
           ? remaining.slice(toolCallIdx + 2)
           : remaining.slice(toolCallIdx + 2, lineEnd)
 
-      const toolMatch = line.match(/\*\*Calling tool:\*\* `([^`]+)` with (.+)/)
+     // Change this line in parseSegments:
+    const toolMatch = line.match(/>\*\*Calling tool:\*\* `([^`]+)`(?:\s*with\s*(.+))?/)
+
       const tool = toolMatch?.[1] ?? 'unknown'
       const args = toolMatch?.[2] ?? ''
       segments.push({ type: 'tool_call', tool, args })
@@ -90,24 +92,24 @@ interface ToolPair {
 
 function groupToolPairs(segments: Segment[]): ToolPair[] {
   const pairs: ToolPair[] = []
-  for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i]
+  // Use a map to track tools by name since they might arrive out of order
+  const callStack: Segment[] = []
+  
+  for (const seg of segments) {
     if (seg.type === 'tool_call') {
-      const next = segments[i + 1]
-      const done = next?.type === 'tool_result'
-
-      let summary = 'done'
-      if (done && next && 'summary' in next && next.summary) {
-        summary = next.summary
-      }
-
       pairs.push({
         tool: seg.tool,
         args: seg.args,
-        done,
-        summary: done ? summary : 'running…',
+        done: false,
+        summary: 'running…'
       })
-      if (done) i++
+    } else if (seg.type === 'tool_result') {
+      // Find the first "not done" pair and mark it finished
+      const pendingIdx = pairs.findIndex(p => !p.done)
+      if (pendingIdx !== -1) {
+        pairs[pendingIdx].done = true
+        pairs[pendingIdx].summary = 'done'
+      }
     }
   }
   return pairs
