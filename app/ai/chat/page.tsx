@@ -137,6 +137,7 @@ export default function AiInterfaceChat() {
                 <p className="text-xl font-medium">How can I help you today?</p>
               </div>
             ) : (
+            
               messages.map((m, index) => (
                 <div
                   key={index}
@@ -151,9 +152,11 @@ export default function AiInterfaceChat() {
                         ? 'text-gray-800' 
                         : ' text-gray-800'
                     }`}>
-                    <Markdown> {m.content || (
+                      {m.content ? (
+                        <Markdown>{m.content}</Markdown>
+                      ) : (
                         <span className="text-gray-400 italic">Typing...</span>
-                      )}</Markdown>
+                      )}
                     </div>
                   </div>
                 </div>
