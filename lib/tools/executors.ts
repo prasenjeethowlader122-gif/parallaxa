@@ -59,14 +59,15 @@ export async function toolSearchArticles(
 ): Promise<string> {
   try {
     const limit = parseInt(limitStr ?? '5', 10) || 5
-    const res = await searchArticles(
+    const res = await searchArticlesByQuery(
       query
     )
 
-    const articles: any[] = res
+    const articles: any[] = res;
+    let filtered = articles;
     const q = query.toLowerCase()
 
-    let filtered = articles.filter((a) => {
+    /*let filtered = articles.filter((a) => {
       const matchText =
         a.title?.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q) ||
@@ -78,9 +79,9 @@ export async function toolSearchArticles(
     })
 
     if (filtered.length === 0) return `No articles found matching "${query}".`
-
+    */
     filtered = filtered.slice(0, limit)
-
+    
     const list = filtered
       .map(
         (a, i) =>
