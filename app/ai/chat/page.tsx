@@ -367,7 +367,7 @@ export default function AiInterfaceChat() {
                 return (
                   <div
                     key={index}
-                    className={`flex w-full ${
+                    className={`flex min-w-full ${
                       m.from === 'user' ? 'justify-end' : 'justify-start'
                     } animate-fade-in`}
                   >
