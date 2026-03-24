@@ -15,6 +15,12 @@ interface Props {
 type PtpStatus = 'idle' | 'queued' | 'running' | 'done' | 'error'
 type StatusFilter = 'All' | 'Published' | 'Draft' | 'Scheduled'
 
+const STATUS_META = {
+  published: { bg: '#EAF3DE', color: '#3B6D11', dot: '#639922', border: '#C0DD97' },
+  draft:     { bg: '#FAEEDA', color: '#854F0B', dot: '#EF9F27', border: '#FAC775' },
+  scheduled: { bg: '#E6F1FB', color: '#185FA5', dot: '#378ADD', border: '#B5D4F4' },
+} as const
+
 export function ArticlesTab({ articles, loading, deleting, onDelete, userRole }: Props) {
   const router = useRouter()
 
@@ -43,7 +49,7 @@ export function ArticlesTab({ articles, loading, deleting, onDelete, userRole }:
           clearInterval(pollRefs.current[articleId])
           delete pollRefs.current[articleId]
           setStatus(articleId, 'error')
-          setTimeout(() => setStatus(articleId, 'idle'), 5_000)
+          setTimeout(() => setStatus(articleId, 'idle'), 4_000)
         }
       } catch { /* keep polling */ }
     }, 2_500)
@@ -84,140 +90,164 @@ export function ArticlesTab({ articles, loading, deleting, onDelete, userRole }:
   }
 
   const filtered = articles.filter(a => {
-    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch =
+      a.title.toLowerCase().includes(search.toLowerCase()) ||
       a.category.toLowerCase().includes(search.toLowerCase())
     const matchesStatus =
-      statusFilter === 'All' ||
-      a.status === statusFilter.toLowerCase()
+      statusFilter === 'All' || a.status === statusFilter.toLowerCase()
     return matchesSearch && matchesStatus
   })
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <h2
-            style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: 'var(--text-primary)',
-              fontFamily: "'Syne', sans-serif",
-              lineHeight: 1,
-            }}
-          >
-            All articles
+          <h2 style={{
+            margin: 0,
+            fontSize: 22,
+            fontWeight: 700,
+            letterSpacing: '-0.5px',
+            color: 'var(--text-primary)',
+            fontFamily: "'Syne', sans-serif",
+            lineHeight: 1.1,
+          }}>
+            Articles
           </h2>
-          <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 5 }}>
-            {byStatus.published} published · {byStatus.draft} draft · {byStatus.scheduled} scheduled
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            {(['published', 'draft', 'scheduled'] as const).map((s, i) => (
+              <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                {i > 0 && <span style={{ opacity: 0.3 }}>·</span>}
+                <span style={{
+                  display: 'inline-block',
+                  width: 6, height: 6,
+                  borderRadius: '50%',
+                  background: STATUS_META[s].dot,
+                  flexShrink: 0,
+                }} />
+                <span style={{ color: STATUS_META[s].color, fontWeight: 600 }}>{byStatus[s]}</span>
+                <span style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{s}</span>
+              </span>
+            ))}
           </p>
         </div>
+
         <Link
           href="/write"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 6,
-            padding: '8px 16px',
-            borderRadius: 10,
+            gap: 7,
+            padding: '9px 18px',
+            borderRadius: 12,
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 700,
             background: 'var(--text-primary)',
             color: 'var(--bg-primary)',
             textDecoration: 'none',
             fontFamily: "'Syne', sans-serif",
             flexShrink: 0,
-            transition: 'opacity 0.15s',
+            letterSpacing: '0.01em',
+            transition: 'opacity 0.15s, transform 0.15s',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
           }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '0.85')}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.opacity = '0.88'
+            el.style.transform = 'translateY(-1px)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.opacity = '1'
+            el.style.transform = 'translateY(0)'
+          }}
         >
           {Icons.plus} New article
         </Link>
       </div>
 
-      {/* Filter row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+      {/* ── Filters ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        flexWrap: 'wrap',
+        padding: '12px 16px',
+        background: 'var(--card-bg)',
+        border: '0.5px solid var(--border)',
+        borderRadius: 14,
+      }}>
         <TabBar
           tabs={['All', 'Published', 'Draft', 'Scheduled']}
           active={statusFilter}
           onChange={v => setStatusFilter(v as StatusFilter)}
         />
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search articles…"
-        />
+        <div style={{ marginLeft: 'auto' }}>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search articles…"
+          />
+        </div>
       </div>
 
-      {/* Articles card */}
-      <Card title={`${filtered.length} article${filtered.length !== 1 ? 's' : ''}`}>
-        {/* Status summary pills */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 6,
-            padding: '10px 20px',
-            borderBottom: '0.5px solid var(--border)',
-            flexWrap: 'wrap',
-          }}
-        >
-          {[
-            { label: 'Published', count: byStatus.published, bg: '#EAF3DE', text: '#3B6D11' },
-            { label: 'Draft',     count: byStatus.draft,     bg: '#FAEEDA', text: '#854F0B' },
-            { label: 'Scheduled', count: byStatus.scheduled, bg: '#E6F1FB', text: '#185FA5' },
-          ].map(s => (
-            <span
-              key={s.label}
-              style={{
-                fontSize: 11,
-                padding: '3px 10px',
-                borderRadius: 99,
-                background: s.bg,
-                color: s.text,
-                fontWeight: 600,
-                fontFamily: "'Syne', sans-serif",
-              }}
-            >
-              {s.count} {s.label}
+      {/* ── Articles table ── */}
+      <div style={{
+        background: 'var(--card-bg)',
+        border: '0.5px solid var(--border)',
+        borderRadius: 16,
+        overflow: 'hidden',
+      }}>
+
+        {/* Table header */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: userRole === 'admin' ? '1fr 90px 90px 80px 90px 90px' : '1fr 90px 90px 80px 90px',
+          gap: 0,
+          padding: '10px 20px',
+          borderBottom: '0.5px solid var(--border)',
+          background: 'var(--hover-bg)',
+        }}>
+          {['Title', 'Category', 'Status', 'Views', 'Date', ...(userRole === 'admin' ? ['Actions'] : [])].map(col => (
+            <span key={col} style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: 'var(--text-tertiary)',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              fontFamily: "'DM Mono', monospace",
+            }}>
+              {col}
             </span>
           ))}
         </div>
 
+        {/* Rows */}
         {loading ? (
-          <SkeletonRows count={6} height={14} />
-        ) : filtered.length === 0 ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
-              {search || statusFilter !== 'All' ? 'No articles match your filters.' : 'No articles yet.'}
-            </p>
-            {!search && statusFilter === 'All' && (
-              <Link
-                href="/write"
-                style={{
-                  marginTop: 12,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  textDecoration: 'none',
-                }}
-              >
-                {Icons.plus} Write your first article
-              </Link>
-            )}
+          <div style={{ padding: '8px 0' }}>
+            <SkeletonRows count={6} height={14} />
           </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState search={search} statusFilter={statusFilter} />
         ) : (
           <div>
-            {filtered.map(a => {
+            {filtered.map((a, idx) => {
               const status = ptpStatus[a.id] ?? 'idle'
               const busy   = status === 'queued' || status === 'running'
+              const isLast = idx === filtered.length - 1
 
               return (
-                <div key={a.id} style={{ position: 'relative' }}>
+                <div
+                  key={a.id}
+                  style={{
+                    position: 'relative',
+                    borderBottom: isLast ? 'none' : '0.5px solid var(--border)',
+                    transition: 'background 0.12s',
+                  }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--hover-bg)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                >
                   <ArticleRowItem
                     article={a}
                     showActions
@@ -226,61 +256,143 @@ export function ArticlesTab({ articles, loading, deleting, onDelete, userRole }:
                     deleting={deleting}
                   />
 
-                  {/* PTP button — admin only */}
                   {userRole === 'admin' && (
-                    <button
+                    <PtpButton
+                      status={status}
+                      busy={busy}
                       onClick={() => handlePTP(a.id)}
-                      disabled={busy}
-                      title="Post to Page (Facebook)"
-                      style={{
-                        position: 'absolute',
-                        right: 72,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        padding: '4px 11px',
-                        borderRadius: 8,
-                        border: '0.5px solid',
-                        cursor: busy ? 'not-allowed' : 'pointer',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        fontFamily: "'Syne', sans-serif",
-                        transition: 'background 0.2s, color 0.2s',
-                        ...(status === 'done'
-                          ? { background: '#EAF3DE', color: '#3B6D11', borderColor: '#C0DD97' }
-                          : status === 'error'
-                          ? { background: '#FCEBEB', color: '#A32D2D', borderColor: '#F7C1C1' }
-                          : busy
-                          ? { background: '#E6F1FB', color: '#185FA5', borderColor: '#B5D4F4' }
-                          : { background: 'var(--hover-bg)', color: 'var(--text-secondary)', borderColor: 'var(--border)' }),
-                      }}
-                    >
-                      {status === 'queued' ? (
-                        <><SpinnerIcon /> Queued…</>
-                      ) : status === 'running' ? (
-                        <><SpinnerIcon /> Posting…</>
-                      ) : status === 'done' ? (
-                        <>✓ Posted</>
-                      ) : status === 'error' ? (
-                        <>✗ Failed</>
-                      ) : (
-                        <><FbIcon /> PTP</>
-                      )}
-                    </button>
+                    />
                   )}
                 </div>
               )
             })}
           </div>
         )}
-      </Card>
+
+        {/* Footer count */}
+        {!loading && filtered.length > 0 && (
+          <div style={{
+            padding: '10px 20px',
+            borderTop: '0.5px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: "'DM Mono', monospace" }}>
+              {filtered.length} {filtered.length === 1 ? 'article' : 'articles'}
+              {(search || statusFilter !== 'All') && ` · filtered from ${articles.length}`}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-// ─── Inline icons ──────────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function EmptyState({ search, statusFilter }: { search: string; statusFilter: string }) {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '64px 24px',
+      gap: 12,
+    }}>
+      <div style={{
+        width: 48, height: 48,
+        borderRadius: 14,
+        background: 'var(--hover-bg)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: 'var(--text-tertiary)',
+        fontSize: 22,
+      }}>
+        {search || statusFilter !== 'All' ? '🔍' : '📝'}
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, fontFamily: "'Syne', sans-serif" }}>
+          {search || statusFilter !== 'All' ? 'No matches found' : 'No articles yet'}
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--text-tertiary)', margin: '4px 0 0' }}>
+          {search || statusFilter !== 'All'
+            ? 'Try different search terms or filters'
+            : 'Start writing your first article'}
+        </p>
+      </div>
+      {!search && statusFilter === 'All' && (
+        <Link
+          href="/write"
+          style={{
+            marginTop: 4,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            textDecoration: 'none',
+            padding: '8px 16px',
+            borderRadius: 10,
+            border: '0.5px solid var(--border)',
+            background: 'var(--card-bg)',
+            transition: 'border-color 0.15s',
+            fontFamily: "'Syne', sans-serif",
+          }}
+        >
+          Write your first article →
+        </Link>
+      )}
+    </div>
+  )
+}
+
+function PtpButton({ status, busy, onClick }: { status: PtpStatus; busy: boolean; onClick: () => void }) {
+  const styles: Record<PtpStatus, { bg: string; color: string; border: string }> = {
+    idle:    { bg: 'var(--hover-bg)',  color: 'var(--text-secondary)', border: 'var(--border)' },
+    queued:  { bg: '#E6F1FB',          color: '#185FA5',               border: '#B5D4F4' },
+    running: { bg: '#E6F1FB',          color: '#185FA5',               border: '#B5D4F4' },
+    done:    { bg: '#EAF3DE',          color: '#3B6D11',               border: '#C0DD97' },
+    error:   { bg: '#FCEBEB',          color: '#A32D2D',               border: '#F7C1C1' },
+  }
+  const s = styles[status]
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={busy}
+      title="Post to Page (Facebook)"
+      style={{
+        position: 'absolute',
+        right: 76,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 5,
+        padding: '5px 12px',
+        borderRadius: 8,
+        border: `0.5px solid ${s.border}`,
+        cursor: busy ? 'not-allowed' : 'pointer',
+        fontSize: 11,
+        fontWeight: 700,
+        fontFamily: "'Syne', sans-serif",
+        letterSpacing: '0.02em',
+        background: s.bg,
+        color: s.color,
+        transition: 'background 0.2s, color 0.2s, opacity 0.15s',
+        opacity: busy ? 0.8 : 1,
+      }}
+    >
+      {status === 'queued'  && <><SpinnerIcon /> Queued…</>}
+      {status === 'running' && <><SpinnerIcon /> Posting…</>}
+      {status === 'done'    && <>✓ Posted</>}
+      {status === 'error'   && <>✗ Failed</>}
+      {status === 'idle'    && <><FbIcon /> PTP</>}
+    </button>
+  )
+}
 
 function FbIcon() {
   return (
