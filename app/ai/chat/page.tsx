@@ -205,7 +205,7 @@ function MessageContent({
   const hasTools = toolPairs.length > 0
 
   return (
-    <div className="flex flex-col gap-1 w-full">
+    <div className="flex flex-col gap-1 min-w-full">
       {segments
         .filter((s) => s.type === 'think')
         .map((s, i) =>
@@ -221,7 +221,7 @@ function MessageContent({
             <Markdown 
               key={i} 
               // FIXED: typo flex-warp -> flex-wrap
-              className="w-full flex-wrap prose prose-sm max-w-none" 
+              className="min-w-full  flex-wrap prose prose-sm max-w-none" 
               remarkPlugins={[remarkGfm]}
             >
               {s.content}
@@ -231,7 +231,7 @@ function MessageContent({
 
       {isStreaming && (
         <div className="mt-2">
-           <PinwheelLoader size={20}/>
+           <PinwheelLoader size={30}/>
         </div>
       )}
     </div>
@@ -390,7 +390,7 @@ export default function AiInterfaceChat() {
                         className={`text-sm text-gray-800 ${
                           m.from === 'user' 
                             ? 'bg-gray-100 px-4 py-2.5 rounded-2xl rounded-tr-sm whitespace-pre-wrap' 
-                            : 'w-full'
+                            : 'min-w-full'
                         }`}
                       >
                         {m.from === 'ai' ? (
