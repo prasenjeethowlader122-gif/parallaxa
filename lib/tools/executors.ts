@@ -59,9 +59,8 @@ export async function toolSearchArticles(
 ): Promise<string> {
   try {
     const limit = parseInt(limitStr ?? '5', 10) || 5
-    const res = await searchArticlesByQuery(
-      query,
-      limit
+    const res = await searchArticles(
+      query
     )
 
     const articles: any[] = res
@@ -231,7 +230,6 @@ export async function toolTriggerPtp(articleId: string): Promise<string> {
   try {
     const res = await fetch(`${BASE_URL}/api/ptp`, {
       method: 'POST',
-      headers: serviceHeaders(),
       body: JSON.stringify({ articleId }),
     })
 
