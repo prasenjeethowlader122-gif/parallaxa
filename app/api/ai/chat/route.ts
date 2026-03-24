@@ -161,9 +161,11 @@ async function runAgentLoop(
 
     // Execute each tool, stream status to client
     for (const tc of toolCalls) {
-      enqueue(`\n\n> 🔧 **Tool:** \`${tc.name}\`\n\n`)
+      enqueue(`\n\n>**Calling tool:** \`${tc.name}\` with args`)
+
       const result = await executeTool(tc.name, tc.args)
-      enqueue(`> ✅ **Result received**\n\n`)
+      enqueue(`\n\n>**Tool result received**\n\n`)
+
       history.push({
         role: 'user',
         content: `[Tool result for ${tc.name}]:\n${result}`,
