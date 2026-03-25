@@ -29,7 +29,8 @@ const formattedTools: OpenAI.Chat.Completions.ChatCompletionTool[] = TOOLS.map((
 async function runAgentLoop(
   messages: any[],
   temperature: number,
-  enqueue: (chunk: string) => void
+  enqueue: (chunk: string) => void,
+  
 ) {
   const MAX_ITERATIONS = 6
   const history: any[] = [
@@ -115,7 +116,7 @@ async function runAgentLoop(
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, temperature = 0.7 } = await req.json()
+    const { messages, temperature = 0.7 , auth } = await req.json()
     
     const stream = new ReadableStream({
       async start(controller) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { Header } from '@/components/header'
+
 import PinwheelLoader from '@/components/logo'
 import { slabo ,spacegrotesk} from '@/lib/font'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
@@ -29,7 +30,7 @@ function parseSegments(raw: string): Segment[] {
     const thinkStart = remaining.indexOf('<think>')
     const toolCallIdx = remaining.indexOf('\n\n>**Calling tool:**')
     const toolResultIdx = remaining.indexOf('\n\n>**Tool result received**')
-
+    
     const candidates = [
       thinkStart !== -1 ? thinkStart : Infinity,
       toolCallIdx !== -1 ? toolCallIdx : Infinity,
@@ -298,12 +299,14 @@ export default function AiInterfaceChat() {
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
+        
           messages: [
             ...historySnapshot,
             { role: 'user', content: trimmedQuery },
           ],
           model: '@cf/moonshotai/kimi-k2.5',
           temperature: 0.7,
+          
         }),
       })
 
@@ -430,7 +433,9 @@ export default function AiInterfaceChat() {
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
-                   <div className='flex items-center justify-between border-2 pt-3'>       <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><p className='font-bold'>{"Parallaxa"}</p></div>
+                   <div className='flex items-center justify-between border-t w-full pt-3'>       <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35}
+              isfill={true}
+              isDone={!isLoading || !isLastAi}/><p className='font-bold'>{"Parallaxa"}</p></div>
                    <hr className='w-full'/>
                    </div>
                         )}
