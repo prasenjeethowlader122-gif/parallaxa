@@ -12,7 +12,7 @@ if (!API_KEY) {
 }
 
 const openai = new OpenAI({
-  apiKey: API_KEY || 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
+  apiKey:  'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
   baseURL: BASE_URL,
 })
 
