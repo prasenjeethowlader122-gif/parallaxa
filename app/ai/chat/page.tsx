@@ -430,7 +430,9 @@ export default function AiInterfaceChat() {
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
-                          <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><hr className='h-5 w-0'/><p className='font-bold'>{"Parallaxa"}</p></div>
+                   <div className='flex items-center justify-between'>       <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><hr/><p className='font-bold'>{"Parallaxa"}</p></div>
+                   <hr className='w-full'/>
+                   </div>
                         )}
                       </div>
 
