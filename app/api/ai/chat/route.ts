@@ -50,17 +50,18 @@ async function runAgentLoop(
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta
       
+      // 1. Stream Content to Frontend
       if (delta?.content) {
         fullText += delta.content
         enqueue(delta.content)
       }
       
+      // 2. Capture Tool Calls (Gemini sends these in chunks)
       if (delta?.tool_calls) {
         for (const tc of delta.tool_calls) {
           const idx = tc.index ?? 0
           if (!toolCalls[idx]) {
-            // Assign a stable fallback ID on first sight
-            toolCalls[idx] = { id: `call_${idx}_${Date.now()}`, name: '', args: '' }
+            toolCalls[idx] = { id: tc.id, name: '', args: '' }
           }
           if (tc.id) toolCalls[idx].id = tc.id
           if (tc.function?.name) toolCalls[idx].name = tc.function.name
@@ -69,27 +70,29 @@ async function runAgentLoop(
       }
     }
     
-    // Filter sparse array slots
-    const validToolCalls = toolCalls.filter(Boolean)
-    if (validToolCalls.length === 0) break
+    // If no tools were requested, the loop ends
+    if (toolCalls.length === 0) break
     
-    // ← empty string, never null
+    // Add assistant's tool-call request to history
     history.push({
       role: 'assistant',
-      content: fullText || '',
-      tool_calls: validToolCalls.map(tc => ({
+      content: fullText || null,
+      tool_calls: toolCalls.map(tc => ({
         id: tc.id,
         type: 'function',
         function: { name: tc.name, arguments: tc.args }
       }))
     })
     
-    for (const tc of validToolCalls) {
+    // 3. Execute Tools & Feedback
+    for (const tc of toolCalls) {
+      // Send a UI indicator that a tool is running
       enqueue(`\n\n>**Calling tool:** \`${tc.name}\` with ${tc.args}`)
       
       try {
         const result = await executeTool(tc.name, JSON.parse(tc.args || '{}'))
         enqueue(`\n\n>**Tool result received**\n\n`)
+        
         history.push({
           role: 'tool',
           tool_call_id: tc.id,
@@ -103,6 +106,7 @@ async function runAgentLoop(
         })
       }
     }
+    // Loop continues so Gemini can read the tool results
   }
 }
 
