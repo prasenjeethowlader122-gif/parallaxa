@@ -222,7 +222,7 @@ function MessageContent({
           s.type === 'text' && s.content.trim() ? (
             <Markdown
               key={i}
-              className="min-w-full flex-wrap prose prose-sm max-w-none"
+              className="min-w-full pt-2 flex-wrap prose prose-sm max-w-none"
               remarkPlugins={[remarkGfm]}
             >
               {s.content}
