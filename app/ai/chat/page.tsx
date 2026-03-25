@@ -207,7 +207,7 @@ function MessageContent({
   const hasTools = toolPairs.length > 0
 
   return (
-    <div className={"flex flex-col gap-1 min-w-full " + spacegrotesk.className}>
+    <div className={"flex flex-col gap-1 min-w-full border-t" + spacegrotesk.className}>
       {segments
         .filter((s) => s.type === 'think')
         .map((s, i) =>
