@@ -31,11 +31,15 @@ export default function PinwheelLoader({
   color = "currentColor",
   duration = 2.4,
   isDone = false,
+  isfill,
+  stkw
 }: {
   size ? : number;
   color ? : string;
   duration ? : number;
   isDone ? : boolean;
+  isfill ? : boolean;
+  stkw?:number
 }) {
   const styleRef = useRef < HTMLStyleElement | null > (null);
   
@@ -73,10 +77,10 @@ export default function PinwheelLoader({
             }}
           >
             <path
-              fill={color}
+              fill={isfill ? currentColor : 'none'  }
               stroke={color}
-              strokeWidth={8}
-              strokeLinejoin="round"
+              strokeWidth={stkw || 10}
+              strokeLinejoin="arcs"
               strokeDasharray={PETAL_PERIMETER}
               d={PETAL_PATH}
               style={
