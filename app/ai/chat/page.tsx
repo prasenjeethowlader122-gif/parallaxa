@@ -2,7 +2,7 @@
 
 import { Header } from '@/components/header'
 import PinwheelLoader from '@/components/logo'
-import { slabo } from '@/lib/font'
+import { slabo ,spacegrotesk} from '@/lib/font'
 import { ArrowRight, Brain, ChevronRight } from 'lucide-react'
 import { useState, useRef, KeyboardEvent, useEffect, useCallback } from 'react'
 import remarkGfm from 'remark-gfm'
@@ -169,7 +169,7 @@ function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
               key={i}
               className="flex items-baseline gap-0 text-[11px] whitespace-nowrap overflow-hidden"
             >
-              <div className="text-gray-400 flex-shrink-0" h-5 w-2 bg-transparent border-l border-b rounded-lb-md></div>
+              <div className="text-gray-400 flex-shrink-0" h-5 w-3 bg-transparent border-l border-b border-2 rounded-lb-md></div>
               <span className="font-mono text-gray-500 flex-shrink-0">{p.tool}</span>
               <span className="text-gray-300 px-1.5 flex-shrink-0">·</span>
               <span className="font-mono text-gray-400 overflow-hidden text-ellipsis flex-1 min-w-0">
@@ -207,7 +207,7 @@ function MessageContent({
   const hasTools = toolPairs.length > 0
 
   return (
-    <div className="flex flex-col gap-1 min-w-full">
+    <div className={"flex flex-col gap-1 min-w-full " + spacegrotesk.className}>
       {segments
         .filter((s) => s.type === 'think')
         .map((s, i) =>
@@ -230,11 +230,7 @@ function MessageContent({
           ) : null
         )}
 
-      {isStreaming && (
-        <div className="mt-2">
-          <PinwheelLoader size={30} />
-        </div>
-      )}
+      
     </div>
   )
 }
@@ -430,11 +426,11 @@ export default function AiInterfaceChat() {
                         m.from === 'user' ? 'items-end' : 'items-start w-full'
                       }`}
                     >
-                      <div className="flex items-center text-[11px] px-1">
+                      <div className="flex items-center text-[11px]">
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
-                          <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><p className='font-bold'>{"Parallaxa"}</p></div>
+                          <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><hr className='h-5 w-0'/><p className='font-bold'>{"Parallaxa"}</p></div>
                         )}
                       </div>
 
