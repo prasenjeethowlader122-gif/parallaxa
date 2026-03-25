@@ -486,7 +486,7 @@ function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
               <div className="text-gray-400 flex-shrink-0 h-5 w-3 bg-transparent border-l border-b-2 border-gray-300 rounded-bl" />
               <span className="font-mono text-gray-500 flex-shrink-0">{p.tool}</span>
               <span className="text-gray-300 px-1.5 flex-shrink-0">·</span>
-              <span className="font-mono text-gray-400 overflow-hidden text-ellipsis flex-1 min-w-0">{p.args}</span>
+              <span className="font-mono text-gray-400 overflow-hidden text-ellipsis flex-1 w-full"></span>
               <span className="text-gray-300 pl-2 flex-shrink-0">{p.done ? 'done' : 'running…'}</span>
             </div>
           ))}
@@ -672,7 +672,7 @@ export default function AiInterfaceChat() {
                     className={`flex min-w-full ${m.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                   >
                     <div className={`flex flex-col gap-1 max-w-[100%] text-md ${m.from === 'user' ? 'items-end' : 'items-start w-full'}`}>
-                      <div className="flex items-center text-[11px] w-full">
+                      <div className="flex items-center text-[11px] w-full justify-end">
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
