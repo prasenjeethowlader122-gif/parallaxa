@@ -6,7 +6,7 @@ import { executeTool } from '@/lib/tools/executors'
 // Configuration - Use Environment Variables for Production
 const API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk'
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai'
-const MODEL = 'gemini-2.5-flash-preview-05-20' // Best for tool calling + high rate limits
+const MODEL = 'gemini-3-flash-preview' // Best for tool calling + high rate limits
 
 const openai = new OpenAI({
   apiKey: API_KEY,
@@ -50,18 +50,17 @@ async function runAgentLoop(
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta
       
-      // 1. Stream Content to Frontend
       if (delta?.content) {
         fullText += delta.content
         enqueue(delta.content)
       }
       
-      // 2. Capture Tool Calls (Gemini sends these in chunks)
       if (delta?.tool_calls) {
         for (const tc of delta.tool_calls) {
           const idx = tc.index ?? 0
           if (!toolCalls[idx]) {
-            toolCalls[idx] = { id: tc.id, name: '', args: '' }
+            // Assign a stable fallback ID on first sight
+            toolCalls[idx] = { id: `call_${idx}_${Date.now()}`, name: '', args: '' }
           }
           if (tc.id) toolCalls[idx].id = tc.id
           if (tc.function?.name) toolCalls[idx].name = tc.function.name
@@ -70,29 +69,27 @@ async function runAgentLoop(
       }
     }
     
-    // If no tools were requested, the loop ends
-    if (toolCalls.length === 0) break
+    // Filter sparse array slots
+    const validToolCalls = toolCalls.filter(Boolean)
+    if (validToolCalls.length === 0) break
     
-    // Add assistant's tool-call request to history
+    // ← empty string, never null
     history.push({
       role: 'assistant',
-      content: fullText || null,
-      tool_calls: toolCalls.map(tc => ({
+      content: fullText || '',
+      tool_calls: validToolCalls.map(tc => ({
         id: tc.id,
         type: 'function',
         function: { name: tc.name, arguments: tc.args }
       }))
     })
     
-    // 3. Execute Tools & Feedback
-    for (const tc of toolCalls) {
-      // Send a UI indicator that a tool is running
+    for (const tc of validToolCalls) {
       enqueue(`\n\n>**Calling tool:** \`${tc.name}\` with ${tc.args}`)
       
       try {
         const result = await executeTool(tc.name, JSON.parse(tc.args || '{}'))
         enqueue(`\n\n>**Tool result received**\n\n`)
-        
         history.push({
           role: 'tool',
           tool_call_id: tc.id,
@@ -106,7 +103,6 @@ async function runAgentLoop(
         })
       }
     }
-    // Loop continues so Gemini can read the tool results
   }
 }
 
