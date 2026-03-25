@@ -5,7 +5,7 @@ import { executeTool } from '@/lib/tools/executors'
 
 const API_KEY = process.env.GEMINI_API_KEY || ''
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai'
-const MODEL = 'gemini-3-flash-preview'
+const MODEL = 'gemini-2.5-flash-preview'
 
 if (!API_KEY) {
   console.warn('[chat/route] GEMINI_API_KEY is not set — requests will fail.')
