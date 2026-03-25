@@ -10,8 +10,10 @@ import {
   getArticleById,
   searchArticlesByQuery,
   searchArticles,
+  getArticlesByCategory,
   createArticle,
   updateArticle,
+  deleteArticle,
 } from '@/lib/db/articles'
 import { inngest } from '@/lib/inngest/client'
 
@@ -21,23 +23,23 @@ function truncate(text: string, max = 3000): string {
   return text.length > max ? text.slice(0, max) + '\n…(truncated)' : text
 }
 
-function safeDate(val: unknown): string {
-  if (val instanceof Date) return val.toISOString().slice(0, 10)
-  return String(val ?? '').slice(0, 10)
-}
-
 // ─── Tool implementations ─────────────────────────────────────────────────────
 
+/**
+ * Search articles by free-text + optional category.
+ */
 export async function toolSearchArticles(
   query: string,
   category?: string,
   limitStr?: string
 ): Promise<string> {
   try {
-    const limit = Math.max(1, parseInt(limitStr ?? '5', 10) || 5)
+    const limit = parseInt(limitStr ?? '5', 10) || 5
 
+    // Use vector/semantic search if possible, fall back to text search
     let articles = await searchArticlesByQuery(query, limit * 2)
 
+    // Optional category filter
     if (category) {
       articles = articles.filter(
         (a) => a.category?.toLowerCase() === category.toLowerCase()
@@ -45,6 +47,7 @@ export async function toolSearchArticles(
     }
 
     if (articles.length === 0) {
+      // Fallback to simple text search
       const fallback = await searchArticles(query)
       articles = category
         ? fallback.filter((a) => a.category?.toLowerCase() === category.toLowerCase())
@@ -58,7 +61,9 @@ export async function toolSearchArticles(
       .map(
         (a, i) =>
           `[${i + 1}] **${a.title}** (ID: ${a.id})\n` +
-          `Category: ${a.category} | Status: ${a.status} | Date: ${safeDate(a.date)}\n` +
+          `Category: ${a.category} | Status: ${a.status} | Date: ${
+            a.date instanceof Date ? a.date.toISOString().slice(0, 10) : String(a.date ?? '').slice(0, 10)
+          }\n` +
           `${a.description ?? ''}`
       )
       .join('\n\n')
@@ -69,17 +74,23 @@ export async function toolSearchArticles(
   }
 }
 
+/**
+ * Fetch a single article by ID and return a readable summary.
+ */
 export async function toolGetArticle(id: string): Promise<string> {
   try {
-    if (!id?.trim()) return 'Article ID is required.'
-
     const a = await getArticleById(id)
     if (!a) return `Article with ID "${id}" was not found.`
+
+    const date =
+      a.date instanceof Date
+        ? a.date.toISOString().slice(0, 10)
+        : String(a.date ?? '').slice(0, 10)
 
     return (
       `**${a.title}**\n` +
       `ID: ${a.id} | Category: ${a.category} | Status: ${a.status}\n` +
-      `Author: ${a.author} | Date: ${safeDate(a.date)}\n\n` +
+      `Author: ${a.author} | Date: ${date}\n\n` +
       `**Description:** ${a.description}\n\n` +
       truncate(a.content ?? '', 2000)
     )
@@ -88,27 +99,23 @@ export async function toolGetArticle(id: string): Promise<string> {
   }
 }
 
+/**
+ * Generate a new article with AI (Cloudflare) and save it as a draft directly to DB.
+ */
 export async function toolGenerateArticle(
   topic: string,
   category: string,
-  tone = 'neutral',
-  length = 'medium'
+  tone: string = 'neutral',
+  length: string = 'medium'
 ): Promise<string> {
   try {
-    if (!topic?.trim()) return 'A topic is required to generate an article.'
-    if (!category?.trim()) return 'A category is required to generate an article.'
-
-    const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
-    const API_TOKEN =
-      process.env.CLOUDFLARE_API_TOKEN ?? process.env.CLOUDFLARE_AI_TOKEN ?? ''
-    const CF_MODEL =
-      process.env.CLOUDFLARE_AI_MODEL ?? '@cf/moonshotai/kimi-k2.5'
-
-    if (!ACCOUNT_ID) return 'CLOUDFLARE_ACCOUNT_ID is not configured on the server.'
-    if (!API_TOKEN) return 'CLOUDFLARE_API_TOKEN is not configured on the server.'
-
     const wordTarget = length === 'short' ? 300 : length === 'long' ? 1200 : 600
-    const cfUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/${CF_MODEL}`
+
+    const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID ?? '342bdd8fddcbe228eb8c1d289d73da5a'
+    const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN ?? process.env.CLOUDFLARE_AI_TOKEN ?? ''
+    const MODEL = process.env.CLOUDFLARE_AI_MODEL ?? '@cf/moonshotai/kimi-k2.5'
+
+    const cfUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/${MODEL}`
 
     const prompt = `Write a ${tone} news article about: "${topic}".
 Category: ${category}. Target length: ~${wordTarget} words.
@@ -123,62 +130,39 @@ Respond ONLY with a valid JSON object in this exact shape (no markdown, no backt
   "focusKeyword": "primary keyword"
 }`
 
-    let cfRes: Response
-    try {
-      cfRes = await fetch(cfUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 2048,
-          temperature: 0.7,
-        }),
-        signal: AbortSignal.timeout(30_000),
-      })
-    } catch (fetchErr: any) {
-      return `AI generation request failed: ${fetchErr?.message ?? 'Network error or timeout'}`
-    }
+    const cfRes = await fetch(cfUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 2048,
+        temperature: 0.7,
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
 
-    if (!cfRes.ok) {
-      const errText = await cfRes.text().catch(() => '')
-      return `AI generation failed (HTTP ${cfRes.status}): ${cfRes.statusText}${errText ? ` — ${truncate(errText, 300)}` : ''}`
-    }
+    if (!cfRes.ok) return `AI generation failed: ${cfRes.statusText}`
 
-    const rawText = await cfRes.text().catch(() => '')
-    if (!rawText.trim()) return 'AI generation failed: Cloudflare returned an empty response.'
-
-    let cfData: any
-    try {
-      cfData = JSON.parse(rawText)
-    } catch {
-      return `AI generation failed: could not parse Cloudflare response.\n\n${truncate(rawText, 500)}`
-    }
-
-    const responseText: string =
+    const cfData = await cfRes.json()
+    const rawText: string =
       cfData.result?.response ??
       cfData.choices?.[0]?.message?.content ??
       cfData.result?.choices?.[0]?.message?.content ??
       ''
 
-    if (!responseText.trim()) {
-      return `AI returned no content. Raw response:\n\n${truncate(rawText, 500)}`
-    }
-
-    const jsonText = responseText
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/, '')
-      .trim()
+    const jsonText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
 
     let generated: Record<string, unknown>
     try {
       generated = JSON.parse(jsonText)
     } catch {
-      return `AI generated content but JSON could not be parsed:\n\n${truncate(responseText, 1000)}`
+      return `AI generated content but could not parse JSON:\n\n${truncate(rawText, 1000)}`
     }
 
+    // Save directly to DB
     const saved = await createArticle({
       title: String(generated.title ?? topic),
       description: String(generated.description ?? ''),
@@ -205,7 +189,7 @@ Respond ONLY with a valid JSON object in this exact shape (no markdown, no backt
 
     if (!saved) {
       return (
-        `Article generated but could not be saved to the database.\n\n` +
+        `Article generated but could not be saved to DB.\n\n` +
         `**Title:** ${generated.title}\n\n${truncate(String(generated.content ?? ''), 500)}`
       )
     }
@@ -223,14 +207,12 @@ Respond ONLY with a valid JSON object in this exact shape (no markdown, no backt
   }
 }
 
+/**
+ * Trigger PTP (Post-to-Platform) for an article via Inngest event.
+ */
 export async function toolTriggerPtp(articleId: string): Promise<string> {
   try {
-    if (!articleId?.trim()) return 'An article ID is required.'
-
-    if (!process.env.INNGEST_EVENT_KEY) {
-      return 'INNGEST_EVENT_KEY is not configured — cannot trigger PTP.'
-    }
-
+    // Verify article exists first
     const article = await getArticleById(articleId)
     if (!article) return `Article "${articleId}" not found. Cannot trigger PTP.`
 
@@ -239,10 +221,8 @@ export async function toolTriggerPtp(articleId: string): Promise<string> {
       data: { articleId, userId: 'ai-agent' },
     })
 
-    const eventId = result?.ids?.[0] ?? (result as any)?.id ?? null
-    if (!eventId) {
-      return `PTP event was sent but no event ID was returned — check INNGEST_EVENT_KEY.`
-    }
+    const eventId = result?.ids?.[0] ?? result?.id ?? null
+    if (!eventId) return `PTP event sent but no event ID returned — check INNGEST_EVENT_KEY.`
 
     return (
       `✅ PTP job started for "${article.title}"!\n` +
@@ -255,30 +235,23 @@ export async function toolTriggerPtp(articleId: string): Promise<string> {
   }
 }
 
+/**
+ * Check the status of an Inngest pipeline job via the Inngest REST API.
+ */
 export async function toolCheckJobStatus(eventId: string): Promise<string> {
   try {
-    if (!eventId?.trim()) return 'An event ID is required.'
-
     const INNGEST_SIGNING_KEY = process.env.INNGEST_SIGNING_KEY
-    if (!INNGEST_SIGNING_KEY) {
-      return 'INNGEST_SIGNING_KEY is not configured — cannot check job status.'
-    }
+    if (!INNGEST_SIGNING_KEY) return 'INNGEST_SIGNING_KEY is not configured — cannot check job status.'
 
-    let runsRes: Response
-    try {
-      runsRes = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`, {
-        headers: { Authorization: `Bearer ${INNGEST_SIGNING_KEY}` },
-        cache: 'no-store',
-      })
-    } catch (fetchErr: any) {
-      return `Could not reach Inngest API: ${fetchErr?.message ?? 'Network error'}`
-    }
+    // Resolve event → runs
+    const runsRes = await fetch(`https://api.inngest.com/v1/events/${eventId}/runs`, {
+      headers: { Authorization: `Bearer ${INNGEST_SIGNING_KEY}` },
+      cache: 'no-store',
+    })
 
-    if (!runsRes.ok) {
-      return `Could not fetch job status: HTTP ${runsRes.status} ${runsRes.statusText}`
-    }
+    if (!runsRes.ok) return `Could not fetch job status: HTTP ${runsRes.status}`
 
-    const runsJson = await runsRes.json().catch(() => ({ data: [] }))
+    const runsJson = await runsRes.json()
     const runs: any[] = runsJson.data ?? []
 
     if (runs.length === 0) {
@@ -288,18 +261,16 @@ export async function toolCheckJobStatus(eventId: string): Promise<string> {
     const run = runs[0]
     const runId = run.run_id
 
+    // Fetch full run details
+    const runRes = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
+      headers: { Authorization: `Bearer ${INNGEST_SIGNING_KEY}` },
+      cache: 'no-store',
+    })
+
     let jobDetail: any = run
-    try {
-      const runRes = await fetch(`https://api.inngest.com/v1/runs/${runId}`, {
-        headers: { Authorization: `Bearer ${INNGEST_SIGNING_KEY}` },
-        cache: 'no-store',
-      })
-      if (runRes.ok) {
-        const runJson = await runRes.json()
-        jobDetail = runJson.data ?? runJson
-      }
-    } catch {
-      // fall back to the summary from the runs list
+    if (runRes.ok) {
+      const runJson = await runRes.json()
+      jobDetail = runJson.data ?? runJson
     }
 
     const status = (jobDetail.status ?? 'unknown').toUpperCase()
@@ -319,13 +290,12 @@ export async function toolCheckJobStatus(eventId: string): Promise<string> {
   }
 }
 
+/**
+ * Trigger the automated news pipeline via Inngest event.
+ */
 export async function toolRunNewsPipeline(confirm: string): Promise<string> {
-  if (confirm?.toLowerCase() !== 'yes') {
-    return 'Pipeline not started — confirmation must be "yes". Please confirm to proceed.'
-  }
-
-  if (!process.env.INNGEST_EVENT_KEY) {
-    return 'INNGEST_EVENT_KEY is not configured — cannot trigger the pipeline.'
+  if (confirm.toLowerCase() !== 'yes') {
+    return 'Pipeline not started — confirmation was not "yes". Please confirm to proceed.'
   }
 
   try {
@@ -334,10 +304,8 @@ export async function toolRunNewsPipeline(confirm: string): Promise<string> {
       data: {},
     })
 
-    const eventId = result?.ids?.[0] ?? (result as any)?.id ?? null
-    if (!eventId) {
-      return `Pipeline event was sent but no event ID was returned — check INNGEST_EVENT_KEY.`
-    }
+    const eventId = result?.ids?.[0] ?? result?.id ?? null
+    if (!eventId) return `Pipeline event sent but no event ID returned — check INNGEST_EVENT_KEY.`
 
     return (
       `✅ News pipeline started!\n` +
@@ -350,10 +318,15 @@ export async function toolRunNewsPipeline(confirm: string): Promise<string> {
   }
 }
 
-export async function toolListMyArticles(status = 'all'): Promise<string> {
+/**
+ * List all articles (optionally filtered by status).
+ */
+export async function toolListMyArticles(status: string = 'all'): Promise<string> {
   try {
     const all = await getAllArticles()
-    const articles = status === 'all' ? all : all.filter((a) => a.status === status)
+
+    const articles =
+      status === 'all' ? all : all.filter((a) => a.status === status)
 
     if (articles.length === 0) {
       return status === 'all'
@@ -363,11 +336,16 @@ export async function toolListMyArticles(status = 'all'): Promise<string> {
 
     const list = articles
       .slice(0, 20)
-      .map(
-        (a, i) =>
+      .map((a, i) => {
+        const date =
+          a.date instanceof Date
+            ? a.date.toISOString().slice(0, 10)
+            : String(a.date ?? '').slice(0, 10)
+        return (
           `[${i + 1}] **${a.title}** (ID: ${a.id})\n` +
-          `   Status: ${a.status} | Category: ${a.category} | Date: ${safeDate(a.date)}`
-      )
+          `   Status: ${a.status} | Category: ${a.category} | Date: ${date}`
+        )
+      })
       .join('\n\n')
 
     return `Articles (${articles.length} total):\n\n${list}`
@@ -376,11 +354,11 @@ export async function toolListMyArticles(status = 'all'): Promise<string> {
   }
 }
 
+/**
+ * Update an article's fields directly via DB.
+ */
 export async function toolUpdateArticle(id: string, fieldsJson: string): Promise<string> {
   try {
-    if (!id?.trim()) return 'An article ID is required.'
-    if (!fieldsJson?.trim()) return 'Fields JSON is required.'
-
     let fields: Record<string, unknown>
     try {
       fields = JSON.parse(fieldsJson)
@@ -388,14 +366,20 @@ export async function toolUpdateArticle(id: string, fieldsJson: string): Promise
       return `Invalid fields JSON: ${fieldsJson}`
     }
 
+    // Verify article exists
     const existing = await getArticleById(id)
     if (!existing) return `Article "${id}" not found.`
 
-    if (typeof fields.date === 'string') fields.date = new Date(fields.date)
-    if (typeof fields.scheduledAt === 'string') fields.scheduledAt = new Date(fields.scheduledAt)
+    // Convert date strings to Date objects if needed
+    if (fields.date && typeof fields.date === 'string') {
+      fields.date = new Date(fields.date)
+    }
+    if (fields.scheduledAt && typeof fields.scheduledAt === 'string') {
+      fields.scheduledAt = new Date(fields.scheduledAt)
+    }
 
     const updated = await updateArticle(id, fields)
-    if (!updated) return `Update failed — no rows returned from the database.`
+    if (!updated) return `Update failed — no rows returned.`
 
     const changedKeys = Object.keys(fields).join(', ')
     return (
@@ -433,10 +417,6 @@ export async function executeTool(
     case 'update_article':
       return toolUpdateArticle(args.id, args.fields)
     default:
-      return (
-        `Unknown tool: "${name}". ` +
-        `Available: search_articles, get_article, generate_article, trigger_ptp, ` +
-        `check_job_status, run_news_pipeline, list_my_articles, update_article`
-      )
+      return `Unknown tool: "${name}". Available: search_articles, get_article, generate_article, trigger_ptp, check_job_status, run_news_pipeline, list_my_articles, update_article`
   }
 }
