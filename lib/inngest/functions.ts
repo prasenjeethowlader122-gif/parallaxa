@@ -290,8 +290,8 @@ export const newsPipelineFunction = inngest.createFunction(
     triggers: [{ event: 'news/pipeline.requested' }],
   },
 
-  async ({ step, logger }) => {
-
+  async ({event , step, logger }) => {
+    const turl = event.data.tUrl
     // ✅ FIX: auth() called at top-level handler, NOT inside step.run
     const session = await auth()
     const userId = session?.user?.id ?? 'system'
@@ -302,6 +302,16 @@ export const newsPipelineFunction = inngest.createFunction(
 
     // ── Step 1: Discover links ──────────────────────────────────────────────
     const links = await step.run('discover-links', async () => {
+      
+      if(turl!==false) {
+        return [
+        {
+          url: turl,
+          title: null
+        }
+      ] 
+        
+      } 
       const found = await discoverLinksPlain(30)
       return found.length > 0 ? found : [{ url: FALLBACK_URL, title: null }]
     })

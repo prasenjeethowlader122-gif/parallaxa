@@ -424,6 +424,7 @@ export function IntelligenceTab() {
   const [isRunning, setIsRunning] = useState(false)
   const [jobId, setJobId]         = useState<string | null>(null)
   const [job, setJob]             = useState<PipelineJob | null>(null)
+  const [targetUrl , setTargetUrl] = useState('');
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState<string | null>(null)
   const [tick, setTick]           = useState(0)
@@ -474,7 +475,9 @@ export function IntelligenceTab() {
     pendingCountRef.current = 0
     startTimeRef.current    = Date.now()
     try {
-      const res = await fetch('/api/pipeline', { method: 'POST' })
+      const res = await fetch('/api/pipeline', { method: 'POST' , body : {
+        tUrl : targetUrl
+      }})
       if (!res.ok) {
         setError('Failed to start pipeline')
         return
@@ -1089,6 +1092,7 @@ export function IntelligenceTab() {
           )}
 
           {/* Action buttons */}
+          <input type='text' value = 'https://www.dhakatribune.com/bangladesh/nation/406170/bus-plunge-at-daulatdia-two-dead-35-missing-as' onChange={((val)=>{setTargetUrl(val.target?.value || '')})}/>
           <div style={{ display: 'flex', gap: 10, paddingTop: job || error ? 4 : 0 }}>
             <button
               onClick={handleStartPipeline}
