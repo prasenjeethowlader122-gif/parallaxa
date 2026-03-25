@@ -4,9 +4,12 @@ import { TOOLS } from '@/lib/tools/definitions'
 import { executeTool } from '@/lib/tools/executors'
 
 // Configuration - Use Environment Variables for Production
-const API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk'
-const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai'
-const MODEL = 'gemini-2.5-flash-lite' // Best for tool calling + high rate limits
+const API_KEY = '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'
+//process.env.GEMINI_API_KEY || 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk'
+const BASE_URL = 'https://openrouter.ai/api/v1'
+//'https://generativelanguage.googleapis.com/v1beta/openai'
+const MODEL = 'nvidia/nemotron-3-super-120b-a12b:free'
+//'gemini-2.5-flash-lite' // Best for tool calling + high rate limits
 
 const openai = new OpenAI({
   apiKey: API_KEY,
