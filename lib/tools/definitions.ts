@@ -148,7 +148,6 @@ export const TOOLS: ToolDefinition[] = [
       required: ['confirm'],
     },
   },
-
   // ── List My Articles ───────────────────────────────────────────────────────
   {
     name: 'list_my_articles',

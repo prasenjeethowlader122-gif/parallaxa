@@ -77,7 +77,7 @@ export default function PinwheelLoader({
             }}
           >
             <path
-              fill={isfill ? currentColor : 'none'  }
+              fill={isfill ? 'currentColor' : 'none'  }
               stroke={color}
               strokeWidth={stkw || 25}
               strokeLinejoin="arcs"
