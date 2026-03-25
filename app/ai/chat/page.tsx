@@ -207,7 +207,7 @@ function MessageContent({
   const hasTools = toolPairs.length > 0
 
   return (
-    <div className={"flex flex-col gap-1 min-w-full border-t pt-3" + spacegrotesk.className}>
+    <div className={"flex flex-col gap-1 min-w-full  pt-2" + spacegrotesk.className}>
       {segments
         .filter((s) => s.type === 'think')
         .map((s, i) =>
@@ -222,7 +222,7 @@ function MessageContent({
           s.type === 'text' && s.content.trim() ? (
             <Markdown
               key={i}
-              className="min-w-full pt-2 flex-wrap prose prose-sm max-w-none"
+              className="min-w-full flex-wrap prose prose-sm max-w-none"
               remarkPlugins={[remarkGfm]}
             >
               {s.content}
@@ -430,7 +430,7 @@ export default function AiInterfaceChat() {
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
-                   <div className='flex items-center justify-between'>       <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><hr/><p className='font-bold'>{"Parallaxa"}</p></div>
+                   <div className='flex items-center justify-between border-2 pt-3'>       <div className='flex items-center justify-start gap-2'><PinwheelLoader size= {35} isDone={!isLoading || !isLastAi}/><p className='font-bold'>{"Parallaxa"}</p></div>
                    <hr className='w-full'/>
                    </div>
                         )}
