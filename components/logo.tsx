@@ -79,7 +79,7 @@ export default function PinwheelLoader({
             <path
               fill={isfill ? 'currentColor' : 'none'  }
               stroke={color}
-              strokeWidth={stkw || 25}
+              strokeWidth={!isDone ? (stkw || 25) : 0}
               strokeLinejoin="arcs"
               strokeDasharray={PETAL_PERIMETER}
               d={PETAL_PATH}

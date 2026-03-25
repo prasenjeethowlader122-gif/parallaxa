@@ -429,7 +429,7 @@ export default function AiInterfaceChat() {
                         m.from === 'user' ? 'items-end' : 'items-start w-full'
                       }`}
                     >
-                      <div className="flex items-center text-[11px]">
+                      <div className="flex items-center text-[11px] w-full">
                         {m.from === 'user' ? (
                           <div className="w-6 h-6 rounded-full bg-gray-200" title="User" />
                         ) : (
