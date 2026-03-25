@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "next-auth": "^5.0.0-beta.20",
+    "remark-math":"latest",
+    "rehype-katex": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@vercel/analytics": "1.6.1",
     "bcrypt-ts": "latest",
