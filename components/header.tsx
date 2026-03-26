@@ -138,7 +138,7 @@ export function Header({
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
             <div className="flex items-center justify-center flex-shrink-0">
               <Image src={profilePic} alt="logo" height={30} />
             </div>
@@ -266,7 +266,7 @@ export function Header({
         <div className="px-4 h-14 flex items-center justify-between gap-3">
 
           {/* Left: hamburger + logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 select-none">
             <button
               onClick={() => { setIsMenuOpen(!isMenuOpen); setIsSearchOpen(false) }}
               className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
