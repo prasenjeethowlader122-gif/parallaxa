@@ -10,13 +10,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+
+    const useVideo = body.uPtpVidUrl === true || body.uPtpVidUrl === 'true'
+
     const result = await inngest.send({
       name: 'news/pipeline.requested',
       data: {
         tUrl: body.tUrl || false,
         ptp_config: {
-          useVideo: body.uPtpVidUrl || false
-        } || false
+          useVideo,
+          // Direct MP4/video URL — used as-is when useVideo is true.
+          // Falls back to the render server's /og/ptp/video/{slug} if omitted.
+          videoUrl: useVideo && body.videoUrl ? String(body.videoUrl) : undefined,
+        },
       },
     })
 
@@ -25,7 +31,7 @@ export async function POST(req: NextRequest) {
     if (!eventId) {
       return NextResponse.json(
         { error: 'Inngest did not return an event ID — check INNGEST_EVENT_KEY' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -34,7 +40,7 @@ export async function POST(req: NextRequest) {
     console.error('[pipeline] Failed to send Inngest event:', err)
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Failed to start pipeline' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
