@@ -302,19 +302,13 @@ export const newsPipelineFunction = inngest.createFunction(
 
     // ── Step 1: Discover links ──────────────────────────────────────────────
     const links = await step.run('discover-links', async () => {
-      
-      if(turl!==false) {
-        return [
-        {
-          url: turl,
-          title: null
-        }
-      ] 
-        
-      } 
-      const found = await discoverLinksPlain(30)
-      return found.length > 0 ? found : [{ url: FALLBACK_URL, title: null }]
-    })
+  // ✅ FIX: guard against empty string in addition to false
+  if (turl && turl !== false) {
+    return [{ url: turl, title: null }]
+  }
+  const found = await discoverLinksPlain(30)
+  return found.length > 0 ? found : [{ url: FALLBACK_URL, title: null }]
+})
 
     await step.run('discovery-summary', async () => ({
       total: links.length,

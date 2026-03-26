@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { inngest } from '@/lib/inngest/client'
 
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const result = await inngest.send({
       name: 'news/pipeline.requested',
       data: {
-        tUrl : body.tUrl || false
+        tUrl: body.tUrl || false,
       },
     })
 

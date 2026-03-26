@@ -37,8 +37,6 @@ interface PipelineJob {
 const PENDING_WARN_AFTER = 10
 const POLL_INTERVAL_MS   = 2000
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
     case 'done':
@@ -95,18 +93,6 @@ function formatTime(iso?: string) {
   })
 }
 
-function getStepIcon(status: string) {
-  switch (status.toLowerCase()) {
-    case 'completed':
-    case 'done':    return '✓'
-    case 'failed':  return '✕'
-    case 'running': return null  // spinner rendered separately
-    default:        return null  // circle rendered separately
-  }
-}
-
-// ── Animated pulse dot ────────────────────────────────────────────────────────
-
 function PulseDot({ color = '#185FA5', size = 10 }: { color?: string; size?: number }) {
   return (
     <span
@@ -141,8 +127,6 @@ function PulseDot({ color = '#185FA5', size = 10 }: { color?: string; size?: num
   )
 }
 
-// ── Spinner ───────────────────────────────────────────────────────────────────
-
 function Spinner({ color = 'currentColor', size = 12 }: { color?: string; size?: number }) {
   return (
     <svg
@@ -158,8 +142,6 @@ function Spinner({ color = 'currentColor', size = 12 }: { color?: string; size?:
     </svg>
   )
 }
-
-// ── Step row ──────────────────────────────────────────────────────────────────
 
 function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: boolean }) {
   const [expanded, setExpanded] = useState(false)
@@ -177,7 +159,6 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
 
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: isLast ? 0 : 8 }}>
-      {/* Timeline track */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, paddingTop: 2 }}>
         <div
           style={{
@@ -188,13 +169,7 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            background: isRunning
-              ? bg
-              : isCompleted
-              ? '#EAF3DE'
-              : isFailed
-              ? '#FCEBEB'
-              : 'var(--hover-bg)',
+            background: isRunning ? bg : isCompleted ? '#EAF3DE' : isFailed ? '#FCEBEB' : 'var(--hover-bg)',
             border: `1.5px solid ${isRunning || isCompleted || isFailed ? border : 'var(--border)'}`,
             color,
             fontSize: 11,
@@ -225,7 +200,6 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
         )}
       </div>
 
-      {/* Step card */}
       <div
         style={{
           flex: 1,
@@ -274,13 +248,7 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {formatDuration(step.duration) && (
-              <span
-                style={{
-                  fontSize: 10,
-                  color: 'var(--text-tertiary)',
-                  fontFamily: "'DM Mono', monospace",
-                }}
-              >
+              <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: "'DM Mono', monospace" }}>
                 {formatDuration(step.duration)}
               </span>
             )}
@@ -324,52 +292,20 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
             }}
           >
             <div>
-              <p
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: 'var(--text-tertiary)',
-                  marginBottom: 3,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                }}
-              >
+              <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Step ID
               </p>
-              <code
-                style={{
-                  fontSize: 10,
-                  color: 'var(--text-secondary)',
-                  fontFamily: "'DM Mono', monospace",
-                  wordBreak: 'break-all',
-                }}
-              >
+              <code style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: "'DM Mono', monospace", wordBreak: 'break-all' }}>
                 {step.id}
               </code>
             </div>
 
             {step.error && (
               <div>
-                <p
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: '#A32D2D',
-                    marginBottom: 4,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                  }}
-                >
+                <p style={{ fontSize: 9, fontWeight: 700, color: '#A32D2D', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                   Error
                 </p>
-                <div
-                  style={{
-                    background: '#FCEBEB',
-                    border: '0.5px solid #F7C1C1',
-                    borderRadius: 8,
-                    padding: '8px 12px',
-                  }}
-                >
+                <div style={{ background: '#FCEBEB', border: '0.5px solid #F7C1C1', borderRadius: 8, padding: '8px 12px' }}>
                   <p style={{ fontSize: 11, color: '#A32D2D', fontFamily: "'DM Mono', monospace" }}>
                     {step.error}
                   </p>
@@ -379,16 +315,7 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
 
             {step.output !== undefined && step.output !== null && (
               <div>
-                <p
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: 'var(--text-tertiary)',
-                    marginBottom: 4,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                  }}
-                >
+                <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                   Output
                 </p>
                 <pre
@@ -405,9 +332,7 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
                     margin: 0,
                   }}
                 >
-                  {typeof step.output === 'string'
-                    ? step.output
-                    : JSON.stringify(step.output, null, 2)}
+                  {typeof step.output === 'string' ? step.output : JSON.stringify(step.output, null, 2)}
                 </pre>
               </div>
             )}
@@ -418,13 +343,11 @@ function StepRow({ step, index, isLast }: { step: Step; index: number; isLast: b
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
 export function IntelligenceTab() {
   const [isRunning, setIsRunning] = useState(false)
   const [jobId, setJobId]         = useState<string | null>(null)
   const [job, setJob]             = useState<PipelineJob | null>(null)
-  const [targetUrl , setTargetUrl] = useState('');
+  const [targetUrl, setTargetUrl] = useState('')
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState<string | null>(null)
   const [tick, setTick]           = useState(0)
@@ -468,6 +391,7 @@ export function IntelligenceTab() {
     }
   }, [jobId, isRunning, fetchJobStatus])
 
+  // ✅ FIX: JSON.stringify body + Content-Type header + guard empty targetUrl
   const handleStartPipeline = async () => {
     setLoading(true)
     setError(null)
@@ -475,14 +399,16 @@ export function IntelligenceTab() {
     pendingCountRef.current = 0
     startTimeRef.current    = Date.now()
     try {
-      const res = await fetch('/api/pipeline', { method: 'POST' , body : {
-        tUrl : targetUrl
-      }})
+      const res = await fetch('/api/pipeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tUrl: targetUrl.trim() || false }),
+      })
       if (!res.ok) {
         setError('Failed to start pipeline')
         return
       }
-      const data     = await res.json()
+      const data = await res.json()
       const eventId: string | null = data.eventId ?? null
       if (!eventId) {
         setError('No event ID returned from pipeline')
@@ -530,8 +456,6 @@ export function IntelligenceTab() {
 
   const runningSteps   = job?.steps.filter(s => s.status.toLowerCase() === 'running') ?? []
   const completedSteps = job?.steps.filter(s => ['completed', 'done'].includes(s.status.toLowerCase())) ?? []
-  const failedSteps    = job?.steps.filter(s => s.status.toLowerCase() === 'failed') ?? []
-  const pendingSteps   = job?.steps.filter(s => ['pending', 'queued'].includes(s.status.toLowerCase())) ?? []
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -541,16 +465,8 @@ export function IntelligenceTab() {
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
       `}</style>
 
-      {/* Page heading */}
       <div style={{ paddingBottom: 20, borderBottom: '0.5px solid var(--border)' }}>
-        <h2
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-            fontFamily: "'Syne', sans-serif",
-          }}
-        >
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Syne', sans-serif" }}>
           Intelligence
         </h2>
         <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>
@@ -561,7 +477,6 @@ export function IntelligenceTab() {
       <Card title="News pipeline">
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          {/* Live run indicator */}
           {isRunning && (
             <div
               style={{
@@ -579,27 +494,12 @@ export function IntelligenceTab() {
                 {isResolvingRun ? 'Waiting for run to start…' : 'Pipeline running'}
               </span>
               {job?.runId && (
-                <code
-                  style={{
-                    fontSize: 10,
-                    opacity: 0.6,
-                    fontFamily: "'DM Mono', monospace",
-                    color: '#185FA5',
-                  }}
-                >
+                <code style={{ fontSize: 10, opacity: 0.6, fontFamily: "'DM Mono', monospace", color: '#185FA5' }}>
                   run: {job.runId.slice(0, 12)}…
                 </code>
               )}
               {startTimeRef.current && (
-                <span
-                  style={{
-                    marginLeft: 'auto',
-                    fontSize: 11,
-                    fontFamily: "'DM Mono', monospace",
-                    color: '#185FA5',
-                    opacity: 0.7,
-                  }}
-                >
+                <span style={{ marginLeft: 'auto', fontSize: 11, fontFamily: "'DM Mono', monospace", color: '#185FA5', opacity: 0.7 }}>
                   {formatElapsed(elapsed)}
                 </span>
               )}
@@ -625,84 +525,29 @@ export function IntelligenceTab() {
             </div>
           )}
 
-          {/* Job overview */}
           {job && job.status !== 'pending' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-              {/* Status + articles grid */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div
-                  style={{
-                    padding: '13px 16px',
-                    borderRadius: 12,
-                    background: 'var(--hover-bg)',
-                    border: '0.5px solid var(--border)',
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: 10,
-                      color: 'var(--text-tertiary)',
-                      marginBottom: 6,
-                      fontWeight: 600,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
+                <div style={{ padding: '13px 16px', borderRadius: 12, background: 'var(--hover-bg)', border: '0.5px solid var(--border)' }}>
+                  <p style={{ fontSize: 10, color: 'var(--text-tertiary)', marginBottom: 6, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Status
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     {job.status === 'running' && <PulseDot color={getStatusColor(job.status)} />}
-                    <p
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: getStatusColor(job.status),
-                        fontFamily: "'Syne', sans-serif",
-                      }}
-                    >
+                    <p style={{ fontSize: 15, fontWeight: 600, color: getStatusColor(job.status), fontFamily: "'Syne', sans-serif" }}>
                       {getStatusLabel(job.status)}
                     </p>
                   </div>
                 </div>
-                <div
-                  style={{
-                    padding: '13px 16px',
-                    borderRadius: 12,
-                    background: 'var(--hover-bg)',
-                    border: '0.5px solid var(--border)',
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: 10,
-                      color: 'var(--text-tertiary)',
-                      marginBottom: 6,
-                      fontWeight: 600,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
+                <div style={{ padding: '13px 16px', borderRadius: 12, background: 'var(--hover-bg)', border: '0.5px solid var(--border)' }}>
+                  <p style={{ fontSize: 10, color: 'var(--text-tertiary)', marginBottom: 6, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Articles
                   </p>
-                  <p
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 600,
-                      color: 'var(--text-primary)',
-                      fontFamily: "'Syne', sans-serif",
-                    }}
-                  >
+                  <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Syne', sans-serif" }}>
                     {job.progress.done}/{job.progress.total}
                     {job.progress.total > 0 && (
-                      <span
-                        style={{
-                          fontSize: 12,
-                          color: 'var(--text-tertiary)',
-                          fontWeight: 400,
-                          marginLeft: 6,
-                        }}
-                      >
+                      <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
                         ({progressPct}%)
                       </span>
                     )}
@@ -710,39 +555,13 @@ export function IntelligenceTab() {
                 </div>
               </div>
 
-              {/* Progress bar */}
               {job.progress.total > 0 && (
-                <div
-                  style={{
-                    width: '100%',
-                    height: 5,
-                    borderRadius: 99,
-                    background: 'var(--hover-bg)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    border: '0.5px solid var(--border)',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: '100%',
-                      background: '#639922',
-                      width: `${(job.progress.done / job.progress.total) * 100}%`,
-                      transition: 'width 0.5s ease',
-                    }}
-                  />
-                  <div
-                    style={{
-                      height: '100%',
-                      background: '#E24B4A',
-                      width: `${(job.progress.failed / job.progress.total) * 100}%`,
-                      transition: 'width 0.5s ease',
-                    }}
-                  />
+                <div style={{ width: '100%', height: 5, borderRadius: 99, background: 'var(--hover-bg)', overflow: 'hidden', display: 'flex', border: '0.5px solid var(--border)' }}>
+                  <div style={{ height: '100%', background: '#639922', width: `${(job.progress.done / job.progress.total) * 100}%`, transition: 'width 0.5s ease' }} />
+                  <div style={{ height: '100%', background: '#E24B4A', width: `${(job.progress.failed / job.progress.total) * 100}%`, transition: 'width 0.5s ease' }} />
                 </div>
               )}
 
-              {/* Article stat pills */}
               {job.progress.total > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                   {[
@@ -750,69 +569,23 @@ export function IntelligenceTab() {
                     { label: 'Pending', val: pending,              color: '#854F0B', bg: '#FAEEDA', border: '#FAC775' },
                     { label: 'Failed',  val: job.progress.failed,  color: '#A32D2D', bg: '#FCEBEB', border: '#F7C1C1' },
                   ].map(({ label, val, color, bg, border }) => (
-                    <div
-                      key={label}
-                      style={{
-                        padding: '12px 0',
-                        borderRadius: 12,
-                        textAlign: 'center',
-                        background: bg,
-                        border: `0.5px solid ${border}`,
-                      }}
-                    >
-                      <p style={{ fontSize: 10, color, fontWeight: 600, letterSpacing: '0.04em' }}>
-                        {label}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 22,
-                          fontWeight: 600,
-                          color,
-                          lineHeight: 1.2,
-                          fontFamily: "'Syne', sans-serif",
-                        }}
-                      >
-                        {val}
-                      </p>
+                    <div key={label} style={{ padding: '12px 0', borderRadius: 12, textAlign: 'center', background: bg, border: `0.5px solid ${border}` }}>
+                      <p style={{ fontSize: 10, color, fontWeight: 600, letterSpacing: '0.04em' }}>{label}</p>
+                      <p style={{ fontSize: 22, fontWeight: 600, color, lineHeight: 1.2, fontFamily: "'Syne', sans-serif" }}>{val}</p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Steps timeline */}
               {job.steps.length > 0 && (
                 <div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: 14,
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: 'var(--text-primary)',
-                        fontFamily: "'Syne', sans-serif",
-                      }}
-                    >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                    <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Syne', sans-serif" }}>
                       Execution steps
                     </h3>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                       {runningSteps.length > 0 && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 600,
-                            color: '#185FA5',
-                            background: '#E6F1FB',
-                            padding: '2px 8px',
-                            borderRadius: 99,
-                            border: '0.5px solid #B5D4F4',
-                          }}
-                        >
+                        <span style={{ fontSize: 10, fontWeight: 600, color: '#185FA5', background: '#E6F1FB', padding: '2px 8px', borderRadius: 99, border: '0.5px solid #B5D4F4' }}>
                           {runningSteps.length} running
                         </span>
                       )}
@@ -821,32 +594,17 @@ export function IntelligenceTab() {
                       </span>
                     </div>
                   </div>
-
                   <div>
                     {job.steps.map((step, idx) => (
-                      <StepRow
-                        key={step.id}
-                        step={step}
-                        index={idx}
-                        isLast={idx === job.steps.length - 1}
-                      />
+                      <StepRow key={step.id} step={step} index={idx} isLast={idx === job.steps.length - 1} />
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Processed articles */}
               {job.articles.length > 0 && (
                 <div>
-                  <h3
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: 'var(--text-primary)',
-                      marginBottom: 10,
-                      fontFamily: "'Syne', sans-serif",
-                    }}
-                  >
+                  <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, fontFamily: "'Syne', sans-serif" }}>
                     Processed articles
                   </h3>
                   <div
@@ -876,54 +634,18 @@ export function IntelligenceTab() {
                           fontSize: 12,
                         }}
                       >
-                        <span
-                          style={{
-                            color: getStatusColor(article.status),
-                            fontWeight: 600,
-                            minWidth: 44,
-                            flexShrink: 0,
-                            fontSize: 10,
-                            letterSpacing: '0.03em',
-                          }}
-                        >
+                        <span style={{ color: getStatusColor(article.status), fontWeight: 600, minWidth: 44, flexShrink: 0, fontSize: 10, letterSpacing: '0.03em' }}>
                           {getStatusLabel(article.status)}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                            {article.title || 'Untitled'}
-                          </p>
-                          <p
-                            style={{
-                              color: 'var(--text-tertiary)',
-                              marginTop: 2,
-                              wordBreak: 'break-all',
-                              fontSize: 10,
-                            }}
-                          >
-                            {article.sourceUrl}
-                          </p>
+                          <p style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{article.title || 'Untitled'}</p>
+                          <p style={{ color: 'var(--text-tertiary)', marginTop: 2, wordBreak: 'break-all', fontSize: 10 }}>{article.sourceUrl}</p>
                           {article.error && (
-                            <p
-                              style={{
-                                color: '#A32D2D',
-                                marginTop: 4,
-                                fontFamily: "'DM Mono', monospace",
-                                fontSize: 10,
-                              }}
-                            >
-                              {article.error}
-                            </p>
+                            <p style={{ color: '#A32D2D', marginTop: 4, fontFamily: "'DM Mono', monospace", fontSize: 10 }}>{article.error}</p>
                           )}
                         </div>
                         {article.articleId && (
-                          <code
-                            style={{
-                              color: 'var(--text-tertiary)',
-                              fontSize: 9,
-                              flexShrink: 0,
-                              fontFamily: "'DM Mono', monospace",
-                            }}
-                          >
+                          <code style={{ color: 'var(--text-tertiary)', fontSize: 9, flexShrink: 0, fontFamily: "'DM Mono', monospace" }}>
                             {article.articleId.slice(0, 8)}
                           </code>
                         )}
@@ -933,39 +655,15 @@ export function IntelligenceTab() {
                 </div>
               )}
 
-              {/* Timing */}
               {job.startedAt && (
-                <div
-                  style={{
-                    padding: '12px 16px',
-                    borderRadius: 12,
-                    background: 'var(--hover-bg)',
-                    border: '0.5px solid var(--border)',
-                    fontSize: 12,
-                  }}
-                >
-                  <p
-                    style={{
-                      color: 'var(--text-tertiary)',
-                      marginBottom: 8,
-                      fontWeight: 600,
-                      fontSize: 9,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
+                <div style={{ padding: '12px 16px', borderRadius: 12, background: 'var(--hover-bg)', border: '0.5px solid var(--border)', fontSize: 12 }}>
+                  <p style={{ color: 'var(--text-tertiary)', marginBottom: 8, fontWeight: 600, fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Timing
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Started</span>
-                      <span
-                        style={{
-                          color: 'var(--text-primary)',
-                          fontFamily: "'DM Mono', monospace",
-                          fontSize: 11,
-                        }}
-                      >
+                      <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace", fontSize: 11 }}>
                         {new Date(job.startedAt).toLocaleString()}
                       </span>
                     </div>
@@ -973,30 +671,14 @@ export function IntelligenceTab() {
                       <>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>Completed</span>
-                          <span
-                            style={{
-                              color: 'var(--text-primary)',
-                              fontFamily: "'DM Mono', monospace",
-                              fontSize: 11,
-                            }}
-                          >
+                          <span style={{ color: 'var(--text-primary)', fontFamily: "'DM Mono', monospace", fontSize: 11 }}>
                             {new Date(job.completedAt).toLocaleString()}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>Duration</span>
-                          <span
-                            style={{
-                              color: '#3B6D11',
-                              fontFamily: "'DM Mono', monospace",
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          >
-                            {formatDuration(
-                              new Date(job.completedAt).getTime() -
-                              new Date(job.startedAt).getTime()
-                            )}
+                          <span style={{ color: '#3B6D11', fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 600 }}>
+                            {formatDuration(new Date(job.completedAt).getTime() - new Date(job.startedAt).getTime())}
                           </span>
                         </div>
                       </>
@@ -1006,34 +688,15 @@ export function IntelligenceTab() {
               )}
 
               {job.error && (
-                <div
-                  style={{
-                    padding: '11px 14px',
-                    borderRadius: 12,
-                    background: '#FCEBEB',
-                    color: '#A32D2D',
-                    fontSize: 13,
-                    border: '0.5px solid #F7C1C1',
-                  }}
-                >
+                <div style={{ padding: '11px 14px', borderRadius: 12, background: '#FCEBEB', color: '#A32D2D', fontSize: 13, border: '0.5px solid #F7C1C1' }}>
                   <strong>Error:</strong> {job.error}
                 </div>
               )}
             </div>
           )}
 
-          {/* Empty state */}
           {!job && !loading && !isRunning && (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '32px 0',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
+            <div style={{ textAlign: 'center', padding: '32px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
               <div
                 style={{
                   width: 48,
@@ -1053,46 +716,41 @@ export function IntelligenceTab() {
                   <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" strokeLinecap="round"/>
                 </svg>
               </div>
-              <p
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  fontFamily: "'Syne', sans-serif",
-                }}
-              >
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: "'Syne', sans-serif" }}>
                 Pipeline ready
               </p>
-              <p
-                style={{
-                  fontSize: 13,
-                  color: 'var(--text-tertiary)',
-                  lineHeight: 1.6,
-                  maxWidth: 360,
-                }}
-              >
+              <p style={{ fontSize: 13, color: 'var(--text-tertiary)', lineHeight: 1.6, maxWidth: 360 }}>
                 Start the news pipeline to automatically crawl Yahoo News, generate articles using AI, and save them to your database.
               </p>
             </div>
           )}
 
           {error && (
-            <div
-              style={{
-                padding: '11px 14px',
-                borderRadius: 12,
-                background: '#FCEBEB',
-                color: '#A32D2D',
-                fontSize: 13,
-                border: '0.5px solid #F7C1C1',
-              }}
-            >
+            <div style={{ padding: '11px 14px', borderRadius: 12, background: '#FCEBEB', color: '#A32D2D', fontSize: 13, border: '0.5px solid #F7C1C1' }}>
               <strong>Error:</strong> {error}
             </div>
           )}
 
-          {/* Action buttons */}
-          <input type='text' value = 'https://www.dhakatribune.com/bangladesh/nation/406170/bus-plunge-at-daulatdia-two-dead-35-missing-as' onChange={((val)=>{setTargetUrl(val.target?.value || '')})}/>
+          {/* ✅ FIX: Controlled input with placeholder, no hardcoded value */}
+          <input
+            type="text"
+            placeholder="Optional: paste a specific article URL to process"
+            value={targetUrl}
+            onChange={e => setTargetUrl(e.target.value)}
+            style={{
+              padding: '9px 12px',
+              borderRadius: 10,
+              border: '0.5px solid var(--border)',
+              background: 'var(--hover-bg)',
+              color: 'var(--text-primary)',
+              fontSize: 13,
+              fontFamily: "'DM Mono', monospace",
+              outline: 'none',
+              width: '100%',
+              boxSizing: 'border-box',
+            }}
+          />
+
           <div style={{ display: 'flex', gap: 10, paddingTop: job || error ? 4 : 0 }}>
             <button
               onClick={handleStartPipeline}
@@ -1115,14 +773,8 @@ export function IntelligenceTab() {
                 opacity: loading || isRunning ? 0.6 : 1,
                 transition: 'opacity 0.2s',
               }}
-              onMouseEnter={e => {
-                if (!loading && !isRunning)
-                  (e.currentTarget as HTMLElement).style.opacity = '0.85'
-              }}
-              onMouseLeave={e => {
-                ;(e.currentTarget as HTMLElement).style.opacity =
-                  loading || isRunning ? '0.6' : '1'
-              }}
+              onMouseEnter={e => { if (!loading && !isRunning) (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = loading || isRunning ? '0.6' : '1' }}
             >
               {(loading || isRunning) && <Spinner color="currentColor" size={13} />}
               {loading ? 'Starting…' : isRunning ? 'Running…' : 'Start pipeline'}
@@ -1145,13 +797,8 @@ export function IntelligenceTab() {
                   fontFamily: "'Syne', sans-serif",
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => {
-                  if (!isRunning)
-                    (e.currentTarget as HTMLElement).style.background = 'var(--hover-bg)'
-                }}
-                onMouseLeave={e => {
-                  ;(e.currentTarget as HTMLElement).style.background = 'var(--card-bg)'
-                }}
+                onMouseEnter={e => { if (!isRunning) (e.currentTarget as HTMLElement).style.background = 'var(--hover-bg)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--card-bg)' }}
               >
                 Clear
               </button>
