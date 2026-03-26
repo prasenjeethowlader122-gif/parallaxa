@@ -89,7 +89,7 @@ export function Footer() {
             {['X / Twitter', 'Facebook', 'Instagram'].map((platform, i, arr) => (
               <span key={platform} className="flex items-center gap-4">
                 
-                  href="#"
+          <a href="#"
                   className="text-[11px] text-white/30 hover:text-[#c9a84c] transition-colors font-sans tracking-widest uppercase"
                 >
                   {platform}
