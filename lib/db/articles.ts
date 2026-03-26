@@ -131,7 +131,50 @@ export async function getTrendingArticles(): Promise < NewsArticle[] > {
   try { return filterRows(await sql`SELECT * FROM articles WHERE trending = TRUE AND status = 'published' ORDER BY views DESC LIMIT 5`) }
   catch (e) { console.error('getTrendingArticles:', e); return [] }
 }
+/**
+ * ── Sitemap Specific Queries ──────────────────────────────────────────────────
+ */
 
+/**
+ * Returns an array of unique dates (YYYY-MM-DD) that have published articles.
+ * Used by generateSitemaps() to create the sitemap index.
+ */
+export async function getUniqueArticleDates(): Promise < string[] > {
+  try {
+    // We use TO_CHAR to format the date for the URL slug
+    const rows = await sql`
+      SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as day 
+      FROM articles 
+      WHERE status = 'published' AND no_index = FALSE
+      ORDER BY day DESC
+    `
+    return rows.map((r) => r.day as string)
+  } catch (e) {
+    console.error('getUniqueArticleDates:', e)
+    return []
+  }
+}
+
+/**
+ * Returns articles published on a specific date string (YYYY-MM-DD).
+ * Used by the individual sitemap chunks.
+ */
+export async function getArticlesByDate(dateString: string): Promise < NewsArticle[] > {
+  try {
+    // We cast the column to DATE to compare with the string input
+    const rows = await sql`
+      SELECT * FROM articles 
+      WHERE status = 'published' 
+        AND no_index = FALSE
+        AND date::date = ${dateString}::date
+      ORDER BY date DESC
+    `
+    return filterRows(rows)
+  } catch (e) {
+    console.error('getArticlesByDate:', e)
+    return []
+  }
+}
 export async function searchArticles(query: string): Promise < NewsArticle[] > {
   try {
     const q = `%${query}%`
