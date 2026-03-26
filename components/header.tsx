@@ -326,7 +326,7 @@ export function Header({
 
       {/* ── MOBILE MENU ── */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200">
+        <div className="md:hidden bg-white w-full h-full">
 
           {/* Sections */}
           <div className="py-2 border-b border-gray-100">
