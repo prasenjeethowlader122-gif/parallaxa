@@ -419,7 +419,12 @@ export const newsPipelineFunction = inngest.createFunction(
         // ✅ FIX: Trigger PTP at top-level with correct articleId and userId
         await step.sendEvent(`ptp-requested-${i}`, {
           name: 'news/ptp.requested',
-          data: { articleId: result.articleId, userId },
+          data: { 
+            articleId: result.articleId,
+            userId,
+            ptpConfig : event.data.ptp_config 
+            
+            },
         })
       }
     }

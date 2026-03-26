@@ -218,7 +218,14 @@ export const ptpFunction = inngest.createFunction(
   },
   
   async ({ event, step, logger }) => {
-    const { articleId } = event.data as { articleId: string }
+    const { 
+      articleId ,
+      ptpConfig
+      
+    } = event.data as {
+      articleId: string 
+      ptpConfig?: any
+    }
     
     // ── Step 1: Fetch article ──────────────────────────────────────────────
     const article = await step.run('fetch-article', async () => {

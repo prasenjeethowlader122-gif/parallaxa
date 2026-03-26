@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
       name: 'news/pipeline.requested',
       data: {
         tUrl: body.tUrl || false,
+        ptp_config: {
+          useVideo: body.uPtpVidUrl || false
+        } || false
       },
     })
 
