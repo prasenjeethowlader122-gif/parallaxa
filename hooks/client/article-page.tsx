@@ -405,7 +405,7 @@ export default function ArticlePage() {
               </div>
 
               {/* Headline */}
-              <h1 className={`${Fugaz.claasName} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
+              <h1 className={`${Fugaz.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
                 {article.title}
               </h1>
 
