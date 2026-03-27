@@ -2,8 +2,18 @@
 import localFont from 'next/font/local'
 
 export const spacegrotesk = localFont({
-  src: '../public/local/font/IosevkaCharonMono-Regular.ttf',
-  variable: '--font-space-grotesk',
+  src : [
+    {
+      path : '../public/local/font/IosevkaCharonMono-Medium.ttf',
+      weight :'600',
+      style : 'normal'
+    },
+    {
+      path : '../public/local/font/IosevkaCharonMono-Regular.ttf',
+      weight :'400',
+      style : 'normal'
+    }
+  ]
 })
 export const Fugaz = localFont({
   src : [{

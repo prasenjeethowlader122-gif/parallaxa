@@ -473,7 +473,7 @@ export default function ArticlePage() {
               ) */}
 
               {/* ── Article body ── */}
-            <article className={`${slabo.className} text-gray-800 leading-[1.85] text-[17px] py-6 space-y-5`}>
+            <article className={`${slabo.className} text-gray-800 font-medium leading-[1.85] text-[17px] py-6 space-y-5`}>
               <Markdown>{article.content}</Markdown>
 </article>
 
