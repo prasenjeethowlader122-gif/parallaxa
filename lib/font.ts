@@ -3,11 +3,7 @@ import localFont from 'next/font/local'
 
 export const spacegrotesk = localFont({
   src : [
-    {
-      path : '../public/local/font/IosevkaCharonMono-Medium.ttf',
-      weight :'600',
-      style : 'normal'
-    },
+    
     {
       path : '../public/local/font/IosevkaCharonMono-Regular.ttf',
       weight :'400',
