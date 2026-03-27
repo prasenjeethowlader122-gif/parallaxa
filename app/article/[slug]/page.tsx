@@ -11,15 +11,9 @@ export async function generateMetadata({
   const { slug } = await params;
 
   // Enforce .pn suffix for metadata too
-  if (!slug.endsWith('.pn')) {
-    return {
-      title: 'Article Not Found',
-      description: 'The requested news article could not be found.',
-      robots: 'noindex, nofollow',
-    };
-  }
 
-  const article = await getArticleBySlug(slug.replace('.pn', ''));
+
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     return {
@@ -86,7 +80,7 @@ export default async function ArticlePageOpen({
   }
 
   // .pn ছাড়া clean slug তৈরি করুন
-  const cleanSlug = slug.replace('.pn', '');
+  const cleanSlug = slug;
 
   const article = await getArticleBySlug(cleanSlug);
   if (article) {
