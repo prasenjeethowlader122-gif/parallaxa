@@ -75,9 +75,7 @@ export default async function ArticlePageOpen({
 }) {
   const { slug } = await params;
 
-  if (!slug.endsWith('.pn')) {
-    redirect(`/article/${slug}.pn`);
-  }
+  
 
   // .pn ছাড়া clean slug তৈরি করুন
   const cleanSlug = slug;
