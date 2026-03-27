@@ -262,7 +262,7 @@ export function Header({
       </div>
 
       {/* ── MOBILE TOP BAR ── */}
-      <div className="md:hidden bg-white border-b border-gray-100">
+      <div className="md:hidden">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
 
           {/* Left: hamburger + logo */}
