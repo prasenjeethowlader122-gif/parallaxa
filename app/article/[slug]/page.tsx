@@ -19,7 +19,7 @@ export async function generateMetadata({
     };
   }
 
-  const article = await getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug.replace('.pn', ''));
 
   if (!article) {
     return {
@@ -81,16 +81,18 @@ export default async function ArticlePageOpen({
 }) {
   const { slug } = await params;
 
-  // Redirect to canonical .pn URL if suffix is missing
   if (!slug.endsWith('.pn')) {
     redirect(`/article/${slug}.pn`);
   }
 
-  // Fire-and-forget view increment (won't block render)
-  const article = await getArticleBySlug(slug.replace('.pn',''));
+  // .pn ছাড়া clean slug তৈরি করুন
+  const cleanSlug = slug.replace('.pn', '');
+
+  const article = await getArticleBySlug(cleanSlug);
   if (article) {
     incrementArticleViews(article.id).catch(() => {});
   }
 
-  return <ArticlePage slug={slug} />;
+  // ✅ clean slug pass করুন ArticlePage-এ
+  return <ArticlePage slug={cleanSlug} />;
 }
