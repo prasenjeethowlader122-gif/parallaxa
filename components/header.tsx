@@ -88,7 +88,7 @@ export function Header({
   })
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50 bg-white/50 backdrop-blur-md">
 
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
