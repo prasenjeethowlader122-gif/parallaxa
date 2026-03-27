@@ -94,18 +94,16 @@ async function generateCaption(article: {
   category: string
   content: string
 }): Promise<CaptionResult> {
-  const SYSTEM = `You are a social media manager for a Bengali/English bilingual news page.
+  const SYSTEM = `You are a social media manager for a English  news page.
 Given a news article, produce:
-1. A Facebook post caption in BOTH English and Bangla
-2. 5–7 hashtags
-3. A short punchy Bangla headline for an image overlay
+1. A Facebook post caption in English
 
 Respond ONLY with a valid JSON object — no markdown fences, no preamble, no trailing text:
 {
   "english":       "<2-3 sentence punchy English caption>",
   "bangla":        "<2-3 sentence Bangla caption in Bengali Unicode script — NOT transliteration>",
   "hashtags":      ["tag1","tag2","tag3","tag4","tag5"],
-  "imageHeadline": "<max 12-word Bangla headline for image overlay>"
+  "imageHeadline": "<Short length English headline for image overlay>"
 }
 
 Rules:
