@@ -87,7 +87,7 @@ export default async function ArticlePageOpen({
   }
 
   // Fire-and-forget view increment (won't block render)
-  const article = await getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug.replace('.pn',''));
   if (article) {
     incrementArticleViews(article.id).catch(() => {});
   }
