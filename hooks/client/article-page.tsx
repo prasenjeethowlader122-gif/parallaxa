@@ -7,7 +7,7 @@ import Markdown from 'react-markdown'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { slabo } from '@/lib/font'
+import { slabo ,Fugaz} from '@/lib/font'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
@@ -151,7 +151,7 @@ function RelatedItem({ article }: { article: NewsArticle }) {
         <p className="text-[10px] font-semibold uppercase tracking-wider text-red-600 mb-1">
           {article.category}
         </p>
-        <h4 className="text-[13px] font-medium leading-snug text-gray-900 group-hover:underline line-clamp-3">
+        <h4 className={Fugaz.className + " text-[13px] font-medium leading-snug text-gray-900 group-hover:underline line-clamp-3"}>
           {article.title}
         </h4>
         <p className="text-[11px] text-gray-400 mt-1">{formatRelativeTime(article.date)}</p>
@@ -405,7 +405,7 @@ export default function ArticlePage() {
               </div>
 
               {/* Headline */}
-              <h1 className={` text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
+              <h1 className={`${Fugaz.claasName} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
                 {article.title}
               </h1>
 

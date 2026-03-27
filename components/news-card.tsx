@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import {Fugaz} from '@/lib/font'
 import { NewsArticle } from '@/lib/news-data'
 import { Clock, Eye } from 'lucide-react'
 
@@ -70,7 +71,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
              
-              <h3 className="text-white text-lg font-bold leading-tight line-clamp-3">
+              <h3 className={Fugaz.className + " text-white text-lg  leading-tight line-clamp-3"}>
 {article.title}
               </h3>
             
@@ -104,7 +105,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               </span>
           
             </div>
-            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
+            <h3 className={Fugaz.className + "  text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm"}>
               {article.title}
             </h3>
             <p className="text-xs text-gray-500 line-clamp-1 mt-1">{article.description}</p>
@@ -148,7 +149,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               <span className="text-xs font-bold text-red-600">🔥 Trending</span>
             )}
           </div>
-          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-base">
+          <h3 className={Fugaz.className + " text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-base"}>
             {article.title}
           </h3>
           <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>
