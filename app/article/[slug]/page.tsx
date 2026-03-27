@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getArticleBySlug, incrementArticleViews } from '@/lib/news-data';
 import ArticlePage from '@/hooks/client/article-page';
 
@@ -8,6 +9,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+
+  // Enforce .pn suffix for metadata too
+  if (!slug.endsWith('.pn')) {
+    return {
+      title: 'Article Not Found',
+      description: 'The requested news article could not be found.',
+      robots: 'noindex, nofollow',
+    };
+  }
+
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -69,6 +80,11 @@ export default async function ArticlePageOpen({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  // Redirect to canonical .pn URL if suffix is missing
+  if (!slug.endsWith('.pn')) {
+    redirect(`/article/${slug}.pn`);
+  }
 
   // Fire-and-forget view increment (won't block render)
   const article = await getArticleBySlug(slug);
