@@ -103,7 +103,7 @@ Respond ONLY with a valid JSON object — no markdown fences, no preamble, no tr
   "english":       "<2-3 sentence punchy English caption>",
   "bangla":        "<2-3 sentence Bangla caption in Bengali Unicode script — NOT transliteration>",
   "hashtags":      ["tag1","tag2","tag3","tag4","tag5"],
-  "imageHeadline": "< English headline for image overlay>"
+  "imageHeadline": "<Bangla headline in Bengali Unicode script  for image overlay>"
 }
 
 Rules:
