@@ -5,7 +5,7 @@ export const spacegrotesk = localFont({
   src : [
     
     {
-      path : '../public/local/font/IosevkaCharonMono-Regular.ttf',
+      path : '../public/local/font/SpaceGrotesk-VariableFont_wght.ttf',
       weight :'400',
       style : 'normal'
     }
