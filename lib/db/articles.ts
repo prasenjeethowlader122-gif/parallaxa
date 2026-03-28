@@ -139,14 +139,47 @@ export async function getTrendingArticles(): Promise < NewsArticle[] > {
  * Returns an array of unique dates (YYYY-MM-DD) that have published articles.
  * Used by generateSitemaps() to create the sitemap index.
  */
+/**
+ * Drop-in replacement for the getArticlesByDate and getUniqueArticleDates
+ * functions in lib/db/articles.ts.
+ *
+ * Changes vs original:
+ *  • getArticlesByDate validates the date string before hitting the DB
+ *    (prevents SQL injection via malformed date literals)
+ *  • getUniqueArticleDates caps results to a sane maximum so a badly-seeded
+ *    DB can't produce tens of thousands of sitemap shards
+ */
+
+// re-export filterRows if it isn't already exported
+
+// ── Security: strict ISO-8601 date validation ────────────────────────────────
+const ISO_DATE_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
+
+function assertValidDate(dateString: string): void {
+  if (!ISO_DATE_RE.test(dateString)) {
+    throw new Error(`[db] Invalid date format: "${dateString}". Expected YYYY-MM-DD.`)
+  }
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) {
+    throw new Error(`[db] Non-existent date: "${dateString}".`)
+  }
+}
+
+// ── Sitemap queries ───────────────────────────────────────────────────────────
+
+/**
+ * Returns distinct published dates (YYYY-MM-DD) newest-first.
+ * Capped at 3 650 days (~10 years) so generateSitemaps() never blows up.
+ */
 export async function getUniqueArticleDates(): Promise < string[] > {
   try {
-    // We use TO_CHAR to format the date for the URL slug
     const rows = await sql`
-      SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as day 
-      FROM articles 
-      WHERE status = 'published' AND no_index = FALSE
-      ORDER BY day DESC
+      SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') AS day
+      FROM   articles
+      WHERE  status   = 'published'
+        AND  no_index = FALSE
+      ORDER  BY day DESC
+      LIMIT  3650
     `
     return rows.map((r) => r.day as string)
   } catch (e) {
@@ -156,18 +189,21 @@ export async function getUniqueArticleDates(): Promise < string[] > {
 }
 
 /**
- * Returns articles published on a specific date string (YYYY-MM-DD).
- * Used by the individual sitemap chunks.
+ * Returns published, indexable articles for a specific date.
+ * Validates input before querying — rejects anything that isn't a real date.
  */
 export async function getArticlesByDate(dateString: string): Promise < NewsArticle[] > {
   try {
-    // We cast the column to DATE to compare with the string input
+    // ← security: validate before touching the DB
+    assertValidDate(dateString)
+    
     const rows = await sql`
-      SELECT * FROM articles 
-      WHERE status = 'published' 
-        AND no_index = FALSE
-        AND date::date = ${dateString}::date
-      ORDER BY date DESC
+      SELECT *
+      FROM   articles
+      WHERE  status   = 'published'
+        AND  no_index = FALSE
+        AND  date::date = ${dateString}::date
+      ORDER  BY date DESC
     `
     return filterRows(rows)
   } catch (e) {

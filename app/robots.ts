@@ -1,41 +1,33 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app'
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app'
+).replace(/\/$/, '')
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        // General crawlers — allow public content, block private/admin areas
         userAgent: '*',
-        allow: [
-          '/',
-          '/article/',
-          '/category/',
-          '/search',
-        ],
+        allow: '/',
         disallow: [
-          '/dashboard',
-          '/write',
           '/api/',
-          '/auth/',
+          '/admin/',
           '/_next/',
+          '/dashboard/',
         ],
       },
+      // Block AI training crawlers explicitly
       {
-        // Block GPTBot (OpenAI training crawler)
-        userAgent: 'GPTBot',
-        disallow: ['/'],
-      },
-      {
-        // Block common AI training scrapers
-        userAgent: 'CCBot',
-        disallow: ['/'],
-      },
-      {
-        // Block Anthropic's training crawler (optional — remove if you want Claude to index)
-        userAgent: 'anthropic-ai',
-        disallow: ['/'],
+        userAgent: [
+          'GPTBot',
+          'ChatGPT-User',
+          'CCBot',
+          'anthropic-ai',
+          'Claude-Web',
+          'Omgilibot',
+        ],
+        disallow: '/',
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,
