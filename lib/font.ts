@@ -2,14 +2,13 @@
 import localFont from 'next/font/local'
 
 export const spacegrotesk = localFont({
-  src : [
+  src : {
     
-    {
+    
       path : '../public/local/font/SpaceGrotesk-VariableFont_wght.ttf',
-      weight :'400',
       style : 'normal'
-    }
-  ]
+    
+  }
 })
 export const Fugaz = localFont({
   src : [{
