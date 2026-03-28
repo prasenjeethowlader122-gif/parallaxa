@@ -103,12 +103,12 @@ Respond ONLY with a valid JSON object — no markdown fences, no preamble, no tr
   "english":       "<2-3 sentence punchy English caption>",
   "bangla":        "<2-3 sentence Bangla caption in Bengali Unicode script — NOT transliteration>",
   "hashtags":      ["tag1","tag2","tag3","tag4","tag5"],
-  "imageHeadline": "<Short length English headline for image overlay>"
+  "imageHeadline": "< English headline for image overlay>"
 }
 
 Rules:
 - Bangla fields must use proper Bengali script (বাংলা), never Romanised Bangla
-- imageHeadline must be short, bold, news-ticker style — perfect for display on a photo
+- imageHeadline must be bold, news-ticker style — perfect for display on a photo
 - Hashtags: 3-4 English + 2-3 Bangla script tags, no # prefix in the JSON values
 - Both captions feel natural for a Facebook news page, not robotic
 - Do NOT include the article URL in the caption — it will be appended separately`

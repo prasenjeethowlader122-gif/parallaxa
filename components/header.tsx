@@ -338,7 +338,7 @@ export function Header({
                 key={href}
                 href={href}
                 onClick={() => { setActiveNav(href); setIsMenuOpen(false) }}
-                className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                className="flex font-medium items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
               >
                 <span className="flex items-center gap-2">
                   {label}
