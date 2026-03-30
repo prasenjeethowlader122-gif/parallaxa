@@ -32,7 +32,7 @@ const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onren
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004'
 
-const YAHOO_SOURCES = ['https://indianexpress.com/','https://www.yahoo.com/news/']
+const YAHOO_SOURCES = ['https://www.yahoo.com/news/']
 const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
 
 /**
