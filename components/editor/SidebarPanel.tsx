@@ -12,7 +12,7 @@ export function SidebarPanel({ title, defaultOpen = false, children }: Props) {
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div style={{ borderBottom: '1px solid var(--border)' }}>
+    <div style={{ borderBottom: '1px solid var(--border)' }} className = 'bg-white'>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
