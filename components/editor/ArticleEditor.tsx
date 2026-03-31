@@ -56,7 +56,7 @@ export function ArticleEditor({ editingArticle = null }: Props) {
             gap: 8,
             padding: '10px 16px',
             borderBottom: '1px solid var(--border)',
-            background: 'var(--card-bg)',
+            background: 'white',
             position: 'sticky',
             top: 64, /* stick below site header */
             zIndex: 40,
@@ -172,16 +172,16 @@ export function ArticleEditor({ editingArticle = null }: Props) {
               Preview ↗
             </button>
 
-            <button
+            <button className='rounded-full px-3'
               onClick={publishArticle}
               disabled={publishing || !form.title.trim() || !form.content.trim()}
               style={{
                 fontSize: 13,
                 padding: '6px 14px',
-                borderRadius: 8,
+                
                 border: '1px solid var(--text-primary)',
-                background: form.status === 'published' ? '#3B6D11' : 'var(--text-primary)',
-                color: 'var(--bg-primary)',
+                background: form.status === 'published' ? '#3B6D11' : 'black',
+                color: 'white',
                 cursor: 'pointer',
                 
                 fontWeight: 700,
