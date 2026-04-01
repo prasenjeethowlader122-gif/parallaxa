@@ -46,13 +46,13 @@ const ArticlesView = () => {
   
   return (
     <div className="w-full space-y-4 p-2">
-      <div className="rounded-md border">
+      <div className="">
         <Table className = 'border-none'>
           <TableHeader>
             <TableRow>
               <TableHead>id</TableHead>
               <TableHead>Details</TableHead>
-              <TableHead>Views</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,13 +62,16 @@ const ArticlesView = () => {
                   <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
-            ) : articles.map((ar: any) => (
+            ) : articles.map((ar: any,i) => (
               <TableRow key={ar.id}>
-                <TableCell className="font-mono text-xs">{ar.id.slice(0, 3) + '—' + ar.id.slice(ar.id.length,3)}</TableCell>
+                <TableCell className="text-xs">{i.toPrecision(1)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={ar.image} alt="" className="h-8 w-8 rounded object-cover" />
+                    <div className='flex flex-col items-start justify-start gap-1' >
                     <span className="font-medium line-clamp-1">{ar.title.slice(0,15)+'...'}</span>
+                    <small>{ar.views || 0 } views</small>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>{ar.views || 0}</TableCell>
