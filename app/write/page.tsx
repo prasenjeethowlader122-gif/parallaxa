@@ -251,7 +251,7 @@ const EditorPage = () => {
   const [historyIndex, setHistoryIndex] = useState(0)
   
   const [category, setCategory] = useState('')
-  const [author, setAuthor] = useState('Elena Vance')
+  const [author, setAuthor] = useState()
   const [tags, setTags] = useState < string[] > ([])
   const [tagInput, setTagInput] = useState('')
   const [visibility, setVisibility] = useState < Visibility > ('public')
@@ -284,7 +284,11 @@ const EditorPage = () => {
   const saveTimerRef = useRef < ReturnType < typeof setTimeout > | null > (null)
   const { data: session } = useSession()
   // ─── Autosave ───────────────────────────────────────────────────────────────
-  
+  useEffect(()=>{
+    if (session.user) {
+      setAuthor(session.user.name)
+    }
+  },[session?.user])
   useEffect(() => {
     if (saveStatus === 'unsaved') {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
@@ -720,7 +724,6 @@ const EditorPage = () => {
 
           {/* Left */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="text-base font-['Newsreader'] italic font-bold hidden sm:block shrink-0 mr-1">Editorial</span>
             <div className="flex items-center gap-1 text-xs text-[#9e9fa0] min-w-0">
               <span className="hidden sm:inline shrink-0 text-[#9e9fa0]">Drafts</span>
               <ChevronRight size={11} className="hidden sm:inline shrink-0" />
