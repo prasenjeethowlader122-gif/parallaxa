@@ -426,9 +426,10 @@ const EditorPage = () => {
     setPublishing(true)
     try {
       // prepare all payload...
-      const uploadToServer = await fetch('/api/article', {
+      const uploadToServer = await fetch('/api/articles', {
         method: 'POST',
-        body: {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           title: title,
           description: metaDescription || '',
           content: content,
@@ -436,7 +437,7 @@ const EditorPage = () => {
           // author: session.user.name ?? session.user.email ?? 'Anonymous',
           //  date: new Date(body.date ?? Date.now()),
           image: coverImage ?? '',
-          readTime: 0,
+          readTime: estimateReadTime(content),
           featured: featured ?? false,
           breaking: breaking ?? false,
           trending: trending ?? false,
@@ -458,7 +459,7 @@ const EditorPage = () => {
           scheduledAt: scheduledAt ? new Date(body.scheduledAt) : undefined,
           user_id: session.user.id,
           status: status ?? 'draft',
-        }
+        })
       })
       if (uploadToServer.ok) {
         const fallbackServer = await uploadToServer.json();
