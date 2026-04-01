@@ -488,7 +488,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
         status: status || 'draft',
       };
       
-      const response = await fetch('/api/articles', {
+      const response = await fetch('/api/articles/' + id && id, {
         method: id ? 'PATCH' : 'POST', // Use PATCH if editing
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(id ? { ...payload, id } : payload),
