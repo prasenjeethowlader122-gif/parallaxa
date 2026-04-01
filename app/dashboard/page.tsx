@@ -38,7 +38,10 @@ export default function Dashboard() {
       {/* 2. FIXED: Tailwind does not support string interpolation for partial class names.
           Instead of `flex-${...}`, you must use the full class name like `flex-row`. */}
       <div className={`w-full flex ${isDesktop ? 'flex-row' : 'flex-col'}`}>
-        
+        <div className = {`w-full h-full p-4`}>
+          <h1 className='text-xl'>Dashboard</h1>
+          <small>Welcome to dashboard page.</small>
+        </div>
         {/* Nav List Sidebar/Topbar */}
         <div className={`flex px-4 ${isDesktop ? 'w-64 flex-col' : 'w-full flex-row justify-start gap-4'}`}>
           {
@@ -50,7 +53,7 @@ export default function Dashboard() {
                   key={_nav.name} // 3. FIXED: Added the required React `key` prop for mapped lists.
                   onClick={() => setCurrentActiveTab(_nav.name)} // 4. FIXED: Added `onClick` so the tabs actually switch.
                   // 5. FIXED: Added missing spaces between standard classes and dynamic classes.
-                  className={`p-2 px-4 pb-4 flex flex-row items-center gap-2 capitalize transition-colors ${
+                  className={`p-2 px-4 pb-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors ${
                     isDesktop ? 'justify-start' : 'justify-center'
                   } ${
                     isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'
