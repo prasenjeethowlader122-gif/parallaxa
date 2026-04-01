@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import useIsMobile from '@/hooks/use-mobile';
+import {useIsMobile} from '@/hooks/use-mobile';
 import { slabo } from '@/lib/font';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
