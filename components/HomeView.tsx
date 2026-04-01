@@ -1,3 +1,3 @@
-export default function ArticlesView ({
+export default function ArticlesView (){
   return null
-)
+}
