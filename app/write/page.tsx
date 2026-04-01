@@ -235,11 +235,16 @@ function estimateReadTime(text: string): number {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const EditorPage = () => {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [viewMode, setViewMode] = useState < ViewMode > ('write')
+const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string } > }) => {
+  const resolvedParams = React.use(searchParams);
+  const id = resolvedParams.id;
   
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [viewMode, setViewMode] = useState < ViewMode > ('write')
+  //const { id } = await searchParams; // Wait for the promise to resolve
+  
+  //const { searchParams } = new URL(location.href);
   const [saveStatus, setSaveStatus] = useState < 'saved' | 'unsaved' | 'saving' > ('saved')
   const [lastSaved, setLastSaved] = useState < Date | null > (null)
   
@@ -284,11 +289,11 @@ const EditorPage = () => {
   const saveTimerRef = useRef < ReturnType < typeof setTimeout > | null > (null)
   const { data: session } = useSession()
   // ─── Autosave ───────────────────────────────────────────────────────────────
-  useEffect(()=>{
+  useEffect(() => {
     if (session?.user) {
       setAuthor(session.user.name)
     }
-  },[session?.user])
+  }, [session?.user])
   useEffect(() => {
     if (saveStatus === 'unsaved') {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
@@ -302,7 +307,34 @@ const EditorPage = () => {
     }
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
   }, [content, title, saveStatus])
-  
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (!id) return;
+      
+      try {
+        const response = await fetch(`/api/articles/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          // Map API data to your state
+          setContent(data.content || '');
+          setTitle(data.title || '');
+          setBreaking(data.breaking || false);
+          setCssClass(data.cssClass || '');
+          setNoIndex(data.noIndex || false);
+          setOgImage(data.ogImage || '');
+          setCoverImage(data.image || '');
+          setCategory(data.category || '');
+          setTags(data.tags || []);
+          // Set last saved to now since we just loaded it
+          setLastSaved(new Date());
+        }
+      } catch (error) {
+        console.error("Failed to fetch article:", error);
+      }
+    };
+    
+    fetchArticle();
+  }, [id]);
   const markUnsaved = () => setSaveStatus('unsaved')
   
   useEffect(() => {
@@ -427,63 +459,53 @@ const EditorPage = () => {
   ]
   
   const handlePublish = async () => {
-    setPublishing(true)
+    setPublishing(true);
     try {
-      // prepare all payload...
-      const uploadToServer = await fetch('/api/articles', {
-        method: 'POST',
+      const payload = {
+        title,
+        description: metaDescription,
+        content,
+        category,
+        image: coverImage,
+        readTime: estimateReadTime(content),
+        featured,
+        breaking,
+        trending,
+        seoTitle,
+        focusKeyword,
+        canonicalUrl,
+        ogImage,
+        twitterCard,
+        noIndex,
+        allowComments,
+        showInRss,
+        ampEnabled,
+        redirectUrl,
+        cssClass,
+        visibility,
+        scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
+        user_id: session?.user?.id,
+        status: status || 'draft',
+      };
+      
+      const response = await fetch('/api/articles', {
+        method: id ? 'PATCH' : 'POST', // Use PATCH if editing
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title,
-          description: metaDescription || '',
-          content: content,
-          category: category,
-          // author: session.user.name ?? session.user.email ?? 'Anonymous',
-          //  date: new Date(body.date ?? Date.now()),
-          image: coverImage ?? '',
-          readTime: estimateReadTime(content),
-          featured: featured ?? false,
-          breaking: breaking ?? false,
-          trending: trending ?? false,
-          // SEO fields
-          seoTitle: seoTitle ?? null,
-          metaDescription: metaDescription ?? null,
-          focusKeyword: focusKeyword ?? null,
-          canonicalUrl: canonicalUrl ?? null,
-          ogImage: ogImage ?? null,
-          twitterCard: twitterCard ?? 'summary_large_image',
-          // Advanced fields
-          noIndex: noIndex ?? false,
-          allowComments: allowComments ?? true,
-          showInRss: showInRss ?? true,
-          ampEnabled: ampEnabled ?? false,
-          redirectUrl: redirectUrl ?? null,
-          cssClass: cssClass ?? null,
-          visibility: visibility ?? 'public',
-          scheduledAt: scheduledAt ? new Date(body.scheduledAt) : undefined,
-          user_id: session?.user.id,
-          status: status ?? 'draft',
-        })
-      })
-      if (uploadToServer.ok) {
-        const fallbackServer = await uploadToServer.json();
+        body: JSON.stringify(id ? { ...payload, id } : payload),
+      });
+      
+      if (response.ok) {
         setPublishing(false);
         setShowPublishModal(false);
-        setStatus('published')
+        setStatus('published');
         setSaveStatus('saved');
-        setLastSaved(new Date())
-        
+        setLastSaved(new Date());
       }
     } catch (e) {
       setPublishing(false);
-      setShowPublishModal(false);
-     // setStatus('')
-     // setSaveStatus('saved');
-     // setLastSaved(new Date())
+      console.error("Publishing error:", e);
     }
-    
-  }
-  
+  };
   const saveLabel = () => {
     if (saveStatus === 'saving') return 'Saving…'
     if (saveStatus === 'unsaved') return 'Unsaved'

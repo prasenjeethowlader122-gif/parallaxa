@@ -59,7 +59,7 @@ const ArticlesView = () => {
   
   return (
     <div className="w-full space-y-4 p-2">
-      <div className="rounded-md border">
+      <div className="">
         <Table className='border-none'>
           <TableHeader>
             <TableRow>
