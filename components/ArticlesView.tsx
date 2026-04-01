@@ -45,14 +45,14 @@ const ArticlesView = () => {
   }, [fetchArticles])
   
   return (
-    <div className="w-full space-y-4 p-6">
+    <div className="w-full space-y-4 p-2">
       <div className="rounded-md border">
-        <Table>
+        <Table className = 'border-none'>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead>id</TableHead>
               <TableHead>Details</TableHead>
-              <TableHead>Watches</TableHead>
+              <TableHead>Views</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -64,7 +64,7 @@ const ArticlesView = () => {
               </TableRow>
             ) : articles.map((ar: any) => (
               <TableRow key={ar.id}>
-                <TableCell className="font-mono text-xs">{ar.id.slice(0, 3) + '—' + ar.id.slice(3,ar.id.length)}</TableCell>
+                <TableCell className="font-mono text-xs">{ar.id.slice(0, 3) + '—' + ar.id.slice(ar.id.length,3)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={ar.image} alt="" className="h-8 w-8 rounded object-cover" />
