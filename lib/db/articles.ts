@@ -92,8 +92,8 @@ const filterRows = (rows: Record < string, unknown > []): NewsArticle[] =>
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-export async function getAllArticles(limit=10): Promise < NewsArticle[] > {
-  try { return filterRows(await sql`SELECT * FROM articles ORDER BY date DESC LIMIT ${limit}`) }
+export async function getAllArticles(limit=10 , offset : number): Promise < NewsArticle[] > {
+  try { return filterRows(await sql`SELECT * FROM articles ORDER BY date DESC LIMIT ${limit} OFFSET ${offset ?  offset : 0}`) }
   catch (e) { console.error('getAllArticles:', e); return [] }
 }
 

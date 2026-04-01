@@ -1,57 +1,38 @@
-import { NextResponse  , NextRequest} from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { auth } from '@/auth'
-import { sql } from '@/lib/db/index'
-import {getAllArticles} from '@/lib/db/articles'
+import { getAllArticles } from '@/lib/db/articles'
+
 export async function GET(req: NextRequest) {
-  const body = await req.json()
   const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   
+  // 1. Session Guard
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    console.log('SESSION USER:', session.user) // debug — পরে সরাও
-    const articles = await getAllArticles(body?.limit || 20);
+    // 2. Extract Query Parameters from URL
+    const { searchParams } = new URL(req.url)
+    const limit = parseInt(searchParams.get('limit') || '12')
+    const page = parseInt(searchParams.get('page') || '1')
+    
+    // 3. Calculate Offset
+    // If page 1: (1-1) * 12 = 0
+    // If page 2: (2-1) * 12 = 12
+    const offset = (page - 1) * limit
+
+    // 4. Call your DB function with pagination parameters
+    // Note: Ensure your 'getAllArticles' function is updated to accept (limit, offset)
+    const articles = await getAllArticles(limit, offset)
+
+    // 5. Return the result
     return NextResponse.json(articles)
-    /*const rows = await sql`
-      SELECT * FROM articles
-      WHERE user_id = ${session.user.id}
-      ORDER BY date DESC
-    `
-    return NextResponse.json(
-      rows.map((r: any) => ({
-        id: r.id,
-        title: r.title,
-        description: r.description,
-        content: r.content,
-        category: r.category,
-        author: r.author,
-        date: r.date,
-        image: r.image,
-        readTime: r.read_time,
-        featured: r.featured,
-        breaking: r.breaking,
-        trending: r.trending,
-        views: r.views,
-        slug: r.slug,
-        status: r.status,
-        visibility: r.visibility,
-        seoTitle: r.seo_title,
-        metaDescription: r.meta_description,
-        focusKeyword: r.focus_keyword,
-        canonicalUrl: r.canonical_url,
-        ogImage: r.og_image,
-        twitterCard: r.twitter_card,
-        noIndex: r.no_index,
-        allowComments: r.allow_comments,
-        showInRss: r.show_in_rss,
-        ampEnabled: r.amp_enabled,
-        redirectUrl: r.redirect_url,
-        cssClass: r.css_class,
-        scheduledAt: r.scheduled_at,
-        updatedAt: r.updated_at,
-      }))
-    )*/
+
   } catch (e) {
-    console.error(e)
-    return NextResponse.json({ error: 'Failed to fetch your articles' }, { status: 500 })
+    console.error('API Error:', e)
+    return NextResponse.json(
+      { error: 'Failed to fetch articles' }, 
+      { status: 500 }
+    )
   }
 }
