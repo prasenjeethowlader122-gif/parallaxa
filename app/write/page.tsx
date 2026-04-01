@@ -1,4 +1,5 @@
 "use client";
+import {slabo} from '@/lib/font'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import React, { useState, useRef, useCallback, useEffect, ComponentPropsWithoutRef } from 'react';
@@ -764,7 +765,7 @@ const EditorPage = () => {
                   {/* Title — responsive font size */}
                   <div className="min-w-0">
                     <textarea ref={titleRef}
-                      className="w-full border-none bg-transparent font-['Newsreader'] text-3xl sm:text-4xl lg:text-5xl font-bold p-0 focus:ring-0 placeholder-[#e2e2e4] resize-none overflow-hidden leading-tight"
+                      className="w-full border-none bg-transparent font-['Newsreader'] text-3xl sm:text-4xl lg:text-5xl font-bold p-0 focus:ring-0 placeholder-[#e2e2e4] resize-none overflow-hidden leading-tight outline-none"
                       placeholder="Article Title…" rows={1} value={title}
                       onChange={(e) => { setTitle(e.target.value); markUnsaved() }} />
                     {/* Meta — wraps naturally on small screens */}
@@ -779,7 +780,7 @@ const EditorPage = () => {
                   </div>
 
                   <textarea ref={textareaRef}
-                    className="w-full border-none bg-transparent text-base sm:text-[1.05rem] leading-[1.8] p-0 focus:ring-0 text-[#313334] placeholder-[#d0cecd] resize-none min-h-[400px]"
+                    className={ slabo.className + " w-full border-none bg-transparent text-base sm:text-[1.05rem] leading-[1.8] p-0  text-[#313334] placeholder-[#d0cecd] resize-none min-h-[400px] outline-none"}
                     placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
                     value={content} onChange={(e) => handleContentChange(e.target.value)} spellCheck />
                 </div>
