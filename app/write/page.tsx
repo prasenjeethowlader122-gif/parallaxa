@@ -1,5 +1,6 @@
 "use client";
-import {slabo} from '@/lib/font'
+import { slabo } from '@/lib/font'
+import { useSession, signOut } from 'next-auth/react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import React, { useState, useRef, useCallback, useEffect, ComponentPropsWithoutRef } from 'react';
@@ -57,12 +58,12 @@ type ArticleStatus = 'draft' | 'published' | 'scheduled'
 
 // ─── MD Code Block ───────────────────────────────────────────────────────────
 
-function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
+function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > ) {
   const [copied, setCopied] = useState(false)
   const lang = className?.replace('language-', '') ?? 'text'
   const code = typeof children === 'string' ? children : String(children ?? '')
   const isInline = !className
-
+  
   if (isInline) {
     return (
       <code className="bg-[#efedee] text-[#585f64] px-1.5 py-0.5 rounded text-[0.82em] font-mono break-all">
@@ -70,7 +71,7 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
       </code>
     )
   }
-
+  
   return (
     <div className="relative my-3 rounded-xl overflow-hidden border border-[#dcdad9] bg-[#1e1e1e] text-gray-100 max-w-full">
       <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-[#2a2a2a] border-b border-[#3a3a3a]">
@@ -124,7 +125,8 @@ const mdComponents: Components = {
   thead: ({ children }) => <thead className="bg-[#f5f3f3] text-[#585f64]">{children}</thead>,
   tbody: ({ children }) => <tbody className="divide-y divide-[#efedee]">{children}</tbody>,
   tr: ({ children }) => <tr>{children}</tr>,
-  th: ({ children }) => <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap">{children}</th>,
+  th: ({ children }) =>
+    <th className="px-3 sm:px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap">{children}</th>,
   td: ({ children }) => <td className="px-3 sm:px-4 py-2.5 text-[#313334] break-words">{children}</td>,
   hr: () => <hr className="my-6 border-[#e4e2e1]" />,
   strong: ({ children }) => <strong className="font-bold text-[#1a1b1c]">{children}</strong>,
@@ -154,7 +156,10 @@ function MarkdownPreview({ content }: { content: string }) {
 
 // ─── Toolbar Button ───────────────────────────────────────────────────────────
 
-const ToolbarBtn = ({ icon, label, onClick, active }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean }) => (
+const ToolbarBtn = ({ icon, label, onClick, active }: {
+  icon: React.ReactNode;label: string;onClick: () =>
+    void;active ? : boolean
+}) => (
   <button title={label} onClick={onClick}
     className={`p-1.5 sm:p-2 rounded-lg transition-all shrink-0 ${active ? 'bg-[#585f64] text-white' : 'text-[#585f64] hover:bg-black/5 hover:text-[#313334]'}`}>
     {icon}
@@ -163,7 +168,11 @@ const ToolbarBtn = ({ icon, label, onClick, active }: { icon: React.ReactNode; l
 
 // ─── Sidebar Sub-Components ───────────────────────────────────────────────────
 
-const SidebarLink = ({ icon, label, active = false, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) => (
+const SidebarLink = ({ icon, label, active = false, onClick }: {
+  icon: React.ReactNode;label: string;active ?
+  :
+    boolean;onClick ? : () => void
+}) => (
   <button onClick={onClick}
     className={`flex items-center gap-3 px-4 py-2.5 rounded-full transition-all text-sm w-full text-left ${
       active ? 'bg-white text-[#585f64] font-semibold shadow-sm' : 'text-[#5e5f65] hover:bg-black/5'
@@ -173,7 +182,7 @@ const SidebarLink = ({ icon, label, active = false, onClick }: { icon: React.Rea
   </button>
 )
 
-const SEOItem = ({ success, text }: { success: boolean; text: string }) => (
+const SEOItem = ({ success, text }: { success: boolean;text: string }) => (
   <div className="flex items-start gap-2.5">
     {success
       ? <CheckCircle2 size={14} className="text-green-600 mt-0.5 shrink-0" fill="currentColor" />
@@ -184,7 +193,8 @@ const SEOItem = ({ success, text }: { success: boolean; text: string }) => (
 )
 
 const InputField = ({ label, value, onChange, placeholder, multiline, hint }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; multiline?: boolean; hint?: string
+  label: string;value: string;onChange: (v: string) => void;placeholder ? : string;multiline ? :
+boolean;hint ? : string
 }) => (
   <div className="flex flex-col gap-1.5 min-w-0">
     <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#5e5f61]">{label}</label>
@@ -199,7 +209,7 @@ const InputField = ({ label, value, onChange, placeholder, multiline, hint }: {
 )
 
 const Toggle = ({ label, checked, onChange, description }: {
-  label: string; checked: boolean; onChange: (v: boolean) => void; description?: string
+  label: string;checked: boolean;onChange: (v: boolean) => void;description ? : string
 }) => (
   <div className="flex items-start justify-between gap-3 min-w-0">
     <div className="min-w-0 flex-1">
@@ -218,6 +228,7 @@ const Toggle = ({ label, checked, onChange, description }: {
 function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
+
 function estimateReadTime(text: string): number {
   return Math.max(1, Math.ceil(countWords(text) / 200))
 }
@@ -227,30 +238,30 @@ function estimateReadTime(text: string): number {
 const EditorPage = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [viewMode, setViewMode] = useState<ViewMode>('write')
-
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved')
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-
+  const [viewMode, setViewMode] = useState < ViewMode > ('write')
+  
+  const [saveStatus, setSaveStatus] = useState < 'saved' | 'unsaved' | 'saving' > ('saved')
+  const [lastSaved, setLastSaved] = useState < Date | null > (null)
+  
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<SidebarTab>('metadata')
+  const [activeTab, setActiveTab] = useState < SidebarTab > ('metadata')
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-
-  const [history, setHistory] = useState<string[]>([''])
+  
+  const [history, setHistory] = useState < string[] > ([''])
   const [historyIndex, setHistoryIndex] = useState(0)
-
+  
   const [category, setCategory] = useState('')
   const [author, setAuthor] = useState('Elena Vance')
-  const [tags, setTags] = useState<string[]>(['narrative', 'design'])
+  const [tags, setTags] = useState < string[] > ([])
   const [tagInput, setTagInput] = useState('')
-  const [visibility, setVisibility] = useState<Visibility>('public')
-  const [status, setStatus] = useState<ArticleStatus>('draft')
+  const [visibility, setVisibility] = useState < Visibility > ('public')
+  const [status, setStatus] = useState < ArticleStatus > ('draft')
   const [featured, setFeatured] = useState(false)
   const [breaking, setBreaking] = useState(false)
   const [trending, setTrending] = useState(false)
   const [coverImage, setCoverImage] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
-
+  
   const [seoTitle, setSeoTitle] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
   const [focusKeyword, setFocusKeyword] = useState('')
@@ -258,70 +269,89 @@ const EditorPage = () => {
   const [ogImage, setOgImage] = useState('')
   const [twitterCard, setTwitterCard] = useState('summary_large_image')
   const [noIndex, setNoIndex] = useState(false)
-
+  
   const [allowComments, setAllowComments] = useState(true)
   const [showInRss, setShowInRss] = useState(true)
   const [ampEnabled, setAmpEnabled] = useState(false)
   const [cssClass, setCssClass] = useState('')
   const [redirectUrl, setRedirectUrl] = useState('')
-
+  
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishing, setPublishing] = useState(false)
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const titleRef = useRef<HTMLTextAreaElement>(null)
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
+  
+  const textareaRef = useRef < HTMLTextAreaElement > (null)
+  const titleRef = useRef < HTMLTextAreaElement > (null)
+  const saveTimerRef = useRef < ReturnType < typeof setTimeout > | null > (null)
+  const { data: session } = useSession()
   // ─── Autosave ───────────────────────────────────────────────────────────────
-
+  
   useEffect(() => {
     if (saveStatus === 'unsaved') {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
       saveTimerRef.current = setTimeout(() => {
         setSaveStatus('saving')
-        setTimeout(() => { setSaveStatus('saved'); setLastSaved(new Date()) }, 600)
+        setTimeout(() => {
+          setSaveStatus('saved');
+          setLastSaved(new Date())
+        }, 600)
       }, 2000)
     }
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
   }, [content, title, saveStatus])
-
+  
   const markUnsaved = () => setSaveStatus('unsaved')
-
+  
   useEffect(() => {
     if (titleRef.current) {
       titleRef.current.style.height = 'auto'
       titleRef.current.style.height = `${titleRef.current.scrollHeight}px`
     }
   }, [title])
-
+  
   useEffect(() => {
     if (textareaRef.current && viewMode === 'write') {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = `${Math.max(textareaRef.current.scrollHeight, 400)}px`
     }
   }, [content, viewMode])
-
+  
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1280px)')
     const handler = (e: MediaQueryListEvent) => { if (e.matches) setMobileDrawerOpen(false) }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
-
+  
   // ─── Undo / Redo ────────────────────────────────────────────────────────────
-
+  
   const pushHistory = useCallback((val: string) => {
     setHistory((prev) => [...prev.slice(0, historyIndex + 1), val].slice(-100))
     setHistoryIndex((i) => Math.min(i + 1, 99))
   }, [historyIndex])
-
-  const undo = () => { if (historyIndex > 0) { const i = historyIndex - 1; setContent(history[i]); setHistoryIndex(i) } }
-  const redo = () => { if (historyIndex < history.length - 1) { const i = historyIndex + 1; setContent(history[i]); setHistoryIndex(i) } }
-
-  const handleContentChange = (val: string) => { setContent(val); markUnsaved(); pushHistory(val) }
-
+  
+  const undo = () => {
+    if (historyIndex > 0) {
+      const i = historyIndex - 1;
+      setContent(history[i]);
+      setHistoryIndex(i)
+    }
+  }
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const i = historyIndex + 1;
+      setContent(history[i]);
+      setHistoryIndex(i)
+    }
+  }
+  
+  const handleContentChange = (val: string) => {
+    setContent(val);
+    markUnsaved();
+    pushHistory(val)
+  }
+  
   // ─── Toolbar actions ────────────────────────────────────────────────────────
-
+  
   const insertMarkdown = useCallback((before: string, after = '', placeholder = '') => {
     const ta = textareaRef.current
     if (!ta) return
@@ -329,39 +359,61 @@ const EditorPage = () => {
     const end = ta.selectionEnd
     const selected = content.slice(start, end) || placeholder
     handleContentChange(content.slice(0, start) + before + selected + after + content.slice(end))
-    setTimeout(() => { ta.focus(); const c = start + before.length + selected.length; ta.setSelectionRange(c, c) }, 0)
+    setTimeout(() => {
+      ta.focus();
+      const c = start + before.length + selected.length;
+      ta.setSelectionRange(c, c)
+    }, 0)
   }, [content])
-
+  
   const insertLinePrefix = useCallback((prefix: string) => {
     const ta = textareaRef.current
     if (!ta) return
     const start = ta.selectionStart
     const lineStart = content.lastIndexOf('\n', start - 1) + 1
     handleContentChange(content.slice(0, lineStart) + prefix + content.slice(lineStart))
-    setTimeout(() => { ta.focus(); ta.setSelectionRange(start + prefix.length, start + prefix.length) }, 0)
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(start + prefix.length, start + prefix.length)
+    }, 0)
   }, [content])
-
+  
   // ─── Tags ───────────────────────────────────────────────────────────────────
-
+  
   const addTag = () => {
     const t = tagInput.trim().toLowerCase().replace(/\s+/g, '-')
-    if (t && !tags.includes(t)) { setTags([...tags, t]); markUnsaved() }
+    if (t && !tags.includes(t)) {
+      setTags([...tags, t]);
+      markUnsaved()
+    }
     setTagInput('')
   }
-  const removeTag = (t: string) => { setTags(tags.filter((x) => x !== t)); markUnsaved() }
-
+  const removeTag = (t: string) => {
+    setTags(tags.filter((x) => x !== t));
+    markUnsaved()
+  }
+  
   // ─── SEO ────────────────────────────────────────────────────────────────────
-
+  
   const seoChecks = [
-    { success: title.length >= 10 && title.length <= 70, text: `Title length (${title.length}/70 chars)` },
-    { success: !!focusKeyword && title.toLowerCase().includes(focusKeyword.toLowerCase()), text: 'Focus keyword in title' },
-    { success: metaDescription.length >= 120 && metaDescription.length <= 160, text: `Meta desc (${metaDescription.length}/160)` },
+    {
+      success: title.length >= 10 && title.length <= 70,
+      text: `Title length (${title.length}/70 chars)`
+    },
+    {
+      success: !!focusKeyword && title.toLowerCase().includes(focusKeyword.toLowerCase()),
+      text: 'Focus keyword in title'
+    },
+    {
+      success: metaDescription.length >= 120 && metaDescription.length <= 160,
+      text: `Meta desc (${metaDescription.length}/160)`
+    },
     { success: countWords(content) >= 300, text: `Word count ≥ 300 (${countWords(content)})` },
     { success: !!coverImage, text: 'Cover image set' },
     { success: !noIndex, text: 'Page is indexable' },
   ]
   const seoScore = Math.round((seoChecks.filter((c) => c.success).length / seoChecks.length) * 100)
-
+  
   const a11yChecks = [
     { success: title.trim().length > 0, text: 'Article has a title' },
     { success: content.length > 0, text: 'Article has content' },
@@ -369,14 +421,64 @@ const EditorPage = () => {
     { success: allowComments, text: 'Comments enabled' },
     { success: true, text: 'AMP compatibility configured' },
   ]
-
+  
   const handlePublish = async () => {
     setPublishing(true)
-    await new Promise((r) => setTimeout(r, 1500))
-    setPublishing(false); setShowPublishModal(false); setStatus('published')
-    setSaveStatus('saved'); setLastSaved(new Date())
+    try {
+      // prepare all payload...
+      const uploadToServer = await fetch('/api/article', {
+        method: 'POST',
+        body: {
+          title: title,
+          description: metaDescription || '',
+          content: content,
+          category: category,
+          // author: session.user.name ?? session.user.email ?? 'Anonymous',
+          //  date: new Date(body.date ?? Date.now()),
+          image: coverImage ?? '',
+          readTime: 0,
+          featured: featured ?? false,
+          breaking: breaking ?? false,
+          trending: trending ?? false,
+          // SEO fields
+          seoTitle: seoTitle ?? null,
+          metaDescription: metaDescription ?? null,
+          focusKeyword: focusKeyword ?? null,
+          canonicalUrl: canonicalUrl ?? null,
+          ogImage: ogImage ?? null,
+          twitterCard: twitterCard ?? 'summary_large_image',
+          // Advanced fields
+          noIndex: noIndex ?? false,
+          allowComments: allowComments ?? true,
+          showInRss: showInRss ?? true,
+          ampEnabled: ampEnabled ?? false,
+          redirectUrl: redirectUrl ?? null,
+          cssClass: cssClass ?? null,
+          visibility: visibility ?? 'public',
+          scheduledAt: scheduledAt ? new Date(body.scheduledAt) : undefined,
+          user_id: session.user.id,
+          status: status ?? 'draft',
+        }
+      })
+      if (uploadToServer.ok) {
+        const fallbackServer = await uploadToServer.json();
+        setPublishing(false);
+        setShowPublishModal(false);
+        setStatus('published')
+        setSaveStatus('saved');
+        setLastSaved(new Date())
+        
+      }
+    } catch (e) {
+      setPublishing(false);
+      setShowPublishModal(false);
+     // setStatus('')
+     // setSaveStatus('saved');
+     // setLastSaved(new Date())
+    }
+    
   }
-
+  
   const saveLabel = () => {
     if (saveStatus === 'saving') return 'Saving…'
     if (saveStatus === 'unsaved') return 'Unsaved'
@@ -387,13 +489,14 @@ const EditorPage = () => {
     }
     return 'Saved'
   }
-
+  
   // ─── Sidebar panel ──────────────────────────────────────────────────────────
-
+  
   const renderSidebarPanel = () => {
     switch (activeTab) {
-      case 'metadata': return (
-        <div className="flex flex-col gap-4 min-w-0">
+      case 'metadata':
+        return (
+          <div className="flex flex-col gap-4 min-w-0">
           <InputField label="Category" value={category} onChange={(v) => { setCategory(v); markUnsaved() }} placeholder="e.g. Technology" />
           <InputField label="Author" value={author} onChange={(v) => { setAuthor(v); markUnsaved() }} />
           <InputField label="Cover Image URL" value={coverImage} onChange={(v) => { setCoverImage(v); markUnsaved() }} placeholder="https://…" />
@@ -434,10 +537,11 @@ const EditorPage = () => {
             ))}
           </div>
         </div>
-      )
-
-      case 'seo': return (
-        <div className="flex flex-col gap-4 min-w-0">
+        )
+        
+      case 'seo':
+        return (
+          <div className="flex flex-col gap-4 min-w-0">
           <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-[#e4e2e1]">
             <div className="relative w-12 h-12 shrink-0">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
@@ -476,10 +580,11 @@ const EditorPage = () => {
             {seoChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
           </div>
         </div>
-      )
-
-      case 'accessibility': return (
-        <div className="flex flex-col gap-4 min-w-0">
+        )
+        
+      case 'accessibility':
+        return (
+          <div className="flex flex-col gap-4 min-w-0">
           <div className="p-4 bg-white rounded-xl border border-[#e4e2e1]">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#5e5f61] mb-3">A11y Checklist</p>
             <div className="flex flex-col gap-2.5">
@@ -495,10 +600,11 @@ const EditorPage = () => {
             </p>
           </div>
         </div>
-      )
-
-      case 'tags': return (
-        <div className="flex flex-col gap-4 min-w-0">
+        )
+        
+      case 'tags':
+        return (
+          <div className="flex flex-col gap-4 min-w-0">
           <div className="flex gap-2">
             <input type="text" value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
@@ -530,10 +636,11 @@ const EditorPage = () => {
             </div>
           </div>
         </div>
-      )
-
-      case 'distribution': return (
-        <div className="flex flex-col gap-4 min-w-0">
+        )
+        
+      case 'distribution':
+        return (
+          <div className="flex flex-col gap-4 min-w-0">
           <div className="p-4 bg-white rounded-xl border border-[#e4e2e1] flex flex-col gap-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#5e5f61]">Publish Settings</p>
             <div className="flex flex-col gap-1.5">
@@ -570,12 +677,12 @@ const EditorPage = () => {
             <Send size={14} /> Publish Article
           </button>
         </div>
-      )
+        )
     }
   }
-
+  
   // ─── Shared sidebar inner content ────────────────────────────────────────────
-
+  
   const SidebarInner = () => (
     <div className="flex flex-col h-full min-w-0 overflow-hidden">
       <div className="px-4 pb-3 shrink-0">
@@ -594,20 +701,16 @@ const EditorPage = () => {
             onClick={() => { setActiveTab(id); setMobileDrawerOpen(false) }} />
         ))}
       </nav>
-      <div className="flex-1 overflow-y-auto px-2 pt-3 pb-3 min-w-0">
+      <div className="flex-1 overflow-y-auto px-2 pt-3 pb-3 min-w-0 bg-white">
         {renderSidebarPanel()}
-      </div>
-      <div className="pt-3 border-t border-[#e4e2e1] flex flex-col gap-0.5 px-2 pb-2 shrink-0">
-        <SidebarLink icon={<Settings size={15} />} label="Settings" />
-        <SidebarLink icon={<HelpCircle size={15} />} label="Support" />
       </div>
     </div>
   )
-
+  
   // ─── Render ──────────────────────────────────────────────────────────────────
-
+  
   return (
-    <div className="min-h-screen bg-[#fbf9f9] text-[#313334] font-['Inter'] selection:bg-[#dce3e9]">
+    <div className="min-h-screen bg-gray-100 text-black">
       <Header />
 
       {/* ── Top bar ──────────────────────────────────────────────────────────── */}
