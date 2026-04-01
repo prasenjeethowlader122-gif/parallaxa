@@ -715,7 +715,7 @@ const EditorPage = () => {
   // ─── Render ──────────────────────────────────────────────────────────────────
   
   return (
-    <div className="min-h-screen bg-gray-100 text-black">
+    <div className="min-h-screen bg-white text-black">
       <Header />
 
       {/* ── Top bar ──────────────────────────────────────────────────────────── */}
@@ -817,7 +817,7 @@ const EditorPage = () => {
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
 
           {/* Formatting toolbar */}
-          <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white border-b border-[#e4e2e1] overflow-x-auto shrink-0"
+          <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0"
             style={{ scrollbarWidth: 'none' }}>
             <ToolbarBtn icon={<Bold size={14} />} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
             <ToolbarBtn icon={<Italic size={14} />} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
