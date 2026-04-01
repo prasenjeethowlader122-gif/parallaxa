@@ -285,7 +285,7 @@ const EditorPage = () => {
   const { data: session } = useSession()
   // ─── Autosave ───────────────────────────────────────────────────────────────
   useEffect(()=>{
-    if (session.user) {
+    if (session?.user) {
       setAuthor(session.user.name)
     }
   },[session?.user])
@@ -461,7 +461,7 @@ const EditorPage = () => {
           cssClass: cssClass ?? null,
           visibility: visibility ?? 'public',
           scheduledAt: scheduledAt ? new Date(body.scheduledAt) : undefined,
-          user_id: session.user.id,
+          user_id: session?.user.id,
           status: status ?? 'draft',
         })
       })
