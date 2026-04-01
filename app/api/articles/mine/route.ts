@@ -1,15 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextResponse  , NextRequest} from 'next/server'
 import { auth } from '@/auth'
 import { sql } from '@/lib/db/index'
-
-export async function GET() {
+import {getAllArticles} from '@/lib/db/articles'
+export async function GET(req: NextRequest) {
+  const body = await req.json()
   const session = await auth()
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   
   try {
     console.log('SESSION USER:', session.user) // debug — পরে সরাও
-    
-    const rows = await sql`
+    const articles = await getAllArticles(body?.limit || 20);
+    return NextResponse.json(articles)
+    /*const rows = await sql`
       SELECT * FROM articles
       WHERE user_id = ${session.user.id}
       ORDER BY date DESC
@@ -47,7 +49,7 @@ export async function GET() {
         scheduledAt: r.scheduled_at,
         updatedAt: r.updated_at,
       }))
-    )
+    )*/
   } catch (e) {
     console.error(e)
     return NextResponse.json({ error: 'Failed to fetch your articles' }, { status: 500 })

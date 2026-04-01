@@ -39,7 +39,7 @@ export default function Dashboard() {
           Instead of `flex-${...}`, you must use the full class name like `flex-row`. */}
       <div className={`w-full flex ${isDesktop ? 'flex-row' : 'flex-col'}`}>
         <div className = {`w-full h-full p-4`}>
-          <h1 className='text-xl'>Dashboard</h1>
+          <h1 className='text-xl font-bold'>Dashboard</h1>
           <small>Welcome to dashboard page.</small>
         </div>
         {/* Nav List Sidebar/Topbar */}
