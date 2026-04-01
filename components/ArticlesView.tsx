@@ -64,14 +64,14 @@ const ArticlesView = () => {
               </TableRow>
             ) : articles.map((ar: any) => (
               <TableRow key={ar.id}>
-                <TableCell className="font-mono text-xs">{ar.id.slice(0, 8)}</TableCell>
+                <TableCell className="font-mono text-xs">{ar.id.slice(0, 3) + '—' + ar.id.slice(3,ar.id.length)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <img src={ar.imageUrl} alt="" className="h-8 w-8 rounded object-cover" />
-                    <span className="font-medium line-clamp-1">{ar.title}</span>
+                    <img src={ar.image} alt="" className="h-8 w-8 rounded object-cover" />
+                    <span className="font-medium line-clamp-1">{ar.title.slice(0,15)+'...'}</span>
                   </div>
                 </TableCell>
-                <TableCell>{ar.watches || 0}</TableCell>
+                <TableCell>{ar.views || 0}</TableCell>
               </TableRow>
             ))}
           </TableBody>
