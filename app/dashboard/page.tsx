@@ -52,7 +52,7 @@ export default function Dashboard() {
                   key={_nav.name} // 3. FIXED: Added the required React `key` prop for mapped lists.
                   onClick={() => setCurrentActiveTab(_nav.name)} // 4. FIXED: Added `onClick` so the tabs actually switch.
                   // 5. FIXED: Added missing spaces between standard classes and dynamic classes.
-                  className={`p-2 px-4 pb-4 flex flex-row rounded-full text-sm items-center gap-2 capitalize transition-colors ${
+                  className={`p-2 px-4 flex flex-row rounded-full text-sm items-center gap-2 capitalize transition-colors ${
                     isDesktop ? 'justify-start' : 'justify-center'
                   } ${
                     isActive ? 'text-black bg-black text-white' : 'text-gray-500 bg-gray-100 hover:text-black'

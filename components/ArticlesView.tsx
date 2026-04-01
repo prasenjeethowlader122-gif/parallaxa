@@ -50,7 +50,7 @@ const ArticlesView = () => {
         <Table className = 'border-none'>
           <TableHeader>
             <TableRow>
-              <TableHead>id</TableHead>
+              <TableHead>No:</TableHead>
               <TableHead>Details</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -64,12 +64,12 @@ const ArticlesView = () => {
               </TableRow>
             ) : articles.map((ar: any,i) => (
               <TableRow key={ar.id}>
-                <TableCell className="text-xs">{i.toPrecision(1)}</TableCell>
+                <TableCell className="text-xs">{Number(i).toExponential(0)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={ar.image} alt="" className="h-8 w-8 rounded object-cover" />
                     <div className='flex flex-col items-start justify-start gap-1' >
-                    <span className="font-medium line-clamp-1">{ar.title.slice(0,15)+'...'}</span>
+                    <span className="font-medium">{ar.title.slice(0,15)+'...'}</span>
                     <small>{ar.views || 0 } views</small>
                     </div>
                   </div>
