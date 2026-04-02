@@ -76,7 +76,7 @@ const ArticlesView = () => {
                 </TableCell>
               </TableRow>
             ) : articles.map((ar: any, i) => (
-              <TableRow key={ar.id}>
+              <TableRow key={ar.id} className = 'rounded-xl bg-blue-50 px-4 my-4'>
                 {/* Fixed the exponential display to a simple index + offset */}
                 <TableCell className="text-xs font-mono">
                   {((page - 1) * limit) + (i + 1)}
@@ -86,9 +86,14 @@ const ArticlesView = () => {
                     <img src={ar.image} alt="" className="h-10 w-10 rounded-md object-cover bg-muted" />
                     <div className='flex flex-col items-start justify-start' >
                       <span className="font-medium leading-none mb-1">
-                        {ar.title.length > 30 ? ar.title.slice(0, 30) + '...' : ar.title}
+                        {ar.title.length > 20 ? ar.title.slice(0, 20) + '...' : ar.title}
                       </span>
-                      <small className="text-muted-foreground">{ar.views || 0} views</small>
+                      <div className=  "flex text-xs font-medium items-center justify-start gap-2">
+                        <SquareArrowOutUpRight className = 'w-2 h-2'/>
+                        <hr className = 'w-3'/>
+                        <small>{ar?.date || ''}</small>
+                      </div>
+                      <small className="text-muted-foreground text-blue">{ar.views || 0} views</small>
                     </div>
                   </div>
                 </TableCell>
