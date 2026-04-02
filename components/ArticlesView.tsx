@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
 // -------------------
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react'
+import { Loader2,SquareArrowOutUpRight, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react'
 
 const ArticlesView = () => {
   const router = useRouter() // For redirection
