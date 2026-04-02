@@ -76,7 +76,7 @@ const ArticlesView = () => {
                 </TableCell>
               </TableRow>
             ) : articles.map((ar: any, i) => (
-              <TableRow key={ar.id} className = 'rounded-2xl bg-gray-50 px-4 my-4'>
+              <TableRow key={ar.id} className = 'rounded-2xl bg-gray-50 my-4'>
                 {/* Fixed the exponential display to a simple index + offset */}
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ const ArticlesView = () => {
                         {ar.title.length > 20 ? ar.title.slice(0, 20) + '...' : ar.title}
                       </span>
                       <div className=  "flex text-sm font-medium items-center justify-start gap-2">
-                        <SquareArrowOutUpRight className = 'w-4 h-4'/>
+                        <SquareArrowOutUpRight className = 'w-4 h-4' onClick = {()=> router.push(`/article/${ar.slug}`)}/>
                         <hr className = 'w-3'/>
                         <small>{new Date(ar.date).toLocaleDateString()}</small>
                       </div>
