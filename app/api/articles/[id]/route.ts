@@ -28,7 +28,7 @@ export async function PATCH(
     const { id } = await params
     const body = await req.json()
 
-    const article = await updateArticle(id, {
+    const article = await updateArticle(decodeURIComponent(id), {
       // Core
       ...(body.title       !== undefined && { title:       body.title }),
       ...(body.description !== undefined && { description: body.description }),
