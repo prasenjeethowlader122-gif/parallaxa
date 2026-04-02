@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const article = await getArticleById(id)
+    const article = await getArticleById(decodeURIComponent(id))
     if (!article) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json(article)
   } catch (e) {
