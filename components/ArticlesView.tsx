@@ -16,7 +16,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-// --- New Imports ---
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,13 +26,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
-// -------------------
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2,SquareArrowOutUpRight, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react'
+import { Loader2, SquareArrowOutUpRight, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react'
 
 const ArticlesView = () => {
-  const router = useRouter() // For redirection
-  const [articles, setArticles] = useState([])
+  const router = useRouter()
+  const [articles, setArticles] = useState < any[] > ([]) // Added type safety
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const limit = 12
@@ -59,79 +57,94 @@ const ArticlesView = () => {
   
   return (
     <div className="w-full space-y-4 p-2">
-      <div className="">
-        <Table className='border-none'>
-          <TableHeader>
+      {/* 1. Added border-separate and spacing to allow row styling */}
+      <Table className="border-separate border-spacing-y-3">
+        <TableHeader>
+          <TableRow className="border-none hover:bg-transparent">
+            <TableHead className="w-[80px]">No:</TableHead>
+            <TableHead>Details</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loading ? (
             <TableRow>
-              <TableHead className="w-[80px]">No:</TableHead>
-              <TableHead>Details</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableCell colSpan={3} className="h-24 text-center">
+                <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
-                </TableCell>
-              </TableRow>
-            ) : articles.map((ar: any, i) => (
-              <TableRow key={ar.id} className = 'rounded-xl bg-blue-50 px-4 my-4'>
-                {/* Fixed the exponential display to a simple index + offset */}
-                <TableCell className="text-xs font-mono">
-                  {((page - 1) * limit) + (i + 1)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <img src={ar.image} alt="" className="h-10 w-10 rounded-md object-cover bg-muted" />
-                    <div className='flex flex-col items-start justify-start' >
-                      <span className="font-medium leading-none mb-1">
-                        {ar.title.length > 20 ? ar.title.slice(0, 20) + '...' : ar.title}
-                      </span>
-                      <div className=  "flex text-xs font-medium items-center justify-start gap-2">
-                        <SquareArrowOutUpRight className = 'w-2 h-2'/>
-                        <hr className = 'w-3'/>
-                        <small>{ar?.date || ''}</small>
-                      </div>
-                      <small className="text-muted-foreground text-blue">{ar.views || 0} views</small>
+          ) : articles.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                No articles found.
+              </TableCell>
+            </TableRow>
+          ) : articles.map((ar, i) => (
+            // 2. Applied rounded corners and background to the Row
+            // Added overflow-hidden and removed border-b to maintain card look
+            <TableRow 
+              key={ar.id} 
+              className="group border-none bg-blue-50/50 hover:bg-blue-100/50 transition-colors"
+            >
+              {/* 3. Rounded the first and last cells to create the pill/card effect */}
+              <TableCell className="font-mono text-xs rounded-l-xl border-y border-l">
+                {((page - 1) * limit) + (i + 1)}
+              </TableCell>
+              
+              <TableCell className="border-y">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={ar.image || '/placeholder-image.jpg'} 
+                    alt="" 
+                    className="h-10 w-10 rounded-md object-cover bg-muted" 
+                  />
+                  <div className="flex flex-col items-start justify-start">
+                    <span className="font-medium leading-none mb-1">
+                      {ar.title.length > 30 ? ar.title.slice(0, 30) + '...' : ar.title}
+                    </span>
+                    <div className="flex text-xs font-medium items-center gap-2 text-muted-foreground">
+                      <SquareArrowOutUpRight className="w-3 h-3"/>
+                      <span>{ar?.date || 'No date'}</span>
+                      <span className="text-blue-600">• {ar.views || 0} views</span>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={() => router.push(`/write?id=${ar.id}`)}
-                        className="cursor-pointer"
-                      >
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit Article
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Live
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                </div>
+              </TableCell>
+
+              <TableCell className="text-right rounded-r-xl border-y border-r">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[160px]">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => router.push(`/write?id=${ar.id}`)}
+                      className="cursor-pointer"
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit Article
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Live
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <Pagination>
         <PaginationContent>
