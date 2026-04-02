@@ -9,7 +9,7 @@ import { Footer } from '@/components/footer';
 
 // 1. FIXED: Imported icons and components explicitly with distinct names 
 // to avoid naming collisions (e.g., 'Home' as an icon vs 'Home' as a component).
-import { Home as HomeIcon, FileText as PagesIcon } from 'lucide-react';
+import { Home as HomeIcon, Spark, FileText as PagesIcon } from 'lucide-react';
 import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 
@@ -23,7 +23,14 @@ const NavLists = [
   name: '#articles',
   icon: PagesIcon,
   index: <ArticlesView />
-}];
+},
+{
+  name : '#ai',
+  icon: Spark,
+  redirect: '/ai'
+}
+  
+];
 
 export default function Dashboard() {
   const { data: session } = useSession();
@@ -33,7 +40,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white text-black">
       <Header />
-        <div className = {`w-full h-full p-4`}>
+        <div className = {`w-full h-full py-6 p-4`}>
           <h1 className='text-2xl font-bold'>Dashboard</h1>
           <small>Welcome to dashboard page.</small>
         </div>
@@ -50,7 +57,7 @@ export default function Dashboard() {
               return (
                 <button 
                   key={_nav.name} // 3. FIXED: Added the required React `key` prop for mapped lists.
-                  onClick={() => setCurrentActiveTab(_nav.name)} // 4. FIXED: Added `onClick` so the tabs actually switch.
+                  onClick={() => _nav.index ?  setCurrentActiveTab(_nav.name) : null} // 4. FIXED: Added `onClick` so the tabs actually switch.
                   // 5. FIXED: Added missing spaces between standard classes and dynamic classes.
                   className={`p-2 px-4 flex flex-row rounded-full text-sm items-center gap-2 capitalize transition-colors ${
                     isDesktop ? 'justify-start' : 'justify-center'
@@ -58,7 +65,7 @@ export default function Dashboard() {
                     isActive ? 'text-black bg-black text-white' : 'text-gray-500 bg-gray-100 hover:text-black'
                   }`}
                 >
-                  <_nav.icon className="w-5 h-5" />
+                  <_nav.icon className="w-4 h-4" />
                   <p>{_nav.name.replace('#', '')}</p>
                 </button>
               )
