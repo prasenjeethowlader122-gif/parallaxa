@@ -390,7 +390,7 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
     // connection — no second neon() call needed.
     const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(', ')
     const query =
-      `UPDATE articles SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`
+      `UPDATE articles SET ${setClause}, updated_at = NOW() WHERE id = $${id} RETURNING *`
     const rows = await sql.unsafe(query, [...values, id] as never[])
     return rows[0] ? mapRow(rows[0] as Record < string, unknown > ) : null
   } catch (e) {
