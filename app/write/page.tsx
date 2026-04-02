@@ -174,7 +174,7 @@ const SidebarLink = ({ icon, label, active = false, onClick }: {
     boolean;onClick ? : () => void
 }) => (
   <button onClick={onClick}
-    className={`flex items-center gap-3 px-4 py-2.5 rounded-full transition-all text-sm w-full text-left ${
+    className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all text-sm w-full text-left ${
       active ? 'bg-white text-[#585f64] font-semibold shadow-sm' : 'text-[#5e5f65] hover:bg-black/5'
     }`}>
     <span className="shrink-0">{icon}</span>
@@ -217,8 +217,8 @@ const Toggle = ({ label, checked, onChange, description }: {
       {description && <p className="text-[10px] text-[#9e9fa0] mt-0.5 break-words">{description}</p>}
     </div>
     <button onClick={() => onChange(!checked)}
-      className={`relative shrink-0 w-9 h-5 rounded-full transition-colors duration-200 ${checked ? 'bg-[#585f64]' : 'bg-[#dcdad9]'}`}>
-      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
+      className={`relative shrink-0 w-9 h-5 rounded-2xl transition-colors duration-200 ${checked ? 'bg-[#585f64]' : 'bg-[#dcdad9]'}`}>
+      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-2xl bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
     </button>
   </div>
 )
@@ -494,7 +494,23 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      
+      if (!id) {
+        try {
+          const j = await response.json()
+          if (j.id) {
+            const uploadToFb = await fetch('/api/ptp', {
+              method: 'POST',
+              body: JSON.stringify({
+                articleId: j.id
+              })
+              
+            })
+          }
+          alert('ERROR:: ID NOT RETURN FROM CREATE ARTICLE')
+        } catch (e) {
+          alert('ERROR:: ' + e.message)
+        }
+      }
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err.error || 'Publish failed');
@@ -647,7 +663,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <span key={tag} className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#dcdad9] rounded-full text-xs text-[#313334] font-medium hover:border-[#9f403d] transition-colors max-w-full">
+              <span key={tag} className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#dcdad9] rounded-2xl text-xs text-[#313334] font-medium hover:border-[#9f403d] transition-colors max-w-full">
                 <Hash size={10} className="text-[#9e9fa0] shrink-0" />
                 <span className="truncate max-w-[100px]">{tag}</span>
                 <button onClick={() => removeTag(tag)} className="text-[#9e9fa0] hover:text-[#9f403d] transition-colors shrink-0"><X size={10} /></button>
@@ -661,7 +677,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
               {['journalism','editorial','media','writing','content','typography','ui-design','publishing']
                 .filter(t => !tags.includes(t)).map(t => (
                   <button key={t} onClick={() => { setTags(prev => [...prev, t]); markUnsaved() }}
-                    className="px-2.5 py-1 bg-[#efedee] rounded-full text-[10px] text-[#5e5f61] hover:bg-[#585f64] hover:text-white transition-colors">
+                    className="px-2.5 py-1 bg-[#efedee] rounded-2xl text-[10px] text-[#5e5f61] hover:bg-[#585f64] hover:text-white transition-colors">
                     + {t}
                   </button>
                 ))}
@@ -705,7 +721,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
             </div>
           </div>
           <button onClick={() => setShowPublishModal(true)} disabled={!title.trim() || !content.trim()}
-            className="w-full py-3 rounded-full bg-[#585f64] text-white text-sm font-semibold hover:bg-[#3d4042] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full py-3 rounded-2xl bg-[#585f64] text-white text-sm font-semibold hover:bg-[#3d4042] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <Send size={14} /> Publish Article
           </button>
         </div>
@@ -761,16 +777,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
           {/* Right */}
           <div className="flex items-center gap-1 shrink-0">
             {/* Save pill — md+ only */}
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-[#5e5f61] bg-[#efedee] rounded-full">
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${saveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : saveStatus === 'unsaved' ? 'bg-red-400' : 'bg-green-500'}`} />
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-[#5e5f61] bg-[#efedee] rounded-2xl">
+              <span className={`w-1.5 h-1.5 rounded-2xl shrink-0 ${saveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : saveStatus === 'unsaved' ? 'bg-red-400' : 'bg-green-500'}`} />
               <span className="whitespace-nowrap">{saveLabel()}</span>
             </div>
 
             {/* View mode — icon-only on xs, text on sm+ */}
-            <div className="flex items-center bg-[#efedee] rounded-full p-0.5 shrink-0 ml-1">
+            <div className="flex items-center bg-[#efedee] rounded-2xl p-0.5 shrink-0 ml-1">
               {(['write', 'split', 'preview'] as ViewMode[]).map((m) => (
                 <button key={m} onClick={() => setViewMode(m)}
-                  className={`px-2 sm:px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all ${viewMode === m ? 'bg-white text-[#313334] shadow-sm' : 'text-[#5e5f61]'}`}>
+                  className={`px-2 sm:px-3 py-1.5 rounded-2xl text-[10px] font-semibold transition-all ${viewMode === m ? 'bg-white text-[#313334] shadow-sm' : 'text-[#5e5f61]'}`}>
                   <span className="hidden sm:inline capitalize">{m}</span>
                   <span className="sm:hidden" aria-label={m}>
                     {m === 'write' ? '✏️' : m === 'preview' ? '👁' : '⧉'}
@@ -810,18 +826,18 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
 
             {/* Save btn — sm+ */}
             <button onClick={() => { setSaveStatus('saving'); setTimeout(() => { setSaveStatus('saved'); setLastSaved(new Date()) }, 600) }}
-              className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#e1e2e5] text-[#3d4042] text-xs font-medium hover:brightness-95 transition-all shrink-0">
+              className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-[#e1e2e5] text-[#3d4042] text-xs font-medium hover:brightness-95 transition-all shrink-0">
               <Save size={12} /><span>Save</span>
             </button>
 
             {/* Publish */}
             <button onClick={() => setShowPublishModal(true)} disabled={!title.trim() || !content.trim()}
-              className="flex items-center gap-1 px-3 sm:px-4 py-1.5 rounded-full bg-[#585f64] text-white text-xs font-medium hover:bg-[#3d4042] active:scale-95 transition-all disabled:opacity-40 shrink-0">
+              className="flex items-center gap-1 px-3 sm:px-4 py-1.5 rounded-2xl bg-[#585f64] text-white text-xs font-medium hover:bg-[#3d4042] active:scale-95 transition-all disabled:opacity-40 shrink-0">
               <Send size={12} /><span>Publish</span>
             </button>
 
             {/* Avatar */}
-            <div className="overflow-hidden rounded-full h-7 w-7 ring-2 ring-[#e9e8e9] shrink-0 ml-0.5 hidden xs:block">
+            <div className="overflow-hidden rounded-2xl h-7 w-7 ring-2 ring-[#e9e8e9] shrink-0 ml-0.5 hidden xs:block">
               <img alt="Editor"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiCmjtsZALvP1tQr0IPjUcaqsYFQY3S8G4Cma3NZLzqpQUdjfmdfHe3TsowYcJ3X0VGaGOh2uaV4oX6tJ8535JAV_BmBWg7sqMokF0qk_LcJVWvSHdBdm8e2KwgxB_FKN7KpHX0fGjloGzeQPVYhuNm9z_tUJ6UvoEUxCidJiENA__bYPJfn0-j9n54JUvdtT0BThEP0uouEXA36jZhjXacHWxRs03PXFJVhIOeFR22NaAK4z6NKI9ei4Y0_QepD_HxkqDVhVcYZ8"
                 className="w-full h-full object-cover" />
@@ -883,16 +899,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
                     <div className="relative rounded-xl overflow-hidden aspect-video group">
                       <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button onClick={() => setCoverImage('')} className="px-4 py-2 bg-white/90 rounded-full text-xs font-semibold">Remove Cover</button>
+                        <button onClick={() => setCoverImage('')} className="px-4 py-2 bg-white/90 rounded-2xl text-xs font-semibold">Remove Cover</button>
                       </div>
                     </div>
                   )}
 
                   {(breaking || featured || trending) && (
                     <div className="flex gap-2 flex-wrap">
-                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase"><Zap size={9} /> Breaking</span>}
-                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold uppercase"><Star size={9} /> Featured</span>}
-                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase"><TrendingUp size={9} /> Trending</span>}
+                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 rounded-2xl text-[10px] font-bold uppercase"><Zap size={9} /> Breaking</span>}
+                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-2xl text-[10px] font-bold uppercase"><Star size={9} /> Featured</span>}
+                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-2xl text-[10px] font-bold uppercase"><TrendingUp size={9} /> Trending</span>}
                     </div>
                   )}
 
@@ -908,7 +924,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
                       {category && <span className="uppercase tracking-wide shrink-0">{category}</span>}
                       <span className="shrink-0">~{estimateReadTime(content)} min read</span>
                       {tags.slice(0, 3).map(t => (
-                        <span key={t} className="text-[10px] px-2 py-0.5 bg-[#efedee] text-[#5e5f61] rounded-full shrink-0">#{t}</span>
+                        <span key={t} className="text-[10px] px-2 py-0.5 bg-[#efedee] text-[#5e5f61] rounded-2xl shrink-0">#{t}</span>
                       ))}
                     </div>
                   </div>
@@ -928,9 +944,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
 
                   {(breaking || featured || trending) && (
                     <div className="flex gap-2 mb-5 flex-wrap">
-                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase"><Zap size={9} /> Breaking</span>}
-                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold uppercase"><Star size={9} /> Featured</span>}
-                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase"><TrendingUp size={9} /> Trending</span>}
+                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 rounded-2xl text-[10px] font-bold uppercase"><Zap size={9} /> Breaking</span>}
+                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-2xl text-[10px] font-bold uppercase"><Star size={9} /> Featured</span>}
+                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-2xl text-[10px] font-bold uppercase"><TrendingUp size={9} /> Trending</span>}
                     </div>
                   )}
 
@@ -958,7 +974,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
 
                   {tags.length > 0 && (
                     <div className="flex gap-2 mt-8 pt-5 border-t border-[#e4e2e1] flex-wrap">
-                      {tags.map(t => <span key={t} className="px-3 py-1 bg-[#efedee] text-[#5e5f61] rounded-full text-xs font-medium">#{t}</span>)}
+                      {tags.map(t => <span key={t} className="px-3 py-1 bg-[#efedee] text-[#5e5f61] rounded-2xl text-xs font-medium">#{t}</span>)}
                     </div>
                   )}
                 </div>
@@ -990,7 +1006,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden">
             <div className="flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-[#dcdad9]" />
+              <div className="w-10 h-1 rounded-2xl bg-[#dcdad9]" />
             </div>
             <div className="flex items-center justify-between px-5 sm:px-6 py-3 border-b border-[#e4e2e1]">
               <h3 className="font-['Newsreader'] text-lg font-bold">Publish Article</h3>
@@ -1005,7 +1021,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
                   <span className="capitalize">{visibility}</span>
                 </div>
               </div>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2.5 text-sm">
                 <SEOItem success={!!title.trim()} text="Title is set" />
                 <SEOItem success={!!content.trim()} text="Content is not empty" />
                 <SEOItem success={!!category} text="Category assigned" />
@@ -1013,11 +1029,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
               </div>
               <div className="flex gap-3 pt-1">
                 <button onClick={() => setShowPublishModal(false)}
-                  className="flex-1 py-2.5 rounded-full border border-[#dcdad9] text-sm font-medium text-[#5e5f61] hover:bg-[#efedee] transition-colors">
+                  className="flex-1 py-2.5 rounded-2xl border border-[#dcdad9] text-sm font-medium text-[#5e5f61] hover:bg-[#efedee] transition-colors">
                   Cancel
                 </button>
                 <button onClick={handlePublish} disabled={publishing}
-                  className="flex-1 py-2.5 rounded-full bg-[#585f64] text-white text-sm font-semibold hover:bg-[#3d4042] transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+                  className="flex-1 py-2.5 rounded-2xl bg-[#585f64] text-white text-sm font-semibold hover:bg-[#3d4042] transition-all disabled:opacity-60 flex items-center justify-center gap-2 flex-1 w-full">
                   {publishing ? <RefreshCw size={13} className="animate-spin" /> : <Send size={13} />}
                   {publishing ? 'Publishing…' : 'Confirm & Publish'}
                 </button>
