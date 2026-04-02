@@ -58,7 +58,7 @@ const ArticlesView = () => {
   }, [fetchArticles])
   
   return (
-    <div className="w-full space-y-4 p-2">
+    <div className="w-full space-y-4">
       <div className="">
         <Table className='border-none'>
           <TableHeader>

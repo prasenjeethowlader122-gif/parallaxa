@@ -52,7 +52,7 @@ export default function Dashboard() {
                   className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors ${
                     isDesktop ? 'justify-start' : 'justify-center'
                   } ${
-                    isActive ? 'text-indigo-600' : 'text-gray-500 hover:text-black'
+                    isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
                   }`}
                 >
                   <_nav.icon className="w-4 h-4" />
@@ -61,10 +61,10 @@ export default function Dashboard() {
                   {/* ACTIVE INDICATOR (INTEGRATOR) AT THE BOTTOM */}
                   {isActive && (
                     <span 
-                      className={`absolute bottom-0 rounded-full bg-indigo-600 transition-all ${
+                      className={`absolute  bottom-0 rounded-full bg-black transition-all ${
                         isDesktop 
-                          ? 'left-4 right-4 h-[2px]' // Horizontal line at bottom of button in sidebar
-                          : 'left-0 right-0 h-[2px]' // Full width underline in topbar
+                          ? 'left-4 right-4 h-[1px]' // Horizontal line at bottom of button in sidebar
+                          : 'left-0 right-0 h-[1px]' // Full width underline in topbar
                       }`}
                     />
                   )}
@@ -75,7 +75,7 @@ export default function Dashboard() {
         </div>
         
         {/* Content Area */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4">
           {NavLists.find(tab => tab.name === currentActiveTab)?.index}
         </div>
         
