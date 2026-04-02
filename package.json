@@ -9,6 +9,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@uiw/react-codemirror" : "latest",
+    "@codemirror/lang-markdown" : "latest",
+    "@codemirror/language-data" : "latest",
     "next-auth": "^5.0.0-beta.20",
     "remark-math":"latest",
     "rehype-katex": "latest",

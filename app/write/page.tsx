@@ -4,6 +4,11 @@ import { useSession, signOut } from 'next-auth/react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import React, { useState, useRef, useCallback, useEffect, ComponentPropsWithoutRef } from 'react';
+import CodeMirror from '@uiw/react-codemirror'
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { languages } from '@codemirror/language-data'
+import { EditorView } from '@codemirror/view'
+
 import {
   History,
   ChevronRight,
@@ -357,7 +362,52 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
-  
+  // ─── Custom theme ─────────────────────────────────────────────
+  const markdownTheme = EditorView.theme({
+    '&': {
+      fontSize: '1.05rem',
+      fontFamily: 'var(--font-slabo), serif',
+      background: 'transparent !important',
+      color: '#313334',
+    },
+    '.cm-content': { padding: '0', caretColor: '#585f64' },
+    '.cm-line': { padding: '0', lineHeight: '1.8' },
+    '.cm-focused': { outline: 'none !important' },
+    '.cm-editor': { background: 'transparent !important' },
+    '.cm-scroller': { overflow: 'visible' },
+    
+    // Headings
+    '.cm-header-1': { fontSize: '1.6em', fontWeight: 'bold', color: '#1a1b1c' },
+    '.cm-header-2': { fontSize: '1.3em', fontWeight: 'bold', color: '#1a1b1c' },
+    '.cm-header-3': { fontSize: '1.1em', fontWeight: '600', color: '#313334' },
+    
+    // Inline styles
+    '.cm-strong': { fontWeight: 'bold', color: '#1a1b1c' },
+    '.cm-em': { fontStyle: 'italic', color: '#5e5f61' },
+    '.cm-strikethrough': { textDecoration: 'line-through', color: '#9e9fa0' },
+    
+    // Code
+    '.cm-monospace': { fontFamily: 'monospace', background: '#efedee', color: '#585f64',
+      borderRadius: '4px', padding: '0 4px' },
+    
+    // Links
+    '.cm-link': { color: '#585f64', textDecoration: 'underline' },
+    '.cm-url': { color: '#9e9fa0' },
+    
+    // Blockquote
+    '.cm-quote': { color: '#5e5f61', borderLeft: '3px solid #585f64', paddingLeft: '8px' },
+    
+    // Code block
+    '.cm-code-block': { background: '#1e1e1e', color: '#d4d4d4', fontFamily: 'monospace' },
+    
+    // List markers
+    '.cm-list': { color: '#585f64' },
+    
+    // Gutters off
+    '.cm-gutters': { display: 'none' },
+    '.cm-activeLineGutter': { display: 'none' },
+    '.cm-activeLine': { background: 'transparent' },
+  })
   // ─── Undo / Redo ────────────────────────────────────────────────────────────
   
   const pushHistory = useCallback((val: string) => {
@@ -928,12 +978,32 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
                       ))}
                     </div>
                   </div>
-
-                  <textarea ref={textareaRef}
-                    className={ slabo.className + " w-full border-none bg-transparent text-base sm:text-[1.05rem] leading-[1.8] p-0  text-[#313334] placeholder-[#d0cecd] resize-none min-h-[400px] outline-none"}
-                    placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
-                    value={content} onChange={(e) => handleContentChange(e.target.value)} spellCheck />
-                </div>
+                  <CodeMirror
+                  value={content}
+                  onChange={(val) => handleContentChange(val)}
+                  extensions={[
+                  markdown({
+                  base: markdownLanguage,
+                  codeLanguages: languages, // ← code block এর ভেতরে js/py/etc highlight
+                  }),
+                  EditorView.lineWrapping,
+                  markdownTheme,
+                    
+                  ]}
+                  basicSetup={{
+                  lineNumbers: false,
+                  foldGutter: false,
+                  dropCursor: false,
+                  allowMultipleSelections: false,
+                  indentOnInput: false,
+                  highlightActiveLine: false,
+                  highlightSelectionMatches: false,
+                    
+                  }}
+                  className={slabo.className + " w-full min-h-[400px] outline-none"}
+                  placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
+                  />
+                  </div>
               </div>
             )}
 
