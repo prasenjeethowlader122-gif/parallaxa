@@ -206,7 +206,10 @@ boolean;hint ? : string
     {multiline
       ? <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={3}
           className="w-full min-w-0 text-xs text-[#313334] bg-white border border-[#dcdad9] rounded-lg px-3 py-2 resize-none focus:ring-1 focus:ring-[#585f64] outline-none placeholder-[#c0bebe]" />
-      : <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      : <input type="text" value={value} onChange={(e) => {
+      onChange(e.target.value)
+      e.target.focus();
+      }} placeholder={placeholder}
           className="w-full min-w-0 text-xs text-[#313334] bg-white border border-[#dcdad9] rounded-lg px-3 py-2 focus:ring-1 focus:ring-[#585f64] outline-none placeholder-[#c0bebe]" />
     }
     {hint && <p className="text-[10px] text-[#9e9fa0] break-words">{hint}</p>}
@@ -387,8 +390,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
     '.cm-strikethrough': { textDecoration: 'line-through', color: '#9e9fa0' },
     
     // Code
-    '.cm-monospace': { fontFamily: 'monospace', background: '#efedee', color: '#585f64',
-      borderRadius: '4px', padding: '0 4px' },
+    '.cm-monospace': {
+      fontFamily: 'monospace',
+      background: '#efedee',
+      color: '#585f64',
+      borderRadius: '4px',
+      padding: '0 4px'
+    },
     
     // Links
     '.cm-link': { color: '#585f64', textDecoration: 'underline' },
