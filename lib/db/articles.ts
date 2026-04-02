@@ -338,60 +338,46 @@ export async function createArticle(input: CreateArticleInput): Promise < NewsAr
 // lib/db/articles.ts
 
 export async function updateArticle(id: string, input: UpdateArticleInput): Promise < NewsArticle | null > {
-  const fieldMap: Record < string, string > = {
-    title: 'title',
-    description: 'description',
-    content: 'content',
-    category: 'category',
-    author: 'author',
-    date: 'date',
-    image: 'image',
-    readTime: 'read_time',
-    featured: 'featured',
-    breaking: 'breaking',
-    trending: 'trending',
-    seoTitle: 'seo_title',
-    metaDescription: 'meta_description',
-    focusKeyword: 'focus_keyword',
-    canonicalUrl: 'canonical_url',
-    ogImage: 'og_image',
-    twitterCard: 'twitter_card',
-    noIndex: 'no_index',
-    allowComments: 'allow_comments',
-    showInRss: 'show_in_rss',
-    ampEnabled: 'amp_enabled',
-    redirectUrl: 'redirect_url',
-    cssClass: 'css_class',
-    visibility: 'visibility',
-    scheduledAt: 'scheduled_at',
-    status: 'status',
-    sourceUrl: 'source_url',
-    ptpLinks: 'ptp_links',
-  }
-  
-  const fields: string[] = []
-  const values: unknown[] = []
-  
-  for (const [key, col] of Object.entries(fieldMap)) {
-    if (!(key in input)) continue
-    fields.push(col)
-    const raw = (input as Record < string, unknown > )[key]
-    values.push(
-      (key === 'date' || key === 'scheduledAt') && raw instanceof Date ?
-      raw.toISOString() :
-      raw !== undefined ? raw : null
-    )
-  }
-  
-  if (fields.length === 0) return getArticleById(id)
-  
   try {
-    // Build a dynamic query using sql.unsafe() which uses the existing
-    // connection — no second neon() call needed.
-    const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(', ')
-    const query =
-      `UPDATE articles SET ${setClause}, updated_at = NOW() WHERE id = $${id} RETURNING *`
-    const rows = await sql.unsafe(query, [...values, id] as never[])
+    const existing = await getArticleById(id)
+    if (!existing) return null
+    
+    const merged = { ...existing, ...input }
+    
+    const rows = await sql`
+      UPDATE articles SET
+        title            = ${merged.title},
+        description      = ${merged.description},
+        content          = ${merged.content},
+        category         = ${merged.category},
+        author           = ${merged.author},
+        date             = ${merged.date instanceof Date ? merged.date.toISOString() : merged.date},
+        image            = ${merged.image},
+        read_time        = ${merged.readTime},
+        featured         = ${merged.featured         ?? false},
+        breaking         = ${merged.breaking         ?? false},
+        trending         = ${merged.trending         ?? false},
+        seo_title        = ${merged.seoTitle         ?? null},
+        meta_description = ${merged.metaDescription  ?? null},
+        focus_keyword    = ${merged.focusKeyword     ?? null},
+        canonical_url    = ${merged.canonicalUrl     ?? null},
+        og_image         = ${merged.ogImage          ?? null},
+        twitter_card     = ${merged.twitterCard      ?? 'summary_large_image'},
+        no_index         = ${merged.noIndex          ?? false},
+        allow_comments   = ${merged.allowComments    ?? true},
+        show_in_rss      = ${merged.showInRss        ?? true},
+        amp_enabled      = ${merged.ampEnabled       ?? false},
+        redirect_url     = ${merged.redirectUrl      ?? null},
+        css_class        = ${merged.cssClass         ?? null},
+        visibility       = ${merged.visibility       ?? 'public'},
+        scheduled_at     = ${merged.scheduledAt instanceof Date ? merged.scheduledAt.toISOString() : (merged.scheduledAt ?? null)},
+        status           = ${merged.status           ?? 'draft'},
+        source_url       = ${merged.sourceUrl        ?? null},
+        updated_at       = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `
+    
     return rows[0] ? mapRow(rows[0] as Record < string, unknown > ) : null
   } catch (e) {
     console.error('updateArticle:', e)
