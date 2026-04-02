@@ -256,7 +256,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
   const [historyIndex, setHistoryIndex] = useState(0)
   
   const [category, setCategory] = useState('')
-  const [author, setAuthor] = useState()
+  const [author, setAuthor] = useState('')
   const [tags, setTags] = useState < string[] > ([])
   const [tagInput, setTagInput] = useState('')
   const [visibility, setVisibility] = useState < Visibility > ('public')
@@ -463,7 +463,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
     try {
       const payload = {
         title,
-        description: metaDescription,
+        description: metaDescription || '',
         content,
         category,
         image: coverImage,
@@ -471,7 +471,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
         featured,
         breaking,
         trending,
+        tags, // ← was missing
         seoTitle,
+        metaDescription,
         focusKeyword,
         canonicalUrl,
         ogImage,
@@ -484,26 +486,29 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
         cssClass,
         visibility,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
-        user_id: session?.user?.id,
-        status: status || 'draft',
+        status: 'published', // ← was using stale `status` state (defaulted to 'draft')
       };
       
       const response = await fetch(id ? `/api/articles/${id}` : '/api/articles', {
-        method: id ? 'PATCH' : 'POST', // Use PATCH if editing
+        method: id ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(id ? { ...payload, id } : payload),
+        body: JSON.stringify(payload),
       });
       
-      if (response.ok) {
-        setPublishing(false);
-        setShowPublishModal(false);
-        setStatus('published');
-        setSaveStatus('saved');
-        setLastSaved(new Date());
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Publish failed');
       }
+      
+      setStatus('published');
+      setShowPublishModal(false);
+      setSaveStatus('saved');
+      setLastSaved(new Date());
     } catch (e) {
+      console.error('Publishing error:', e);
+      alert(e instanceof Error ? e.message : 'Publish failed');
+    } finally {
       setPublishing(false);
-      console.error("Publishing error:", e);
     }
   };
   const saveLabel = () => {
