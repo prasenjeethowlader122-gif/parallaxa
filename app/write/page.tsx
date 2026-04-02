@@ -491,25 +491,25 @@ const EditorPage = ({ searchParams }: { searchParams: Promise < { id ? : string 
       
       const response = await fetch(id ? `/api/articles/${id}` : '/api/articles', {
         method: id ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' }, // ✅ already present — good
         body: JSON.stringify(payload),
       });
-      if (!id) {
-        try {
-          const j = await response.json()
-          if (j.id) {
-            const uploadToFb = await fetch('/api/ptp', {
-              method: 'POST',
-              body: JSON.stringify({
-                articleId: j.id
-              })
-              
-            })
-          }
-          alert('ERROR:: ID NOT RETURN FROM CREATE ARTICLE')
-        } catch (e) {
-          alert('ERROR:: ' + e.message)
-        }
+      
+      // Clone or read once — check ok FIRST
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Publish failed');
+      }
+      
+      const j = await response.json();
+      
+      // Only trigger FB/PTP for NEW articles
+      if (!id && j?.id) {
+        await fetch('/api/ptp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }, // ✅ was missing!
+          body: JSON.stringify({ articleId: j.id }),
+        });
       }
       if (!response.ok) {
         const err = await response.json();
