@@ -112,20 +112,7 @@ const ArticlesView = () => {
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit Article
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer" onClick ={()=>{
-                        try {
-                          const sendPtp = await fetch('/api/ptp',{
-                            method : 'POST',
-                            body: JSON.stringify({
-                              articleId : ar.id
-                            })
-                          })
-                          if (sendPtp.ok) {
-                            const r = await sendPtp.json();
-                            
-                          }
-                        } catch (e) {}
-                      }}>
+                      <DropdownMenuItem className="cursor-pointer">
                         <Eye className="mr-2 h-4 w-4" />
                         PTP
                       </DropdownMenuItem>

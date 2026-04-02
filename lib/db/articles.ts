@@ -92,8 +92,9 @@ const filterRows = (rows: Record < string, unknown > []): NewsArticle[] =>
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-export async function getAllArticles(limit=10 , offset : number): Promise < NewsArticle[] > {
-  try { return filterRows(await sql`SELECT * FROM articles ORDER BY date DESC LIMIT ${limit} OFFSET ${offset ?  offset : 0}`) }
+export async function getAllArticles(limit = 10, offset: number): Promise < NewsArticle[] > {
+  try { return filterRows(
+      await sql`SELECT * FROM articles ORDER BY date DESC LIMIT ${limit} OFFSET ${offset ?  offset : 0}`) }
   catch (e) { console.error('getAllArticles:', e); return [] }
 }
 
@@ -103,32 +104,42 @@ export async function getPublishedArticles(): Promise < NewsArticle[] > {
 }
 
 export async function getArticleBySlug(slug: string): Promise < NewsArticle | null > {
-  try { const r = await sql`SELECT * FROM articles WHERE slug = ${slug} LIMIT 1`; return r[0] ? mapRow(r[0]) : null }
+  try { const r = await sql`SELECT * FROM articles WHERE slug = ${slug} LIMIT 1`; return r[0] ? mapRow(r[
+      0]) : null }
   catch (e) { console.error('getArticleBySlug:', e); return null }
 }
 
 export async function getArticleById(id: string): Promise < NewsArticle | null > {
-  try { const r = await sql`SELECT * FROM articles WHERE id = ${id} LIMIT 1`; return r[0] ? mapRow(r[0]) : null }
+  try { const r = await sql`SELECT * FROM articles WHERE id = ${id} LIMIT 1`; return r[0] ? mapRow(r[0]) :
+      null }
   catch (e) { console.error('getArticleById:', e); return null }
 }
 
 export async function getArticlesByCategory(category: string): Promise < NewsArticle[] > {
-  try { return filterRows(await sql`SELECT * FROM articles WHERE category = ${category} AND status = 'published' ORDER BY date DESC`) }
+  try { return filterRows(
+      await sql`SELECT * FROM articles WHERE category = ${category} AND status = 'published' ORDER BY date DESC`
+      ) }
   catch (e) { console.error('getArticlesByCategory:', e); return [] }
 }
 
 export async function getFeaturedArticles(): Promise < NewsArticle[] > {
-  try { return filterRows(await sql`SELECT * FROM articles WHERE featured = TRUE AND status = 'published' ORDER BY views DESC LIMIT 3`) }
+  try { return filterRows(
+      await sql`SELECT * FROM articles WHERE featured = TRUE AND status = 'published' ORDER BY views DESC LIMIT 3`
+      ) }
   catch (e) { console.error('getFeaturedArticles:', e); return [] }
 }
 
 export async function getBreakingNews(): Promise < NewsArticle[] > {
-  try { return filterRows(await sql`SELECT * FROM articles WHERE breaking = TRUE AND status = 'published' ORDER BY date DESC LIMIT 3`) }
+  try { return filterRows(
+      await sql`SELECT * FROM articles WHERE breaking = TRUE AND status = 'published' ORDER BY date DESC LIMIT 3`
+      ) }
   catch (e) { console.error('getBreakingNews:', e); return [] }
 }
 
 export async function getTrendingArticles(): Promise < NewsArticle[] > {
-  try { return filterRows(await sql`SELECT * FROM articles WHERE trending = TRUE AND status = 'published' ORDER BY views DESC LIMIT 5`) }
+  try { return filterRows(
+      await sql`SELECT * FROM articles WHERE trending = TRUE AND status = 'published' ORDER BY views DESC LIMIT 5`
+      ) }
   catch (e) { console.error('getTrendingArticles:', e); return [] }
 }
 /**
@@ -358,11 +369,19 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
   
   try {
     const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(', ')
-    const query = `UPDATE articles SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`
+    const query =
+      `UPDATE articles SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`
     const rawSql = neon(process.env.DATABASE_URL!)
     const rows = await rawSql(query, [...values, id])
+    
+    // Log this to see what Neon actually returns:
+    console.log('[updateArticle] rows:', rows)
+    
     return rows[0] ? mapRow(rows[0] as Record < string, unknown > ) : null
-  } catch (e) { console.error('updateArticle:', e); return null }
+  } catch (e) {
+    console.error('updateArticle:', e)
+    return null
+  }
 }
 
 export async function deleteArticle(id: string): Promise < boolean > {
@@ -445,6 +464,7 @@ export async function searchArticlesByVector(
   }
 }
 
-export const categories = ['Business', 'Technology', 'Sports', 'Entertainment', 'Science', 'Health', 'World'] as
+export const categories = ['Business', 'Technology', 'Sports', 'Entertainment', 'Science', 'Health',
+  'World'] as
 const
 export type Category = typeof categories[number]
