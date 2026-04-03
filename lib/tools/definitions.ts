@@ -61,7 +61,7 @@ export const TOOLS: ToolDefinition[] = [
   },
 
   // ── Generate Article ───────────────────────────────────────────────────────
-  {
+  /**{
     name: 'generate_article',
     description:
       'Generate a complete news article (title, description, content, SEO fields) ' +
@@ -92,9 +92,9 @@ export const TOOLS: ToolDefinition[] = [
       required: ['topic', 'category'],
     },
   },
-
+**/
   // ── Trigger PTP (Post-to-Platform) ─────────────────────────────────────────
-  {
+  /**{
     name: 'trigger_ptp',
     description:
       'Trigger the Post-to-Platform (PTP) pipeline for a given article — ' +
@@ -110,7 +110,7 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['articleId'],
     },
-  },
+  },**/
 
   // ── Check PTP / Pipeline Job Status ───────────────────────────────────────
   {
@@ -168,7 +168,7 @@ export const TOOLS: ToolDefinition[] = [
   },
 
   // ── Update Article ─────────────────────────────────────────────────────────
-  {
+ /** {
     name: 'update_article',
     description:
       'Update fields of an existing article (e.g. publish it, change the title, ' +
@@ -189,5 +189,5 @@ export const TOOLS: ToolDefinition[] = [
       },
       required: ['id', 'fields'],
     },
-  },
+  },**/
 ]

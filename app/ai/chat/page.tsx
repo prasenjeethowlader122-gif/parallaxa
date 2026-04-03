@@ -315,7 +315,7 @@ function RenderChunks({ text }: { text: string }) {
           return (
             <Markdown
               key={i}
-              className="min-w-full"
+              className="min-w-full text-[15px]"
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
               components={mdxComponents}
@@ -483,7 +483,7 @@ function ToolFeed({ pairs }: { pairs: ToolPair[] }) {
         <div className="mt-1 pl-4 flex flex-col gap-0.5">
           {pairs.map((p, i) => (
             <div key={i} className="flex items-baseline gap-0 text-[11px] whitespace-nowrap overflow-hidden">
-              <div className="text-gray-400 flex-shrink-0 h-5 w-3 bg-transparent border-l border-b-2 border-gray-300 rounded-bl" />
+              <div className="text-gray-400 flex-shrink-0 h-5 w-3 bg-transparent border-l mr-2 border-b-2 border-gray-300 rounded-bl" />
               <span className="font-mono text-gray-500 flex-shrink-0">{p.tool}</span>
               <span className="text-gray-300 px-1.5 flex-shrink-0">·</span>
               <span className="font-mono text-gray-400 overflow-hidden text-ellipsis flex-1 w-full"></span>
