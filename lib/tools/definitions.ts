@@ -8,13 +8,12 @@ export interface ToolMeta {
   name: string
   description: string
   category: ToolCategory
-  icon: string // emoji icon for UI
-  parameters: Record < string,
-  unknown > // JSON Schema
-  schema: z.ZodType < any > // Zod for runtime validation
-    timeout ? : number // ms, default 10000
-  retries ? : number // default 1
-  cacheable ? : boolean
+  icon: string
+  parameters: Record<string, unknown>  // JSON Schema
+  schema: z.ZodType<any>               // Zod for runtime validation
+  timeout?: number
+  retries?: number
+  cacheable?: boolean
 }
 
 // ─── Tool Definitions ─────────────────────────────────────────────────────────
@@ -243,7 +242,7 @@ export function getToolMeta(name: string): ToolMeta | undefined {
 /** Format tools for the OpenAI /chat/completions API */
 export function toOpenAITools() {
   return TOOLS.map((t) => ({
-    type: 'function',
+    type: 'function' as const,
     function: { name: t.name, description: t.description, parameters: t.parameters },
   }))
 }
