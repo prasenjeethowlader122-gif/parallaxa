@@ -41,24 +41,25 @@ import Markdown, { Components } from 'react-markdown'
 interface ToolCall {
   id: string
   name: string
-  icon: string
+  icon?: string
   category: string
   args: string
   done: boolean
-  success ? : boolean
-  preview ? : string
+  success?: boolean
+  preview?: string
 }
 
 interface Message {
+  id: string
   from: 'ai' | 'user'
   content: string
   toolCalls: ToolCall[]
-  thinking ? : string
+  thinking?: string
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const CATEGORY_ICON: Record < string, React.ElementType > = {
+const CATEGORY_ICON: Record<string, React.ElementType> = {
   rag: Layers,
   search: Search,
   database: Database,
@@ -66,7 +67,7 @@ const CATEGORY_ICON: Record < string, React.ElementType > = {
   utility: Zap,
 }
 
-const TOOL_ICON_MAP: Record < string, React.ElementType > = {
+const TOOL_ICON_MAP: Record<string, React.ElementType> = {
   semantic_search: Layers,
   search_articles: Search,
   get_articles_by_category: Newspaper,
@@ -79,7 +80,7 @@ const TOOL_ICON_MAP: Record < string, React.ElementType > = {
   get_articles_by_date: Calendar,
 }
 
-const TOOL_LABEL: Record < string, string > = {
+const TOOL_LABEL: Record<string, string> = {
   semantic_search: 'Semantic search',
   search_articles: 'Keyword search',
   get_articles_by_category: 'Browse category',
@@ -99,28 +100,27 @@ const SUGGESTED = [
   { label: '🌍 World events', prompt: 'What is happening in the world today?' },
 ]
 
-// ─── Code Block (Perplexity‑style) ─────────────────────────────────────────────
+// ─── Code Block ───────────────────────────────────────────────────────────────
 
-function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > ) {
+function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
   const [copied, setCopied] = useState(false)
   const lang = className?.replace(/^language-/, '')?.toLowerCase() ?? 'text'
   const code = typeof children === 'string' ? children : String(children ?? '')
-  const isInline = !className
-  
-  if (isInline) {
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code.trim())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
+
+  if (!className) {
     return (
       <code className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[0.82em] font-mono border border-gray-300">
         {children}
       </code>
     )
   }
-  
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code.trim())
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1800)
-  }
-  
+
   return (
     <div className="relative my-3 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
       <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-gray-200">
@@ -129,11 +129,7 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > 
           onClick={handleCopy}
           className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-gray-700 transition-colors"
         >
-          {copied ? (
-            <Check className="w-3 h-3 text-green-500" />
-          ) : (
-            <Copy className="w-3 h-3" />
-          )}
+          {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
@@ -148,27 +144,13 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > 
 
 const mdComponents: Components = {
   code: CodeBlock as Components['code'],
-  h1: ({ children }) => (
-    <h1 className="text-lg font-bold text-gray-900 mt-6 mb-2 tracking-tight">{children}</h1>
-  ),
-  h2: ({ children }) => (
-    <h2 className="text-base font-semibold text-gray-800 mt-5 mb-2 tracking-tight">{children}</h2>
-  ),
-  h3: ({ children }) => (
-    <h3 className="text-sm font-semibold text-gray-700 mt-3 mb-1">{children}</h3>
-  ),
-  p: ({ children }) => (
-    <p className="text-sm text-gray-700 leading-relaxed my-2">{children}</p>
-  ),
-  ul: ({ children }) => (
-    <ul className="my-2 space-y-1 text-sm text-gray-700">{children}</ul>
-  ),
-  ol: ({ children }) => (
-    <ol className="list-decimal list-inside my-2 space-y-1 text-sm text-gray-700">{children}</ol>
-  ),
-  li: ({ children }) => (
-    <li className="leading-relaxed">{children}</li>
-  ),
+  h1: ({ children }) => <h1 className="text-lg font-bold text-gray-900 mt-6 mb-2 tracking-tight">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-base font-semibold text-gray-800 mt-5 mb-2 tracking-tight">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-sm font-semibold text-gray-700 mt-3 mb-1">{children}</h3>,
+  p: ({ children }) => <p className="text-sm text-gray-700 leading-relaxed my-2">{children}</p>,
+  ul: ({ children }) => <ul className="my-2 space-y-1 text-sm text-gray-700">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-sm text-gray-700">{children}</ol>,
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   blockquote: ({ children }) => (
     <blockquote className="border-l-2 border-blue-500 pl-4 my-3 text-gray-600 italic bg-blue-50 py-1.5 rounded-r-lg">
       {children}
@@ -213,11 +195,9 @@ function ThinkBlock({ content }: { content: string }) {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-500 transition-colors group"
       >
-        <Brain className="w-3 h-3 flex-shrink-0" />
+        <Brain className="w-3 h-3" />
         <span className="italic">thinking</span>
-        <ChevronRight
-          className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
-        />
+        <ChevronRight className={`w-3 h-3 transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
       {open && (
         <p className="mt-2 pl-4 text-[11px] text-gray-400 italic leading-relaxed whitespace-pre-wrap border-l border-gray-200">
@@ -228,34 +208,29 @@ function ThinkBlock({ content }: { content: string }) {
   )
 }
 
-// ─── Tool Entry (Perplexity‑style cards) ───────────────────────────────────────
+// ─── Tool Entry ────────────────────────────────────────────────────────────────
 
 function ToolEntry({ tc }: { tc: ToolCall }) {
   const [expanded, setExpanded] = useState(false)
   const Icon = TOOL_ICON_MAP[tc.name] ?? Zap
   const label = TOOL_LABEL[tc.name] ?? tc.name
-  
+
   let argsDisplay = ''
   try {
     const parsed = JSON.parse(tc.args)
-    argsDisplay = Object.values(parsed)
-      .filter(Boolean)
-      .map((v) => String(v))
+    argsDisplay = Object.entries(parsed)
+      .map(([k, v]) => `${k}=${v}`)
       .join(' · ')
-      .slice(0, 80)
-      .trim()
-  } catch (err) {
-    console.debug('Failed to parse tool args:', err)
+      .slice(0, 70)
+  } catch {
+    argsDisplay = tc.args.slice(0, 70)
   }
-  
+
   return (
     <div>
       <button
         onClick={() => tc.preview && setExpanded((v) => !v)}
-        className={[
-          'flex items-center gap-2 w-full text-left py-2 px-3 rounded-lg transition-colors',
-          tc.preview ? 'hover:bg-gray-50' : '',
-        ].join(' ')}
+        className={`flex items-center gap-2 w-full text-left py-2 px-3 rounded-lg transition-colors hover:bg-gray-50 ${!tc.preview && 'cursor-default'}`}
       >
         <span className="flex-shrink-0 w-4">
           {!tc.done ? (
@@ -266,80 +241,63 @@ function ToolEntry({ tc }: { tc: ToolCall }) {
             <XCircle className="w-3.5 h-3.5 text-red-500" />
           )}
         </span>
-        <span className={`flex-shrink-0 ${tc.done ? 'text-gray-400' : 'text-orange-500'}`}>
-          <Icon className="w-3.5 h-3.5" />
-        </span>
+        <Icon className={`w-3.5 h-3.5 ${tc.done ? 'text-gray-400' : 'text-orange-500'}`} />
         <span className="text-[11px] text-gray-600 font-medium truncate flex-1">{label}</span>
+
         {argsDisplay && (
           <>
             <span className="text-gray-300 text-[10px]">·</span>
             <span className="text-[11px] text-gray-500 truncate">{argsDisplay}</span>
           </>
         )}
+
         {tc.preview && (
           <ChevronRight
-            className={`w-3 h-3 text-gray-400 flex-shrink-0 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
+            className={`w-3 h-3 text-gray-400 flex-shrink-0 transition-transform ${expanded ? 'rotate-90' : ''}`}
           />
         )}
       </button>
+
       {expanded && tc.preview && (
-        <div className="ml-3 mt-0.5 mb-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-[11px] text-gray-600 font-mono leading-relaxed line-clamp-4">{tc.preview}…</p>
+        <div className="ml-8 mt-1 mb-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-[11px] text-gray-600 font-mono leading-relaxed">{tc.preview}</p>
         </div>
       )}
     </div>
   )
 }
 
-// ─── Tool Feed (Perplexity‑style card) ──────────────────────────────────────────
+// ─── Tool Feed ─────────────────────────────────────────────────────────────────
 
 function ToolFeed({ toolCalls }: { toolCalls: ToolCall[] }) {
   const [open, setOpen] = useState(true)
   if (toolCalls.length === 0) return null
-  
+
   const doneCount = toolCalls.filter((t) => t.done).length
   const allDone = doneCount === toolCalls.length
-  const label = allDone ?
-    `${toolCalls.length} tool${toolCalls.length > 1 ? 's' : ''} used` :
-    `Running tools… (${doneCount}/${toolCalls.length})`
-  
-  const byCategory = toolCalls.reduce < Record < string,
-    ToolCall[] >> ((acc, tc) => {
-      ;
-      (acc[tc.category] ??= []).push(tc)
-      return acc
-    }, {})
-  
+
+  const byCategory = toolCalls.reduce<Record<string, ToolCall[]>>((acc, tc) => {
+    ;(acc[tc.category] ??= []).push(tc)
+    return acc
+  }, {})
+
   return (
     <div className="my-2 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 transition-colors"
       >
-        <ChevronRight
-          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
-        />
+        <ChevronRight className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? 'rotate-90' : ''}`} />
         <div className="flex items-center gap-1.5 flex-1">
           {!allDone && <Loader2 className="w-3 h-3 text-amber-500 animate-spin" />}
-          <span className="text-[11px] text-gray-600 font-medium">{label}</span>
-        </div>
-        <div className="flex gap-1">
-          {Object.keys(byCategory).map((cat) => {
-            const CatIcon = CATEGORY_ICON[cat] ?? Zap
-            return (
-              <span
-                key={cat}
-                className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-[9px] text-gray-600 font-medium"
-              >
-                <CatIcon className="w-2.5 h-2.5" />
-                <span className="capitalize">
-                  {cat.length > 8 ? cat.slice(0, 8).trim() + '…' : cat}
-                </span>
-              </span>
-            )
-          })}
+          <span className="text-[11px] text-gray-600 font-medium">
+            {allDone
+              ? `${toolCalls.length} tool${toolCalls.length > 1 ? 's' : ''} used`
+              : `Running tools… (${doneCount}/${toolCalls.length})`}
+          </span>
         </div>
       </button>
+
       {open && (
         <div className="border-t border-gray-100 px-2 py-1.5 space-y-0.5">
           {toolCalls.map((tc) => (
@@ -351,14 +309,14 @@ function ToolFeed({ toolCalls }: { toolCalls: ToolCall[] }) {
   )
 }
 
-// ─── Message Content (Perplexity‑style) ────────────────────────────────────────
+// ─── Message Content ───────────────────────────────────────────────────────────
 
-function MessageContent({ message, isStreaming }: { message: Message;isStreaming ? : boolean }) {
+function MessageContent({ message, isStreaming }: { message: Message; isStreaming?: boolean }) {
   const { content, toolCalls, thinking } = message
   const showTyping = isStreaming && !content && toolCalls.length === 0 && !thinking
-  
+
   return (
-    <div className={`flex flex-col gap-1 pt-1 ${spacegrotesk.className}`}>
+    <div className={`flex flex-col gap-1 ${spacegrotesk.className}`}>
       {thinking && <ThinkBlock content={thinking} />}
       <ToolFeed toolCalls={toolCalls} />
       {showTyping ? (
@@ -380,7 +338,7 @@ function MessageContent({ message, isStreaming }: { message: Message;isStreaming
   )
 }
 
-// ─── Empty State (Perplexity‑style landing) ────────────────────────────────────
+// ─── Empty State ───────────────────────────────────────────────────────────────
 
 function EmptyState({ onSubmit }: { onSubmit: (prompt: string) => void }) {
   return (
@@ -389,9 +347,7 @@ function EmptyState({ onSubmit }: { onSubmit: (prompt: string) => void }) {
         <p className={`text-2xl font-semibold text-gray-800 tracking-tight ${slabo.className}`}>
           Ask anything
         </p>
-        <p className="text-sm text-gray-500">
-          Semantic search · RAG · real‑time news · no link lists
-        </p>
+        <p className="text-sm text-gray-500">Semantic search · RAG · Real-time news</p>
       </div>
 
       <div className="flex flex-wrap gap-2 justify-center max-w-lg">
@@ -399,7 +355,7 @@ function EmptyState({ onSubmit }: { onSubmit: (prompt: string) => void }) {
           <button
             key={s.prompt}
             onClick={() => onSubmit(s.prompt)}
-            className="px-3.5 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 shadow-sm font-medium"
+            className="px-3.5 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 shadow-sm"
           >
             {s.label}
           </button>
@@ -409,7 +365,266 @@ function EmptyState({ onSubmit }: { onSubmit: (prompt: string) => void }) {
   )
 }
 
-// ─── Message Bubble (Perplexity‑style) ─────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
+
+export default function AiInterfaceChat() {
+  const [query, setQuery] = useState('')
+  const [focused, setFocused] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  const inputRef = useRef<HTMLInputElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const rafRef = useRef<number | null>(null)
+
+  const streamStateRef = useRef<{ text: string; tools: Map<string, ToolCall> }>({
+    text: '',
+    tools: new Map(),
+  })
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      abortControllerRef.current?.abort()
+    }
+  }, [])
+
+  const scheduleFlush = useCallback(() => {
+    if (rafRef.current) return
+    rafRef.current = requestAnimationFrame(() => {
+      const { text, tools } = streamStateRef.current
+      setMessages((prev) => {
+        const next = [...prev]
+        const last = next[next.length - 1]
+        if (last?.from === 'ai') {
+          next[next.length - 1] = {
+            ...last,
+            content: text,
+            toolCalls: Array.from(tools.values()),
+          }
+        }
+        return next
+      })
+      rafRef.current = null
+    })
+  }, [])
+
+  const handleStreamEvent = (event: any) => {
+    if (event.type === 'text') {
+      streamStateRef.current.text += event.content
+      scheduleFlush()
+    } else if (event.type === 'thinking') {
+      setMessages((prev) => {
+        const next = [...prev]
+        const last = next[next.length - 1]
+        if (last?.from === 'ai') {
+          next[next.length - 1] = { ...last, thinking: event.content }
+        }
+        return next
+      })
+    } else if (event.type === 'tool_start') {
+      streamStateRef.current.tools.set(event.id, {
+        id: event.id,
+        name: event.name,
+        category: event.category,
+        args: event.args ?? '{}',
+        done: false,
+      })
+      scheduleFlush()
+    } else if (event.type === 'tool_result') {
+      const existing = streamStateRef.current.tools.get(event.id)
+      if (existing) {
+        streamStateRef.current.tools.set(event.id, {
+          ...existing,
+          done: true,
+          success: event.success,
+          preview: event.preview,
+        })
+        scheduleFlush()
+      }
+    } else if (event.type === 'error') {
+      streamStateRef.current.text += `\n\n**Error:** ${event.content}`
+      scheduleFlush()
+    }
+  }
+
+  const handleSubmit = async (overrideQuery?: string) => {
+    const trimmed = (overrideQuery ?? query).trim()
+    if (!trimmed || isLoading) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      from: 'user',
+      content: trimmed,
+      toolCalls: [],
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+    setQuery('')
+    setIsLoading(true)
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    streamStateRef.current = { text: '', tools: new Map() }
+
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          messages: messages.concat(userMessage).map((m) => ({
+            role: m.from,
+            content: m.content,
+          })),
+          temperature: 0.6,
+        }),
+      })
+
+      if (!response.ok) throw new Error(`API error ${response.status}`)
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        from: 'ai',
+        content: '',
+        toolCalls: [],
+        thinking: undefined,
+      }
+
+      setMessages((prev) => [...prev, aiMessage])
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      if (!reader) return
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          const trimmedLine = line.trim()
+          if (!trimmedLine || trimmedLine === '[DONE]') continue
+          if (!trimmedLine.startsWith('data: ')) continue
+
+          const dataStr = trimmedLine.slice(6).trim()
+          if (!dataStr || dataStr === '[DONE]') continue
+
+          try {
+            const event = JSON.parse(dataStr)
+            handleStreamEvent(event)
+          } catch (e) {
+            console.debug('Failed to parse event:', dataStr)
+          }
+        }
+      }
+
+      // Final flush
+      const { text, tools } = streamStateRef.current
+      setMessages((prev) => {
+        const next = [...prev]
+        const last = next[next.length - 1]
+        if (last?.from === 'ai') {
+          next[next.length - 1] = {
+            ...last,
+            content: text,
+            toolCalls: Array.from(tools.values()),
+          }
+        }
+        return next
+      })
+    } catch (error: any) {
+      if (error.name === 'AbortError') return
+
+      console.error('Chat error:', error)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          from: 'ai',
+          content: 'Sorry, I encountered an error. Please try again.',
+          toolCalls: [],
+        },
+      ])
+    } finally {
+      setIsLoading(false)
+      abortControllerRef.current = null
+      inputRef.current?.focus()
+    }
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
+  }
+
+  return (
+    <>
+      <style>{`
+        @keyframes msg-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-msg-in { animation: msg-in 0.2s ease-out forwards; }
+      `}</style>
+
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+
+        <main className={`flex-1 flex flex-col items-center overflow-hidden ${slabo.className}`}>
+          <div className="flex-1 w-full flex flex-col items-center overflow-y-auto">
+            <div className="flex flex-col gap-0 w-full max-w-3xl px-4 pb-2">
+              {messages.length === 0 && <EmptyState onSubmit={handleSubmit} />}
+
+              <div className="py-5 flex flex-col gap-6">
+                {messages.map((message) => (
+                  <MessageBubble
+                    key={message.id}
+                    message={message}
+                    isLastAi={message.from === 'ai' && message.id === messages[messages.length - 1]?.id}
+                    isLoading={isLoading}
+                  />
+                ))}
+              </div>
+
+              <div ref={messagesEndRef} className="h-4" />
+            </div>
+          </div>
+
+          <InputBar
+            query={query}
+            setQuery={setQuery}
+            focused={focused}
+            setFocused={setFocused}
+            isLoading={isLoading}
+            inputRef={inputRef}
+            onSubmit={handleSubmit}
+            onKeyDown={handleKeyDown}
+          />
+        </main>
+      </div>
+    </>
+  )
+}
+
+// ─── Message Bubble Component (Extracted) ─────────────────────────────────────
 
 function MessageBubble({
   message,
@@ -421,30 +636,31 @@ function MessageBubble({
   isLoading: boolean
 }) {
   const isUser = message.from === 'user'
-  
+
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} animate-msg-in`}>
       <div className={`flex flex-col gap-1 ${isUser ? 'items-end max-w-[85%]' : 'items-start w-full'}`}>
         {!isUser && (
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full mb-1">
             <div className="flex items-center gap-2">
               <PinwheelLoader size={24} isfill={true} isDone={!isLoading || !isLastAi} />
-                     <p className={`text-sm font-bold text-gray-800 tracking-tight ${slabo.className}`}>
+              <p className={`text-sm font-bold text-gray-800 tracking-tight ${slabo.className}`}>
                 Parallaxa
               </p>
             </div>
             {message.toolCalls.length > 0 && (
               <span className="text-[10px] text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full">
-                {message.toolCalls.filter((t) => t.done).length}/{message.toolCalls.length} tools
+                {message.toolCalls.filter((t) => t.done).length}/{message.toolCalls.length}
               </span>
             )}
           </div>
         )}
 
         <div
-          className={`text-sm leading-relaxed ${isUser
-            ? 'bg-gray-900 text-gray-50 px-3 py-2.5 rounded-2xl rounded-tr-sm break-words'
-            : 'min-w-full'
+          className={`text-sm leading-relaxed ${
+            isUser
+              ? 'bg-gray-900 text-gray-50 px-3 py-2.5 rounded-2xl rounded-tr-sm break-words'
+              : 'min-w-full'
           }`}
         >
           {isUser ? (
@@ -457,7 +673,8 @@ function MessageBubble({
     </div>
   )
 }
-// ─── Input Bar (Perplexity‑style) ─────────────────────────────────────────────────
+
+// ─── Input Bar ─────────────────────────────────────────────────────────────────
 
 function InputBar({
   query,
@@ -474,18 +691,17 @@ function InputBar({
   focused: boolean
   setFocused: (v: boolean) => void
   isLoading: boolean
-  inputRef: React.RefObject < HTMLInputElement >
-    onSubmit: () => void
-  onKeyDown: (e: KeyboardEvent < HTMLInputElement > ) => void
+  inputRef: React.RefObject<HTMLInputElement>
+  onSubmit: () => void
+  onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void
 }) {
   return (
     <div className="w-full pt-3 pb-5 px-4 flex flex-col items-center bg-white border-t border-gray-100">
       <div className="w-full max-w-xl space-y-2">
         <div
-          className={[
-            'flex flex-row items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border transition-all duration-200',
-            focused ? 'border-gray-400 shadow-md' : 'border-gray-200',
-          ].join(' ')}
+          className={`flex flex-row items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border transition-all duration-200 ${
+            focused ? 'border-gray-400 shadow-md' : 'border-gray-200'
+          }`}
         >
           <input
             ref={inputRef}
@@ -502,277 +718,24 @@ function InputBar({
           <button
             onClick={onSubmit}
             disabled={!query.trim() || isLoading}
-            className={[
-              'rounded-xl p-2 flex items-center justify-center transition-all duration-150 flex-shrink-0',
+            className={`rounded-xl p-2 flex items-center justify-center transition-all duration-150 flex-shrink-0 ${
               query.trim() && !isLoading
                 ? 'bg-gray-900 text-white hover:bg-gray-700 active:scale-95'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed',
-            ].join(' ')}
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
           >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin opacity-60" />
-            ) : (
-              <ArrowUpRight className="w-4 h-4" />
-            )}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin opacity-60" /> : <ArrowUpRight className="w-4 h-4" />}
           </button>
         </div>
+
         <p className="text-[10px] text-gray-400 text-center flex items-center justify-center gap-2">
-          <span className="flex items-center gap-0.5">
-            <Layers className="w-2.5 h-2.5" /> RAG
-          </span>
+          <span className="flex items-center gap-0.5"><Layers className="w-2.5 h-2.5" /> RAG</span>
           <span>·</span>
-          <span className="flex items-center gap-0.5">
-            <Search className="w-2.5 h-2.5" /> Semantic search
-          </span>
+          <span className="flex items-center gap-0.5"><Search className="w-2.5 h-2.5" /> Semantic</span>
           <span>·</span>
-          <span className="flex items-center gap-0.5">
-            <Zap className="w-2.5 h-2.5" /> Parallel tools
-          </span>
+          <span className="flex items-center gap-0.5"><Zap className="w-2.5 h-2.5" /> Parallel tools</span>
         </p>
       </div>
     </div>
-  )
-}
-// ─── Main Page (Perplexity‑style layout) ────────────────────────────────────────────────
-
-export default function AiInterfaceChat() {
-  const [query, setQuery] = useState('')
-  const [focused, setFocused] = useState(false)
-  const [messages, setMessages] = useState < Message[] > ([])
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const inputRef = useRef < HTMLInputElement > (null)
-  const messagesEndRef = useRef < HTMLDivElement > (null)
-  const abortControllerRef = useRef < AbortController | null > (null)
-  const rafRef = useRef < number | null > (null)
-  
-  const streamStateRef = useRef < { text: string;tools: Map < string, ToolCall > } > ({
-    text: '',
-    tools: new Map(),
-  })
-  
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-  
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
-  
-  useEffect(() => {
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current)
-      }
-      abortControllerRef.current?.abort()
-    }
-  }, [])
-  
-  const scheduleFlush = useCallback(() => {
-    if (rafRef.current !== null) return
-    rafRef.current = requestAnimationFrame(() => {
-      const { text, tools } = streamStateRef.current
-      setMessages((prev) => {
-        const next = [...prev]
-        const last = next[next.length - 1]
-        if (last?.from === 'ai') {
-          next[next.length - 1] = { ...last, content: text, toolCalls: [...tools.values()] }
-        }
-        return next
-      })
-      rafRef.current = null
-    })
-  }, [])
-  
-  const handleSubmit = async (overrideQuery ? : string) => {
-    const trimmed = (overrideQuery ?? query).trim()
-    if (!trimmed || isLoading) return
-    
-    const historySnapshot = messages.map((m) => ({
-      role: m.from === 'user' ? 'user' : 'assistant',
-      content: m.content,
-    }))
-    
-    setMessages((prev) => [...prev, { from: 'user', content: trimmed, toolCalls: [] }])
-    setQuery('')
-    setIsLoading(true)
-    
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-    streamStateRef.current = { text: '', tools: new Map() }
-    
-    try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          messages: [...historySnapshot, { role: 'user', content: trimmed }],
-          temperature: 0.6,
-        }),
-      })
-      
-      if (!response.ok) {
-        throw new Error(`API error ${response.status}`)
-      }
-      
-      setMessages((prev) => [...prev, { from: 'ai', content: '', toolCalls: [], thinking: undefined }])
-      
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      
-      if (!reader) return
-      
-      let buffer = ''
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n') // ← fixed: was `\\n`
-        buffer = lines.pop() ?? ''
-        
-        for (const line of lines) {
-          if (!line.trim() || line === '[DONE]') continue
-          if (!line.startsWith('data: ')) continue
-          
-          const data = line.slice(6).trim()
-          if (!data) continue
-          
-          try {
-            const event = JSON.parse(data)
-            
-            if (event.type === 'text') {
-              streamStateRef.current.text += event.content
-              scheduleFlush()
-            } else if (event.type === 'tool_start') {
-              streamStateRef.current.tools.set(event.id, {
-                id: event.id,
-                name: event.name,
-                icon: event.icon,
-                category: event.category,
-                args: event.args ?? '',
-                done: false,
-              })
-              scheduleFlush()
-            } else if (event.type === 'tool_result') {
-              const existing = streamStateRef.current.tools.get(event.id)
-              if (existing) {
-                streamStateRef.current.tools.set(event.id, {
-                  ...existing,
-                  done: true,
-                  success: event.success,
-                  preview: event.preview,
-                })
-                scheduleFlush()
-              }
-            } else if (event.type === 'error') {
-              streamStateRef.current.text += `\n\n**Error:** ${event.content}`
-              scheduleFlush()
-            }
-            
-            // Legacy text‑only fallback
-            if (event.content && !event.type) {
-              streamStateRef.current.text += event.content
-              scheduleFlush()
-            }
-          } catch (parseErr) {
-            console.debug('Event parse error:', parseErr)
-          }
-        }
-      }
-      
-      // Final flush after stream ends
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current)
-      }
-      const { text, tools } = streamStateRef.current
-      setMessages((prev) => {
-        const next = [...prev]
-        const last = next[next.length - 1]
-        if (last?.from === 'ai') {
-          next[next.length - 1] = { ...last, content: text, toolCalls: [...tools.values()] }
-        }
-        return next
-      })
-    } catch (error) {
-      if ((error as Error).name === 'AbortError') return
-      console.error('Chat error:', error)
-      setMessages((prev) => [
-        ...prev,
-        {
-          from: 'ai',
-          content: 'Sorry, I encountered an error. Please try again.',
-          toolCalls: [],
-        },
-      ])
-    } finally {
-      setIsLoading(false)
-      abortControllerRef.current = null
-      inputRef.current?.focus()
-    }
-  }
-  
-  const handleKeyDown = (e: KeyboardEvent < HTMLInputElement > ) => {
-    if (e.key === 'Enter') {
-      if (!e.shiftKey) {
-        e.preventDefault()
-        handleSubmit()
-      }
-    }
-  }
-  
-  return (
-    <>
-      <style>{`
-        @keyframes msg-in {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .animate-msg-in { animation: msg-in 0.2s ease-out forwards; }
-      `}</style>
-
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-
-        <main className={`flex-1 flex flex-col items-center overflow-hidden ${slabo.className}`}>
-          {/* Message area */}
-          <div className="flex-1 w-full flex flex-col items-center overflow-y-auto">
-            <div className="flex flex-col gap-0 w-full max-w-3xl px-4 pb-2">
-
-              {messages.length === 0 && <EmptyState onSubmit={handleSubmit} />}
-
-              <div className="py-5 flex flex-col gap-6">
-                {messages.map((m, index) => {
-                  const isLastAi = m.from === 'ai' && index === messages.length - 1
-                  return (
-                    <MessageBubble
-                      key={index}
-                      message={m}
-                      isLastAi={isLastAi}
-                      isLoading={isLoading}
-                    />
-                  )
-                })}
-              </div>
-
-              <div ref={messagesEndRef} className="h-4" />
-            </div>
-          </div>
-
-          {/* Input bar */}
-          <InputBar
-            query={query}
-            setQuery={setQuery}
-            focused={focused}
-            setFocused={setFocused}
-            isLoading={isLoading}
-            inputRef={inputRef}
-            onSubmit={handleSubmit}
-            onKeyDown={handleKeyDown}
-          />
-        </main>
-      </div>
-    </>
   )
 }
