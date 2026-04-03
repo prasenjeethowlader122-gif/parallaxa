@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import profilePic from '../public/placeholder-logo.svg'
+import profilePic from '../public/parallaxa-logo.svg'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
