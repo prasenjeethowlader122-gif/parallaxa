@@ -140,7 +140,7 @@ export function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
             <div className="flex items-center justify-center flex-shrink-0">
-              <Image src={profilePic} alt="logo" height={40} />
+              <Image src={profilePic} alt="logo" height={45} />
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-[19px] font-semibold text-gray-900 tracking-tight">
