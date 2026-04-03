@@ -8,7 +8,7 @@ import CodeMirror from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { EditorView } from '@codemirror/view'
-
+import rehypeRaw from 'rehype-raw'
 import {
   History,
   ChevronRight,
@@ -152,7 +152,7 @@ function MarkdownPreview({ content }: { content: string }) {
   }
   return (
     <div className="min-w-0 overflow-hidden w-full">
-      <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
+      <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
         {content}
       </Markdown>
     </div>

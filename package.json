@@ -9,6 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "rehype-raw": "latest",
     "@uiw/react-codemirror" : "latest",
     "@codemirror/lang-markdown" : "latest",
     "@codemirror/language-data" : "latest",
