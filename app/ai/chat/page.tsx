@@ -580,9 +580,7 @@ export default function AiInterfaceChat() {
                     <button
                       key={s.prompt}
                       onClick={() => handleSubmit(s.prompt)}
-                      className="px-3.5 py-2 rounded-full bg-gray-50 border border-gray-200 text-sm
-                        text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all
-                        active:scale-95"
+                      className="px-3.5 py-2 rounded-full bg-gray-50 border border-gray-200 text-sm text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all active:scale-95"
                     >
                       {s.label}
                     </button>
