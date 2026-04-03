@@ -1,193 +1,249 @@
-/**
- * app/api/ai/tools/definitions.ts
- *
- * AI tool definitions — passed to the LLM so it knows what tools
- * are available and what arguments each one expects.
- */
+import { z } from 'zod'
 
-export interface ToolDefinition {
+// ─── Tool Registry Types ───────────────────────────────────────────────────────
+
+export type ToolCategory = 'search' | 'database' | 'rag' | 'utility' | 'news'
+
+export interface ToolMeta {
   name: string
   description: string
-  parameters: {
-    type: 'object'
-    properties: Record<string, { type: string; description: string; enum?: string[] }>
-    required: string[]
-  }
+  category: ToolCategory
+  icon: string // emoji icon for UI
+  parameters: Record < string,
+  unknown > // JSON Schema
+  schema: z.ZodType < any > // Zod for runtime validation
+    timeout ? : number // ms, default 10000
+  retries ? : number // default 1
+  cacheable ? : boolean
 }
 
-export const TOOLS: ToolDefinition[] = [
-  // ── Article Search ─────────────────────────────────────────────────────────
+// ─── Tool Definitions ─────────────────────────────────────────────────────────
+
+export const TOOLS: ToolMeta[] = [
+  // ── RAG / Vector Search ────────────────────────────────────────────────────
   {
-    name: 'search_articles',
-    description:
-      'Search published articles in the database by keyword, category, or free-text query. ' +
-      'Use when the user asks to find, list, or look up articles.',
+    name: 'semantic_search',
+    description: 'Semantically search the internal article database using natural-language queries. ' +
+      'Returns the most relevant articles ranked by cosine similarity. ' +
+      'Use this when the user asks about news, events, topics, or wants context from past articles.',
+    category: 'rag',
+    icon: '🔍',
+    timeout: 15000,
+    cacheable: true,
+    schema: z.object({
+      query: z.string().min(1),
+      limit: z.number().int().min(1).max(20).optional().default(5),
+      threshold: z.number().min(0).max(1).optional().default(0.5),
+      category: z.string().optional(),
+    }),
     parameters: {
       type: 'object',
+      required: ['query'],
       properties: {
         query: {
           type: 'string',
-          description: 'Free-text search term (title, description, or content)',
-        },
-        category: {
-          type: 'string',
-          description: 'Filter by category slug (optional)',
+          description: 'Natural language query to semantically search for relevant articles',
         },
         limit: {
-          type: 'string',
-          description: 'Maximum number of results to return (default: 5)',
+          type: 'number',
+          description: 'Maximum number of results to return (1–20, default 5)',
+          default: 5,
         },
-      },
-      required: ['query'],
-    },
-  },
-
-  // ── Get Article by ID ──────────────────────────────────────────────────────
-  {
-    name: 'get_article',
-    description:
-      'Fetch the full content of a single article by its ID. ' +
-      'Use when the user asks to read, summarise, or analyse a specific article.',
-    parameters: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'string',
-          description: 'The article UUID or numeric ID',
-        },
-      },
-      required: ['id'],
-    },
-  },
-
-  // ── Generate Article ───────────────────────────────────────────────────────
-  /**{
-    name: 'generate_article',
-    description:
-      'Generate a complete news article (title, description, content, SEO fields) ' +
-      'using AI, then save it as a draft in the database. ' +
-      'Use when the user asks to write, create, or generate a new article.',
-    parameters: {
-      type: 'object',
-      properties: {
-        topic: {
-          type: 'string',
-          description: 'Topic or headline idea for the article',
+        threshold: {
+          type: 'number',
+          description: 'Similarity threshold 0–1 (lower = stricter match). Default 0.5',
+          default: 0.5,
         },
         category: {
           type: 'string',
-          description: 'Article category (e.g. politics, sports, tech)',
+          description: 'Optional: filter by category (Business, Technology, Sports, Entertainment, Science, Health, World)',
         },
-        tone: {
+      },
+    },
+  },
+  
+  // ── Full-text Search ───────────────────────────────────────────────────────
+  {
+    name: 'search_articles',
+    description: 'Full-text keyword search of articles (title, description, content). ' +
+      'Use when the user wants to find articles by exact keywords or phrases.',
+    category: 'search',
+    icon: '📰',
+    cacheable: true,
+    schema: z.object({
+      query: z.string().min(1),
+      limit: z.number().int().min(1).max(20).optional().default(10),
+    }),
+    parameters: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string', description: 'Keyword or phrase to search for' },
+        limit: { type: 'number', description: 'Max results (default 10)', default: 10 },
+      },
+    },
+  },
+  
+  // ── Category Browse ────────────────────────────────────────────────────────
+  {
+    name: 'get_articles_by_category',
+    description: 'Fetch the latest published articles for a specific category. ' +
+      'Categories: Business, Technology, Sports, Entertainment, Science, Health, World.',
+    category: 'news',
+    icon: '🗂️',
+    cacheable: true,
+    schema: z.object({
+      category: z.enum(['Business', 'Technology', 'Sports', 'Entertainment', 'Science', 'Health',
+        'World'
+      ]),
+      limit: z.number().int().min(1).max(20).optional().default(5),
+    }),
+    parameters: {
+      type: 'object',
+      required: ['category'],
+      properties: {
+        category: {
           type: 'string',
-          description: 'Writing tone: neutral | formal | conversational',
-          enum: ['neutral', 'formal', 'conversational'],
+          enum: ['Business', 'Technology', 'Sports', 'Entertainment', 'Science', 'Health', 'World'],
         },
+        limit: { type: 'number', default: 5 },
+      },
+    },
+  },
+  
+  // ── Breaking / Featured / Trending ────────────────────────────────────────
+  {
+    name: 'get_breaking_news',
+    description: 'Fetch the latest breaking news articles.',
+    category: 'news',
+    icon: '🚨',
+    cacheable: false,
+    schema: z.object({}),
+    parameters: { type: 'object', properties: {} },
+  },
+  
+  {
+    name: 'get_featured_articles',
+    description: 'Get the top featured/highlighted articles.',
+    category: 'news',
+    icon: '⭐',
+    cacheable: true,
+    schema: z.object({}),
+    parameters: { type: 'object', properties: {} },
+  },
+  
+  {
+    name: 'get_trending_articles',
+    description: 'Get the most-viewed trending articles.',
+    category: 'news',
+    icon: '📈',
+    cacheable: true,
+    schema: z.object({}),
+    parameters: { type: 'object', properties: {} },
+  },
+  
+  // ── Article Lookup ─────────────────────────────────────────────────────────
+  {
+    name: 'get_article_by_slug',
+    description: 'Retrieve the full content of a specific article by its URL slug.',
+    category: 'database',
+    icon: '📄',
+    cacheable: true,
+    schema: z.object({ slug: z.string().min(1) }),
+    parameters: {
+      type: 'object',
+      required: ['slug'],
+      properties: { slug: { type: 'string', description: 'The article URL slug' } },
+    },
+  },
+  
+  // ── RAG: Inject context  ──────────────────────────────────────────────────
+  {
+    name: 'get_context_for_question',
+    description: 'Retrieve the most relevant article excerpts to answer a factual question. ' +
+      'Returns structured context chunks suitable for grounding your answer. ' +
+      'Always use this before answering questions about specific events, people, or topics.',
+    category: 'rag',
+    icon: '🧠',
+    timeout: 20000,
+    cacheable: true,
+    schema: z.object({
+      question: z.string().min(1),
+      max_chunks: z.number().int().min(1).max(10).optional().default(4),
+    }),
+    parameters: {
+      type: 'object',
+      required: ['question'],
+      properties: {
+        question: {
+          type: 'string',
+          description: 'The factual question to gather context for',
+        },
+        max_chunks: {
+          type: 'number',
+          description: 'Number of context chunks to retrieve (1–10, default 4)',
+          default: 4,
+        },
+      },
+    },
+  },
+  
+  // ── Summarise Article ──────────────────────────────────────────────────────
+  {
+    name: 'summarize_article',
+    description: 'Fetch an article by slug and return a concise structured summary.',
+    category: 'utility',
+    icon: '✂️',
+    cacheable: true,
+    schema: z.object({
+      slug: z.string().min(1),
+      length: z.enum(['short', 'medium', 'long']).optional().default('medium'),
+    }),
+    parameters: {
+      type: 'object',
+      required: ['slug'],
+      properties: {
+        slug: { type: 'string' },
         length: {
           type: 'string',
-          description: 'Approximate length: short (~300w) | medium (~600w) | long (~1200w)',
           enum: ['short', 'medium', 'long'],
+          default: 'medium',
+          description: 'Desired summary length',
         },
       },
-      required: ['topic', 'category'],
     },
   },
-**/
-  // ── Trigger PTP (Post-to-Platform) ─────────────────────────────────────────
-  /**{
-    name: 'trigger_ptp',
-    description:
-      'Trigger the Post-to-Platform (PTP) pipeline for a given article — ' +
-      'renders an OG image, generates a caption, and posts to Facebook/social. ' +
-      'Use when the user asks to share, post, or publish an article to social media.',
-    parameters: {
-      type: 'object',
-      properties: {
-        articleId: {
-          type: 'string',
-          description: 'The ID of the article to post',
-        },
-      },
-      required: ['articleId'],
-    },
-  },**/
-
-  // ── Check PTP / Pipeline Job Status ───────────────────────────────────────
+  
+  // ── Date-based search ─────────────────────────────────────────────────────
   {
-    name: 'check_job_status',
-    description:
-      'Check the current status of a background pipeline job (PTP or news pipeline) ' +
-      'using its eventId. Use when the user asks about progress of a previously started job.',
+    name: 'get_articles_by_date',
+    description: 'Fetch published articles from a specific date (YYYY-MM-DD format).',
+    category: 'database',
+    icon: '📅',
+    cacheable: true,
+    schema: z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
     parameters: {
       type: 'object',
+      required: ['date'],
       properties: {
-        eventId: {
-          type: 'string',
-          description: 'The Inngest event ID returned when the job was started',
-        },
+        date: { type: 'string', description: 'Date in YYYY-MM-DD format' },
       },
-      required: ['eventId'],
     },
   },
-
-  // ── Run News Pipeline ──────────────────────────────────────────────────────
-  {
-    name: 'run_news_pipeline',
-    description:
-      'Trigger the automated news ingestion pipeline that scrapes sources, ' +
-      'generates articles, and saves them as drafts. ' +
-      'Use when the user asks to run, start, or trigger the news pipeline.',
-    parameters: {
-      type: 'object',
-      properties: {
-        confirm: {
-          type: 'string',
-          description: 'Must be "yes" to confirm the pipeline should run',
-        },
-      },
-      required: ['confirm'],
-    },
-  },
-  // ── List My Articles ───────────────────────────────────────────────────────
-  {
-    name: 'list_my_articles',
-    description:
-      'List articles created by the current user, with optional status filter. ' +
-      'Use when the user asks to see their own drafts, published posts, or article list.',
-    parameters: {
-      type: 'object',
-      properties: {
-        status: {
-          type: 'string',
-          description: 'Filter by status: draft | published | scheduled | all (default: all)',
-          enum: ['draft', 'published', 'scheduled', 'all'],
-        },
-      },
-      required: [],
-    },
-  },
-
-  // ── Update Article ─────────────────────────────────────────────────────────
- /** {
-    name: 'update_article',
-    description:
-      'Update fields of an existing article (e.g. publish it, change the title, ' +
-      'fix the category). Use when the user asks to edit, update, or publish an article.',
-    parameters: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'string',
-          description: 'The article ID to update',
-        },
-        fields: {
-          type: 'string',
-          description:
-            'JSON-stringified object of fields to update ' +
-            '(e.g. {"status":"published","title":"New title"})',
-        },
-      },
-      required: ['id', 'fields'],
-    },
-  },**/
 ]
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+export const TOOL_MAP = new Map(TOOLS.map((t) => [t.name, t]))
+
+export function getToolMeta(name: string): ToolMeta | undefined {
+  return TOOL_MAP.get(name)
+}
+
+/** Format tools for the OpenAI /chat/completions API */
+export function toOpenAITools() {
+  return TOOLS.map((t) => ({
+    type: 'function',
+    function: { name: t.name, description: t.description, parameters: t.parameters },
+  }))
+}
