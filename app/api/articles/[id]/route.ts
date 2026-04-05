@@ -1,10 +1,19 @@
+/**
+ * app/api/articles/[id]/route.ts
+ *
+ * GET  — public (published articles যে কেউ দেখতে পারে)
+ * PATCH  — শুধু owner পারবে (DAL ownership check)
+ * DELETE — শুধু owner পারবে (DAL ownership check)
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { getArticleById, updateArticle, deleteArticle } from '@/lib/db/articles'
+import { getArticleById } from '@/lib/db/articles'
+import { dal, NotFoundError, ForbiddenError } from '@/lib/db/dal'
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
@@ -19,16 +28,18 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { id } = await params
     const body = await req.json()
 
-    const article = await updateArticle(id, {
+    const article = await dal.updateMyArticle(session.user.id, id, {
       // Core
       ...(body.title       !== undefined && { title:       body.title }),
       ...(body.description !== undefined && { description: body.description }),
@@ -61,9 +72,10 @@ export async function PATCH(
       }),
     })
 
-    if (!article) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json(article)
   } catch (e) {
+    if (e instanceof NotFoundError) return NextResponse.json({ error: 'Not found' },  { status: 404 })
+    if (e instanceof ForbiddenError) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     console.error(e)
     return NextResponse.json({ error: 'Failed to update article' }, { status: 500 })
   }
@@ -71,17 +83,20 @@ export async function PATCH(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { id } = await params
-    const deleted = await deleteArticle(id)
-    if (!deleted) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    await dal.deleteMyArticle(session.user.id, id)
     return NextResponse.json({ success: true })
   } catch (e) {
+    if (e instanceof NotFoundError) return NextResponse.json({ error: 'Not found' },  { status: 404 })
+    if (e instanceof ForbiddenError) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     console.error(e)
     return NextResponse.json({ error: 'Failed to delete article' }, { status: 500 })
   }

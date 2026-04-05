@@ -1,38 +1,44 @@
+/**
+ * app/api/articles/mine/route.ts
+ *
+ * শুধু authenticated user এর নিজের articles।
+ * DAL ব্যবহার করে — অন্যের data কখনো আসবে না।
+ */
+
 import { NextResponse, NextRequest } from 'next/server'
 import { auth } from '@/auth'
-import { getAllArticles } from '@/lib/db/articles'
+import { dal } from '@/lib/db/dal'
 
 export async function GET(req: NextRequest) {
   const session = await auth()
-  
-  // 1. Session Guard
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const { searchParams } = new URL(req.url)
+  const limit  = Math.min(parseInt(searchParams.get('limit')  || '12'), 100) // max 100 cap
+  const page   = Math.max(parseInt(searchParams.get('page')   || '1'),  1)
+  const status = searchParams.get('status') as any ?? undefined
+
   try {
-    // 2. Extract Query Parameters from URL
-    const { searchParams } = new URL(req.url)
-    const limit = parseInt(searchParams.get('limit') || '12')
-    const page = parseInt(searchParams.get('page') || '1')
-    
-    // 3. Calculate Offset
-    // If page 1: (1-1) * 12 = 0
-    // If page 2: (2-1) * 12 = 12
-    const offset = (page - 1) * limit
+    const [articles, total] = await Promise.all([
+      status
+        ? dal.getMyArticlesByStatus(session.user.id, status, { limit, page })
+        : dal.getMyArticles(session.user.id, { limit, page }),
+      dal.countMyArticles(session.user.id),
+    ])
 
-    // 4. Call your DB function with pagination parameters
-    // Note: Ensure your 'getAllArticles' function is updated to accept (limit, offset)
-    const articles = await getAllArticles(limit, offset)
-
-    // 5. Return the result
-    return NextResponse.json(articles)
-
+    return NextResponse.json({
+      articles,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    })
   } catch (e) {
-    console.error('API Error:', e)
-    return NextResponse.json(
-      { error: 'Failed to fetch articles' }, 
-      { status: 500 }
-    )
+    console.error('[/api/articles/mine]', e)
+    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 })
   }
 }
