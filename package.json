@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "rehype-raw": "latest",
+    "framer-motion":"latest",
     "@uiw/react-codemirror" : "latest",
     "@codemirror/lang-markdown" : "latest",
     "@codemirror/language-data" : "latest",
