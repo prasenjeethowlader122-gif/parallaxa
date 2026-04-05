@@ -21,7 +21,8 @@ const NAV_LINKS = [
 ]
 
 export function Header({
-  includeTinker = false
+  includeTinker = false,
+  className
 }) {
   const router = useRouter()
   const { data: session } = useSession()
@@ -88,7 +89,7 @@ export function Header({
   })
 
   return (
-    <header className="sticky top-0 z-50 bg-white/50 backdrop-blur-md">
+    <header className={"sticky top-0 z-50 bg-white/50 backdrop-blur-md" + " " + className}>
 
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
