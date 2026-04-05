@@ -4,7 +4,7 @@ import { Header } from '@/components/header'
 import PinwheelLoader from '@/components/logo'
 import { slabo, spacegrotesk } from '@/lib/font'
 import {
-  ArrowUp,
+  ArrowRight,
   Brain,
   AlertCircle,
   Copy,
@@ -81,20 +81,8 @@ const TOOL_LABEL: Record<string, string> = {
   summarize_article: 'Summary',
 }
 
-const TOOL_ICON: Record<string, string> = {
-  semantic_search: '🔍',
-  search_articles: '📰',
-  get_articles_by_category: '🗂️',
-  get_breaking_news: '🚨',
-  get_featured_articles: '⭐',
-  get_trending_articles: '📈',
-  get_article_by_slug: '📄',
-  get_context_for_question: '🧠',
-  summarize_article: '✂️',
-}
-
 const SUGGESTED_QUERIES = [
-  { icon: TrendingUp, text: 'What are today\'s top trending stories?' },
+  { icon: TrendingUp, text: "What are today's top trending stories?" },
   { icon: Star, text: 'Show me featured articles' },
   { icon: Newspaper, text: 'Latest breaking news' },
   { icon: Globe, text: 'World news highlights' },
@@ -106,37 +94,37 @@ const mdComponents: Components = {
   code: ({ children, className }: ComponentPropsWithoutRef<'code'>) => {
     if (!className)
       return (
-        <code className="bg-[#F0F4FF] text-[#3B5BDB] px-1.5 py-0.5 rounded-md font-mono text-[0.85em] font-medium">
+        <code className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded-md font-mono text-[0.85em] font-medium">
           {children}
         </code>
       )
     return (
-      <pre className="bg-[#0F1117] border border-white/10 rounded-xl p-4 overflow-x-auto my-4 text-xs font-mono text-gray-300 shadow-xl">
+      <pre className="bg-gray-950 border border-gray-800 rounded-xl p-4 overflow-x-auto my-4 text-xs font-mono text-gray-300">
         <code>{children}</code>
       </pre>
     )
   },
   h1: ({ children }) => (
-    <h1 className="text-2xl font-bold text-gray-900 mt-8 mb-3 leading-tight">{children}</h1>
+    <h1 className="text-xl font-medium text-gray-900 mt-6 mb-2 leading-tight">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-lg font-semibold text-gray-800 mt-6 mb-2 leading-snug">{children}</h2>
+    <h2 className="text-base font-medium text-gray-800 mt-5 mb-2 leading-snug">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-base font-semibold text-gray-700 mt-4 mb-1">{children}</h3>
+    <h3 className="text-sm font-medium text-gray-700 mt-4 mb-1">{children}</h3>
   ),
   p: ({ children }) => (
-    <p className="text-[15px] text-gray-700 leading-[1.75] mb-4">{children}</p>
+    <p className="text-sm text-gray-700 leading-[1.8] mb-3">{children}</p>
   ),
   ul: ({ children }) => (
-    <ul className="mb-4 space-y-2 text-[15px] text-gray-700">{children}</ul>
+    <ul className="mb-3 space-y-1.5 text-sm text-gray-700">{children}</ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal list-inside mb-4 space-y-2 text-[15px] text-gray-700">{children}</ol>
+    <ol className="list-decimal list-inside mb-3 space-y-1.5 text-sm text-gray-700">{children}</ol>
   ),
   li: ({ children }) => (
     <li className="leading-relaxed flex gap-2 items-start">
-      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#3B5BDB] shrink-0 block" />
+      <span className="mt-2 w-1 h-1 rounded-full bg-gray-400 shrink-0 block" />
       <span>{children}</span>
     </li>
   ),
@@ -145,18 +133,18 @@ const mdComponents: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-[#3B5BDB] hover:text-[#2F4AC8] underline underline-offset-2 decoration-[#3B5BDB]/30 hover:decoration-[#3B5BDB] font-medium transition-colors"
+      className="text-gray-900 underline underline-offset-2 decoration-gray-400 hover:decoration-gray-700 font-medium transition-colors"
     >
       {children}
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-[#3B5BDB]/30 pl-4 my-4 text-gray-500 italic">
+    <blockquote className="border-l-2 border-gray-300 pl-4 my-4 text-gray-500 italic">
       {children}
     </blockquote>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-gray-900">{children}</strong>
+    <strong className="font-medium text-gray-900">{children}</strong>
   ),
   hr: () => <hr className="border-gray-100 my-6" />,
   table: ({ children }) => (
@@ -165,97 +153,47 @@ const mdComponents: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="text-left py-2.5 px-3 font-semibold text-gray-900 bg-gray-50 border-b border-gray-200">
+    <th className="text-left py-2 px-3 font-medium text-gray-800 bg-gray-50 border-b border-gray-200 text-sm">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="py-2.5 px-3 text-gray-700 border-b border-gray-100">{children}</td>
+    <td className="py-2 px-3 text-gray-600 border-b border-gray-100 text-sm">{children}</td>
   ),
 }
 
-// ─── Source Card ────────────────────────────────────────────────────────────────
+// ─── Source Pills ────────────────────────────────────────────────────────────────
 
-function SourceCard({ tc, index }: { tc: ToolCall; index: number }) {
-  const icon = TOOL_ICON[tc.name] || '🔧'
-  const label = TOOL_LABEL[tc.name] || tc.name
-
-  return (
-    <div className="group relative flex flex-col gap-2 p-3 rounded-xl border border-gray-100 bg-white hover:border-[#3B5BDB]/20 hover:bg-[#F0F4FF]/30 transition-all cursor-pointer shadow-sm hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{icon}</span>
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-            {index + 1}
-          </span>
-        </div>
-        {tc.done ? (
-          tc.success !== false ? (
-            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Check className="w-2.5 h-2.5 text-emerald-600" />
-            </div>
-          ) : (
-            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-              <X className="w-2.5 h-2.5 text-red-500" />
-            </div>
-          )
-        ) : (
-          <Loader2 className="w-3.5 h-3.5 text-[#3B5BDB] animate-spin" />
-        )}
-      </div>
-      <div>
-        <p className="text-[12px] font-semibold text-gray-800 leading-tight">{label}</p>
-        {tc.preview && (
-          <p className="text-[10px] text-gray-400 truncate mt-0.5 italic leading-snug">
-            {tc.preview}
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ─── Tool Progress Bar ──────────────────────────────────────────────────────────
-
-function ToolProgress({ toolCalls, isLoading }: { toolCalls: ToolCall[]; isLoading: boolean }) {
-  const [collapsed, setCollapsed] = useState(false)
-
+function SourcePills({ toolCalls, isLoading }: { toolCalls: ToolCall[]; isLoading: boolean }) {
   if (toolCalls.length === 0 && !isLoading) return null
 
   return (
-    <div className="space-y-2">
-      <button
-        onClick={() => setCollapsed((c) => !c)}
-        className="flex items-center gap-2 text-sm font-semibold text-gray-800 hover:text-gray-900 transition-colors group"
-      >
-        <div className="p-1 rounded-lg bg-[#EEF2FF]">
-          <Layers className="w-3.5 h-3.5 text-[#3B5BDB]" />
-        </div>
-        <span>Sources</span>
-        <span className="text-xs font-normal text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-          {toolCalls.length}
-        </span>
-        {collapsed ? (
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400 ml-auto group-hover:text-gray-600" />
-        ) : (
-          <ChevronUp className="w-3.5 h-3.5 text-gray-400 ml-auto group-hover:text-gray-600" />
-        )}
-      </button>
-
-      {!collapsed && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {toolCalls.map((tc, i) => (
-            <SourceCard key={tc.id} tc={tc} index={i} />
-          ))}
-          {isLoading && toolCalls.every((t) => t.done) && (
-            <div className="flex items-center justify-center p-3 border border-dashed border-gray-200 rounded-xl bg-gray-50/50 animate-pulse">
-              <div className="flex flex-col items-center gap-1">
-                <Loader2 className="w-4 h-4 text-gray-300 animate-spin" />
-                <span className="text-[10px] text-gray-300">Searching...</span>
-              </div>
-            </div>
+    <div className="flex flex-wrap items-center gap-1.5 mb-4">
+      {toolCalls.map((tc) => (
+        <span
+          key={tc.id}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-xs text-gray-500 transition-colors"
+        >
+          {tc.done ? (
+            tc.success !== false ? (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+            )
+          ) : (
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse shrink-0" />
           )}
-        </div>
+          {TOOL_LABEL[tc.name] || tc.name}
+          {tc.preview && (
+            <span className="text-gray-400 truncate max-w-[80px] italic">{tc.preview}</span>
+          )}
+        </span>
+      ))}
+      {isLoading && toolCalls.every((t) => t.done) && (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 border border-dashed border-gray-200 text-xs text-gray-400">
+          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+          Searching...
+        </span>
       )}
     </div>
   )
@@ -265,11 +203,11 @@ function ToolProgress({ toolCalls, isLoading }: { toolCalls: ToolCall[]; isLoadi
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 py-2">
+    <div className="flex items-center gap-1 py-1">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-2 h-2 rounded-full bg-[#3B5BDB]/40 animate-bounce"
+          className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
           style={{ animationDelay: `${i * 0.15}s` }}
         />
       ))}
@@ -300,10 +238,8 @@ function MessageBubble({
 
   if (isUser) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-6 pt-10 pb-6">
-        <h1
-          className={`text-2xl md:text-3xl font-semibold text-gray-900 tracking-tight leading-snug ${slabo.className}`}
-        >
+      <div className="w-full max-w-2xl mx-auto px-6 pt-10 pb-4">
+        <h1 className="text-2xl font-medium text-gray-900 tracking-tight leading-snug">
           {message.content}
         </h1>
       </div>
@@ -311,64 +247,53 @@ function MessageBubble({
   }
 
   return (
-    <div className="w-full border-b border-gray-100/80 pb-12">
-      <div className="max-w-3xl mx-auto px-6 space-y-6 pt-2">
-        
-        {/* Thinking indicator */}
-        {message.thinking && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-100">
-            <Brain className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-            <span className="text-xs text-amber-700 italic">
-              Analyzing context and sources...
-            </span>
-          </div>
-        )}
+    <div className="w-full border-b border-gray-100 pb-10">
+      <div className="max-w-2xl mx-auto px-6 pt-4 space-y-4">
 
         {/* Sources */}
-        <ToolProgress toolCalls={message.toolCalls} isLoading={isLastAi && isLoading} />
+        <SourcePills toolCalls={message.toolCalls} isLoading={isLastAi && isLoading} />
 
         {/* Answer */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <div className="p-1 rounded-lg bg-emerald-50">
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
+        <div>
+          {/* Label + actions */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400">
+              <Check className="w-3 h-3" />
               Answer
             </div>
-
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <button
                 onClick={handleCopy}
                 className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
                 title="Copy answer"
               >
                 {copied ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <Check className="w-3 h-3 text-emerald-500" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5" />
+                  <Copy className="w-3 h-3" />
                 )}
               </button>
               <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-                <Share2 className="w-3.5 h-3.5" />
+                <Share2 className="w-3 h-3" />
               </button>
               <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-                <ThumbsUp className="w-3.5 h-3.5" />
+                <ThumbsUp className="w-3 h-3" />
               </button>
               <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-                <ThumbsDown className="w-3.5 h-3.5" />
+                <ThumbsDown className="w-3 h-3" />
               </button>
             </div>
           </div>
 
-          <div className={`${spacegrotesk.className}`}>
+          {/* Content */}
+          <div>
             {isStreaming ? (
               <TypingIndicator />
             ) : !message.content ? (
-              <div className="space-y-2.5">
-                <div className="h-3.5 bg-gray-100 rounded-full w-4/5 animate-pulse" />
-                <div className="h-3.5 bg-gray-100 rounded-full w-3/5 animate-pulse" />
-                <div className="h-3.5 bg-gray-100 rounded-full w-2/3 animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-100 rounded-full w-4/5 animate-pulse" />
+                <div className="h-3 bg-gray-100 rounded-full w-3/5 animate-pulse" />
+                <div className="h-3 bg-gray-100 rounded-full w-2/3 animate-pulse" />
               </div>
             ) : (
               <Markdown
@@ -396,6 +321,7 @@ function InputBar({
   isLoading,
   inputRef,
   onSubmit,
+  pill = false,
 }: {
   query: string
   setQuery: (v: string) => void
@@ -404,18 +330,70 @@ function InputBar({
   isLoading: boolean
   inputRef: React.RefObject<HTMLTextAreaElement>
   onSubmit: (q?: string) => void
+  pill?: boolean
 }) {
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
   }
 
+  if (pill) {
+    // Welcome screen: single-line pill matching /ai/page.tsx
+    return (
+      <div
+        className={`flex flex-row items-center gap-2 bg-white rounded-full w-full px-5 py-2 transition-all duration-200 ${
+          focused
+            ? 'shadow-[0_0_0_2px_rgba(0,0,0,0.12)]'
+            : 'shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-gray-200'
+        }`}
+      >
+        <textarea
+          ref={inputRef}
+          rows={1}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            autoResize(e.target)
+          }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              onSubmit()
+            }
+          }}
+          placeholder="Ask anything…"
+          className="flex-1 outline-none border-none bg-transparent text-sm text-gray-800 placeholder:text-gray-400 min-w-0 resize-none overflow-hidden leading-normal"
+          style={{ fontFamily: 'inherit', paddingTop: '6px', paddingBottom: '6px' }}
+        />
+        <button
+          onClick={() => onSubmit()}
+          disabled={!query.trim() || isLoading}
+          aria-label="Submit"
+          className={`rounded-full p-2 flex items-center justify-center transition-all duration-150 shrink-0 ${
+            query.trim() && !isLoading
+              ? 'bg-gray-900 text-white hover:bg-gray-700 active:scale-95'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ArrowRight className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+    )
+  }
+
+  // Thread input: slightly more functional, still minimal
   return (
     <div
-      className={`relative flex flex-col w-full bg-white border-2 transition-all duration-200 rounded-2xl shadow-lg ${
+      className={`flex flex-col bg-white rounded-2xl border transition-all duration-200 ${
         focused
-          ? 'border-[#3B5BDB]/30 shadow-[#3B5BDB]/10 shadow-xl'
-          : 'border-gray-200/80 hover:border-gray-300'
+          ? 'border-gray-300 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]'
+          : 'border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:border-gray-300'
       }`}
     >
       <textarea
@@ -434,36 +412,30 @@ function InputBar({
             onSubmit()
           }
         }}
-        placeholder="Ask anything..."
-        className="w-full resize-none bg-transparent px-4 pt-4 pb-2 text-[15px] outline-none text-gray-900 placeholder:text-gray-400 min-h-[52px] max-h-[200px] leading-relaxed"
+        placeholder="Ask anything…"
+        className="w-full resize-none bg-transparent px-4 pt-3.5 pb-2 text-sm outline-none text-gray-900 placeholder:text-gray-400 min-h-[48px] max-h-[160px] leading-relaxed"
         style={{ fontFamily: 'inherit' }}
       />
-
       <div className="flex items-center justify-between px-3 pb-3 pt-1">
         <div className="flex items-center gap-1">
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            <Zap className="w-3.5 h-3.5 text-[#3B5BDB]" />
-            <span>Focus</span>
-          </button>
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            <Paperclip className="w-3.5 h-3.5" />
-            <span>Attach</span>
+          <button className="flex items-center gap-1 px-2 py-1.5 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors">
+            <Paperclip className="w-3 h-3" />
+            Attach
           </button>
         </div>
-
         <button
           onClick={() => onSubmit()}
           disabled={!query.trim() || isLoading}
-          className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 ${
+          className={`flex items-center justify-center w-7 h-7 rounded-full transition-all duration-150 ${
             query.trim() && !isLoading
-              ? 'bg-[#3B5BDB] text-white hover:bg-[#2F4AC8] shadow-md shadow-[#3B5BDB]/30 scale-100 hover:scale-105 active:scale-95'
+              ? 'bg-gray-900 text-white hover:bg-gray-700 active:scale-95'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <ArrowUp className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           )}
         </button>
       </div>
@@ -489,13 +461,13 @@ function NavItem({
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl cursor-pointer transition-all select-none ${
+      className={`flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition-all select-none ${
         active
-          ? 'bg-[#EEF2FF] text-[#3B5BDB] font-semibold'
-          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+          ? 'bg-gray-100 text-gray-900 font-medium'
+          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
       }`}
     >
-      <Icon className={small ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+      <Icon className={small ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
       <span className={`${small ? 'text-xs' : 'text-sm'} truncate leading-none`}>{label}</span>
     </div>
   )
@@ -513,19 +485,18 @@ function WelcomeScreen({
   onSubmit,
 }: any) {
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-2xl space-y-8">
-        {/* Hero */}
-        <div className="text-center space-y-3">
-          <h2 className={`text-4xl md:text-5xl font-semibold text-gray-900 leading-tight tracking-tight ${slabo.className}`}>
-            Where knowledge begins.
-          </h2>
-          <p className="text-gray-500 text-base">
-            Ask anything. Search everything.
+    <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
+      <div className="w-full max-w-xl space-y-8">
+
+        {/* Logo + tagline — matches /ai/page.tsx exactly */}
+        <div className="flex flex-col items-center gap-3">
+          <PinwheelLoader size={120} isfill={true} isDone={true} />
+          <p className="text-sm text-gray-400 tracking-wide">
+            What would you like to explore?
           </p>
         </div>
 
-        {/* Input */}
+        {/* Pill input */}
         <InputBar
           query={query}
           setQuery={setQuery}
@@ -534,22 +505,28 @@ function WelcomeScreen({
           isLoading={isLoading}
           inputRef={inputRef}
           onSubmit={onSubmit}
+          pill
         />
 
-        {/* Suggested queries */}
+        {/* Suggestion chips — 2-column grid */}
         <div className="grid grid-cols-2 gap-2">
           {SUGGESTED_QUERIES.map(({ icon: Icon, text }) => (
             <button
               key={text}
               onClick={() => onSubmit(text)}
-              className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#3B5BDB]/30 hover:bg-[#EEF2FF]/30 transition-all text-left text-sm text-gray-600 hover:text-gray-900 shadow-sm hover:shadow group"
+              className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm transition-all text-left text-xs text-gray-600 hover:text-gray-900"
             >
-              <div className="p-1.5 rounded-lg bg-gray-50 group-hover:bg-[#EEF2FF] transition-colors">
-                <Icon className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#3B5BDB]" />
+              <div className="p-1.5 rounded-lg bg-gray-50 shrink-0">
+                <Icon className="w-3 h-3 text-gray-500" />
               </div>
-              <span className="leading-snug text-xs font-medium">{text}</span>
+              <span className="leading-snug font-medium">{text}</span>
             </button>
           ))}
+        </div>
+
+        {/* Disclaimer — matches /ai/page.tsx */}
+        <div className="flex flex-wrap justify-center text-xs text-gray-400">
+          We are using third-party llm models for this interface
         </div>
       </div>
     </div>
@@ -572,12 +549,10 @@ export default function AiInterfaceChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Focus on load
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
@@ -598,12 +573,10 @@ export default function AiInterfaceChat() {
       setQuery('')
       setIsLoading(true)
 
-      // Reset textarea height
       if (inputRef.current) {
         inputRef.current.style.height = 'auto'
       }
 
-      // Build AI message
       const aiId = (Date.now() + 1).toString()
       const aiMessage: Message = {
         id: aiId,
@@ -665,9 +638,7 @@ export default function AiInterfaceChat() {
                 }
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === aiId
-                      ? { ...m, toolCalls: [...m.toolCalls, newTool] }
-                      : m,
+                    m.id === aiId ? { ...m, toolCalls: [...m.toolCalls, newTool] } : m,
                   ),
                 )
               } else if (event.type === 'tool_result') {
@@ -678,12 +649,7 @@ export default function AiInterfaceChat() {
                           ...m,
                           toolCalls: m.toolCalls.map((tc) =>
                             tc.id === event.id
-                              ? {
-                                  ...tc,
-                                  done: true,
-                                  success: event.success,
-                                  preview: event.preview,
-                                }
+                              ? { ...tc, done: true, success: event.success, preview: event.preview }
                               : tc,
                           ),
                         }
@@ -694,18 +660,13 @@ export default function AiInterfaceChat() {
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === aiId
-                      ? {
-                          ...m,
-                          content:
-                            m.content ||
-                            `⚠️ Error: ${event.content}`,
-                        }
+                      ? { ...m, content: m.content || `⚠️ Error: ${event.content}` }
                       : m,
                   ),
                 )
               }
             } catch {
-              // Ignore parse errors
+              // ignore parse errors
             }
           }
         }
@@ -723,7 +684,6 @@ export default function AiInterfaceChat() {
         )
       } finally {
         setIsLoading(false)
-        // Add to recent threads
         setRecentThreads((prev) => [
           trimmed.slice(0, 24) + (trimmed.length > 24 ? '...' : ''),
           ...prev.slice(0, 4),
@@ -736,16 +696,15 @@ export default function AiInterfaceChat() {
   const lastAiId = [...messages].reverse().find((m) => m.from === 'ai')?.id
 
   return (
-    <div
-      className="flex h-screen bg-[#FAFAFA] text-gray-900 overflow-hidden"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
-    >
+    <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden font-sans">
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="w-60 border-r border-gray-100 hidden lg:flex flex-col shrink-0 bg-white">
+      <aside className="w-56 border-r border-gray-200 hidden lg:flex flex-col shrink-0 bg-white">
+
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-100">
-          <PinwheelLoader size={26} isfill={true} isDone={!isLoading} />
-          <span className={`font-bold text-lg tracking-tight text-gray-900 ${slabo.className}`}>
+        <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-100">
+          <PinwheelLoader size={22} isfill={true} isDone={!isLoading} />
+          <span className="font-medium text-base text-gray-900 tracking-tight">
             Parallaxa
           </span>
         </div>
@@ -754,62 +713,45 @@ export default function AiInterfaceChat() {
         <div className="p-3 border-b border-gray-100">
           <button
             onClick={() => setMessages([])}
-            className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 border border-gray-200 transition-all hover:border-gray-300 active:scale-[0.98]"
+            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 transition-all active:scale-[0.98]"
           >
-            New Thread
-            <div className="p-0.5 rounded-md bg-gray-100">
-              <Plus className="w-3.5 h-3.5 text-gray-500" />
-            </div>
+            New thread
+            <Plus className="w-3.5 h-3.5 text-gray-400" />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="p-3 space-y-0.5 border-b border-gray-100">
+        <nav className="p-2 space-y-0.5 border-b border-gray-100">
           <NavItem icon={Search} label="Home" active />
           <NavItem icon={Globe} label="Discover" />
           <NavItem icon={Library} label="Library" />
         </nav>
 
         {/* Recents */}
-        <div className="p-3 flex-1 min-h-0 overflow-y-auto">
-          <p className="px-2 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        <div className="p-2 flex-1 min-h-0 overflow-y-auto">
+          <p className="px-2 pb-2 pt-1 text-[10px] font-medium text-gray-400 uppercase tracking-widest">
             Recent
           </p>
           {recentThreads.map((t, i) => (
             <NavItem key={i} icon={Clock} label={t} small />
           ))}
         </div>
-
-        {/* Pro banner */}
-        <div className="p-3 border-t border-gray-100">
-          <div className="p-3 bg-gradient-to-br from-[#EEF2FF] to-[#E0E7FF] rounded-xl border border-[#C7D2FE]">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#3B5BDB]" />
-              <span className="text-[11px] font-bold text-[#3B5BDB]">PRO PLAN</span>
-            </div>
-            <p className="text-[10px] text-[#6674CC] mb-2 leading-snug">
-              Unlock advanced models & unlimited queries
-            </p>
-            <button className="w-full py-1.5 bg-[#3B5BDB] text-white text-xs font-bold rounded-lg hover:bg-[#2F4AC8] transition-colors">
-              Upgrade
-            </button>
-          </div>
-        </div>
       </aside>
 
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col relative overflow-hidden min-w-0">
+
         {/* Mobile header */}
-        <header className="h-14 border-b border-gray-100 flex items-center justify-between px-4 lg:hidden bg-white shrink-0">
+        <header className="h-12 border-b border-gray-100 flex items-center justify-between px-4 lg:hidden bg-white shrink-0">
           <div className="flex items-center gap-2">
-            <PinwheelLoader size={22} isfill={true} isDone={!isLoading} />
-            <span className={`font-bold text-base ${slabo.className}`}>Parallaxa</span>
+            <PinwheelLoader size={18} isfill={true} isDone={!isLoading} />
+            <span className="font-medium text-sm">Parallaxa</span>
           </div>
           <button
             onClick={() => setMessages([])}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
           </button>
         </header>
 
@@ -840,11 +782,11 @@ export default function AiInterfaceChat() {
           )}
         </div>
 
-        {/* Floating bottom input (only in thread) */}
+        {/* Floating bottom input (thread mode only) */}
         {messages.length > 0 && (
           <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-            <div className="bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent pt-12 pb-5 px-4 pointer-events-auto">
-              <div className="max-w-3xl mx-auto">
+            <div className="bg-gradient-to-t from-gray-50 via-gray-50/90 to-transparent pt-10 pb-4 px-4 pointer-events-auto">
+              <div className="max-w-2xl mx-auto">
                 <InputBar
                   query={query}
                   setQuery={setQuery}
