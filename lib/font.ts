@@ -2,19 +2,28 @@
 import localFont from 'next/font/local'
 
 export const spacegrotesk = localFont({
-  src : [{
+  src: [{
+    path: '../public/local/font/MirandaSans-Regular.ttf',
+    style: 'normal',
+    weight: '400'
+  }, {
+    path: '../public/local/font/MirandaSans-Medium.ttf',
+    style: 'normal',
+    weight: '600'
+  },
+  {
     
-    
-      path : '../public/local/font/SpaceGrotesk-VariableFont_wght.ttf',
-      style : 'normal'
+    path: '../public/local/font/MirandaSans-Bold.ttf',
+    style: 'normal',
+    weight: '900'
     
   }]
 })
 export const Fugaz = localFont({
-  src : [{
+  src: [{
     path: '../public/local/font/FugazOne-Regular.ttf',
     weight: '400',
-    style : 'normal'
+    style: 'normal'
   }]
 })
 
