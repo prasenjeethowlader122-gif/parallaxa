@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import profilePic from '../public/placeholder-logo.svg'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { Search, Menu, X, Languages, Bell, ChevronDown, TrendingUp, Bookmark, Radio } from 'lucide-react'
+import { Search, Menu, X, Languages, Bell, ChevronDown } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews } from '@/lib/news-data'
 
@@ -21,25 +21,29 @@ const NAV_LINKS = [
 ]
 
 export function Header({
-  includeTinker = false,
-  className
+  includeTicker = false,   // FIX 1: renamed from `includeTinker` (typo)
+  className,
+}: {
+  includeTicker?: boolean
+  className?: string
 }) {
-  const router = useRouter()
+  const router   = useRouter()
+  const pathname = usePathname()            // FIX 2: use pathname for active nav
   const { data: session } = useSession()
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isAnnVisible, setIsAnnVisible] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [desktopQuery, setDesktopQuery] = useState('')
-  const [activeNav, setActiveNav] = useState('/')
+  const [isMenuOpen,    setIsMenuOpen]    = useState(false)
+  const [isSearchOpen,  setIsSearchOpen]  = useState(false)
+  const [isAnnVisible,  setIsAnnVisible]  = useState(true)  // FIX 3: default true so it actually shows
+  const [searchQuery,   setSearchQuery]   = useState('')
+  const [desktopQuery,  setDesktopQuery]  = useState('')
   const [searchCategory, setSearchCategory] = useState('All')
-  const [isCatOpen, setIsCatOpen] = useState(false)
+  const [isCatOpen,     setIsCatOpen]     = useState(false)
   const [tickerArticles, setTickerArticles] = useState<NewsArticle[]>([])
   const catRef = useRef<HTMLDivElement>(null)
 
   const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
 
+  // Close category dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (catRef.current && !catRef.current.contains(e.target as Node)) {
@@ -50,6 +54,7 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Load breaking news ticker
   useEffect(() => {
     async function loadTicker() {
       try {
@@ -61,6 +66,12 @@ export function Header({
     }
     loadTicker()
   }, [])
+
+  // Close mobile overlays on route change
+  useEffect(() => {
+    setIsMenuOpen(false)
+    setIsSearchOpen(false)
+  }, [pathname])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,14 +100,14 @@ export function Header({
   })
 
   return (
-    <header className={"sticky top-0 z-50 bg-white/50 backdrop-blur-md" + " " + className}>
+    <header className={`sticky top-0 z-50 bg-white/50 backdrop-blur-md ${className ?? ''}`}>
 
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
         <div className="bg-red-600 text-white text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
-          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse flex-shrink-0" />
           <span>Breaking: Fed holds interest rates steady for third consecutive meeting —</span>
-          <Link href="/category/Business" className="underline underline-offset-2 opacity-80 hover:opacity-100">
+          <Link href="/category/Business" className="underline underline-offset-2 opacity-80 hover:opacity-100 whitespace-nowrap">
             Read full story
           </Link>
           <button
@@ -156,12 +167,12 @@ export function Header({
             onSubmit={handleDesktopSearch}
             className="flex-1 max-w-md flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 focus-within:bg-white focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
           >
-            {/* Category dropdown */}
+            {/* FIX 4: removed duplicate gap class (had both gap-1 and gap-1.5) */}
             <div className="relative flex-shrink-0" ref={catRef}>
               <button
                 type="button"
                 onClick={() => setIsCatOpen(!isCatOpen)}
-                className="flex items-center gap-1 px-3 h-10 text-xs text-gray-500 border-r border-gray-200 hover:bg-gray-100 transition-colors gap-1.5"
+                className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-500 border-r border-gray-200 hover:bg-gray-100 transition-colors"
               >
                 {searchCategory}
                 <ChevronDown className="w-3 h-3" />
@@ -239,18 +250,50 @@ export function Header({
           </div>
         </div>
       </div>
-      
-      {/* ── TICKER ── */}
-      <div className={`${!includeTinker &&  'hidden'} bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden `}>
-        <div className="flex items-center gap-1 px-4 h-full bg-black text-white flex-shrink-0">
-          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-          <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
+
+      {/* ── DESKTOP NAV ROW ── */}
+      {/* FIX 5: this entire nav row was missing — NAV_LINKS were defined but never rendered on desktop */}
+      <div className="hidden md:block bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+            {NAV_LINKS.map(({ href, label, badge }) => {
+              const isActive = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'text-gray-900 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  {label}
+                  {badge && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
         </div>
-        <div className="sm:hidden overflow-hidden flex-1 flex items-center">
-          {tickerArticles.length > 0 && (
+      </div>
+
+      {/* ── TICKER ── */}
+      {/* FIX 6: removed `sm:hidden` from the scrolling div — it was hiding the ticker content on all non-mobile screens,
+               leaving only the empty "Breaking" pill visible. Now visible on all screen sizes when includeTicker=true. */}
+      {includeTicker && tickerArticles.length > 0 && (
+        <div className="bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden">
+          <div className="flex items-center gap-1.5 px-4 h-full bg-black text-white flex-shrink-0">
+            <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
+          </div>
+          <div className="overflow-hidden flex-1 flex items-center">
             <div className="flex animate-[ticker_32s_linear_infinite] whitespace-nowrap">
               {[...tickerArticles, ...tickerArticles].map((article, i) => (
-                <span key={i} className="text-[11px] text-gray-500 px-7 border-r border-gray-200">
+                <span key={i} className="text-[11px] text-gray-500 px-7 border-r border-gray-200 last:border-r-0">
                   <span className="font-semibold text-gray-800">
                     {article.category ?? 'Breaking'}:
                   </span>{' '}
@@ -258,22 +301,22 @@ export function Header({
                 </span>
               ))}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── MOBILE TOP BAR ── */}
-      <div className="md:hidden">
+      <div className="md:hidden bg-white border-b border-gray-100">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
 
           {/* Left: hamburger + logo */}
           <div className="flex items-center gap-3 select-none">
             <button
               onClick={() => { setIsMenuOpen(!isMenuOpen); setIsSearchOpen(false) }}
-              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
               aria-label="Menu"
             >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-4 h-4" />}
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <Link href="/" className="flex items-center gap-2">
               <div className="flex items-center justify-center">
@@ -286,15 +329,15 @@ export function Header({
           </div>
 
           {/* Right: search + bell */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => { setIsSearchOpen(!isSearchOpen); setIsMenuOpen(false) }}
-              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
               aria-label="Search"
             >
               {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
             </button>
-            <button className="relative w-9 h-9 flex items-center justify-center  text-gray-600 hover:bg-gray-50 transition-colors">
+            <button className="relative w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
             </button>
@@ -326,39 +369,40 @@ export function Header({
       </div>
 
       {/* ── MOBILE MENU ── */}
+      {/* FIX 7: removed `h-full` (has no effect on static elements); menu now auto-sizes to content */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white w-full h-full">
+        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg">
 
           {/* Sections */}
           <div className="py-2 border-b border-gray-100">
             <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
               Sections
             </p>
-            {NAV_LINKS.map(({ href, label, badge }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => { setActiveNav(href); setIsMenuOpen(false) }}
-                className="flex font-medium items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  {label}
-                  {badge && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
-                      {badge}
-                    </span>
-                  )}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-gray-300 -rotate-90" />
-              </Link>
-            ))}
-          </div>
-
-          {/* Trending */}
-          <div className="py-2 border-b border-gray-100">
-            <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              Trending now
-            </p>
+            {NAV_LINKS.map(({ href, label, badge }) => {
+              const isActive = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex font-medium items-center justify-between px-4 py-3 text-sm transition-colors ${
+                    isActive
+                      ? 'text-gray-900 bg-gray-50'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {label}
+                    {badge && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
+                        {badge}
+                      </span>
+                    )}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-gray-300 -rotate-90" />
+                </Link>
+              )
+            })}
           </div>
 
           {/* Auth */}
