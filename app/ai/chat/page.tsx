@@ -240,7 +240,7 @@ function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: s
       )}
 
       {/* AI response */}
-      <div className="bg-white rounded-2xl rounded-tl-sm border border-[#e5e2e1] px-5 py-4 shadow-sm">
+      <div className="">
         {message.content ? (
           <div className="prose prose-sm max-w-none">
             <Markdown
@@ -461,7 +461,7 @@ export default function ParallaxaAi() {
 
   return (
     <main className="min-h-screen w-full bg-[#f8f7f6] flex flex-col">
-      <Header includeTicker={false} />
+      <Header includeTicker={false} className = 'bg-[transparent]' />
 
       {/* ── Message Thread ── */}
       <div className="flex-1 overflow-y-auto">
@@ -513,7 +513,7 @@ export default function ParallaxaAi() {
       {/* ── Input Bar ── */}
       <div className="sticky bottom-0 bg-gradient-to-t from-[#f8f7f6] via-[#f8f7f6] to-transparent pt-4 pb-6 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 bg-white border border-[#e5e2e1] rounded-2xl px-4 py-3 shadow-sm focus-within:border-[#006950] focus-within:ring-1 focus-within:ring-[#006950]/20 transition-all">
+          <div className="flex items-center gap-2 bg-white rounded-full px-4 py-3  transition-all">
             <Brain className="w-4 h-4 text-[#6d7a73] shrink-0" />
             <input
               ref={inputRef}
