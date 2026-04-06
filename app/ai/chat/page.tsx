@@ -1,14 +1,12 @@
 'use client'
 
 import { Header } from '@/components/header'
-import PinwheelLoader from '@/components/logo'
 import {
   ArrowRight,
   Brain,
   Copy,
   Check,
   Search,
-  Loader2,
   Globe,
   Share2,
   Sparkles,
@@ -20,23 +18,11 @@ import {
   Newspaper,
   Zap,
   BookOpen,
-  ChevronRight,
   AlignLeft,
   ExternalLink,
   Hash,
   Lightbulb,
-  Home,
-  Compass,
-  Library,
-  Settings,
-  HelpCircle,
-  Plus,
-  MoreVertical,
   CheckCircle2,
-  ImageIcon,
-  History,
-  Users,
-  BadgeCheck,
 } from 'lucide-react'
 import {
   useState,
@@ -123,25 +109,25 @@ const mdComponents: Components = {
     )
   },
   h1: ({ children }) => (
-    <h1 className="text-2xl font-bold text-[#1c1b1b] mt-6 mb-3 leading-tight font-['Inter'] tracking-tight">{children}</h1>
+    <h1 className="text-2xl font-bold text-[#1c1b1b] mt-6 mb-3 leading-tight tracking-tight">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-lg font-semibold text-[#1c1b1b] mt-5 mb-2 leading-snug font-['Inter']">{children}</h2>
+    <h2 className="text-lg font-semibold text-[#1c1b1b] mt-5 mb-2 leading-snug">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-base font-semibold text-[#3d4a44] mt-4 mb-1 font-['Inter']">{children}</h3>
+    <h3 className="text-base font-semibold text-[#3d4a44] mt-4 mb-1">{children}</h3>
   ),
   p: ({ children }) => (
-    <p className="text-lg text-[#3d4a44] leading-[1.8] mb-4 font-['Newsreader',serif]">{children}</p>
+    <p className="text-base text-[#3d4a44] leading-[1.8] mb-4">{children}</p>
   ),
   ul: ({ children }) => (
-    <ul className="mb-4 space-y-2 text-[#3d4a44] pl-1 font-['Newsreader',serif]">{children}</ul>
+    <ul className="mb-4 space-y-2 text-[#3d4a44] pl-1">{children}</ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal list-inside mb-4 space-y-2 text-[#3d4a44] font-['Newsreader',serif]">{children}</ol>
+    <ol className="list-decimal list-inside mb-4 space-y-2 text-[#3d4a44]">{children}</ol>
   ),
   li: ({ children }) => (
-    <li className="text-lg leading-relaxed flex gap-2.5 items-start">
+    <li className="text-base leading-relaxed flex gap-2.5 items-start">
       <span className="mt-[10px] w-1.5 h-1.5 rounded-full bg-[#006950] shrink-0 block" />
       <span>{children}</span>
     </li>
@@ -158,7 +144,7 @@ const mdComponents: Components = {
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-[3px] border-[#006950] pl-4 my-4 text-[#6d7a73] italic bg-[#f0eded] py-2 pr-3 rounded-r-lg font-['Newsreader',serif] text-lg">
+    <blockquote className="border-l-[3px] border-[#006950] pl-4 my-4 text-[#6d7a73] italic bg-[#f0eded] py-2 pr-3 rounded-r-lg text-base">
       {children}
     </blockquote>
   ),
@@ -175,47 +161,381 @@ const mdComponents: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="text-left py-2.5 px-4 font-semibold text-[#3d4a44] bg-[#f0eded] border-b border-[#bccac2] text-xs uppercase tracking-wider font-['Inter']">
+    <th className="text-left py-2.5 px-4 font-semibold text-[#3d4a44] bg-[#f0eded] border-b border-[#bccac2] text-xs uppercase tracking-wider">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="py-2.5 px-4 text-[#6d7a73] border-b border-[#f0eded] text-sm font-['Newsreader',serif]">{children}</td>
+    <td className="py-2.5 px-4 text-[#6d7a73] border-b border-[#f0eded] text-sm">{children}</td>
   ),
 }
 
-// ─── Side Nav ────────────────────────────────────────────────────────────────────
+// ─── Tool Call Badge ─────────────────────────────────────────────────────────────
 
-export default function ParallaxaAi(){
-  const [QueryPromptByUser, setQueryPromptByUser] = useState<string>('');
-  const [isLoading, setIsloading] = useState(false)
-  const startAiPipeline = () =>{
-    
-  }
+function ToolCallBadge({ tool }: { tool: ToolCall }) {
+  const Icon = TOOL_ICONS[tool.name] ?? Search
+  const label = TOOL_LABEL[tool.name] ?? tool.name
+
   return (
-    <main className = 'min-h-screen w-full bg-gray-50'>
-      
-      <Header includeTicker = {false}/>
-      {/** main interface body**/}
-      <div className = 'flex flex-col items-start justify-center'>
-        {
-          /**
-          When send massage and response 
-          **/
-        }
-        <div>
-          <div className = 'flex items-center justify-start gap-2 w-full'>
-            {
-              /** Results Tab , Image tab and others **/
-            }
-          </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.92, y: 4 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+        tool.done
+          ? tool.success === false
+            ? 'bg-red-50 border-red-200 text-red-600'
+            : 'bg-[#e8f5f0] border-[#bccac2] text-[#006950]'
+          : 'bg-[#f0eded] border-[#e5e2e1] text-[#6d7a73] animate-pulse'
+      }`}
+    >
+      {tool.done ? (
+        <CheckCircle2 className="w-3 h-3" />
+      ) : (
+        <Icon className="w-3 h-3" />
+      )}
+      {label}
+    </motion.div>
+  )
+}
+
+// ─── Message Bubble ──────────────────────────────────────────────────────────────
+
+function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: string) => void }) {
+  const [copied, setCopied] = useState(false)
+  const [liked, setLiked] = useState<'up' | 'down' | null>(null)
+
+  const handleCopy = () => {
+    onCopy(message.content)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  if (message.from === 'user') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-end"
+      >
+        <div className="max-w-[75%] bg-[#1c1b1b] text-white rounded-2xl rounded-br-sm px-4 py-3 text-sm leading-relaxed">
+          {message.content}
         </div>
-        <div className = 'w-full flex items-center justify-between gap-2 m-4 rounded-full bg-white'>
-          <Brain className = 'w-5 h-5'/>
-          <input onChange = {(val)=> setQueryPromptByUser(val.target.value)} type = 'text' className = 'outline-none border-none bg-white' placeholder ='Search anything...'/>
-          <button className = 'p-6 rounded-full bg-black text-white' disabled = {!QueryPromptByUser.length>2} onClick = {startAiPipeline}>
-            <ArrowRight className = {`w-5 h-5 p-6 rounded-full bg-black text-white`}/>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col gap-3"
+    >
+      {/* Tool calls row */}
+      {message.toolCalls.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pl-1">
+          {message.toolCalls.map((tc) => (
+            <ToolCallBadge key={tc.id} tool={tc} />
+          ))}
+        </div>
+      )}
+
+      {/* AI response */}
+      <div className="bg-white rounded-2xl rounded-tl-sm border border-[#e5e2e1] px-5 py-4 shadow-sm">
+        {message.content ? (
+          <div className="prose prose-sm max-w-none">
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={mdComponents}
+            >
+              {message.content}
+            </Markdown>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-[#bccac2]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#006950] animate-bounce [animation-delay:0ms]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#006950] animate-bounce [animation-delay:150ms]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#006950] animate-bounce [animation-delay:300ms]" />
+          </div>
+        )}
+      </div>
+
+      {/* Action row */}
+      {message.content && (
+        <div className="flex items-center gap-1 pl-1">
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded] transition-all"
+          >
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            {copied ? 'Copied' : 'Copy'}
           </button>
+          <button
+            onClick={() => setLiked(liked === 'up' ? null : 'up')}
+            className={`p-1.5 rounded-lg text-xs transition-all ${liked === 'up' ? 'text-[#006950] bg-[#e8f5f0]' : 'text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded]'}`}
+          >
+            <ThumbsUp className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => setLiked(liked === 'down' ? null : 'down')}
+            className={`p-1.5 rounded-lg text-xs transition-all ${liked === 'down' ? 'text-red-500 bg-red-50' : 'text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded]'}`}
+          >
+            <ThumbsDown className="w-3 h-3" />
+          </button>
+          <button className="p-1.5 rounded-lg text-xs text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded] transition-all">
+            <Share2 className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// ─── Suggested Query Chip ─────────────────────────────────────────────────────
+
+function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: React.ElementType; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#e5e2e1] bg-white hover:border-[#006950] hover:bg-[#f0faf6] text-sm text-[#3d4a44] transition-all text-left group"
+    >
+      <Icon className="w-3.5 h-3.5 text-[#006950] shrink-0" />
+      <span className="line-clamp-1">{text}</span>
+    </button>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export default function ParallaxaAi() {
+  const [query, setQuery] = useState('')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
+
+  const hasMessages = messages.length > 0
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text).catch(() => {})
+  }, [])
+
+  const sendMessage = useCallback(async (text: string) => {
+    const userText = text.trim()
+    if (!userText || isLoading) return
+
+    setQuery('')
+    setIsLoading(true)
+
+    // Add user message
+    const userId = `u-${Date.now()}`
+    setMessages((prev) => [
+      ...prev,
+      { id: userId, from: 'user', content: userText, toolCalls: [] },
+    ])
+
+    // Add empty AI placeholder
+    const aiId = `a-${Date.now()}`
+    setMessages((prev) => [
+      ...prev,
+      { id: aiId, from: 'ai', content: '', toolCalls: [] },
+    ])
+
+    // Build history for API
+    const history = messages.map((m) => ({
+      role: m.from === 'user' ? 'user' : 'assistant',
+      content: m.content,
+    }))
+
+    abortRef.current = new AbortController()
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...history, { role: 'user', content: userText }],
+        }),
+        signal: abortRef.current.signal,
+      })
+
+      if (!res.ok || !res.body) throw new Error(`API error ${res.status}`)
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const raw = line.slice(6).trim()
+          if (raw === '[DONE]') break
+
+          let event: Record<string, unknown>
+          try { event = JSON.parse(raw) } catch { continue }
+
+          const type = event.type as string
+
+          if (type === 'tool_start') {
+            const tool: ToolCall = {
+              id: event.id as string,
+              name: event.name as string,
+              category: event.category as string ?? '',
+              args: event.args as string ?? '',
+              done: false,
+            }
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiId ? { ...m, toolCalls: [...m.toolCalls, tool] } : m
+              )
+            )
+          } else if (type === 'tool_done') {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiId
+                  ? {
+                      ...m,
+                      toolCalls: m.toolCalls.map((tc) =>
+                        tc.id === (event.id as string)
+                          ? { ...tc, done: true, success: event.success as boolean, preview: event.preview as string }
+                          : tc
+                      ),
+                    }
+                  : m
+              )
+            )
+          } else if (type === 'delta') {
+            const chunk = event.content as string
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiId ? { ...m, content: m.content + chunk } : m
+              )
+            )
+          } else if (type === 'error') {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiId
+                  ? { ...m, content: `⚠️ Error: ${event.message as string}` }
+                  : m
+              )
+            )
+          }
+        }
+      }
+    } catch (err: unknown) {
+      if ((err as Error)?.name !== 'AbortError') {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === aiId
+              ? { ...m, content: '⚠️ Something went wrong. Please try again.' }
+              : m
+          )
+        )
+      }
+    } finally {
+      setIsLoading(false)
+      abortRef.current = null
+      inputRef.current?.focus()
+    }
+  }, [isLoading, messages])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage(query)
+    }
+  }
+
+  return (
+    <main className="min-h-screen w-full bg-[#f8f7f6] flex flex-col">
+      <Header includeTicker={false} />
+
+      {/* ── Message Thread ── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <AnimatePresence>
+            {!hasMessages && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col items-center justify-center pt-16 pb-8 gap-6"
+              >
+                {/* Hero */}
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-[#006950] flex items-center justify-center shadow-lg">
+                    <Brain className="w-6 h-6 text-white" />
+                  </div>
+                  <h1 className="text-2xl font-bold text-[#1c1b1b] tracking-tight">Parallaxa AI</h1>
+                  <p className="text-sm text-[#6d7a73] max-w-xs leading-relaxed">
+                    Your intelligent news assistant. Ask about trending stories, breaking news, or any topic.
+                  </p>
+                </div>
+
+                {/* Suggestions */}
+                <div className="w-full grid grid-cols-2 gap-2 mt-2">
+                  {SUGGESTED_QUERIES.map(({ text, icon }) => (
+                    <SuggestionChip
+                      key={text}
+                      text={text}
+                      icon={icon}
+                      onClick={() => sendMessage(text)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Messages */}
+          <div className="flex flex-col gap-6">
+            {messages.map((msg) => (
+              <MessageBubble key={msg.id} message={msg} onCopy={handleCopy} />
+            ))}
+          </div>
+          <div ref={bottomRef} className="h-4" />
+        </div>
+      </div>
+
+      {/* ── Input Bar ── */}
+      <div className="sticky bottom-0 bg-gradient-to-t from-[#f8f7f6] via-[#f8f7f6] to-transparent pt-4 pb-6 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 bg-white border border-[#e5e2e1] rounded-2xl px-4 py-3 shadow-sm focus-within:border-[#006950] focus-within:ring-1 focus-within:ring-[#006950]/20 transition-all">
+            <Brain className="w-4 h-4 text-[#6d7a73] shrink-0" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              type="text"
+              className="flex-1 outline-none border-none bg-transparent text-sm text-[#1c1b1b] placeholder:text-[#bccac2]"
+              placeholder="Ask about any news topic…"
+              disabled={isLoading}
+            />
+            <button
+              onClick={() => sendMessage(query)}
+              disabled={!query.trim() || isLoading}
+              className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#006950] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#005240] transition-all shrink-0"
+            >
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-center text-[10px] text-[#bccac2] mt-2">
+            Powered by Parallaxa · AI can make mistakes
+          </p>
         </div>
       </div>
     </main>
