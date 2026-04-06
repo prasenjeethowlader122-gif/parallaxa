@@ -45,8 +45,8 @@ interface ToolCall {
   category: string
   args: string
   done: boolean
-  success?: boolean
-  preview?: string
+  success ? : boolean
+  preview ? : string
 }
 
 interface Message {
@@ -54,12 +54,12 @@ interface Message {
   from: 'ai' | 'user'
   content: string
   toolCalls: ToolCall[]
-  thinking?: string
+  thinking ? : string
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
-const TOOL_LABEL: Record<string, string> = {
+const TOOL_LABEL: Record < string, string > = {
   semantic_search: 'Semantic Search',
   search_articles: 'Keyword Search',
   get_articles_by_category: 'Categories',
@@ -71,7 +71,7 @@ const TOOL_LABEL: Record<string, string> = {
   summarize_article: 'Summary',
 }
 
-const TOOL_ICONS: Record<string, React.ElementType> = {
+const TOOL_ICONS: Record < string, React.ElementType > = {
   semantic_search: Search,
   search_articles: Hash,
   get_breaking_news: Zap,
@@ -95,7 +95,7 @@ const SUGGESTED_QUERIES = [
 // ─── Markdown Components ────────────────────────────────────────────────────────
 
 const mdComponents: Components = {
-  code: ({ children, className }: ComponentPropsWithoutRef<'code'>) => {
+  code: ({ children, className }: ComponentPropsWithoutRef < 'code' > ) => {
     if (!className)
       return (
         <code className="bg-[#f0eded] text-[#1c1b1b] px-1.5 py-0.5 rounded font-mono text-[0.82em] font-medium border border-[#bccac2]">
@@ -175,7 +175,7 @@ const mdComponents: Components = {
 function ToolCallBadge({ tool }: { tool: ToolCall }) {
   const Icon = TOOL_ICONS[tool.name] ?? Search
   const label = TOOL_LABEL[tool.name] ?? tool.name
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.92, y: 4 }}
@@ -200,16 +200,16 @@ function ToolCallBadge({ tool }: { tool: ToolCall }) {
 
 // ─── Message Bubble ──────────────────────────────────────────────────────────────
 
-function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: string) => void }) {
+function MessageBubble({ message, onCopy }: { message: Message;onCopy: (text: string) => void }) {
   const [copied, setCopied] = useState(false)
-  const [liked, setLiked] = useState<'up' | 'down' | null>(null)
-
+  const [liked, setLiked] = useState < 'up' | 'down' | null > (null)
+  
   const handleCopy = () => {
     onCopy(message.content)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
-
+  
   if (message.from === 'user') {
     return (
       <motion.div
@@ -223,7 +223,7 @@ function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: s
       </motion.div>
     )
   }
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -293,7 +293,8 @@ function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: s
 
 // ─── Suggested Query Chip ─────────────────────────────────────────────────────
 
-function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: React.ElementType; onClick: () => void }) {
+function SuggestionChip({ text, icon: Icon, onClick }: { text: string;icon: React.ElementType;onClick: () =>
+    void }) {
   return (
     <button
       onClick={onClick}
@@ -309,52 +310,52 @@ function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: Rea
 
 export default function ParallaxaAi() {
   const [query, setQuery] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState < Message[] > ([])
   const [isLoading, setIsLoading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const abortRef = useRef<AbortController | null>(null)
-
+  const inputRef = useRef < HTMLInputElement > (null)
+  const bottomRef = useRef < HTMLDivElement > (null)
+  const abortRef = useRef < AbortController | null > (null)
+  
   const hasMessages = messages.length > 0
-
+  
   // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-
+  
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text).catch(() => {})
   }, [])
-
+  
   const sendMessage = useCallback(async (text: string) => {
     const userText = text.trim()
     if (!userText || isLoading) return
-
+    
     setQuery('')
     setIsLoading(true)
-
+    
     // Add user message
     const userId = `u-${Date.now()}`
     setMessages((prev) => [
       ...prev,
       { id: userId, from: 'user', content: userText, toolCalls: [] },
     ])
-
+    
     // Add empty AI placeholder
     const aiId = `a-${Date.now()}`
     setMessages((prev) => [
       ...prev,
       { id: aiId, from: 'ai', content: '', toolCalls: [] },
     ])
-
+    
     // Build history for API
     const history = messages.map((m) => ({
       role: m.from === 'user' ? 'user' : 'assistant',
       content: m.content,
     }))
-
+    
     abortRef.current = new AbortController()
-
+    
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -364,31 +365,31 @@ export default function ParallaxaAi() {
         }),
         signal: abortRef.current.signal,
       })
-
+      
       if (!res.ok || !res.body) throw new Error(`API error ${res.status}`)
-
+      
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
-
+      
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
-
+        
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
         buffer = lines.pop() ?? ''
-
+        
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const raw = line.slice(6).trim()
           if (raw === '[DONE]') break
-
-          let event: Record<string, unknown>
-          try { event = JSON.parse(raw) } catch { continue }
-
+          
+          let event: Record < string, unknown >
+            try { event = JSON.parse(raw) } catch { continue }
+          
           const type = event.type as string
-
+          
           if (type === 'tool_start') {
             const tool: ToolCall = {
               id: event.id as string,
@@ -405,16 +406,17 @@ export default function ParallaxaAi() {
           } else if (type === 'tool_done') {
             setMessages((prev) =>
               prev.map((m) =>
-                m.id === aiId
-                  ? {
-                      ...m,
-                      toolCalls: m.toolCalls.map((tc) =>
-                        tc.id === (event.id as string)
-                          ? { ...tc, done: true, success: event.success as boolean, preview: event.preview as string }
-                          : tc
-                      ),
-                    }
-                  : m
+                m.id === aiId ?
+                {
+                  ...m,
+                  toolCalls: m.toolCalls.map((tc) =>
+                    tc.id === (event.id as string) ?
+                    { ...tc, done: true, success: event.success as boolean, preview: event
+                        .preview as string } :
+                    tc
+                  ),
+                } :
+                m
               )
             )
           } else if (type === 'delta') {
@@ -427,9 +429,9 @@ export default function ParallaxaAi() {
           } else if (type === 'error') {
             setMessages((prev) =>
               prev.map((m) =>
-                m.id === aiId
-                  ? { ...m, content: `⚠️ Error: ${event.message as string}` }
-                  : m
+                m.id === aiId ?
+                { ...m, content: `⚠️ Error: ${event.message as string}` } :
+                m
               )
             )
           }
@@ -439,9 +441,9 @@ export default function ParallaxaAi() {
       if ((err as Error)?.name !== 'AbortError') {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === aiId
-              ? { ...m, content: '⚠️ Something went wrong. Please try again.' }
-              : m
+            m.id === aiId ?
+            { ...m, content: '⚠️ Something went wrong. Please try again.' } :
+            m
           )
         )
       }
@@ -451,18 +453,22 @@ export default function ParallaxaAi() {
       inputRef.current?.focus()
     }
   }, [isLoading, messages])
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  
+  const handleKeyDown = (e: React.KeyboardEvent < HTMLInputElement > ) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage(query)
     }
   }
-
+  
   return (
     <main className="min-h-screen w-full bg-[#f8f7f6] flex flex-col">
-      <Header includeTicker={false} className = 'bg-[transparent]' />
-
+      <div className = 'flex items-center bg-[#f8f7f6] opacity-50 backdrop:blur-md justify-between gap-2 p-4'>
+        <Menu className = 'w-5 h-5'/>
+        <button className = 'p-2 px-3 rounded-2xl bg-black border border-gray-900'>
+          New Chat
+        </button>
+      </div>
       {/* ── Message Thread ── */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-6">
@@ -499,7 +505,42 @@ export default function ParallaxaAi() {
               </motion.div>
             )}
           </AnimatePresence>
+          <div className = 'flex items-center gap-2 w-full'>
+            {
+            [{
+              name : '#answer',
+              icon: Brain
+            },{
+              name : '#sources',
+              icon: ExternalLink,
+            },{
+              name : '#Image/Video',
+              icon: Brain
+            }].filter(nav => nav.name.startsWith('#')).map((_nav) => {
+              const isActive = _nav.name === currentActiveTab;
+              
+              return (
+                <button 
+                  key={_nav.name}
+                  onClick={() => setCurrentActiveTab(_nav.name)}
+                  className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors justify-center ${
+                    isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
+                  }`}
+                >
+                  <_nav.icon className="w-4 h-4" />
+                  <p>{_nav.name.replace('#', '')}</p>
 
+                  {/* ACTIVE INDICATOR (INTEGRATOR) AT THE BOTTOM */}
+                  {isActive && (
+                    <span 
+                      className={`absolute  bottom-0 rounded-full bg-black transition-all left-0 right-0 h-[1px]`}
+                    />
+                  )}
+                </button>
+              )
+            })
+            }
+          </div>
           {/* Messages */}
           <div className="flex flex-col gap-6">
             {messages.map((msg) => (
