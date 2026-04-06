@@ -218,7 +218,7 @@ function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: s
         animate={{ opacity: 1, y: 0 }}
         className="flex justify-end"
       >
-        <div className="max-w-[75%] bg-[#1c1b1b] text-white rounded-2xl rounded-br-sm px-4 py-3 text-sm leading-relaxed">
+        <div className="max-w-[75%] bg-gray-100 text-black rounded-lg px-4 py-3 text-sm leading-relaxed">
           {message.content}
         </div>
       </motion.div>
@@ -456,7 +456,7 @@ export default function ParallaxaAi() {
   return (
     <main className="min-h-screen w-full bg-[#f8f7f6] flex flex-col">
       {/* Header bar */}
-      <div className='flex items-center bg-[#f8f7f6]/80 backdrop-blur-md justify-between gap-2 p-4 sticky top-0 z-10'>
+     <div className='flex sticky top-0 items-center bg-[#f8f7f6]/80 backdrop-blur-md justify-between gap-2 p-4 sticky top-0 z-10'>
         <Menu className='w-5 h-5 text-[#1c1b1b] cursor-pointer'/>
         <button 
             onClick={() => setMessages([])}
@@ -464,6 +464,36 @@ export default function ParallaxaAi() {
           New Chat
         </button>
       </div>
+       {hasMessages && (
+            <div className='flex border-t items-center gap-2 w-full mb-8 border-b border-[#e5e2e1]'>
+              {[
+                { name : '#answer', icon: Brain },
+                { name : '#sources', icon: ExternalLink },
+                { name : '#media', icon: Sparkles }
+              ].map((_nav) => {
+                const isActive = _nav.name === currentActiveTab;
+                return (
+                  <button 
+                    key={_nav.name}
+                    onClick={() => setCurrentActiveTab(_nav.name)}
+                    className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors justify-center ${
+                      isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    <_nav.icon className="w-4 h-4" />
+                    <span>{_nav.name.replace('#', '')}</span>
+                    {isActive && (
+                      <motion.span 
+                        layoutId="activeTab"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"
+                      />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-6">
@@ -500,35 +530,7 @@ export default function ParallaxaAi() {
           </AnimatePresence>
 
           {/* Navigation Tabs - Only show when there are messages */}
-          {hasMessages && (
-            <div className='flex items-center gap-2 w-full mb-8 border-b border-[#e5e2e1]'>
-              {[
-                { name : '#answer', icon: Brain },
-                { name : '#sources', icon: ExternalLink },
-                { name : '#media', icon: Sparkles }
-              ].map((_nav) => {
-                const isActive = _nav.name === currentActiveTab;
-                return (
-                  <button 
-                    key={_nav.name}
-                    onClick={() => setCurrentActiveTab(_nav.name)}
-                    className={`relative p-3 px-4 flex flex-row text-xs items-center gap-2 capitalize transition-colors justify-center ${
-                      isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
-                    }`}
-                  >
-                    <_nav.icon className="w-3.5 h-3.5" />
-                    <span>{_nav.name.replace('#', '')}</span>
-                    {isActive && (
-                      <motion.span 
-                        layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"
-                      />
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          )}
+         
 
           <div className="flex flex-col gap-8">
             {messages.map((msg) => (
@@ -542,7 +544,7 @@ export default function ParallaxaAi() {
       {/* Input Bar */}
       <div className="sticky bottom-0 bg-gradient-to-t from-[#f8f7f6] via-[#f8f7f6] to-transparent pt-4 pb-6 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 bg-white rounded-2xl border border-[#e5e2e1] shadow-sm px-4 py-3 focus-within:border-[#006950] transition-all">
+          <div className="flex items-center gap-2 bg-white rounded-full px-4 py-3  transition-all">
             <Brain className="w-4 h-4 text-[#6d7a73] shrink-0" />
             <input
               ref={inputRef}
