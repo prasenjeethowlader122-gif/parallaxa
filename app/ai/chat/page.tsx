@@ -23,6 +23,7 @@ import {
   Hash,
   Lightbulb,
   CheckCircle2,
+  Menu, // Added missing import
 } from 'lucide-react'
 import {
   useState,
@@ -45,8 +46,8 @@ interface ToolCall {
   category: string
   args: string
   done: boolean
-  success ? : boolean
-  preview ? : string
+  success?: boolean
+  preview?: string
 }
 
 interface Message {
@@ -54,12 +55,12 @@ interface Message {
   from: 'ai' | 'user'
   content: string
   toolCalls: ToolCall[]
-  thinking ? : string
+  thinking?: string
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
-const TOOL_LABEL: Record < string, string > = {
+const TOOL_LABEL: Record<string, string> = {
   semantic_search: 'Semantic Search',
   search_articles: 'Keyword Search',
   get_articles_by_category: 'Categories',
@@ -71,7 +72,7 @@ const TOOL_LABEL: Record < string, string > = {
   summarize_article: 'Summary',
 }
 
-const TOOL_ICONS: Record < string, React.ElementType > = {
+const TOOL_ICONS: Record<string, React.ElementType> = {
   semantic_search: Search,
   search_articles: Hash,
   get_breaking_news: Zap,
@@ -95,7 +96,7 @@ const SUGGESTED_QUERIES = [
 // ─── Markdown Components ────────────────────────────────────────────────────────
 
 const mdComponents: Components = {
-  code: ({ children, className }: ComponentPropsWithoutRef < 'code' > ) => {
+  code: ({ children, className }: ComponentPropsWithoutRef<'code'>) => {
     if (!className)
       return (
         <code className="bg-[#f0eded] text-[#1c1b1b] px-1.5 py-0.5 rounded font-mono text-[0.82em] font-medium border border-[#bccac2]">
@@ -200,9 +201,9 @@ function ToolCallBadge({ tool }: { tool: ToolCall }) {
 
 // ─── Message Bubble ──────────────────────────────────────────────────────────────
 
-function MessageBubble({ message, onCopy }: { message: Message;onCopy: (text: string) => void }) {
+function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: string) => void }) {
   const [copied, setCopied] = useState(false)
-  const [liked, setLiked] = useState < 'up' | 'down' | null > (null)
+  const [liked, setLiked] = useState<'up' | 'down' | null>(null)
   
   const handleCopy = () => {
     onCopy(message.content)
@@ -230,7 +231,6 @@ function MessageBubble({ message, onCopy }: { message: Message;onCopy: (text: st
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col gap-3"
     >
-      {/* Tool calls row */}
       {message.toolCalls.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pl-1">
           {message.toolCalls.map((tc) => (
@@ -239,7 +239,6 @@ function MessageBubble({ message, onCopy }: { message: Message;onCopy: (text: st
         </div>
       )}
 
-      {/* AI response */}
       <div className="">
         {message.content ? (
           <div className="prose prose-sm max-w-none">
@@ -260,7 +259,6 @@ function MessageBubble({ message, onCopy }: { message: Message;onCopy: (text: st
         )}
       </div>
 
-      {/* Action row */}
       {message.content && (
         <div className="flex items-center gap-1 pl-1">
           <button
@@ -291,10 +289,7 @@ function MessageBubble({ message, onCopy }: { message: Message;onCopy: (text: st
   )
 }
 
-// ─── Suggested Query Chip ─────────────────────────────────────────────────────
-
-function SuggestionChip({ text, icon: Icon, onClick }: { text: string;icon: React.ElementType;onClick: () =>
-    void }) {
+function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: React.ElementType; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -310,15 +305,16 @@ function SuggestionChip({ text, icon: Icon, onClick }: { text: string;icon: Reac
 
 export default function ParallaxaAi() {
   const [query, setQuery] = useState('')
-  const [messages, setMessages] = useState < Message[] > ([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const inputRef = useRef < HTMLInputElement > (null)
-  const bottomRef = useRef < HTMLDivElement > (null)
-  const abortRef = useRef < AbortController | null > (null)
+  const [currentActiveTab, setCurrentActiveTab] = useState('#answer') // Added missing state
+  
+  const inputRef = useRef<HTMLInputElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
   
   const hasMessages = messages.length > 0
   
-  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -334,21 +330,18 @@ export default function ParallaxaAi() {
     setQuery('')
     setIsLoading(true)
     
-    // Add user message
     const userId = `u-${Date.now()}`
     setMessages((prev) => [
       ...prev,
       { id: userId, from: 'user', content: userText, toolCalls: [] },
     ])
     
-    // Add empty AI placeholder
     const aiId = `a-${Date.now()}`
     setMessages((prev) => [
       ...prev,
       { id: aiId, from: 'ai', content: '', toolCalls: [] },
     ])
     
-    // Build history for API
     const history = messages.map((m) => ({
       role: m.from === 'user' ? 'user' : 'assistant',
       content: m.content,
@@ -385,8 +378,8 @@ export default function ParallaxaAi() {
           const raw = line.slice(6).trim()
           if (raw === '[DONE]') break
           
-          let event: Record < string, unknown >
-            try { event = JSON.parse(raw) } catch { continue }
+          let event: Record<string, unknown>
+          try { event = JSON.parse(raw) } catch { continue }
           
           const type = event.type as string
           
@@ -394,8 +387,8 @@ export default function ParallaxaAi() {
             const tool: ToolCall = {
               id: event.id as string,
               name: event.name as string,
-              category: event.category as string ?? '',
-              args: event.args as string ?? '',
+              category: (event.category as string) ?? '',
+              args: (event.args as string) ?? '',
               done: false,
             }
             setMessages((prev) =>
@@ -411,8 +404,7 @@ export default function ParallaxaAi() {
                   ...m,
                   toolCalls: m.toolCalls.map((tc) =>
                     tc.id === (event.id as string) ?
-                    { ...tc, done: true, success: event.success as boolean, preview: event
-                        .preview as string } :
+                    { ...tc, done: true, success: event.success as boolean, preview: event.preview as string } :
                     tc
                   ),
                 } :
@@ -454,7 +446,7 @@ export default function ParallaxaAi() {
     }
   }, [isLoading, messages])
   
-  const handleKeyDown = (e: React.KeyboardEvent < HTMLInputElement > ) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage(query)
@@ -463,13 +455,16 @@ export default function ParallaxaAi() {
   
   return (
     <main className="min-h-screen w-full bg-[#f8f7f6] flex flex-col">
-      <div className = 'flex items-center bg-[#f8f7f6] opacity-50 backdrop:blur-md justify-between gap-2 p-4'>
-        <Menu className = 'w-5 h-5'/>
-        <button className = 'p-2 px-3 rounded-2xl bg-black border border-gray-900'>
+      {/* Header bar */}
+      <div className='flex items-center bg-[#f8f7f6]/80 backdrop-blur-md justify-between gap-2 p-4 sticky top-0 z-10'>
+        <Menu className='w-5 h-5 text-[#1c1b1b] cursor-pointer'/>
+        <button 
+            onClick={() => setMessages([])}
+            className='p-2 px-4 rounded-full bg-[#1c1b1b] text-white text-xs font-medium hover:bg-black transition-colors'>
           New Chat
         </button>
       </div>
-      {/* ── Message Thread ── */}
+
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <AnimatePresence>
@@ -480,7 +475,6 @@ export default function ParallaxaAi() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col items-center justify-center pt-16 pb-8 gap-6"
               >
-                {/* Hero */}
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="w-12 h-12 rounded-2xl bg-[#006950] flex items-center justify-center shadow-lg">
                     <Brain className="w-6 h-6 text-white" />
@@ -491,7 +485,6 @@ export default function ParallaxaAi() {
                   </p>
                 </div>
 
-                {/* Suggestions */}
                 <div className="w-full grid grid-cols-2 gap-2 mt-2">
                   {SUGGESTED_QUERIES.map(({ text, icon }) => (
                     <SuggestionChip
@@ -505,56 +498,51 @@ export default function ParallaxaAi() {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className = 'flex items-center gap-2 w-full'>
-            {
-            [{
-              name : '#answer',
-              icon: Brain
-            },{
-              name : '#sources',
-              icon: ExternalLink,
-            },{
-              name : '#Image/Video',
-              icon: Brain
-            }].filter(nav => nav.name.startsWith('#')).map((_nav) => {
-              const isActive = _nav.name === currentActiveTab;
-              
-              return (
-                <button 
-                  key={_nav.name}
-                  onClick={() => setCurrentActiveTab(_nav.name)}
-                  className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors justify-center ${
-                    isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
-                  }`}
-                >
-                  <_nav.icon className="w-4 h-4" />
-                  <p>{_nav.name.replace('#', '')}</p>
 
-                  {/* ACTIVE INDICATOR (INTEGRATOR) AT THE BOTTOM */}
-                  {isActive && (
-                    <span 
-                      className={`absolute  bottom-0 rounded-full bg-black transition-all left-0 right-0 h-[1px]`}
-                    />
-                  )}
-                </button>
-              )
-            })
-            }
-          </div>
-          {/* Messages */}
-          <div className="flex flex-col gap-6">
+          {/* Navigation Tabs - Only show when there are messages */}
+          {hasMessages && (
+            <div className='flex items-center gap-2 w-full mb-8 border-b border-[#e5e2e1]'>
+              {[
+                { name : '#answer', icon: Brain },
+                { name : '#sources', icon: ExternalLink },
+                { name : '#media', icon: Sparkles }
+              ].map((_nav) => {
+                const isActive = _nav.name === currentActiveTab;
+                return (
+                  <button 
+                    key={_nav.name}
+                    onClick={() => setCurrentActiveTab(_nav.name)}
+                    className={`relative p-3 px-4 flex flex-row text-xs items-center gap-2 capitalize transition-colors justify-center ${
+                      isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    <_nav.icon className="w-3.5 h-3.5" />
+                    <span>{_nav.name.replace('#', '')}</span>
+                    {isActive && (
+                      <motion.span 
+                        layoutId="activeTab"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"
+                      />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-8">
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} onCopy={handleCopy} />
             ))}
           </div>
-          <div ref={bottomRef} className="h-4" />
+          <div ref={bottomRef} className="h-20" />
         </div>
       </div>
 
-      {/* ── Input Bar ── */}
+      {/* Input Bar */}
       <div className="sticky bottom-0 bg-gradient-to-t from-[#f8f7f6] via-[#f8f7f6] to-transparent pt-4 pb-6 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 bg-white rounded-full px-4 py-3  transition-all">
+          <div className="flex items-center gap-2 bg-white rounded-2xl border border-[#e5e2e1] shadow-sm px-4 py-3 focus-within:border-[#006950] transition-all">
             <Brain className="w-4 h-4 text-[#6d7a73] shrink-0" />
             <input
               ref={inputRef}
@@ -574,7 +562,7 @@ export default function ParallaxaAi() {
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-center text-[10px] text-[#bccac2] mt-2">
+          <p className="text-center text-[10px] text-[#bccac2] mt-3 uppercase tracking-wider font-medium">
             Powered by Parallaxa · AI can make mistakes
           </p>
         </div>
