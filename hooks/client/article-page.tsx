@@ -1,9 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, ComponentPropsWithoutRef } from 'react'
 import {toDigitalNumber} from '@/components/news-card'
 import PinwheelLoader from '@/components/logo';
-import Markdown from 'react-markdown'
+import Markdown, { Components } from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -28,6 +32,7 @@ import {
   BookmarkCheck,
   Volume2,
   ChevronRight,
+  Copy,
 } from 'lucide-react'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -64,11 +69,121 @@ function toAuthorSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
 }
 
+// ── Code Block ────────────────────────────────────────────────────────────────
+
+function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
+  const [copied, setCopied] = useState(false)
+  const lang = className?.replace('language-', '') ?? 'text'
+  const code = typeof children === 'string' ? children : String(children ?? '')
+  const isInline = !className
+
+  if (isInline) {
+    return (
+      <code className="bg-[#efedee] text-[#585f64] px-1.5 py-0.5 rounded text-[0.82em] font-mono break-all">
+        {children}
+      </code>
+    )
+  }
+
+  return (
+    <div className="relative my-4 rounded-xl overflow-hidden border border-[#dcdad9] bg-[#1e1e1e] text-gray-100 max-w-full">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#2a2a2a] border-b border-[#3a3a3a]">
+        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest truncate mr-2">{lang}</span>
+        <button
+          onClick={() => { navigator.clipboard.writeText(code.trim()); setCopied(true); setTimeout(() => setCopied(false), 1800) }}
+          className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white transition-colors shrink-0"
+        >
+          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre className="overflow-x-auto px-4 py-3 text-xs sm:text-sm leading-relaxed font-mono">
+        <code>{code}</code>
+      </pre>
+    </div>
+  )
+}
+
+// ── MD Component Map ──────────────────────────────────────────────────────────
+
+const mdComponents: Components = {
+  code: CodeBlock as Components['code'],
+  h1: ({ children }) => (
+    <h1 className={`${Fugaz.className} text-2xl sm:text-3xl font-bold text-gray-900 mt-8 mb-3 leading-tight`}>{children}</h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className={`${Fugaz.className} text-xl sm:text-2xl font-semibold text-gray-900 mt-7 mb-2 leading-snug`}>{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className={`${Fugaz.className} text-lg sm:text-xl font-semibold text-gray-800 mt-5 mb-1`}>{children}</h3>
+  ),
+  p: ({ children }) => (
+    <p className="text-gray-800 text-[17px] leading-[1.85] my-4">{children}</p>
+  ),
+  ul: ({ children }) => (
+    <ul className="list-disc pl-6 my-4 flex flex-col gap-2 text-[17px] text-gray-800">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal pl-6 my-4 flex flex-col gap-2 text-[17px] text-gray-800">{children}</ol>
+  ),
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-red-600 pl-5 my-6 text-gray-600 italic text-lg font-['Georgia',serif] bg-gray-50 py-3 pr-4 rounded-r-lg">
+      {children}
+    </blockquote>
+  ),
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-6 rounded-xl border border-gray-200 max-w-full">
+      <table className="min-w-full text-sm">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-gray-50 text-gray-500">{children}</thead>,
+  tbody: ({ children }) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
+  tr: ({ children }) => <tr className="hover:bg-gray-50 transition-colors">{children}</tr>,
+  th: ({ children }) => (
+    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap">{children}</th>
+  ),
+  td: ({ children }) => <td className="px-4 py-3 text-gray-700">{children}</td>,
+  hr: () => <hr className="my-8 border-gray-200" />,
+  strong: ({ children }) => <strong className="font-bold text-gray-900">{children}</strong>,
+  em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-red-600 underline underline-offset-2 hover:text-red-700 transition-colors"
+    >
+      {children}
+    </a>
+  ),
+  img: ({ src, alt }) => (
+    <figure className="my-6">
+      <img src={src} alt={alt ?? ''} className="w-full rounded-lg object-cover" />
+      {alt && <figcaption className="text-xs text-gray-400 mt-2 text-center italic">{alt}</figcaption>}
+    </figure>
+  ),
+}
+
+// ── Article Markdown ──────────────────────────────────────────────────────────
+
+function ArticleMarkdown({ content }: { content: string }) {
+  return (
+    <Markdown
+      remarkPlugins={[remarkGfm, remarkMath]}
+      rehypePlugins={[rehypeRaw, rehypeKatex]}
+      components={mdComponents}
+    >
+      {content}
+    </Markdown>
+  )
+}
+
 // ── Reading progress bar ───────────────────────────────────────────────────────
 
-function useReadingProgress(ref: React.RefObject < HTMLElement | null > ) {
+function useReadingProgress(ref: React.RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0)
-  
+
   useEffect(() => {
     const onScroll = () => {
       const el = ref.current
@@ -81,7 +196,7 @@ function useReadingProgress(ref: React.RefObject < HTMLElement | null > ) {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [ref])
-  
+
   return progress
 }
 
@@ -165,19 +280,19 @@ function RelatedItem({ article }: { article: NewsArticle }) {
 export default function ArticlePage() {
   const params = useParams()
   const slug = params.slug as string
-  
-  const [article, setArticle] = useState < NewsArticle | null > (null)
-  const [relatedArticles, setRelatedArticles] = useState < NewsArticle[] > ([])
-  const [mostRead, setMostRead] = useState < NewsArticle[] > ([])
+
+  const [article, setArticle] = useState<NewsArticle | null>(null)
+  const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>([])
+  const [mostRead, setMostRead] = useState<NewsArticle[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
-  
-  const shareRef = useRef < HTMLDivElement > (null)
-  const mainRef = useRef < HTMLDivElement > (null)
+
+  const shareRef = useRef<HTMLDivElement>(null)
+  const mainRef = useRef<HTMLDivElement>(null)
   const progress = useReadingProgress(mainRef)
-  
+
   // Load article data
   useEffect(() => {
     const load = async () => {
@@ -204,7 +319,7 @@ export default function ArticlePage() {
     }
     load()
   }, [slug])
-  
+
   // Close share dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -215,30 +330,30 @@ export default function ArticlePage() {
     if (shareOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [shareOpen])
-  
+
   // Share handlers
   const handleCopyLink = useCallback(async () => {
     await navigator.clipboard.writeText(window.location.href)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [])
-  
+
   const handleShareTwitter = useCallback(() => {
     const text = encodeURIComponent(article?.title ?? '')
     const url = encodeURIComponent(window.location.href)
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank')
   }, [article])
-  
+
   const handleShareFacebook = useCallback(() => {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')
   }, [])
-  
+
   const handleShareLinkedin = useCallback(() => {
     const url = encodeURIComponent(window.location.href)
     const title = encodeURIComponent(article?.title ?? '')
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}`, '_blank')
   }, [article])
-  
+
   const handleNativeShare = useCallback(async () => {
     if (navigator.share) {
       await navigator.share({ title: article?.title, text: article?.description, url: window.location.href })
@@ -246,21 +361,21 @@ export default function ArticlePage() {
       setShareOpen((prev) => !prev)
     }
   }, [article])
-  
+
   const handlePrint = () => window.print()
-  
+
   // ── Loading ──
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <Header />
         <div className="flex-1 h-full flex items-center justify-center">
-          <PinwheelLoader size = {100} color = '#A8A8A8'/>
+          <PinwheelLoader size={100} color='#A8A8A8' />
         </div>
       </div>
     )
   }
-  
+
   // ── Not found ──
   if (!article) {
     return (
@@ -279,10 +394,10 @@ export default function ArticlePage() {
       </div>
     )
   }
-  
+
   const readTime = estimateReadTime(article.content)
   const authorSlug = toAuthorSlug(article.author)
-  
+
   // ── Page ──
   return (
     <div className="min-h-screen bg-white flex flex-col" ref={mainRef}>
@@ -413,16 +528,16 @@ export default function ArticlePage() {
               <p className="text-md text-gray-600 leading-relaxed mb-2">
                 {
                   article.description.length > 120 ? (<>
-                   { article.description.slice(0,120) + '...'} <a href = '/' className='px-2 underline'>Read more</a>
-                   
+                   { article.description.slice(0,120) + '...'} <a href='/' className='px-2 underline'>Read more</a>
                   </>):article.description
                 }
               </p>
 
               {/* ── Author + meta row ── */}
-              <div className="flex items-center justify-between gap-4 py-2  border-b border-t border-gray-100 mb-4 flex-wrap">
-                <span className = 'flex flex-row items-center gap-2'>
-                 <small className = 'text-sm text-gray-400'>by</small><Link href = '/' className = 'text-black'>{article.author}</Link>
+              <div className="flex items-center justify-between gap-4 py-2 border-b border-t border-gray-100 mb-4 flex-wrap">
+                <span className='flex flex-row items-center gap-2'>
+                  <small className='text-sm text-gray-400'>by</small>
+                  <Link href='/' className='text-black'>{article.author}</Link>
                 </span>
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1.5">
@@ -440,7 +555,7 @@ export default function ArticlePage() {
 
               {/* ── Hero image ── */}
               <div className="mb-2">
-                <div className="relative w-full aspect-video  overflow-hidden bg-gray-100">
+                <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
                   <Image
                     src={article.image || 'https://placehold.net/1200x675.png'}
                     alt={article.title}
@@ -456,91 +571,64 @@ export default function ArticlePage() {
                 )}
               </div>
 
-              {/* ── Key points box ── */}
-              {/* Render this if your article data includes a keyPoints array, otherwise remove */}
-              {/* article.keyPoints?.length > 0 && (
-                <div className="bg-gray-50 rounded border-l-4 border-red-600 px-5 py-4 mb-6">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Key points</h3>
-                  <ul className="space-y-2">
-                    {article.keyPoints.map((pt, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 leading-relaxed">
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-600 flex-shrink-0" />
-                        {pt}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) */}
-
               {/* ── Article body ── */}
-            <article className={`${slabo.className} text-gray-800 font-medium text-justify leading-[1.85] text-[17px] py-6 space-y-5`}>
-              <Markdown>{article.content}</Markdown>
-</article>
+              <article className={`${slabo.className} py-6`}>
+                <ArticleMarkdown content={article.content} />
+              </article>
 
               {/* ── Bottom share bar ── */}
-              <div className="no-print pt-2
-                pb-2 border-t border-gray-100">
-                <div className="flex items-center gap-2 flex-row items-center justify-start gap-2">
+              <div className="no-print pt-2 pb-2 border-t border-gray-100">
+                <div className="flex items-center flex-row justify-start gap-2">
                   <span className="text-sm font-medium text-black tracking-widest mr-1">Share</span>
-                  <hr className= 'w-full'/>
+                  <hr className='w-full' />
                   <div className='flex flex-row items-center justify-start w-full flex-1 rounded-full border px-3'>
-                  <button
-                    onClick={handleShareTwitter}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
-                  >
-                    <Twitter className="w-3.5 h-3.5" />
-                    
-                  </button>
-                  <hr className='w-full'/>
-                  <button
-                    onClick={handleShareFacebook}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
-                  >
-                    <Facebook className="w-3.5 h-3.5" />
-                    
-                  </button>
-                  <hr className='w-full'/>
-                  <button
-                    onClick={handleShareLinkedin}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
-                  >
-                    <Linkedin className="w-3.5 h-3.5" />
-                  
-                  </button>
-                  <hr className='w-full'/>
-                  <button
-                    onClick={handleCopyLink}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
-                  >
-                    {copied
-                      ? <Check className="w-3.5 h-3.5" />
-                      : <Link2 className="w-3.5 h-3.5" />}
-                  
-                  </button>
-                </div>
+                    <button
+                      onClick={handleShareTwitter}
+                      className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
+                    >
+                      <Twitter className="w-3.5 h-3.5" />
+                    </button>
+                    <hr className='w-full' />
+                    <button
+                      onClick={handleShareFacebook}
+                      className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
+                    >
+                      <Facebook className="w-3.5 h-3.5" />
+                    </button>
+                    <hr className='w-full' />
+                    <button
+                      onClick={handleShareLinkedin}
+                      className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
+                    >
+                      <Linkedin className="w-3.5 h-3.5" />
+                    </button>
+                    <hr className='w-full' />
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
+                    >
+                      {copied
+                        ? <Check className="w-3.5 h-3.5" />
+                        : <Link2 className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* ── Author byline card ── */}
-
-
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
-                <section className="no-print mt-2 pt-6 ">
-                  <h2 className="text-md font-semibold  tracking-widest text-gray-900 mb-5 flex flex-row items-center justify-between">
-                  <div>  More in {article.category} </div>  
-                  {
-                  relatedArticles.length > 2 && (
-                  <ArrowRight className='h-5 w-5'/>
-  )
- }
+                <section className="no-print mt-2 pt-6">
+                  <h2 className="text-md font-semibold tracking-widest text-gray-900 mb-5 flex flex-row items-center justify-between">
+                    <div>More in {article.category}</div>
+                    {relatedArticles.length > 2 && (
+                      <ArrowRight className='h-5 w-5' />
+                    )}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    {relatedArticles.slice(0,2).map((a) => (
+                    {relatedArticles.slice(0, 2).map((a) => (
                       <NewsCard key={a.id} article={a} variant="default" />
                     ))}
                   </div>
-                 
                 </section>
               )}
             </div>
