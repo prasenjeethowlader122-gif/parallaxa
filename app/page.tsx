@@ -6,12 +6,18 @@ import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, getAllArticles, getArticlesByCategory } from '@/lib/db/articles'
 
+// Number of featured articles to show in grid / slider
+const FEATURED_COUNT = 6
+const CATEGORY_LIMIT = 6
+
 const POSITIONS = [
   { x: 0, scale: 1, opacity: 1, z: 30 },
   { x: 210, scale: 0.82, opacity: 0.6, z: 20 },
   { x: -210, scale: 0.82, opacity: 0.6, z: 20 },
   { x: 0, scale: 0.65, opacity: 0, z: 10 },
 ]
+
+const HIDDEN_POSITION = { x: 0, scale: 0.5, opacity: 0, z: 0 }
 
 function CoverFlowSkeleton() {
   return (
@@ -37,7 +43,6 @@ function CoverFlowSkeleton() {
           className="absolute rounded-xl bg-gray-200 animate-pulse overflow-hidden"
           style={{ width: 320, height: 200, zIndex: 10 }}
         >
-          {/* Inner text lines sit at the bottom, mimicking NewsCard */}
           <div className="absolute bottom-0 left-0 right-0 p-3 space-y-2 bg-gradient-to-t from-gray-200">
             <div className="h-3 w-16 rounded bg-gray-300" />
             <div className="h-4 w-[90%] rounded bg-gray-300" />
@@ -66,47 +71,72 @@ function CoverFlowSkeleton() {
     </div>
   )
 }
-// Fully hidden position for cards beyond the visible range
-const HIDDEN_POSITION = { x: 0, scale: 0.5, opacity: 0, z: 0 }
+
+function FeaturedSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+      <div className="md:col-span-1 lg:col-span-7 lg:row-span-2 bg-gray-200 rounded-xl animate-pulse h-[540px]" />
+      <div className="lg:col-span-5 bg-gray-200 rounded-xl animate-pulse h-[260px]" />
+      <div className="lg:col-span-2 bg-gray-200 rounded-xl animate-pulse h-[260px] hidden lg:block" />
+      <div className="lg:col-span-3 bg-gray-200 rounded-xl animate-pulse h-[260px] hidden lg:block" />
+    </div>
+  )
+}
+
+function CategoryListSkeleton() {
+  return (
+    <div className="space-y-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="bg-white rounded-lg h-32 animate-pulse" />
+      ))}
+    </div>
+  )
+}
+
+// --- Slider ---
 
 function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
-  const [current, setCurrent] = useState(0)
   const total = articles.length
-  const timerRef = useRef < ReturnType < typeof setInterval > | null > (null)
+  const [current, setCurrent] = useState(0)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
   const startXRef = useRef(0)
-  
-  // Guard: don't render if no articles
-  if (total === 0) return null
-  
-  function getPos(cardIdx: number) {
-    let offset = (cardIdx - current + total) % total
-    if (offset >= POSITIONS.length) {
-      return HIDDEN_POSITION
-    }
-    return POSITIONS[offset]
-  }
-  
-  function goTo(i: number) {
-    setCurrent((i + total) % total)
-  }
-  
-  // FIX 5: Wrap stopAuto and startAuto in useCallback to stabilise references
+
+  // Stable helpers
+  const getPos = useCallback(
+    (cardIdx: number) => {
+      const offset = (cardIdx - current + total) % total
+      if (offset >= POSITIONS.length) return HIDDEN_POSITION
+      return POSITIONS[offset]
+    },
+    [current, total]
+  )
+
+  const goTo = useCallback(
+    (i: number) => {
+      setCurrent((i + total) % total)
+    },
+    [total]
+  )
+
   const stopAuto = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
   }, [])
-  
+
   const startAuto = useCallback(() => {
     stopAuto()
+    if (total <= 1) return
     timerRef.current = setInterval(() => {
-      setCurrent(c => (c + 1) % total)
+      setCurrent((c) => (c + 1) % total)
     }, 3000)
   }, [total, stopAuto])
-  
+
   useEffect(() => {
     startAuto()
     return () => stopAuto()
-  }, [startAuto, stopAuto]) // FIX 5: proper dependency array
-  
+  }, [startAuto, stopAuto])
+
+  if (total === 0) return null
+
   return (
     <div className="md:hidden">
       {/* Progress bar */}
@@ -120,11 +150,11 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
       {/* Stage */}
       <div
         className="relative h-[220px] flex items-center justify-center overflow-hidden"
-        onPointerDown={e => {
+        onPointerDown={(e) => {
           startXRef.current = e.clientX
           stopAuto()
         }}
-        onPointerUp={e => {
+        onPointerUp={(e) => {
           const dx = e.clientX - startXRef.current
           if (dx < -40) goTo(current + 1)
           else if (dx > 40) goTo(current - 1)
@@ -156,9 +186,9 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
           )
         })}
       </div>
-    
-    { /* Nav row */ }
-    <div className="flex items-center justify-center gap-5 py-3">
+
+      {/* Nav row */}
+      <div className="flex items-center justify-center gap-5 py-3">
         <button
           onClick={() => {
             stopAuto()
@@ -184,123 +214,158 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
         >
           <span className="block w-2 h-2 border-r border-b border-gray-500 -rotate-45 -translate-x-px" />
         </button>
-      </div> </div>
-  )
-}
-
-function FeaturedSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
-      <div className="md:col-span-1 lg:col-span-7 lg:row-span-2 bg-gray-200 rounded-xl animate-pulse h-[540px]" />
-      <div className="lg:col-span-5 bg-gray-200 rounded-xl animate-pulse h-[260px]" />
-      <div className="lg:col-span-2 bg-gray-200 rounded-xl animate-pulse h-[260px] hidden lg:block" />
-      <div className="lg:col-span-3 bg-gray-200 rounded-xl animate-pulse h-[260px] hidden lg:block" />
+      </div>
     </div>
   )
 }
 
+// --- Main Page ---
+
 export default function Home() {
-  const [latestArticles, setLatestArticles] = useState < NewsArticle[] > ([])
-  const [isLoading, setIsLoading] = useState(true)
-  // FIX 3: consistent naming — was `worlsNews`
-  const [worldNews, setWorldNews] = useState < NewsArticle[] > ([])
-  const [technologyNews, setTechnologyNews] = useState < NewsArticle[] > ([])
-  
+  const [latestArticles, setLatestArticles] = useState<NewsArticle[]>([])
+  const [worldNews, setWorldNews] = useState<NewsArticle[]>([])
+  const [technologyNews, setTechnologyNews] = useState<NewsArticle[]>([])
+
+  const [isLoadingLatest, setIsLoadingLatest] = useState(true)
+  const [isLoadingWorld, setIsLoadingWorld] = useState(true)
+  const [isLoadingTech, setIsLoadingTech] = useState(true)
+
   useEffect(() => {
-    async function loadData() {
+    let isMounted = true
+
+    const fetchCategory = async (
+      category: string,
+      max: number,
+      setter: (articles: NewsArticle[]) => void,
+      setLoading: (loading: boolean) => void
+    ) => {
       try {
-        const latest = (await getAllArticles()).filter(Boolean).slice(0, 12)
-        setLatestArticles(latest)
-      } catch (error) {
-        console.error('Failed to load articles:', error)
-      } finally {
-        setIsLoading(false)
-      }
-      
-      try {
-        const world = (await getArticlesByCategory('World')).filter(Boolean).slice(0, 4)
-        // FIX 1 & 2: was `.slince()` (typo) and missing `await`
-        const tech = (await getArticlesByCategory('Technology')).filter(Boolean).slice(0, 4)
-        setTechnologyNews(tech)
-        setWorldNews(world)
+        const articles = await getArticlesByCategory(category)
+        const filtered = articles.filter(Boolean).slice(0, max)
+        if (isMounted) setter(filtered)
       } catch (e) {
-        // FIX 4: log instead of silently swallowing
-        console.error('Failed to load category news:', e)
+        console.error(`Failed to load category "${category}":`, e)
+      } finally {
+        if (isMounted) setLoading(false)
       }
     }
-    loadData()
+
+    const loadAll = async () => {
+      try {
+        const latest = await getAllArticles()
+        const filteredLatest = latest.filter(Boolean).slice(0, FEATURED_COUNT)
+        if (isMounted) setLatestArticles(filteredLatest)
+      } catch (e) {
+        console.error('Failed to load latest articles:', e)
+      } finally {
+        if (isMounted) setIsLoadingLatest(false)
+      }
+
+      await fetchCategory(
+        'World',
+        CATEGORY_LIMIT,
+        setWorldNews,
+        setIsLoadingWorld
+      )
+      await fetchCategory(
+        'Technology',
+        CATEGORY_LIMIT,
+        setTechnologyNews,
+        setIsLoadingTech
+      )
+    }
+
+    loadAll()
+
+    return () => {
+      isMounted = false
+      if (timerRef) clearInterval(timerRef.current as any)
+    }
   }, [])
-  
+
   const [mostRecent, second, third, fourth] = latestArticles
-  
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
       <main className="flex-grow">
+        {/* Top Stories */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Top Stories</h2>
             <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
           </div>
 
-{isLoading ? (
-  <>
-    <CoverFlowSkeleton/>                    {/* mobile */}
-    <FeaturedSkeleton />                     {/* desktop (already hidden on mobile via hidden md:block) */}
-  </>
-) : (
-  <>
-  <CoverFlowSlider articles = {latestArticles.slice(0,6)}/>
- <div
+          {isLoadingLatest ? (
+            <>
+              <CoverFlowSkeleton />
+              <FeaturedSkeleton />
+            </>
+          ) : (
+            <>
+              <CoverFlowSlider articles={latestArticles} />
+
+              <div
                 className="hidden md:grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
                 style={{ gridTemplateRows: 'repeat(2, 260px)' }}
               >
                 {mostRecent && (
                   <div className="col-span-1 md:col-span-2 lg:col-span-7 lg:row-span-2 md:h-[260px] lg:h-auto">
-                    <NewsCard article={mostRecent} variant="featured" className="h-full" />
+                    <NewsCard
+                      article={mostRecent}
+                      variant="featured"
+                      className="h-full"
+                    />
                   </div>
                 )}
                 {second && (
                   <div className="col-span-1 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:h-auto">
-                    <NewsCard article={second} variant="featured" className="h-full" />
+                    <NewsCard
+                      article={second}
+                      variant="featured"
+                      className="h-full"
+                    />
                   </div>
                 )}
                 {third && (
                   <div className="col-span-1 lg:col-span-2 lg:col-start-8 lg:row-start-2 lg:h-auto">
-                    <NewsCard article={third} variant="featured" className="h-full" />
+                    <NewsCard
+                      article={third}
+                      variant="featured"
+                      className="h-full"
+                    />
                   </div>
                 )}
                 {fourth && (
                   <div className="col-span-1 lg:col-span-3 lg:col-start-10 lg:row-start-2 lg:h-auto">
-                    <NewsCard article={fourth} variant="featured" className="h-full" />
+                    <NewsCard
+                      article={fourth}
+                      variant="featured"
+                      className="h-full"
+                    />
                   </div>
                 )}
               </div>
             </>
-
-)}
+          )}
         </section>
 
         {/* World News */}
-        <section className=" py-12 pt-4 -mt-4">
+        <section className="py-12 pt-4 -mt-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <div className="flex flex-row items-center justify-between mb-4 pb-4 border-b-2 border-gray-800">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-800">
                   <h2 className="text-2xl font-bold text-gray-900">World</h2>
                   <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
                 </div>
-                {isLoading ? (
-                  <div className="space-y-6">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="bg-white rounded-lg h-32 animate-pulse" />
-                    ))}
-                  </div>
+
+                {isLoadingWorld ? (
+                  <CategoryListSkeleton />
                 ) : (
                   <div className="space-y-6">
-                    {/* FIX 3: was `worlsNews` */}
-                    {worldNews.map(article => (
+                    {worldNews.map((article) => (
                       <NewsCard
                         key={article.id ?? 'null'}
                         article={article}
@@ -320,19 +385,16 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <div className="flex flex-row items-center justify-between mb-4 pb-4 border-b-2 border-gray-800">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-800">
                   <h2 className="text-2xl font-bold text-gray-900">Tech</h2>
                   <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
                 </div>
-                {isLoading ? (
-                  <div className="space-y-6">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="bg-white rounded-lg h-32 animate-pulse" />
-                    ))}
-                  </div>
+
+                {isLoadingTech ? (
+                  <CategoryListSkeleton />
                 ) : (
                   <div className="space-y-6">
-                    {technologyNews.map(article => (
+                    {technologyNews.map((article) => (
                       <NewsCard
                         key={article.id ?? 'null'}
                         article={article}
