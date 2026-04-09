@@ -3,7 +3,7 @@ import { spacegrotesk, slabo } from '@/lib/font'
 import { ClientSessionProvider } from '@/components/session-provider'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
-
+import '../globals.css'
 export const metadata: Metadata = {
   title: 'Parallaxa - International News Portal',
   description: 'Your trusted source for breaking news and analysis.',
