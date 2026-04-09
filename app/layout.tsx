@@ -7,24 +7,23 @@ import {spacegrotesk , slabo} from '@/lib/font'
 
 
 export const metadata: Metadata = {
-  title: 'Parallaxa - Breaking News & Stories',
+  title: 'Parallaxa - International News Portal',
   description: 'Your trusted source for breaking news, in-depth analysis, and exclusive stories from around the world.',
-  generator: 'v0.app',
   icons: {
     icon: [
     {
-      url: '/icon-light-32x32.png',
+      url: '/placeholder.svg',
       media: '(prefers-color-scheme: light)',
     },
     {
-      url: '/icon-dark-32x32.png',
+      url: '/placeholder.svg',
       media: '(prefers-color-scheme: dark)',
     },
     {
-      url: '/icon.svg',
+      url: '/placeholder.svg',
       type: 'image/svg+xml',
     }, ],
-    apple: '/apple-icon.png',
+    apple: '/placeholder.svg',
   },
 }
 
