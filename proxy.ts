@@ -34,7 +34,7 @@ function resolveLocale(req: NextRequest): string {
   return DEFAULT_LOCALE
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // Skip if locale already present
