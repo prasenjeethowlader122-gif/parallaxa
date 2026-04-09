@@ -23,7 +23,9 @@ import {
   Hash,
   Lightbulb,
   CheckCircle2,
-  Menu, // Added missing import
+  Menu,
+  ChevronDown,
+  Send,
 } from 'lucide-react'
 import {
   useState,
@@ -85,51 +87,50 @@ const TOOL_ICONS: Record<string, React.ElementType> = {
 }
 
 const SUGGESTED_QUERIES = [
-  { text: "What are today's top trending stories?", icon: TrendingUp },
-  { text: 'Show me featured articles', icon: Star },
-  { text: 'Latest breaking news', icon: Newspaper },
-  { text: 'World news highlights', icon: Globe },
-  { text: 'Summarize the top story', icon: Sparkles },
-  { text: 'Explain a complex topic', icon: Lightbulb },
+  { text: "What's happening today?", icon: TrendingUp },
+  { text: 'Featured stories', icon: Star },
+  { text: 'Breaking news', icon: Newspaper },
+  { text: 'World updates', icon: Globe },
+  { text: 'Explain this...', icon: Lightbulb },
 ]
 
-// ─── Markdown Components ────────────────────────────────────────────────────────
+// ─── Markdown Components (Perplexity-style) ─────────────────────────────────────
 
 const mdComponents: Components = {
   code: ({ children, className }: ComponentPropsWithoutRef<'code'>) => {
     if (!className)
       return (
-        <code className="bg-[#f0eded] text-[#1c1b1b] px-1.5 py-0.5 rounded font-mono text-[0.82em] font-medium border border-[#bccac2]">
+        <code className="bg-gray-100 text-gray-900 px-1.5 py-0.5 rounded font-mono text-xs font-medium border border-gray-200">
           {children}
         </code>
       )
     return (
-      <pre className="bg-[#1c1b1b] border border-[#3d4a44] rounded-xl p-4 overflow-x-auto my-4 text-xs font-mono text-[#7ff8cf]">
+      <pre className="bg-gray-900 border border-gray-800 rounded-xl p-4 overflow-x-auto my-4 text-xs font-mono text-green-400">
         <code>{children}</code>
       </pre>
     )
   },
   h1: ({ children }) => (
-    <h1 className="text-2xl font-bold text-[#1c1b1b] mt-6 mb-3 leading-tight tracking-tight">{children}</h1>
+    <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4 leading-tight">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-lg font-semibold text-[#1c1b1b] mt-5 mb-2 leading-snug">{children}</h2>
+    <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3 leading-tight">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-base font-semibold text-[#3d4a44] mt-4 mb-1">{children}</h3>
+    <h3 className="text-xl font-semibold text-gray-900 mt-4 mb-2">{children}</h3>
   ),
   p: ({ children }) => (
-    <p className="text-base text-[#3d4a44] leading-[1.8] mb-4">{children}</p>
+    <p className="text-lg text-gray-700 leading-relaxed mb-6">{children}</p>
   ),
   ul: ({ children }) => (
-    <ul className="mb-4 space-y-2 text-[#3d4a44] pl-1">{children}</ul>
+    <ul className="mb-6 space-y-3 text-gray-700 pl-6">{children}</ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal list-inside mb-4 space-y-2 text-[#3d4a44]">{children}</ol>
+    <ol className="list-decimal list-inside mb-6 space-y-3 text-gray-700 pl-6">{children}</ol>
   ),
   li: ({ children }) => (
-    <li className="text-base leading-relaxed flex gap-2.5 items-start">
-      <span className="mt-[10px] w-1.5 h-1.5 rounded-full bg-[#006950] shrink-0 block" />
+    <li className="text-base leading-relaxed flex items-start gap-2">
+      <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
       <span>{children}</span>
     </li>
   ),
@@ -138,40 +139,36 @@ const mdComponents: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-[#006950] hover:text-[#008466] underline underline-offset-2 decoration-[#61dbb4] font-medium transition-colors inline-flex items-center gap-0.5"
+      className="text-blue-600 hover:text-blue-800 underline decoration-blue-500 font-medium transition-colors inline-flex items-center gap-1"
     >
       {children}
-      <ExternalLink className="w-3 h-3 inline-block opacity-60" />
+      <ExternalLink className="w-3 h-3 opacity-70" />
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-[3px] border-[#006950] pl-4 my-4 text-[#6d7a73] italic bg-[#f0eded] py-2 pr-3 rounded-r-lg text-base">
+    <blockquote className="border-l-4 border-blue-500 pl-6 my-6 italic bg-blue-50 p-4 rounded-r-lg text-gray-700">
       {children}
     </blockquote>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-[#1c1b1b]">{children}</strong>
+    <strong className="font-bold text-gray-900">{children}</strong>
   ),
-  em: ({ children }) => (
-    <em className="italic text-[#1c1b1b]">{children}</em>
-  ),
-  hr: () => <hr className="border-[#e5e2e1] my-6" />,
   table: ({ children }) => (
-    <div className="overflow-x-auto my-4 rounded-xl border border-[#bccac2]">
-      <table className="w-full text-sm border-collapse">{children}</table>
+    <div className="overflow-x-auto my-6 rounded-xl border border-gray-200">
+      <table className="w-full text-sm">{children}</table>
     </div>
   ),
   th: ({ children }) => (
-    <th className="text-left py-2.5 px-4 font-semibold text-[#3d4a44] bg-[#f0eded] border-b border-[#bccac2] text-xs uppercase tracking-wider">
+    <th className="text-left py-3 px-4 font-semibold text-gray-800 bg-gray-50 border-b border-gray-200">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="py-2.5 px-4 text-[#6d7a73] border-b border-[#f0eded] text-sm">{children}</td>
+    <td className="py-3 px-4 text-gray-700 border-b border-gray-100">{children}</td>
   ),
 }
 
-// ─── Tool Call Badge ─────────────────────────────────────────────────────────────
+// ─── Perplexity-style Tool Badge ────────────────────────────────────────────────
 
 function ToolCallBadge({ tool }: { tool: ToolCall }) {
   const Icon = TOOL_ICONS[tool.name] ?? Search
@@ -179,46 +176,45 @@ function ToolCallBadge({ tool }: { tool: ToolCall }) {
   
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.92, y: 4 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
         tool.done
           ? tool.success === false
-            ? 'bg-red-50 border-red-200 text-red-600'
-            : 'bg-[#e8f5f0] border-[#bccac2] text-[#006950]'
-          : 'bg-[#f0eded] border-[#e5e2e1] text-[#6d7a73] animate-pulse'
+            ? 'bg-red-50 border-red-200 text-red-700'
+            : 'bg-blue-50 border-blue-200 text-blue-700'
+          : 'bg-gray-100 border-gray-200 text-gray-600 animate-pulse'
       }`}
     >
       {tool.done ? (
         <CheckCircle2 className="w-3 h-3" />
       ) : (
-        <Icon className="w-3 h-3" />
+        <Icon className="w-3 h-3 flex-shrink-0" />
       )}
-      {label}
+      <span>{label}</span>
     </motion.div>
   )
 }
 
-// ─── Message Bubble ──────────────────────────────────────────────────────────────
+// ─── Perplexity-style Message ───────────────────────────────────────────────────
 
 function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: string) => void }) {
   const [copied, setCopied] = useState(false)
-  const [liked, setLiked] = useState<'up' | 'down' | null>(null)
   
   const handleCopy = () => {
     onCopy(message.content)
     setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    setTimeout(() => setCopied(false), 2000)
   }
   
   if (message.from === 'user') {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-end"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex justify-end mb-8"
       >
-        <div className="max-w-[75%] bg-gray-100 text-black rounded-lg px-4 py-3 text-sm leading-relaxed">
+        <div className="max-w-2xl bg-white border border-gray-200 rounded-2xl px-6 py-5 shadow-sm text-gray-900 text-base leading-relaxed">
           {message.content}
         </div>
       </motion.div>
@@ -227,87 +223,74 @@ function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: s
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-3"
+      className="space-y-4"
     >
       {message.toolCalls.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pl-1">
+        <div className="flex flex-wrap gap-2">
           {message.toolCalls.map((tc) => (
             <ToolCallBadge key={tc.id} tool={tc} />
           ))}
         </div>
       )}
-
-      <div className="">
-        {message.content ? (
-          <div className="prose prose-sm max-w-none">
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkMath]}
-              rehypePlugins={[rehypeKatex]}
-              components={mdComponents}
-            >
-              {message.content}
-            </Markdown>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-[#bccac2]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#006950] animate-bounce [animation-delay:0ms]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#006950] animate-bounce [animation-delay:150ms]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#006950] animate-bounce [animation-delay:300ms]" />
-          </div>
-        )}
+      
+      <div className="max-w-4xl bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
+        <div className="prose prose-lg max-w-none">
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+            components={mdComponents}
+          >
+            {message.content}
+          </Markdown>
+        </div>
       </div>
-
+      
       {message.content && (
-        <div className="flex items-center gap-1 pl-1">
+        <div className="flex items-center gap-3 pl-2">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded] transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all font-medium"
           >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copied ? 'Copied' : 'Copy'}
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'Copied!' : 'Copy'}
           </button>
-          <button
-            onClick={() => setLiked(liked === 'up' ? null : 'up')}
-            className={`p-1.5 rounded-lg text-xs transition-all ${liked === 'up' ? 'text-[#006950] bg-[#e8f5f0]' : 'text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded]'}`}
-          >
-            <ThumbsUp className="w-3 h-3" />
-          </button>
-          <button
-            onClick={() => setLiked(liked === 'down' ? null : 'down')}
-            className={`p-1.5 rounded-lg text-xs transition-all ${liked === 'down' ? 'text-red-500 bg-red-50' : 'text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded]'}`}
-          >
-            <ThumbsDown className="w-3 h-3" />
-          </button>
-          <button className="p-1.5 rounded-lg text-xs text-[#6d7a73] hover:text-[#1c1b1b] hover:bg-[#f0eded] transition-all">
-            <Share2 className="w-3 h-3" />
-          </button>
+          <div className="w-px h-5 bg-gray-200" />
+          <div className="flex items-center gap-1 text-sm text-gray-400">
+            <Share2 className="w-4 h-4" />
+            <span>Share</span>
+          </div>
         </div>
       )}
     </motion.div>
   )
 }
 
+// ─── Perplexity-style Suggestion ────────────────────────────────────────────────
+
 function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: React.ElementType; onClick: () => void }) {
   return (
-    <button
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#e5e2e1] bg-white hover:border-[#006950] hover:bg-[#f0faf6] text-sm text-[#3d4a44] transition-all text-left group"
+      className="group flex items-center gap-3 p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 hover:shadow-md transition-all text-left shadow-sm"
     >
-      <Icon className="w-3.5 h-3.5 text-[#006950] shrink-0" />
-      <span className="line-clamp-1">{text}</span>
-    </button>
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <span className="text-base font-medium text-gray-900 leading-relaxed">{text}</span>
+    </motion.button>
   )
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Perplexity-style Component ────────────────────────────────────────────
 
 export default function ParallaxaAi() {
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [currentActiveTab, setCurrentActiveTab] = useState('#answer') // Added missing state
   
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -324,6 +307,7 @@ export default function ParallaxaAi() {
   }, [])
   
   const sendMessage = useCallback(async (text: string) => {
+    // ... (keep your existing sendMessage logic exactly the same)
     const userText = text.trim()
     if (!userText || isLoading) return
     
@@ -370,7 +354,7 @@ export default function ParallaxaAi() {
         if (done) break
         
         buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
+        const lines = buffer.split('\\n')
         buffer = lines.pop() ?? ''
         
         for (const line of lines) {
@@ -454,118 +438,111 @@ export default function ParallaxaAi() {
   }
   
   return (
-    <main className="min-h-screen w-full bg-[#f8f7f6] flex flex-col">
-      {/* Header bar */}
-     <div className='flex sticky top-0 items-center bg-[#f8f7f6]/80 backdrop-blur-md justify-between gap-2 p-4 sticky top-0 z-10'>
-        <Menu className='w-5 h-5 text-[#1c1b1b] cursor-pointer'/>
-        <button 
-            onClick={() => setMessages([])}
-            className='p-2 px-4 rounded-full bg-[#1c1b1b] text-white text-xs font-medium hover:bg-black transition-colors'>
-          New Chat
-        </button>
-      </div>
-       {hasMessages && (
-            <div className='flex border-t items-center gap-2 w-full mb-8 border-b border-[#e5e2e1]'>
-              {[
-                { name : '#answer', icon: Brain },
-                { name : '#sources', icon: ExternalLink },
-                { name : '#media', icon: Sparkles }
-              ].map((_nav) => {
-                const isActive = _nav.name === currentActiveTab;
-                return (
-                  <button 
-                    key={_nav.name}
-                    onClick={() => setCurrentActiveTab(_nav.name)}
-                    className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors justify-center ${
-                      isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
-                    }`}
-                  >
-                    <_nav.icon className="w-4 h-4" />
-                    <span>{_nav.name.replace('#', '')}</span>
-                    {isActive && (
-                      <motion.span 
-                        layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"
-                      />
-                    )}
-                  </button>
-                )
-              })}
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
+      {/* Perplexity-style Header */}
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-          )}
-
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 py-6">
-          <AnimatePresence>
-            {!hasMessages && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col items-center justify-center pt-16 pb-8 gap-6"
-              >
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-[#006950] flex items-center justify-center shadow-lg">
-                    <Brain className="w-6 h-6 text-white" />
-                  </div>
-                  <h1 className="text-2xl font-bold text-[#1c1b1b] tracking-tight">Parallaxa AI</h1>
-                  <p className="text-sm text-[#6d7a73] max-w-xs leading-relaxed">
-                    Your intelligent news assistant. Ask about trending stories, breaking news, or any topic.
-                  </p>
-                </div>
-
-                <div className="w-full grid grid-cols-2 gap-2 mt-2">
-                  {SUGGESTED_QUERIES.map(({ text, icon }) => (
-                    <SuggestionChip
-                      key={text}
-                      text={text}
-                      icon={icon}
-                      onClick={() => sendMessage(text)}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Navigation Tabs - Only show when there are messages */}
-         
-
-          <div className="flex flex-col gap-8">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} onCopy={handleCopy} />
-            ))}
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                Parallaxa AI
+              </h1>
+              <p className="text-sm text-gray-500">The AI news engine</p>
+            </div>
           </div>
-          <div ref={bottomRef} className="h-20" />
+          <div className="flex items-center gap-2">
+            <button className="p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+              <Menu className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setMessages([])}
+              className="px-6 py-2.5 bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-sm"
+            >
+              New Chat
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Input Bar */}
-      <div className="sticky bottom-0 bg-gradient-to-t from-[#f8f7f6] via-[#f8f7f6] to-transparent pt-4 pb-6 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 bg-white rounded-full px-4 py-3  transition-all">
-            <Brain className="w-4 h-4 text-[#6d7a73] shrink-0" />
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <AnimatePresence>
+              {!hasMessages && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="flex flex-col items-center text-center gap-12 py-24"
+                >
+                  <div className="space-y-4">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                      <Brain className="w-12 h-12 text-white" />
+                    </div>
+                    <div className="space-y-3">
+                      <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
+                        Ask anything
+                      </h1>
+                      <p className="text-xl text-gray-600 max-w-md mx-auto leading-relaxed">
+                        Get instant answers with sources. Your AI-powered research assistant.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+                    {SUGGESTED_QUERIES.map(({ text, icon: Icon }, i) => (
+                      <SuggestionChip
+                        key={text}
+                        text={text}
+                        icon={Icon}
+                        onClick={() => sendMessage(text)}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex flex-col gap-12">
+              {messages.map((msg) => (
+                <MessageBubble key={msg.id} message={msg} onCopy={handleCopy} />
+              ))}
+            </div>
+            <div ref={bottomRef} className="h-24" />
+          </div>
+        </div>
+      </div>
+
+      {/* Perplexity-style Input */}
+      <div className="sticky bottom-0 z-40 bg-white/95 backdrop-blur-xl border-t border-gray-200 pt-6 pb-8 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gray-50/50 border border-gray-200 rounded-3xl p-4 flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all backdrop-blur-sm">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               type="text"
-              className="flex-1 outline-none border-none bg-transparent text-sm text-[#1c1b1b] placeholder:text-[#bccac2]"
-              placeholder="Ask about any news topic…"
+              className="flex-1 bg-transparent outline-none text-lg placeholder:text-gray-500 font-medium text-gray-900"
+              placeholder="Ask anything..."
               disabled={isLoading}
             />
             <button
               onClick={() => sendMessage(query)}
               disabled={!query.trim() || isLoading}
-              className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#006950] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#005240] transition-all shrink-0"
+              className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
             >
-              <ArrowRight className="w-4 h-4" />
+              <Send className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-center text-[10px] text-[#bccac2] mt-3 uppercase tracking-wider font-medium">
-            Powered by Parallaxa · AI can make mistakes
+          <p className="text-center text-xs text-gray-500 mt-4 font-medium tracking-wide">
+            Free research preview. Pro unlocks 300+ sources & file analysis.
           </p>
         </div>
       </div>
