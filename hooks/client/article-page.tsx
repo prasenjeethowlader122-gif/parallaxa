@@ -34,7 +34,7 @@ import {
   ChevronRight,
   Copy,
 } from 'lucide-react'
-
+import {translate} from '@/lib/trans'
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function estimateReadTime(text: string): number {
@@ -186,14 +186,14 @@ const mdComponents: Components = {
 
 // ── Article Markdown ──────────────────────────────────────────────────────────
 
-function ArticleMarkdown({ content }: { content: string }) {
+function ArticleMarkdown({ content , lk }: { content: string , lk: string}) {
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
       components={mdComponents}
     >
-      {content}
+      {translate(content,lk)}
     </Markdown>
   )
 }
@@ -298,6 +298,7 @@ function RelatedItem({ article }: { article: NewsArticle }) {
 
 export default function ArticlePage() {
   const params = useParams()
+  const ln = params.locale as string
   const slug = params.slug as string
   
   const [article, setArticle] = useState < NewsArticle | null > (null)
@@ -611,7 +612,7 @@ export default function ArticlePage() {
 
               {/* ── Article body ── */}
               <article className={`${slabo.className} py-6`}>
-                <ArticleMarkdown content={article.content} />
+                <ArticleMarkdown content={article.content} lk = {ln} />
               </article>
 
               {/* ── Bottom share bar ── */}

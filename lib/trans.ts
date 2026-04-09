@@ -1,66 +1,65 @@
-// lib/translate.ts
-import { unstable_cache } from 'next/cache'
+import { unstable_cache } from 'next/cache';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const GOOGLE_TRANSLATE_URL = 'https://translation.googleapis.com/language/translate/v2'
+// Initialize the Gemini client
+const genAI = new GoogleGenerativeAI('AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk');
+const model = genAI.getGenerativeModel({ 
+  model: 'gemini-1.5-flash',
+  generationConfig: { responseMimeType: "application/json" } // Ensures clean data extraction
+});
 
+/**
+ * Internal single translation logic
+ */
 async function _translate(text: string, targetLang: string): Promise<string> {
-  if (!text?.trim()) return text
-  if (targetLang === 'en') return text  // skip if already English
+  if (!text?.trim()) return text;
+  if (targetLang === 'en') return text;
 
-  const res = await fetch(
-    `${GOOGLE_TRANSLATE_URL}?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: text,
-        target: targetLang,
-        format: 'text',   // use 'html' if translating HTML content
-      }),
-    }
-  )
+  try {
+    const prompt = `Translate the following text into the language with code "${targetLang}". 
+    Return only the translation in a JSON object: {"translatedText": "..."}
+    Text: "${text}"`;
 
-  if (!res.ok) {
-    console.error('Translation failed:', await res.text())
-    return text  // fallback to original on error
+    const result = await model.generateContent(prompt);
+    const response = JSON.parse(result.response.text());
+    
+    return response.translatedText || text;
+  } catch (error) {
+    console.error('Gemini Translation failed:', error);
+    return text; // Fallback to original
   }
+}
 
-  const data = await res.json()
-  return data.data.translations[0].translatedText
+/**
+ * Internal batch translation logic
+ */
+async function _translateBatch(texts: string[], targetLang: string): Promise<string[]> {
+  if (targetLang === 'en' || !texts.length) return texts;
+
+  try {
+    const prompt = `Translate this list of strings into the language code "${targetLang}". 
+    Maintain the exact order. Return a JSON object with a "translations" array.
+    Strings: ${JSON.stringify(texts)}`;
+
+    const result = await model.generateContent(prompt);
+    const response = JSON.parse(result.response.text());
+    
+    return response.translations || texts;
+  } catch (error) {
+    console.error('Gemini Batch Translation failed:', error);
+    return texts;
+  }
 }
 
 // Cached version — same text+lang combo won't hit API again for 24h
 export const translate = unstable_cache(
   _translate,
-  ['google-translate'],
+  ['gemini-translate'],
   { revalidate: 86400 }
-)
-
-// Translate multiple strings in one API call (cheaper & faster)
-async function _translateBatch(texts: string[], targetLang: string): Promise<string[]> {
-  if (targetLang === 'en') return texts
-
-  const res = await fetch(
-    `${GOOGLE_TRANSLATE_URL}?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: texts,
-        target: targetLang,
-        format: 'text',
-      }),
-    }
-  )
-
-  if (!res.ok) return texts
-
-  const data = await res.json()
-  return data.data.translations.map((t: any) => t.translatedText)
-}
+);
 
 export const translateBatch = unstable_cache(
   _translateBatch,
-  ['google-translate-batch'],
+  ['gemini-translate-batch'],
   { revalidate: 86400 }
-)
+);

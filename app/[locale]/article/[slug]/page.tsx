@@ -11,7 +11,7 @@ export async function generateMetadata({
   const { slug } = await params;
 
   // Enforce .pn suffix for metadata too
-
+  
 
   const article = await getArticleBySlug(slug);
 

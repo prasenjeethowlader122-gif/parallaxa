@@ -11,6 +11,7 @@
   "dependencies": {
     "rehype-raw": "latest",
     "framer-motion":"latest",
+    "@google/generative-ai": "latest",
     "@uiw/react-codemirror" : "latest",
     "@codemirror/lang-markdown" : "latest",
     "@codemirror/language-data" : "latest",
