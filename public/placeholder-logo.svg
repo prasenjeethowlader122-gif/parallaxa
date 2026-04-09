@@ -1,25 +1,22 @@
-<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- White square background -->
-  <rect width="200" height="200" stroke-width="25" fill="transparent"  stroke="black"/>
-
-  <!-- Centered and scaled‑down logo cutout -->
-  <g transform="translate(100,105) scale(0.30)"  stroke-width="50" fill="none" stroke="black">
-    
-    <g transform="translate(-16.76 -26.56) scale(0.656)">
-      <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z" />
-    </g>
-    
-    <g transform="translate(22.13 -35.03) rotate(91.097) scale(0.656)">
-      <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z" />
-    </g>
-    
-    <g transform="translate(-7.46 11.56) rotate(-90) scale(0.656)">
-      <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z" />
-    </g>
-    
-    <g transform="translate(30.66 1.13) rotate(-180) scale(0.656)">
-      <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z" />
-    </g>
-    
-  </g>
+<svg width="320" height="320" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="cutout">
+      <rect width="200" height="200" fill="white"/>
+      <g transform="translate(100,105) scale(0.30)" fill="black">
+        <g transform="translate(-16.76 -26.56) scale(0.656)">
+          <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z"/>
+        </g>
+        <g transform="translate(22.13 -35.03) rotate(91.097) scale(0.656)">
+          <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z"/>
+        </g>
+        <g transform="translate(-7.46 11.56) rotate(-90) scale(0.656)">
+          <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z"/>
+        </g>
+        <g transform="translate(30.66 1.13) rotate(-180) scale(0.656)">
+          <path d="M36.48 20.8L36.48 415.45S69.11 334.13 131.77 272.76C187.61 218.07 192.77 195.76 195.54 162.79C203.09 72.6 36.48 20.8 36.48 20.8Z"/>
+        </g>
+      </g>
+    </mask>
+  </defs>
+  <rect width="200" height="200" rx="0" fill="red" mask="url(#cutout)"/>
 </svg>
