@@ -33,7 +33,7 @@ export function Header({
 
   const [isMenuOpen,    setIsMenuOpen]    = useState(false)
   const [isSearchOpen,  setIsSearchOpen]  = useState(false)
-  const [isAnnVisible,  setIsAnnVisible]  = useState(true)  // FIX 3: default true so it actually shows
+  const [isAnnVisible,  setIsAnnVisible]  = useState(false)  // FIX 3: default true so it actually shows
   const [searchQuery,   setSearchQuery]   = useState('')
   const [desktopQuery,  setDesktopQuery]  = useState('')
   const [searchCategory, setSearchCategory] = useState('All')
