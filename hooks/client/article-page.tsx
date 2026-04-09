@@ -560,18 +560,17 @@ export default function ArticlePage() {
                 <div className="flex items-center gap-3">
                   {/* Author Avatar */}
                   <Link href={`/${authorSlug}`} className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-semibold text-sm shadow-md border-2 border-white/50">
+                    <div className="w-8 h-8 rounded-full">
                       {authorInitialsStr}
                     </div>
                   </Link>
                   {/* Author Name */}
                   <div>
-                    <small className="text-sm text-gray-500 block mb-0.5">By</small>
                     <Link 
                       href={`/${authorSlug}`} 
-                      className="text-lg font-semibold text-gray-900 hover:text-red-600 transition-colors"
+                      className="text-md font-semibold text-gray-900 hover:text-red-600 transition-colors"
                     >
-                      {article.author}
+                      by {article.author}
                     </Link>
                   </div>
                 </div>
