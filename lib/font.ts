@@ -21,9 +21,8 @@ export const spacegrotesk = localFont({
 })
 export const Fugaz = localFont({
   src: [{
-    path: '../public/local/font/FugazOne-Regular.ttf',
-    weight: '400',
-    style: 'normal'
+    path: '../public/local/font/PlayfairDisplay-VariableFont_wght.ttf',
+    style: 'norma'
   }]
 })
 
