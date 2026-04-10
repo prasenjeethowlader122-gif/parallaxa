@@ -1,26 +1,23 @@
 'use client'
 
 import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
 import ParallaxaLogoSvg from '../../public/parallaxa-logo.svg'
 import Image from 'next/image'
-import { ArrowRight } from 'lucide-react'
-import { useState, useRef, KeyboardEvent } from 'react'
+import { ArrowUp, Globe, Paperclip, TrendingUp, Star, Newspaper, Zap, Lightbulb } from 'lucide-react'
+import { useState, useRef, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 const SUGGESTIONS = [
-  'Summarize a document',
-  'Write a draft',
-  'Analyze data',
-  'Brainstorm ideas',
-  'Explain a concept',
-  'Review my code',
+  { text: "What's happening today?", icon: TrendingUp },
+  { text: 'Featured stories', icon: Star },
+  { text: 'Breaking news', icon: Newspaper },
+  { text: 'Explain a concept', icon: Lightbulb },
 ]
 
 export default function AiInterface() {
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
 
   const handleSubmit = () => {
@@ -28,92 +25,105 @@ export default function AiInterface() {
     router.push(`/ai/chat?q=${encodeURIComponent(query.trim())}`)
   }
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSubmit()
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
   }
 
   const handleSuggestion = (text: string) => {
-    setQuery(text)
-    inputRef.current?.focus()
+    router.push(`/ai/chat?q=${encodeURIComponent(text)}`)
   }
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+  }, [query])
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Header includeTinker={false} />
 
-      <main className="flex-1 bg-gray-50 flex flex-col items-center justify-center px-4 py-16 gap-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 gap-10">
 
-        {/* Logo + tagline */}
-        <div className="flex flex-col items-center gap-3 animate-fade-in">
-          <Image src={ParallaxaLogoSvg} height={120} alt="Parallaxa logo" priority />
-          <p className="text-sm text-gray-400 tracking-wide">
-            What would you like to explore?
+        {/* Logo + heading */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Image src={ParallaxaLogoSvg} height={40} alt="Parallaxa logo" priority />
+          <h1 className="text-4xl font-semibold text-neutral-900 tracking-tight">
+            What do you want to know?
+          </h1>
+          <p className="text-neutral-500 text-base max-w-sm">
+            Get instant answers with sources from across the web.
           </p>
         </div>
 
-        {/* Search input */}
-        <div
-          className={`
-            flex flex-row items-center gap-2 bg-white rounded-full w-full max-w-xl
-            px-5 py-2 transition-all duration-200
-            ${focused
-              ? 'shadow-[0_0_0_2px_rgba(0,0,0,0.12)]'
-              : 'shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-gray-200'
-            }
-          `}
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask anything…"
-            className="flex-1 outline-none border-none bg-transparent text-sm text-gray-800 placeholder:text-gray-400 min-w-0"
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={!query.trim()}
-            aria-label="Submit"
-            className={`
-              rounded-full p-2 flex items-center justify-center transition-all duration-150
-              ${query.trim()
-                ? 'bg-gray-900 text-white hover:bg-gray-700 active:scale-95'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }
-            `}
-          >
-            <ArrowRight className="w-4 h-4" />
-          </button>
+        {/* Search box */}
+        <div className="w-full max-w-2xl">
+          <div className={`relative border rounded-2xl bg-white transition-all ${
+            focused || query
+              ? 'border-neutral-300 shadow-lg'
+              : 'border-neutral-200 shadow-md'
+          }`}>
+            <textarea
+              ref={textareaRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask anything..."
+              rows={1}
+              className="w-full resize-none bg-transparent outline-none text-[15px] text-neutral-900 placeholder:text-neutral-400 px-5 pt-4 pb-14 leading-relaxed max-h-[160px] overflow-y-auto"
+            />
+            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <button className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all">
+                  <Paperclip className="w-4 h-4" />
+                </button>
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all">
+                  <Globe className="w-3.5 h-3.5" />
+                  Web search
+                </button>
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={!query.trim()}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                  query.trim()
+                    ? 'bg-neutral-900 text-white hover:bg-neutral-700 shadow-sm active:scale-95'
+                    : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                }`}
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Suggestion chips */}
-        <div className="flex flex-wrap -mt-2 gap-2 justify-center max-w-lg animate-fade-in-up text-xs text-gray-700">
-          {`We are using third-party llm models for this interface`}
+        <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+          {SUGGESTIONS.map(({ text, icon: Icon }) => (
+            <button
+              key={text}
+              onClick={() => handleSuggestion(text)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 bg-white hover:border-neutral-400 hover:bg-neutral-50 transition-all text-sm text-neutral-600 font-medium shadow-sm"
+            >
+              <Icon className="w-3.5 h-3.5 text-neutral-400" />
+              {text}
+            </button>
+          ))}
         </div>
 
+        {/* Disclaimer */}
+        <p className="text-xs text-neutral-400 text-center">
+          Powered by third-party AI models. Responses may be inaccurate.
+        </p>
+
       </main>
-
-    
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.4s ease both;
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.5s 0.1s ease both;
-        }
-      `}</style>
     </div>
   )
 }

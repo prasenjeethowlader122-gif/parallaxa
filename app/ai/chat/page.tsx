@@ -1,8 +1,7 @@
 'use client'
 
-import { Header } from '@/components/header'
 import {
-  ArrowRight,
+  ArrowUp,
   Brain,
   Copy,
   Check,
@@ -23,9 +22,11 @@ import {
   Hash,
   Lightbulb,
   CheckCircle2,
-  Menu,
+  ChevronRight,
+  RotateCcw,
+  Plus,
+  Loader2,
   ChevronDown,
-  Send,
 } from 'lucide-react'
 import {
   useState,
@@ -40,7 +41,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import Markdown, { Components } from 'react-markdown'
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────────
 
 interface ToolCall {
   id: string
@@ -91,47 +92,46 @@ const SUGGESTED_QUERIES = [
   { text: 'Featured stories', icon: Star },
   { text: 'Breaking news', icon: Newspaper },
   { text: 'World updates', icon: Globe },
-  { text: 'Explain this...', icon: Lightbulb },
 ]
 
-// ─── Markdown Components (Perplexity-style) ─────────────────────────────────────
+// ─── Markdown Components ─────────────────────────────────────────────────────────
 
 const mdComponents: Components = {
   code: ({ children, className }: ComponentPropsWithoutRef<'code'>) => {
     if (!className)
       return (
-        <code className="bg-gray-100 text-gray-900 px-1.5 py-0.5 rounded font-mono text-xs font-medium border border-gray-200">
+        <code className="bg-neutral-100 text-neutral-800 px-1.5 py-0.5 rounded-md font-mono text-[0.82em] font-medium border border-neutral-200/80">
           {children}
         </code>
       )
     return (
-      <pre className="bg-gray-900 border border-gray-800 rounded-xl p-4 overflow-x-auto my-4 text-xs font-mono text-green-400">
+      <pre className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 overflow-x-auto my-4 text-xs font-mono text-emerald-400">
         <code>{children}</code>
       </pre>
     )
   },
   h1: ({ children }) => (
-    <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4 leading-tight">{children}</h1>
+    <h1 className="text-2xl font-semibold text-neutral-900 mt-6 mb-3 leading-tight tracking-tight">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3 leading-tight">{children}</h2>
+    <h2 className="text-xl font-semibold text-neutral-900 mt-5 mb-2.5 leading-tight tracking-tight">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-xl font-semibold text-gray-900 mt-4 mb-2">{children}</h3>
+    <h3 className="text-base font-semibold text-neutral-900 mt-4 mb-2">{children}</h3>
   ),
   p: ({ children }) => (
-    <p className="text-lg text-gray-700 leading-relaxed mb-6">{children}</p>
+    <p className="text-[15px] text-neutral-700 leading-[1.75] mb-4">{children}</p>
   ),
   ul: ({ children }) => (
-    <ul className="mb-6 space-y-3 text-gray-700 pl-6">{children}</ul>
+    <ul className="mb-4 space-y-1.5 text-neutral-700 pl-0">{children}</ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal list-inside mb-6 space-y-3 text-gray-700 pl-6">{children}</ol>
+    <ol className="list-decimal list-inside mb-4 space-y-1.5 text-neutral-700 pl-0">{children}</ol>
   ),
   li: ({ children }) => (
-    <li className="text-base leading-relaxed flex items-start gap-2">
-      <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-      <span>{children}</span>
+    <li className="text-[15px] leading-relaxed flex items-start gap-2.5">
+      <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full mt-[9px] flex-shrink-0" />
+      <span className="flex-1">{children}</span>
     </li>
   ),
   a: ({ href, children }) => (
@@ -139,104 +139,129 @@ const mdComponents: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-600 hover:text-blue-800 underline decoration-blue-500 font-medium transition-colors inline-flex items-center gap-1"
+      className="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-600 font-medium transition-colors inline-flex items-center gap-0.5"
     >
       {children}
-      <ExternalLink className="w-3 h-3 opacity-70" />
+      <ExternalLink className="w-3 h-3 opacity-50 ml-0.5" />
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-blue-500 pl-6 my-6 italic bg-blue-50 p-4 rounded-r-lg text-gray-700">
+    <blockquote className="border-l-2 border-neutral-300 pl-4 my-4 text-neutral-500 italic text-[15px]">
       {children}
     </blockquote>
   ),
   strong: ({ children }) => (
-    <strong className="font-bold text-gray-900">{children}</strong>
+    <strong className="font-semibold text-neutral-900">{children}</strong>
   ),
   table: ({ children }) => (
-    <div className="overflow-x-auto my-6 rounded-xl border border-gray-200">
+    <div className="overflow-x-auto my-4 rounded-lg border border-neutral-200">
       <table className="w-full text-sm">{children}</table>
     </div>
   ),
   th: ({ children }) => (
-    <th className="text-left py-3 px-4 font-semibold text-gray-800 bg-gray-50 border-b border-gray-200">
+    <th className="text-left py-2.5 px-4 font-medium text-neutral-700 bg-neutral-50 border-b border-neutral-200 text-xs uppercase tracking-wider">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="py-3 px-4 text-gray-700 border-b border-gray-100">{children}</td>
+    <td className="py-2.5 px-4 text-neutral-600 border-b border-neutral-100 text-sm">{children}</td>
   ),
 }
 
-// ─── Perplexity-style Tool Badge ────────────────────────────────────────────────
+// ─── Tool Step Row (Morphic-style) ───────────────────────────────────────────────
 
-function ToolCallBadge({ tool }: { tool: ToolCall }) {
+function ToolStepRow({ tool }: { tool: ToolCall }) {
   const Icon = TOOL_ICONS[tool.name] ?? Search
   const label = TOOL_LABEL[tool.name] ?? tool.name
-  
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-        tool.done
-          ? tool.success === false
-            ? 'bg-red-50 border-red-200 text-red-700'
-            : 'bg-blue-50 border-blue-200 text-blue-700'
-          : 'bg-gray-100 border-gray-200 text-gray-600 animate-pulse'
-      }`}
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-2.5 text-sm text-neutral-500"
     >
       {tool.done ? (
-        <CheckCircle2 className="w-3 h-3" />
+        <div className="w-4 h-4 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
+          <Check className="w-2.5 h-2.5 text-neutral-500" />
+        </div>
       ) : (
-        <Icon className="w-3 h-3 flex-shrink-0" />
+        <Loader2 className="w-4 h-4 text-neutral-400 animate-spin flex-shrink-0" />
       )}
-      <span>{label}</span>
+      <span className={tool.done ? 'text-neutral-400 line-through' : 'text-neutral-500'}>
+        {label}
+      </span>
+      {!tool.done && (
+        <span className="text-neutral-400 text-xs truncate max-w-[200px]">
+          {tool.args}
+        </span>
+      )}
     </motion.div>
   )
 }
 
-// ─── Perplexity-style Message ───────────────────────────────────────────────────
+// ─── Source Pill ─────────────────────────────────────────────────────────────────
 
-function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: string) => void }) {
+function SourcePill({ index, label }: { index: number; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-100 text-neutral-500 text-xs font-medium border border-neutral-200/80 cursor-default select-none">
+      <span className="w-3.5 h-3.5 rounded-sm bg-neutral-300 flex items-center justify-center text-[9px] font-bold text-neutral-600">
+        {index}
+      </span>
+      <span className="max-w-[120px] truncate">{label}</span>
+    </span>
+  )
+}
+
+// ─── Message ─────────────────────────────────────────────────────────────────────
+
+function MessageBlock({ message, onCopy }: { message: Message; onCopy: (text: string) => void }) {
   const [copied, setCopied] = useState(false)
-  
+  const [showSources, setShowSources] = useState(false)
+  const hasTools = message.toolCalls.length > 0
+
   const handleCopy = () => {
     onCopy(message.content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-  
+
   if (message.from === 'user') {
     return (
       <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="flex justify-end mb-8"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-end"
       >
-        <div className="max-w-2xl bg-white border border-gray-200 rounded-2xl px-6 py-5 shadow-sm text-gray-900 text-base leading-relaxed">
+        <div className="max-w-[70%] bg-neutral-900 text-neutral-100 rounded-2xl rounded-tr-sm px-4 py-3 text-[15px] leading-relaxed">
           {message.content}
         </div>
       </motion.div>
     )
   }
-  
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-4"
+      className="space-y-3"
     >
-      {message.toolCalls.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+      {/* Tool steps */}
+      {hasTools && (
+        <div className="space-y-1.5 pl-0.5">
           {message.toolCalls.map((tc) => (
-            <ToolCallBadge key={tc.id} tool={tc} />
+            <ToolStepRow key={tc.id} tool={tc} />
           ))}
         </div>
       )}
-      
-      <div className="max-w-4xl bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
-        <div className="prose prose-lg max-w-none">
+
+      {/* Divider after tools */}
+      {hasTools && message.content && (
+        <div className="border-t border-neutral-100 pt-3" />
+      )}
+
+      {/* Main content */}
+      {message.content && (
+        <div className="prose-custom">
           <Markdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
@@ -245,94 +270,105 @@ function MessageBubble({ message, onCopy }: { message: Message; onCopy: (text: s
             {message.content}
           </Markdown>
         </div>
-      </div>
-      
+      )}
+
+      {/* Action bar */}
       {message.content && (
-        <div className="flex items-center gap-3 pl-2">
+        <div className="flex items-center gap-1 pt-1">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all font-medium"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all"
           >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Copied!' : 'Copy'}
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
-          <div className="w-px h-5 bg-gray-200" />
-          <div className="flex items-center gap-1 text-sm text-gray-400">
-            <Share2 className="w-4 h-4" />
+          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all">
+            <ThumbsUp className="w-3.5 h-3.5" />
+          </button>
+          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all">
+            <ThumbsDown className="w-3.5 h-3.5" />
+          </button>
+          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all">
+            <Share2 className="w-3.5 h-3.5" />
             <span>Share</span>
-          </div>
+          </button>
         </div>
       )}
     </motion.div>
   )
 }
 
-// ─── Perplexity-style Suggestion ────────────────────────────────────────────────
+// ─── Suggestion Chip ─────────────────────────────────────────────────────────────
 
 function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: React.ElementType; onClick: () => void }) {
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className="group flex items-center gap-3 p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 hover:shadow-md transition-all text-left shadow-sm"
+      className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-neutral-200 bg-white hover:border-neutral-400 hover:bg-neutral-50 transition-all text-sm text-neutral-600 font-medium shadow-sm"
     >
-      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-        <Icon className="w-5 h-5 text-white" />
-      </div>
-      <span className="text-base font-medium text-gray-900 leading-relaxed">{text}</span>
+      <Icon className="w-3.5 h-3.5 text-neutral-400" />
+      {text}
     </motion.button>
   )
 }
 
-// ─── Main Perplexity-style Component ────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────────────────────────
 
 export default function ParallaxaAi() {
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  
-  const inputRef = useRef<HTMLInputElement>(null)
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  
+
   const hasMessages = messages.length > 0
-  
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-  
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 180) + 'px'
+  }, [query])
+
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text).catch(() => {})
   }, [])
-  
+
   const sendMessage = useCallback(async (text: string) => {
-    // ... (keep your existing sendMessage logic exactly the same)
     const userText = text.trim()
     if (!userText || isLoading) return
-    
+
     setQuery('')
     setIsLoading(true)
-    
+
     const userId = `u-${Date.now()}`
     setMessages((prev) => [
       ...prev,
       { id: userId, from: 'user', content: userText, toolCalls: [] },
     ])
-    
+
     const aiId = `a-${Date.now()}`
     setMessages((prev) => [
       ...prev,
       { id: aiId, from: 'ai', content: '', toolCalls: [] },
     ])
-    
+
     const history = messages.map((m) => ({
       role: m.from === 'user' ? 'user' : 'assistant',
       content: m.content,
     }))
-    
+
     abortRef.current = new AbortController()
-    
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -342,31 +378,31 @@ export default function ParallaxaAi() {
         }),
         signal: abortRef.current.signal,
       })
-      
+
       if (!res.ok || !res.body) throw new Error(`API error ${res.status}`)
-      
+
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
-      
+
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
-        
+
         buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\\n')
+        const lines = buffer.split('\n')
         buffer = lines.pop() ?? ''
-        
+
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const raw = line.slice(6).trim()
           if (raw === '[DONE]') break
-          
+
           let event: Record<string, unknown>
           try { event = JSON.parse(raw) } catch { continue }
-          
+
           const type = event.type as string
-          
+
           if (type === 'tool_start') {
             const tool: ToolCall = {
               id: event.id as string,
@@ -383,16 +419,16 @@ export default function ParallaxaAi() {
           } else if (type === 'tool_done') {
             setMessages((prev) =>
               prev.map((m) =>
-                m.id === aiId ?
-                {
-                  ...m,
-                  toolCalls: m.toolCalls.map((tc) =>
-                    tc.id === (event.id as string) ?
-                    { ...tc, done: true, success: event.success as boolean, preview: event.preview as string } :
-                    tc
-                  ),
-                } :
-                m
+                m.id === aiId
+                  ? {
+                      ...m,
+                      toolCalls: m.toolCalls.map((tc) =>
+                        tc.id === (event.id as string)
+                          ? { ...tc, done: true, success: event.success as boolean, preview: event.preview as string }
+                          : tc
+                      ),
+                    }
+                  : m
               )
             )
           } else if (type === 'delta') {
@@ -405,9 +441,9 @@ export default function ParallaxaAi() {
           } else if (type === 'error') {
             setMessages((prev) =>
               prev.map((m) =>
-                m.id === aiId ?
-                { ...m, content: `⚠️ Error: ${event.message as string}` } :
-                m
+                m.id === aiId
+                  ? { ...m, content: `Error: ${event.message as string}` }
+                  : m
               )
             )
           }
@@ -417,135 +453,142 @@ export default function ParallaxaAi() {
       if ((err as Error)?.name !== 'AbortError') {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === aiId ?
-            { ...m, content: '⚠️ Something went wrong. Please try again.' } :
-            m
+            m.id === aiId
+              ? { ...m, content: 'Something went wrong. Please try again.' }
+              : m
           )
         )
       }
     } finally {
       setIsLoading(false)
       abortRef.current = null
-      inputRef.current?.focus()
+      textareaRef.current?.focus()
     }
   }, [isLoading, messages])
-  
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage(query)
     }
   }
-  
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
-      {/* Perplexity-style Header */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Sparkles className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-white flex flex-col font-sans">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-neutral-100 bg-white/90 backdrop-blur-md">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 bg-neutral-900 rounded-md flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                Parallaxa AI
-              </h1>
-              <p className="text-sm text-gray-500">The AI news engine</p>
-            </div>
+            <span className="text-sm font-semibold text-neutral-800 tracking-tight">Parallaxa</span>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
-              <Menu className="w-5 h-5" />
-            </button>
-            <button 
+            <button
               onClick={() => setMessages([])}
-              className="px-6 py-2.5 bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-all"
             >
-              New Chat
+              <Plus className="w-3.5 h-3.5" />
+              New chat
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-6 py-12">
-            <AnimatePresence>
-              {!hasMessages && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="flex flex-col items-center text-center gap-12 py-24"
-                >
-                  <div className="space-y-4">
-                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl">
-                      <Brain className="w-12 h-12 text-white" />
-                    </div>
-                    <div className="space-y-3">
-                      <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
-                        Ask anything
-                      </h1>
-                      <p className="text-xl text-gray-600 max-w-md mx-auto leading-relaxed">
-                        Get instant answers with sources. Your AI-powered research assistant.
-                      </p>
-                    </div>
-                  </div>
+      {/* Body */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-4">
+          <AnimatePresence>
+            {!hasMessages && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="flex flex-col items-center text-center gap-8 py-32"
+              >
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-semibold text-neutral-900 tracking-tight">
+                    What's on your mind?
+                  </h1>
+                  <p className="text-neutral-500 text-base">
+                    Ask anything. Get answers with sources.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {SUGGESTED_QUERIES.map(({ text, icon }) => (
+                    <SuggestionChip
+                      key={text}
+                      text={text}
+                      icon={icon}
+                      onClick={() => sendMessage(text)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-                    {SUGGESTED_QUERIES.map(({ text, icon: Icon }, i) => (
-                      <SuggestionChip
-                        key={text}
-                        text={text}
-                        icon={Icon}
-                        onClick={() => sendMessage(text)}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="flex flex-col gap-12">
+          {hasMessages && (
+            <div className="py-8 space-y-10">
               {messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} onCopy={handleCopy} />
+                <MessageBlock key={msg.id} message={msg} onCopy={handleCopy} />
               ))}
+              <div ref={bottomRef} className="h-32" />
             </div>
-            <div ref={bottomRef} className="h-24" />
-          </div>
-        </div>
-      </div>
+          )}
 
-      {/* Perplexity-style Input */}
-      <div className="sticky bottom-0 z-40 bg-white/95 backdrop-blur-xl border-t border-gray-200 pt-6 pb-8 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gray-50/50 border border-gray-200 rounded-3xl p-4 flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all backdrop-blur-sm">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <input
-              ref={inputRef}
+          {!hasMessages && <div ref={bottomRef} />}
+        </div>
+      </main>
+
+      {/* Input area */}
+      <div className="sticky bottom-0 z-40 bg-white border-t border-neutral-100">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          <div className={`relative border rounded-2xl bg-white transition-all ${
+            query ? 'border-neutral-300 shadow-md' : 'border-neutral-200 shadow-sm'
+          }`}>
+            <textarea
+              ref={textareaRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              type="text"
-              className="flex-1 bg-transparent outline-none text-lg placeholder:text-gray-500 font-medium text-gray-900"
               placeholder="Ask anything..."
+              rows={1}
               disabled={isLoading}
+              className="w-full resize-none bg-transparent outline-none text-[15px] text-neutral-900 placeholder:text-neutral-400 px-4 pt-3.5 pb-12 leading-relaxed max-h-[180px] overflow-y-auto"
             />
-            <button
-              onClick={() => sendMessage(query)}
-              disabled={!query.trim() || isLoading}
-              className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-            >
-              <Send className="w-5 h-5" />
-            </button>
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <button className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all">
+                  <Paperclip className="w-4 h-4" />
+                </button>
+                <button className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all">
+                  <Globe className="w-4 h-4" />
+                </button>
+              </div>
+              <button
+                onClick={() => sendMessage(query)}
+                disabled={!query.trim() || isLoading}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  query.trim() && !isLoading
+                    ? 'bg-neutral-900 text-white hover:bg-neutral-700 shadow-sm'
+                    : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                }`}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ArrowUp className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
           </div>
-          <p className="text-center text-xs text-gray-500 mt-4 font-medium tracking-wide">
-            Free research preview. Pro unlocks 300+ sources & file analysis.
+          <p className="text-center text-xs text-neutral-400 mt-2">
+            Parallaxa can make mistakes. Verify important information.
           </p>
         </div>
       </div>
-    </main>
+    </div>
   )
 }
