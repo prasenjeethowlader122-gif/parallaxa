@@ -41,8 +41,9 @@ export function proxy(req: NextRequest) {
   const hasLocale = SUPPORTED_LOCALES.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   )
+  
   if (hasLocale) return NextResponse.next()  // ← explicit next(), not bare return
-
+  if(pathname.startsWith(`/ai/`)) return NextResponse.next()
   const locale = resolveLocale(req)
   req.nextUrl.pathname = `/${locale}${pathname}`
   return NextResponse.redirect(req.nextUrl)
