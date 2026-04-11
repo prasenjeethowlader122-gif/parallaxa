@@ -18,5 +18,5 @@
       </g>
     </mask>
   </defs>
-  <rect width="200" height="200" rx="0" fill="red" mask="url(#cutout)"/>
+  <rect width="200" height="200" rx="0" fill="black" mask="url(#cutout)"/>
 </svg>

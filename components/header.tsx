@@ -21,28 +21,28 @@ const NAV_LINKS = [
 ]
 
 export function Header({
-  includeTicker = false,   // FIX 1: renamed from `includeTinker` (typo)
+  includeTicker = false, // FIX 1: renamed from `includeTinker` (typo)
   className,
 }: {
-  includeTicker?: boolean
-  className?: string
+  includeTicker ? : boolean
+  className ? : string
 }) {
-  const router   = useRouter()
-  const pathname = usePathname()            // FIX 2: use pathname for active nav
+  const router = useRouter()
+  const pathname = usePathname() // FIX 2: use pathname for active nav
   const { data: session } = useSession()
-
-  const [isMenuOpen,    setIsMenuOpen]    = useState(false)
-  const [isSearchOpen,  setIsSearchOpen]  = useState(false)
-  const [isAnnVisible,  setIsAnnVisible]  = useState(false)  // FIX 3: default true so it actually shows
-  const [searchQuery,   setSearchQuery]   = useState('')
-  const [desktopQuery,  setDesktopQuery]  = useState('')
+  
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isAnnVisible, setIsAnnVisible] = useState(false) // FIX 3: default true so it actually shows
+  const [searchQuery, setSearchQuery] = useState('')
+  const [desktopQuery, setDesktopQuery] = useState('')
   const [searchCategory, setSearchCategory] = useState('All')
-  const [isCatOpen,     setIsCatOpen]     = useState(false)
-  const [tickerArticles, setTickerArticles] = useState<NewsArticle[]>([])
-  const catRef = useRef<HTMLDivElement>(null)
-
+  const [isCatOpen, setIsCatOpen] = useState(false)
+  const [tickerArticles, setTickerArticles] = useState < NewsArticle[] > ([])
+  const catRef = useRef < HTMLDivElement > (null)
+  
   const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
-
+  
   // Close category dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -53,7 +53,7 @@ export function Header({
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
-
+  
   // Load breaking news ticker
   useEffect(() => {
     async function loadTicker() {
@@ -66,13 +66,13 @@ export function Header({
     }
     loadTicker()
   }, [])
-
+  
   // Close mobile overlays on route change
   useEffect(() => {
     setIsMenuOpen(false)
     setIsSearchOpen(false)
   }, [pathname])
-
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -81,7 +81,7 @@ export function Header({
       setIsSearchOpen(false)
     }
   }
-
+  
   const handleDesktopSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (desktopQuery.trim()) {
@@ -90,15 +90,18 @@ export function Header({
       setDesktopQuery('')
     }
   }
-
+  
   const handleSignOut = async () => {
     await signOut({ redirect: true, redirectUrl: '/' })
   }
-
+  
   const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   })
-
+  
   return (
     <header className={`sticky top-0 z-50 bg-white/50 backdrop-blur-md ${className ?? ''}`}>
 
@@ -371,78 +374,85 @@ export function Header({
       {/* ── MOBILE MENU ── */}
       {/* FIX 7: removed `h-full` (has no effect on static elements); menu now auto-sizes to content */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg">
+  <div className="md:hidden fixed inset-0 top-14 z-50 bg-white flex flex-col overflow-y-auto">
 
-          {/* Sections */}
-          <div className="py-2 border-b border-gray-100">
-            <p className="px-4 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              Sections
-            </p>
-            {NAV_LINKS.map(({ href, label, badge }) => {
-              const isActive = pathname === href
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex font-medium items-center justify-between px-4 py-3 text-sm transition-colors ${
-                    isActive
-                      ? 'text-gray-900 bg-gray-50'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    {label}
-                    {badge && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
-                        {badge}
-                      </span>
-                    )}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-gray-300 -rotate-90" />
-                </Link>
-              )
-            })}
-          </div>
+    {/* Search */}
+    <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+      <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Quick search</p>
+      <form onSubmit={handleSearch} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 h-10">
+        <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <input
+          type="text"
+          placeholder="Search stories, topics…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 text-sm outline-none bg-transparent text-gray-900 placeholder-gray-400"
+        />
+      </form>
+    </div>
 
-          {/* Auth */}
-          <div className="p-4">
-            {session?.user ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-semibold">
-                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">{session.user.name ?? session.user.email}</span>
-                </div>
-                <button
-                  onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
-                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  Sign out
-                </button>
+    {/* Sections grid */}
+    <div className="px-5 pt-5">
+      <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Sections</p>
+      <div className="grid grid-cols-3 gap-2.5 mb-5">
+        {NAV_LINKS.map(({ href, label, badge }) => {
+          const isActive = pathname === href
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setIsMenuOpen(false)}
+              className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
+                isActive
+                  ? 'bg-gray-900 border-gray-900'
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+              }`}
+            >
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-white/15' : 'bg-white border border-gray-200'}`}>
+                {/* swap in your per-category icon here */}
               </div>
-            ) : (
-              <div className="flex gap-2">
-                <Link
-                  href="/auth/signin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 py-2.5 text-center text-sm font-medium text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 py-2.5 text-center text-sm font-medium text-white bg-gray-900 rounded-xl hover:bg-gray-700 transition-colors"
-                >
-                  Get started
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+              <span className={`text-xs font-medium leading-tight ${isActive ? 'text-white' : 'text-gray-900'}`}>
+                {label}
+              </span>
+              {badge && (
+                <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
+                  {badge}
+                </span>
+              )}
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+
+    {/* Trending */}
+    <div className="px-5 border-t border-gray-100">
+      <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mt-4 mb-2">Trending now</p>
+      {/* map your top articles here */}
+    </div>
+
+    {/* Auth — pinned to bottom */}
+    <div className="mt-auto px-5 pb-8 pt-4 border-t border-gray-100 flex gap-2.5">
+      {session?.user ? (
+        <button onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
+          className="flex-1 h-11 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+          Sign out
+        </button>
+      ) : (
+        <>
+          <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}
+            className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+            Sign in
+          </Link>
+          <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}
+            className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-white bg-gray-900 rounded-xl hover:bg-gray-700 transition-colors">
+            Get started
+          </Link>
+        </>
       )}
+    </div>
+  </div>
+)}
     </header>
   )
 }
