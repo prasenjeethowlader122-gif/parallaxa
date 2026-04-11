@@ -21,28 +21,28 @@ const NAV_LINKS = [
 ]
 
 export function Header({
-  includeTicker = false, // FIX 1: renamed from `includeTinker` (typo)
+  includeTicker = false,
   className,
 }: {
-  includeTicker ? : boolean
-  className ? : string
+  includeTicker?: boolean
+  className?: string
 }) {
   const router = useRouter()
-  const pathname = usePathname() // FIX 2: use pathname for active nav
+  const pathname = usePathname()
   const { data: session } = useSession()
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isAnnVisible, setIsAnnVisible] = useState(false) // FIX 3: default true so it actually shows
+  const [isAnnVisible, setIsAnnVisible] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [desktopQuery, setDesktopQuery] = useState('')
   const [searchCategory, setSearchCategory] = useState('All')
   const [isCatOpen, setIsCatOpen] = useState(false)
-  const [tickerArticles, setTickerArticles] = useState < NewsArticle[] > ([])
-  const catRef = useRef < HTMLDivElement > (null)
-  
+  const [tickerArticles, setTickerArticles] = useState<NewsArticle[]>([])
+  const catRef = useRef<HTMLDivElement>(null)
+
   const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
-  
+
   // Close category dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -53,7 +53,7 @@ export function Header({
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
-  
+
   // Load breaking news ticker
   useEffect(() => {
     async function loadTicker() {
@@ -66,13 +66,13 @@ export function Header({
     }
     loadTicker()
   }, [])
-  
+
   // Close mobile overlays on route change
   useEffect(() => {
     setIsMenuOpen(false)
     setIsSearchOpen(false)
   }, [pathname])
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -81,7 +81,7 @@ export function Header({
       setIsSearchOpen(false)
     }
   }
-  
+
   const handleDesktopSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (desktopQuery.trim()) {
@@ -90,20 +90,23 @@ export function Header({
       setDesktopQuery('')
     }
   }
-  
+
   const handleSignOut = async () => {
     await signOut({ redirect: true, redirectUrl: '/' })
   }
-  
+
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
-  
+
   return (
-    <header className={`sticky top-0 z-50 bg-white/50 backdrop-blur-md ${className ?? ''}`}>
+    // KEY FIX: removed backdrop-blur-md from the header itself.
+    // backdrop-blur (and filter/transform) create a new containing block,
+    // which breaks fixed/absolute child positioning. Use solid bg instead.
+    <header className={`sticky top-0 z-50 bg-white ${className ?? ''}`}>
 
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
@@ -170,7 +173,6 @@ export function Header({
             onSubmit={handleDesktopSearch}
             className="flex-1 max-w-md flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 focus-within:bg-white focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
           >
-            {/* FIX 4: removed duplicate gap class (had both gap-1 and gap-1.5) */}
             <div className="relative flex-shrink-0" ref={catRef}>
               <button
                 type="button"
@@ -255,7 +257,6 @@ export function Header({
       </div>
 
       {/* ── DESKTOP NAV ROW ── */}
-      {/* FIX 5: this entire nav row was missing — NAV_LINKS were defined but never rendered on desktop */}
       <div className="hidden md:block bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
@@ -285,8 +286,6 @@ export function Header({
       </div>
 
       {/* ── TICKER ── */}
-      {/* FIX 6: removed `sm:hidden` from the scrolling div — it was hiding the ticker content on all non-mobile screens,
-               leaving only the empty "Breaking" pill visible. Now visible on all screen sizes when includeTicker=true. */}
       {includeTicker && tickerArticles.length > 0 && (
         <div className="bg-gray-50 border-b border-gray-100 h-8 flex items-center overflow-hidden">
           <div className="flex items-center gap-1.5 px-4 h-full bg-black text-white flex-shrink-0">
@@ -372,87 +371,98 @@ export function Header({
       </div>
 
       {/* ── MOBILE MENU ── */}
-      {/* FIX 7: removed `h-full` (has no effect on static elements); menu now auto-sizes to content */}
+      {/* KEY FIX: changed from `fixed inset-0 top-14` to `absolute left-0 right-0 top-full`.
+          The header's backdrop-blur-md (now removed) was creating a new containing block,
+          trapping fixed children inside it. absolute+top-full anchors cleanly to the
+          bottom of the header without fighting stacking contexts. */}
       {isMenuOpen && (
-  <div className="md:hidden fixed inset-0 top-14 z-50 bg-white flex flex-col overflow-y-auto">
+        <div className="md:hidden absolute left-0 right-0 top-full z-50 bg-white flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] shadow-xl">
 
-    {/* Search */}
-    <div className="px-5 pt-5 pb-4 border-b border-gray-100">
-      <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Quick search</p>
-      <form onSubmit={handleSearch} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 h-10">
-        <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <input
-          type="text"
-          placeholder="Search stories, topics…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 text-sm outline-none bg-transparent text-gray-900 placeholder-gray-400"
-        />
-      </form>
-    </div>
+          {/* Search */}
+          <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Quick search</p>
+            <form onSubmit={handleSearch} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 h-10">
+              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search stories, topics…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 text-sm outline-none bg-transparent text-gray-900 placeholder-gray-400"
+              />
+            </form>
+          </div>
 
-    {/* Sections grid */}
-    <div className="px-5 pt-5">
-      <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Sections</p>
-      <div className="grid grid-cols-3 gap-2.5 mb-5">
-        {NAV_LINKS.map(({ href, label, badge }) => {
-          const isActive = pathname === href
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setIsMenuOpen(false)}
-              className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
-                isActive
-                  ? 'bg-gray-900 border-gray-900'
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-              }`}
-            >
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-white/15' : 'bg-white border border-gray-200'}`}>
-                {/* swap in your per-category icon here */}
-              </div>
-              <span className={`text-xs font-medium leading-tight ${isActive ? 'text-white' : 'text-gray-900'}`}>
-                {label}
-              </span>
-              {badge && (
-                <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
-                  {badge}
-                </span>
-              )}
-            </Link>
-          )
-        })}
-      </div>
-    </div>
+          {/* Sections grid */}
+          <div className="px-5 pt-5">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Sections</p>
+            <div className="grid grid-cols-3 gap-2.5 mb-5">
+              {NAV_LINKS.map(({ href, label, badge }) => {
+                const isActive = pathname === href
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
+                      isActive
+                        ? 'bg-gray-900 border-gray-900'
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-white/15' : 'bg-white border border-gray-200'}`}>
+                      {/* swap in your per-category icon here */}
+                    </div>
+                    <span className={`text-xs font-medium leading-tight ${isActive ? 'text-white' : 'text-gray-900'}`}>
+                      {label}
+                    </span>
+                    {badge && (
+                      <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
 
-    {/* Trending */}
-    <div className="px-5 border-t border-gray-100">
-      <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mt-4 mb-2">Trending now</p>
-      {/* map your top articles here */}
-    </div>
+          {/* Trending */}
+          <div className="px-5 border-t border-gray-100">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mt-4 mb-2">Trending now</p>
+            {/* map your top articles here */}
+          </div>
 
-    {/* Auth — pinned to bottom */}
-    <div className="mt-auto px-5 pb-8 pt-4 border-t border-gray-100 flex gap-2.5">
-      {session?.user ? (
-        <button onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
-          className="flex-1 h-11 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-          Sign out
-        </button>
-      ) : (
-        <>
-          <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}
-            className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-            Sign in
-          </Link>
-          <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}
-            className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-white bg-gray-900 rounded-xl hover:bg-gray-700 transition-colors">
-            Get started
-          </Link>
-        </>
+          {/* Auth — pinned to bottom */}
+          <div className="mt-auto px-5 pb-8 pt-4 border-t border-gray-100 flex gap-2.5">
+            {session?.user ? (
+              <button
+                onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
+                className="flex-1 h-11 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Sign out
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-white bg-gray-900 rounded-xl hover:bg-gray-700 transition-colors"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>
-)}
     </header>
   )
 }
