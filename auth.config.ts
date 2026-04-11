@@ -2,22 +2,23 @@ import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
   pages: {
-    signIn: '/login',
-    error: '/login',
+    // FIX: was '/login' which doesn't exist — correct path is '/auth/signin'
+    signIn: '/auth/signin',
+    error: '/auth/signin',
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const protectedPaths = ['/dashboard', '/admin', '/profile', '/settings'];
+      const protectedPaths = ['/dashboard', '/admin', '/profile', '/settings', '/write'];
       const isProtected = protectedPaths.some((path) =>
         nextUrl.pathname.startsWith(path)
       );
       const isAuthPage =
-        nextUrl.pathname.startsWith('/login') ||
-        nextUrl.pathname.startsWith('/register');
+        nextUrl.pathname.startsWith('/auth/signin') ||
+        nextUrl.pathname.startsWith('/auth/signup');
 
       if (isProtected && !isLoggedIn) {
-        return Response.redirect(new URL('/login', nextUrl));
+        return Response.redirect(new URL('/auth/signin', nextUrl));
       }
       if (isAuthPage && isLoggedIn) {
         return Response.redirect(new URL('/dashboard', nextUrl));
@@ -41,6 +42,5 @@ export const authConfig = {
       return session;
     },
   },
-  
   session: { strategy: 'jwt' },
-}
+};
