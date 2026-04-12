@@ -34,14 +34,16 @@ import {
   ChevronRight,
   Copy,
 } from 'lucide-react'
-import {translate} from '@/lib/trans'
+//import {translate} from '@/lib/trans'
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function estimateReadTime(text: string): number {
   const words = text.trim().split(/\\s+/).length
   return Math.max(1, Math.ceil(words / 200))
 }
-
+function translate (text){
+  return text
+}
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const h = Math.floor(diff / 3_600_000)
