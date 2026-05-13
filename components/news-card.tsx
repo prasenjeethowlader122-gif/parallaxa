@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import {Fugaz} from '@/lib/font'
-import { NewsArticle } from '@/lib/news-data'
+import { NewsArticle } from '@/lib/db/articles'
 import { Clock, Eye } from 'lucide-react'
 
 interface NewsCardProps {
@@ -59,14 +59,15 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
          * and caused cards to overflow/overlap each other.
          * The image container is purely position:relative + fills parent.
          */}
-        <div className={`group cursor-pointer overflow-hidden h-full flex flex-col ${className ?? ''}`}>
+        <div className={`group cursor-pointer overflow-hidden h-full flex flex-col rounded-xl ${className ?? ''}`}>
           {/* Image fills all available space */}
-          <div className="relative w-full flex-1 overflow-hidden  bg-gray-200 min-h-0">
+          <div className="relative w-full flex-1 overflow-hidden bg-gray-200 min-h-[200px]">
             <Image
               src={imageSrc}
               alt={article.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -89,13 +90,14 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   if (variant === 'horizontal') {
     return (
       <Link href={href} className="block">
-        <div className={`group flex gap-4 cursor-pointer min-h-[8rem] ${className ?? ''}`}>
-          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden  bg-gray-200">
+        <div className={`group flex gap-4 cursor-pointer min-h-[8rem] rounded-lg overflow-hidden ${className ?? ''}`}>
+          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden bg-gray-200 rounded-lg">
             <Image
               src={imageSrc}
               alt={article.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 128px, 160px"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </div>
           <div className="flex-1 min-w-0">
@@ -126,13 +128,14 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   // Default variant
   return (
     <Link href={href} className="block">
-      <div className={`group cursor-pointer ${className ?? ''}`}>
-        <div className="relative w-full h-48 overflow-hidden bg-gray-200 mb-3">
+      <div className={`group cursor-pointer rounded-xl overflow-hidden ${className ?? ''}`}>
+        <div className="relative w-full h-48 overflow-hidden bg-gray-200 mb-3 rounded-xl">
           <Image
             src={imageSrc}
             alt={article.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {article.breaking && (
             <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">

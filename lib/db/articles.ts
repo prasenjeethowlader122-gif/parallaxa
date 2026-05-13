@@ -395,10 +395,14 @@ const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'models/gemini-embeddin
 
 async function embedQuery(query: string): Promise < number[] | null > {
   try {
+    if (!process.env.HF_API_KEY) {
+      console.warn('embedQuery: HF_API_KEY is not set. Semantic search will fall back to text search.')
+      return null
+    }
     const { OpenAI } = await import('openai')
     const hf = new OpenAI({
       baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-      apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
+      apiKey: process.env.HF_API_KEY,
     })
     const res = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: query })
     const vector = res.data[0]?.embedding

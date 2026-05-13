@@ -23,10 +23,8 @@ import type { GetFunctionInput } from 'inngest'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const FB_ACCESS_TOKEN =
-  process.env.FB_ACCESS_TOKEN ??
-  'EAA8ZCWezHogUBQZCwmNXg8CwByR4pKE5btgh1ZCGjCqhEdD44YkRkKgxs4GoveZBEpRempeOSB3UNpxBMiUPVu8HnuwrmsgEGIuHu9GuCRLy0uNM1SVN0xlS6sXTfJJCdcrRskOy2JSXcBw2yn0Rm2DBNaXiqrkv36CSzDo9DYMMhARKOR5l5GIkFE2yzk8cNXfDFSDvYsjZCB5pDpBCrQZA6H'
-const FB_PAGE_ID = process.env.FB_PAGE_ID ?? '1009389568918602'
+const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN;
+const FB_PAGE_ID = process.env.FB_PAGE_ID;
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 const RENDER_BASE = 'https://parallaxa-py-1.onrender.com'
 const SITE_URL = (
@@ -35,7 +33,7 @@ const SITE_URL = (
 
 const hf = new OpenAI({
   baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
-  apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
+  apiKey: process.env.HF_API_KEY || 'placeholder',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -200,6 +198,9 @@ async function uploadPhotoToFacebook(params: {
   renderUrl: string
   caption: string
 }): Promise<{ photoId: string; postId: string }> {
+  if (!FB_ACCESS_TOKEN || !FB_PAGE_ID) {
+    throw new Error('Facebook credentials (FB_ACCESS_TOKEN, FB_PAGE_ID) are missing.')
+  }
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')
@@ -222,6 +223,9 @@ async function uploadVideoToFacebook(params: {
   caption: string
   title: string
 }): Promise<{ videoId: string; postId: string }> {
+  if (!FB_ACCESS_TOKEN || !FB_PAGE_ID) {
+    throw new Error('Facebook credentials (FB_ACCESS_TOKEN, FB_PAGE_ID) are missing.')
+  }
   const form = new FormData()
   form.append('access_token', FB_ACCESS_TOKEN)
   form.append('published', 'true')

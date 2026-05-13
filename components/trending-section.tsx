@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { NewsArticle, getTrendingArticles } from '@/lib/news-data'
+import { NewsArticle, getTrendingArticles } from '@/lib/db/articles'
 import { Flame } from 'lucide-react'
 
 export function TrendingSection() {

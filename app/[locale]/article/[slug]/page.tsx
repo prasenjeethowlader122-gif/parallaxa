@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getArticleBySlug, incrementArticleViews } from '@/lib/news-data';
+import { getArticleBySlug, incrementArticleViews } from '@/lib/db/articles';
 import ArticlePage from '@/hooks/client/article-page';
 
 export async function generateMetadata({
@@ -86,5 +86,31 @@ export default async function ArticlePageOpen({
   }
 
   // ✅ clean slug pass করুন ArticlePage-এ
-  return <ArticlePage slug={cleanSlug} />;
+  return (
+    <>
+      {article && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'NewsArticle',
+              headline: article.title,
+              description: article.description,
+              image: [article.image],
+              datePublished: article.date.toISOString(),
+              dateModified: article.updatedAt ? new Date(article.updatedAt).toISOString() : article.date.toISOString(),
+              author: [
+                {
+                  '@type': 'Person',
+                  name: article.author,
+                },
+              ],
+            }),
+          }}
+        />
+      )}
+      <ArticlePage slug={cleanSlug} />
+    </>
+  );
 }

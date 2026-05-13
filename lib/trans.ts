@@ -2,8 +2,11 @@ import { unstable_cache } from 'next/cache';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Gemini client
-const genAI = new GoogleGenerativeAI('AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk');
-const model = genAI.getGenerativeModel({ 
+if (!process.env.GEMINI_API_KEY) {
+  console.warn('GEMINI_API_KEY is not defined. Translation features may not work.');
+}
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const model = genAI.getGenerativeModel({
   model: 'gemini-1.5-flash',
   generationConfig: { responseMimeType: "application/json" } // Ensures clean data extraction
 });

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { NewsArticle, getBreakingNews } from '@/lib/news-data'
+import { NewsArticle, getBreakingNews } from '@/lib/db/articles'
 import { ChevronRight } from 'lucide-react'
 
 export function BreakingBanner() {

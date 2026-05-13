@@ -7,7 +7,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { CategoryFilter } from '@/components/category-filter'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, getArticlesByCategory, categories } from '@/lib/news-data'
+import { NewsArticle, getArticlesByCategory, categories } from '@/lib/db/articles'
 import { ArrowLeft } from 'lucide-react'
 
 export default function CategoryPage() {

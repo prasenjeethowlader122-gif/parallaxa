@@ -1,10 +1,10 @@
 // app/api/og/ptp/[slug]/route.tsx
 import { NextResponse } from 'next/server'
-import { getArticleBySlug } from '@/lib/news-data'
+import { getArticleBySlug } from '@/lib/db/articles'
 import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
-import opentype from 'opentype.js'
+import * as opentype from 'opentype.js'
 
 export const runtime = 'nodejs'
 

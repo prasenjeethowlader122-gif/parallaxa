@@ -15,7 +15,7 @@ import { slabo, Fugaz } from '@/lib/font'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, getAllArticles, getArticleBySlug } from '@/lib/news-data'
+import { NewsArticle, getAllArticles, getArticleBySlug } from '@/lib/db/articles'
 import {
   ArrowLeft,
   Share2,

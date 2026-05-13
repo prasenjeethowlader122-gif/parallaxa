@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, searchArticlesByQuery } from '@/lib/news-data'
+import { NewsArticle, searchArticlesByQuery } from '@/lib/db/articles'
 import { ArrowLeft, Search as SearchIcon } from 'lucide-react'
 
 export function SearchContent() {
