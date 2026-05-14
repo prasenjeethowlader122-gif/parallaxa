@@ -5,19 +5,19 @@ import profilePic from '../public/placeholder-logo.svg'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { Search, Menu, X, Languages, Bell, ChevronDown } from 'lucide-react'
+import { Search, Menu, X, Languages, Bell, ChevronDown, Globe, Cpu, Briefcase, Trophy, FlaskConical, HeartPulse, MessageSquare, Home } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
-import { NewsArticle, getBreakingNews } from '@/lib/news-data'
+import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/category/World', label: 'World' },
-  { href: '/category/Technology', label: 'Technology' },
-  { href: '/category/Business', label: 'Business' },
-  { href: '/category/Sports', label: 'Sports' },
-  { href: '/category/Science', label: 'Science' },
-  { href: '/category/Health', label: 'Health' },
-  { href: '/category/Opinion', label: 'Opinion', badge: 'New' },
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/category/World', label: 'World', icon: Globe },
+  { href: '/category/Technology', label: 'Technology', icon: Cpu },
+  { href: '/category/Business', label: 'Business', icon: Briefcase },
+  { href: '/category/Sports', label: 'Sports', icon: Trophy },
+  { href: '/category/Science', label: 'Science', icon: FlaskConical },
+  { href: '/category/Health', label: 'Health', icon: HeartPulse },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
 ]
 
 export function Header({
@@ -39,6 +39,7 @@ export function Header({
   const [searchCategory, setSearchCategory] = useState('All')
   const [isCatOpen, setIsCatOpen] = useState(false)
   const [tickerArticles, setTickerArticles] = useState<NewsArticle[]>([])
+  const [trendingArticles, setTrendingArticles] = useState<NewsArticle[]>([])
   const catRef = useRef<HTMLDivElement>(null)
 
   const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
@@ -54,17 +55,21 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Load breaking news ticker
+  // Load breaking news ticker and trending
   useEffect(() => {
-    async function loadTicker() {
+    async function loadData() {
       try {
-        const articles = await getBreakingNews()
-        setTickerArticles(articles)
+        const [breaking, trending] = await Promise.all([
+          getBreakingNews(),
+          getTrendingArticles(),
+        ])
+        setTickerArticles(breaking)
+        setTrendingArticles(trending)
       } catch (error) {
-        console.error('Failed to load ticker articles:', error)
+        console.error('Failed to load header data:', error)
       }
     }
-    loadTicker()
+    loadData()
   }, [])
 
   // Close mobile overlays on route change
@@ -397,7 +402,7 @@ export function Header({
           <div className="px-5 pt-5">
             <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-3">Sections</p>
             <div className="grid grid-cols-3 gap-2.5 mb-5">
-              {NAV_LINKS.map(({ href, label, badge }) => {
+              {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
                 const isActive = pathname === href
                 return (
                   <Link
@@ -411,7 +416,7 @@ export function Header({
                     }`}
                   >
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-white/15' : 'bg-white border border-gray-200'}`}>
-                      {/* swap in your per-category icon here */}
+                      {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-600'}`} />}
                     </div>
                     <span className={`text-xs font-medium leading-tight ${isActive ? 'text-white' : 'text-gray-900'}`}>
                       {label}
@@ -428,10 +433,28 @@ export function Header({
           </div>
 
           {/* Trending */}
-          <div className="px-5 border-t border-gray-100">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mt-4 mb-2">Trending now</p>
-            {/* map your top articles here */}
-          </div>
+          {trendingArticles.length > 0 && (
+            <div className="px-5 border-t border-gray-100">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mt-4 mb-3">Trending now</p>
+              <div className="flex flex-col gap-3 mb-6">
+                {trendingArticles.slice(0, 3).map((article, idx) => (
+                  <Link
+                    key={article.id}
+                    href={`/article/${article.slug}`}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex gap-3 group"
+                  >
+                    <span className="text-xl font-bold text-gray-200 group-hover:text-red-600 transition-colors">
+                      0{idx + 1}
+                    </span>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+                      {article.title}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Auth — pinned to bottom */}
           <div className="mt-auto px-5 pb-8 pt-4 border-t border-gray-100 flex gap-2.5">

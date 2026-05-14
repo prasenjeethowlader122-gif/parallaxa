@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { getArticleBySlug } from '@/lib/news-data'
+import { getArticleBySlug } from '@/lib/db/articles'
 
 export const runtime = 'edge'
 

@@ -44,7 +44,7 @@ const VECTOR_DUPLICATE_THRESHOLD = 0.15
 // ✅ FIX: No trailing slash on baseURL — OpenAI SDK appends /v1/... automatically
 const hf = new OpenAI({
   baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
-  apiKey: process.env.HF_API_KEY ?? 'AIzaSyAnHOLs04HOjqSspve3xKKc0GVUUVuiZMk',
+  apiKey: process.env.HF_API_KEY || 'placeholder',
 })
 
 // ─── Types ────────────────────────────────────────────────────────────────────
