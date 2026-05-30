@@ -1,18 +1,14 @@
 import { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { getArticleBySlug, incrementArticleViews } from '@/lib/db/articles';
+import { translateBatch } from '@/lib/trans';
 import ArticlePage from '@/hooks/client/article-page';
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-
-  // Enforce .pn suffix for metadata too
-  
-
+  const { slug, locale } = await params;
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -23,24 +19,33 @@ export async function generateMetadata({
     };
   }
 
+  let title = article.title;
+  let description = article.description;
+
+  if (locale !== 'en') {
+    const translated = await translateBatch([article.title, article.description], locale);
+    title = translated[0];
+    description = translated[1];
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app';
-  const articleUrl = `${baseUrl}/article/${slug}`;
+  const articleUrl = `${baseUrl}/${locale}/article/${slug}`;
   const ogImageUrl = `${baseUrl}/api/og/${slug}`;
 
   return {
-    title: article.title,
-    description: article.description,
+    title,
+    description,
     keywords: article.category,
     authors: [{ name: article.author }],
     openGraph: {
-      title: article.title,
-      description: article.description,
+      title,
+      description,
       images: [
         {
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: article.title,
+          alt: title,
           type: 'image/png',
         },
       ],
@@ -51,8 +56,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: article.title,
-      description: article.description,
+      title,
+      description,
       images: [ogImageUrl],
     },
     robots: {
@@ -71,46 +76,49 @@ export async function generateMetadata({
 export default async function ArticlePageOpen({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
+  const article = await getArticleBySlug(slug);
 
-  
-
-  // .pn ছাড়া clean slug তৈরি করুন
-  const cleanSlug = slug;
-
-  const article = await getArticleBySlug(cleanSlug);
-  if (article) {
-    incrementArticleViews(article.id).catch(() => {});
+  if (!article) {
+    return <ArticlePage slug={slug} />;
   }
 
-  // ✅ clean slug pass করুন ArticlePage-এ
+  incrementArticleViews(article.id).catch(() => {});
+
+  let translatedArticle = { ...article };
+  if (locale !== 'en') {
+    const textsToTranslate = [article.title, article.description, article.content];
+    const translated = await translateBatch(textsToTranslate, locale);
+    translatedArticle.title = translated[0];
+    translatedArticle.description = translated[1];
+    translatedArticle.content = translated[2];
+  }
+
   return (
     <>
-      {article && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'NewsArticle',
-              headline: article.title,
-              description: article.description,
-              image: [article.image],
-              datePublished: article.date.toISOString(),
-              dateModified: article.updatedAt ? new Date(article.updatedAt).toISOString() : article.date.toISOString(),
-              author: [
-                {
-                  '@type': 'Person',
-                  name: article.author,
-                },
-              ],
-            }),
-          }}
-        />
-      )}
-      <ArticlePage slug={cleanSlug} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            headline: translatedArticle.title,
+            description: translatedArticle.description,
+            image: [translatedArticle.image],
+            datePublished: translatedArticle.date.toISOString(),
+            dateModified: translatedArticle.updatedAt ? new Date(translatedArticle.updatedAt).toISOString() : translatedArticle.date.toISOString(),
+            author: [
+              {
+                '@type': 'Person',
+                name: translatedArticle.author,
+              },
+            ],
+          }),
+        }}
+      />
+      <ArticlePage initialArticle={translatedArticle} />
     </>
   );
 }
