@@ -16,33 +16,12 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, getAllArticles, getArticleBySlug } from '@/lib/db/articles'
-import {
-  ArrowLeft,
-  Share2,
-  Printer,
-  Twitter,
-  Facebook,
-  Linkedin,
-  Link2,
-  Check,
-  ArrowRight,
-  Eye,
-  Clock,
-  Bookmark,
-  BookmarkCheck,
-  Volume2,
-  ChevronRight,
-  Copy,
-} from 'lucide-react'
-//import {translate} from '@/lib/trans'
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function estimateReadTime(text: string): number {
-  const words = text.trim().split(/\\s+/).length
+  const words = text.trim().split(/\s+/).length
   return Math.max(1, Math.ceil(words / 200))
-}
-function translate (text){
-  return text
 }
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -99,7 +78,9 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > 
           }}
           className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white transition-colors shrink-0"
         >
-          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          <span className="material-symbols-rounded !text-[14px]">
+            {copied ? 'check' : 'content_copy'}
+          </span>
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
@@ -115,13 +96,13 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > 
 const mdComponents: Components = {
   code: CodeBlock as Components['code'],
   h1: ({ children }) => (
-    <h1 className={`${Fugaz.className} text-2xl sm:text-3xl font-bold text-gray-900 mt-8 mb-3 leading-tight`}>{children}</h1>
+    <h1 className={`${Fugaz.className} text-2xl sm:text-3xl font-bold text-gray-900 mt-8 mb-3 leading-tight uppercase`}>{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className={`${Fugaz.className} text-xl sm:text-2xl font-semibold text-gray-900 mt-7 mb-2 leading-snug`}>{children}</h2>
+    <h2 className={`${Fugaz.className} text-xl sm:text-2xl font-semibold text-gray-900 mt-7 mb-2 leading-snug uppercase`}>{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className={`${Fugaz.className} text-lg sm:text-xl font-semibold text-gray-800 mt-5 mb-1`}>{children}</h3>
+    <h3 className={`${Fugaz.className} text-lg sm:text-xl font-semibold text-gray-800 mt-5 mb-1 uppercase`}>{children}</h3>
   ),
   p: ({ children }) => (
     <p className="text-gray-800 text-[17px] leading-[1.85] my-4">{children}</p>
@@ -188,14 +169,14 @@ const mdComponents: Components = {
 
 // ── Article Markdown ──────────────────────────────────────────────────────────
 
-function ArticleMarkdown({ content , lk }: { content: string , lk: string}) {
+function ArticleMarkdown({ content }: { content: string }) {
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
       components={mdComponents}
     >
-      {translate(content,lk)}
+      {content}
     </Markdown>
   )
 }
@@ -239,21 +220,21 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
         onClick={onTwitter}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <Twitter className="w-4 h-4 text-sky-500 flex-shrink-0" />
+        <span className="material-symbols-rounded !text-[18px] text-sky-500 flex-shrink-0">share</span>
         Share on X / Twitter
       </button>
       <button
         onClick={onFacebook}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <Facebook className="w-4 h-4 text-blue-600 flex-shrink-0" />
+        <span className="material-symbols-rounded !text-[18px] text-blue-600 flex-shrink-0">facebook</span>
         Share on Facebook
       </button>
       <button
         onClick={onLinkedin}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <Linkedin className="w-4 h-4 text-blue-700 flex-shrink-0" />
+        <span className="material-symbols-rounded !text-[18px] text-blue-700 flex-shrink-0">share</span>
         Share on LinkedIn
       </button>
       <hr className="my-1 border-gray-100" />
@@ -262,8 +243,8 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
         {copied
-          ? <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-          : <Link2 className="w-4 h-4 flex-shrink-0" />}
+          ? <span className="material-symbols-rounded !text-[18px] text-green-500 flex-shrink-0">check</span>
+          : <span className="material-symbols-rounded !text-[18px] flex-shrink-0">link</span>}
         {copied ? 'Copied!' : 'Copy link'}
       </button>
     </div>
@@ -298,12 +279,11 @@ function RelatedItem({ article }: { article: NewsArticle }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function ArticlePage() {
+export default function ArticlePage({ initialArticle, slug: propSlug }: { initialArticle?: NewsArticle, slug?: string }) {
   const params = useParams()
-  const ln = params.locale as string
-  const slug = params.slug as string
+  const slug = (params.slug as string) || propSlug
   
-  const [article, setArticle] = useState < NewsArticle | null > (null)
+  const [article, setArticle] = useState < NewsArticle | null > (initialArticle || null)
   const [relatedArticles, setRelatedArticles] = useState < NewsArticle[] > ([])
   const [mostRead, setMostRead] = useState < NewsArticle[] > ([])
   const [isLoading, setIsLoading] = useState(true)
@@ -319,7 +299,7 @@ export default function ArticlePage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const found = await getArticleBySlug(slug)
+        const found = initialArticle || await getArticleBySlug(slug)
         if (found) {
           setArticle(found)
           const all = await getAllArticles()
@@ -406,7 +386,7 @@ export default function ArticlePage() {
         <Header />
         <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <Link href="/" className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 mb-8 text-sm font-medium">
-            <ArrowLeft className="w-4 h-4" /> Back to News
+            <span className="material-symbols-rounded !text-[18px]">arrow_back</span> Back to News
           </Link>
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-3">Article Not Found</h1>
@@ -450,11 +430,11 @@ export default function ArticlePage() {
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-gray-400 min-w-0">
             <Link href="/" className="hover:text-gray-600 transition-colors shrink-0">Home</Link>
-            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span className="material-symbols-rounded !text-[14px] shrink-0">chevron_right</span>
             <Link href={`/category/${article.category}`} className="hover:text-gray-600 transition-colors shrink-0 capitalize">
               {article.category}
             </Link>
-            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span className="material-symbols-rounded !text-[14px] shrink-0">chevron_right</span>
             <span className="truncate text-gray-500">{article.title}</span>
           </div>
 
@@ -462,7 +442,7 @@ export default function ArticlePage() {
           <div className="flex items-center gap-1.5 shrink-0">
             {/* Listen (decorative) */}
             <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors">
-              <Volume2 className="w-3.5 h-3.5" />
+              <span className="material-symbols-rounded !text-[16px]">volume_up</span>
               Listen
             </button>
 
@@ -475,9 +455,9 @@ export default function ArticlePage() {
                   : 'border-gray-200 text-gray-500 hover:bg-gray-50'
               }`}
             >
-              {bookmarked
-                ? <BookmarkCheck className="w-3.5 h-3.5" />
-                : <Bookmark className="w-3.5 h-3.5" />}
+              <span className="material-symbols-rounded !text-[16px]">
+                {bookmarked ? 'bookmark_added' : 'bookmark'}
+              </span>
               <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
             </button>
 
@@ -486,7 +466,7 @@ export default function ArticlePage() {
               onClick={handlePrint}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <span className="material-symbols-rounded !text-[16px]">print</span>
               Print
             </button>
 
@@ -496,7 +476,7 @@ export default function ArticlePage() {
                 onClick={handleNativeShare}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
               >
-                <Share2 className="w-3.5 h-3.5" />
+                <span className="material-symbols-rounded !text-[16px]">share</span>
                 <span className="hidden sm:inline">Share</span>
               </button>
               {shareOpen && (
@@ -582,11 +562,11 @@ export default function ArticlePage() {
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" />
+                    <span className="material-symbols-rounded !text-[16px]">schedule</span>
                     {readTime} min read
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5" />
+                    <span className="material-symbols-rounded !text-[16px]">visibility</span>
                     {toDigitalNumber(article.views ?? 0)}
                   </span>
                   <span className="text-gray-300">·</span>
@@ -614,7 +594,7 @@ export default function ArticlePage() {
 
               {/* ── Article body ── */}
               <article className={`${slabo.className} py-6`}>
-                <ArticleMarkdown content={article.content} lk = {ln} />
+                <ArticleMarkdown content={article.content} />
               </article>
 
               {/* ── Bottom share bar ── */}
@@ -627,28 +607,28 @@ export default function ArticlePage() {
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on X/Twitter"
                     >
-                      <Twitter className="w-4 h-4" />
+                      <span className="material-symbols-rounded !text-[18px]">share</span>
                     </button>
                     <button
                       onClick={handleShareFacebook}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on Facebook"
                     >
-                      <Facebook className="w-4 h-4" />
+                      <span className="material-symbols-rounded !text-[18px]">facebook</span>
                     </button>
                     <button
                       onClick={handleShareLinkedin}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on LinkedIn"
                     >
-                      <Linkedin className="w-4 h-4" />
+                      <span className="material-symbols-rounded !text-[18px]">share</span>
                     </button>
                     <button
                       onClick={handleCopyLink}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Copy link"
                     >
-                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" />}
+                      {copied ? <span className="material-symbols-rounded !text-[18px] text-green-500">check</span> : <span className="material-symbols-rounded !text-[18px]">link</span>}
                     </button>
                   </div>
                 </div>
@@ -723,7 +703,7 @@ export default function ArticlePage() {
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
                   >
                     See all {article.category} stories
-                    <ChevronRight className="w-4 h-4" />
+                    <span className="material-symbols-rounded !text-[18px]">chevron_right</span>
                   </Link>
                 </div>
               )}
