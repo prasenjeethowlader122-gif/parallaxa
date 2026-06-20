@@ -1,7 +1,7 @@
 'use client'
 
 import { Header } from '@/components/header'
-import ParallaxaLogoSvg from '../../public/parallaxa-logo.svg'
+import ExposerLogoSvg from '../../public/exposer-logo.svg'
 import Image from 'next/image'
 import { ArrowUp, Globe, Paperclip, TrendingUp, Star, Newspaper, Zap, Lightbulb } from 'lucide-react'
 import { useState, useRef, KeyboardEvent, useEffect } from 'react'
@@ -52,7 +52,7 @@ export default function AiInterface() {
 
         {/* Logo + heading */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <Image src={ParallaxaLogoSvg} height={40} alt="Parallaxa logo" priority />
+          <Image src={ExposerLogoSvg} height={40} alt="Exposer logo" priority />
           <h1 className="text-4xl font-semibold text-neutral-900 tracking-tight">
             What do you want to know?
           </h1>

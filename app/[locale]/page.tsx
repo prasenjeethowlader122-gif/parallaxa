@@ -14,7 +14,7 @@ export default async function Home() {
   ])
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
       <HomeClient
         initialLatest={latestArticles}

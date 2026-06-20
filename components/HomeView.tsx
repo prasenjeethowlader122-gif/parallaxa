@@ -61,7 +61,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
       {/* Progress bar */}
       <div className="h-0.5 bg-gray-100 mx-4 rounded-full overflow-hidden mb-1">
         <div
-          className="h-full bg-gray-900 rounded-full transition-all duration-400"
+          className="h-full bg-primary rounded-full transition-all duration-400"
           style={{ width: `${((current + 1) / total) * 100}%` }}
         />
       </div>
@@ -99,7 +99,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
                   'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
                 pointerEvents: p.opacity === 0 ? 'none' : 'auto',
               }}
-              className="absolute h-full rounded-xl w-80 overflow-hidden bg-white cursor-pointer"
+              className="absolute h-full rounded-xl w-80 overflow-hidden bg-background cursor-pointer"
             >
               <NewsCard article={article} variant="featured" className="h-full" />
             </div>
@@ -114,13 +114,13 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
             stopAuto()
             goTo(current - 1)
           }}
-          className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+          className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-accent transition-colors"
           aria-label="Previous"
         >
           <span className="block w-2 h-2 border-r border-b border-gray-500 rotate-[135deg] translate-x-px" />
         </button>
 
-        <span className="text-sm text-gray-500 tabular-nums w-9 text-center">
+        <span className="text-sm text-muted-foreground tabular-nums w-9 text-center">
           {current + 1} / {total}
         </span>
 
@@ -129,7 +129,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
             stopAuto()
             goTo(current + 1)
           }}
-          className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+          className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-accent transition-colors"
           aria-label="Next"
         >
           <span className="block w-2 h-2 border-r border-b border-gray-500 -rotate-45 -translate-x-px" />
@@ -153,7 +153,7 @@ export default function HomeClient({ initialLatest, initialWorld, initialTech }:
       {/* Top Stories */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Top Stories</h2>
+          <h2 className="text-2xl font-bold text-foreground">Top Stories</h2>
           <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
         </div>
 
@@ -191,8 +191,8 @@ export default function HomeClient({ initialLatest, initialWorld, initialTech }:
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-800">
-                <h2 className="text-2xl font-bold text-gray-900">World</h2>
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
+                <h2 className="text-2xl font-bold text-foreground">World</h2>
                 <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
               </div>
 
@@ -216,8 +216,8 @@ export default function HomeClient({ initialLatest, initialWorld, initialTech }:
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-800">
-                <h2 className="text-2xl font-bold text-gray-900">Tech</h2>
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
+                <h2 className="text-2xl font-bold text-foreground">Tech</h2>
                 <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
               </div>
 

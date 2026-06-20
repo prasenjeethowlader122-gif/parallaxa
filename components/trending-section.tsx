@@ -22,7 +22,7 @@ export function TrendingSection() {
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
       <div className="flex items-center gap-2 mb-6">
         <Flame className="w-5 h-5 text-red-600" />
-        <h2 className="text-lg font-bold text-gray-900">Trending Now</h2>
+        <h2 className="text-lg font-bold text-foreground">Trending Now</h2>
       </div>
 
       <div className="space-y-4">
@@ -34,7 +34,7 @@ export function TrendingSection() {
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
+                  <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-sm">
                     {article.title}
                   </h3>
                   <p className="text-xs text-gray-600 mt-1">

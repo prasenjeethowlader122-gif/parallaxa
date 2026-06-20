@@ -316,7 +316,7 @@ function SuggestionChip({ text, icon: Icon, onClick }: { text: string; icon: Rea
 
 // ─── Main ────────────────────────────────────────────────────────────────────────
 
-export default function ParallaxaAi() {
+export default function ExposerAi() {
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -482,7 +482,7 @@ export default function ParallaxaAi() {
             <div className="w-6 h-6 bg-neutral-900 rounded-md flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-neutral-800 tracking-tight">Parallaxa</span>
+            <span className="text-sm font-semibold text-neutral-800 tracking-tight">Exposer</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -585,7 +585,7 @@ export default function ParallaxaAi() {
             </div>
           </div>
           <p className="text-center text-xs text-neutral-400 mt-2">
-            Parallaxa can make mistakes. Verify important information.
+            Exposer can make mistakes. Verify important information.
           </p>
         </div>
       </div>

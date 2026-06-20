@@ -28,7 +28,7 @@ export async function generateMetadata({
     description = translated[1];
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-exposer.vercel.app';
   const articleUrl = `${baseUrl}/${locale}/article/${slug}`;
   const ogImageUrl = `${baseUrl}/api/og/${slug}`;
 
