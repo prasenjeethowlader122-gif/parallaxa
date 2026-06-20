@@ -26,7 +26,7 @@ import { auth } from '@/auth'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://parallaxa-py-1.onrender.com'
+const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://exposer-py-1.onrender.com'
 
 // ✅ FIX: No "models/" prefix — required for OpenAI-compat layer
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'

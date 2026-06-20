@@ -571,7 +571,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 <div className="p-3 bg-white">
                   <p className="text-xs font-semibold text-[#313334] line-clamp-2 break-words">{seoTitle || title || 'Article Title'}</p>
                   <p className="text-[10px] text-[#9e9fa0] mt-1 line-clamp-2 break-words">{metaDescription || 'Description…'}</p>
-                  <p className="text-[9px] text-[#c0bebe] mt-1 uppercase tracking-wide">parallaxa.com</p>
+                  <p className="text-[9px] text-[#c0bebe] mt-1 uppercase tracking-wide">exposer.com</p>
                 </div>
               </div>
             </div>

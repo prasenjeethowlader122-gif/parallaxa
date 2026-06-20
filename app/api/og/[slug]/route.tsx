@@ -130,10 +130,10 @@ export async function GET(
     const w = philosopherFont.getAdvanceWidth(rt, 16)
     return textToPath(philosopherFont, rt, 1032 - w, 718, 16, '#aaaaaa')
   })()
-  const footerLeftPath = textToPath(philosopherFont, 'PARALLAXA.COM', 48, 1065, 16, '#bbbbbb')
+  const footerLeftPath = textToPath(philosopherFont, 'EXPOSER.COM', 48, 1065, 16, '#bbbbbb')
   const footerRightPath = (() => {
-    const w = philosopherFont.getAdvanceWidth('@parallaxa', 16)
-    return textToPath(philosopherFont, '@parallaxa', 1032 - w, 1065, 16, '#C0392B')
+    const w = philosopherFont.getAdvanceWidth('@exposer', 16)
+    return textToPath(philosopherFont, '@exposer', 1032 - w, 1065, 16, '#C0392B')
   })()
 
   const svg = `

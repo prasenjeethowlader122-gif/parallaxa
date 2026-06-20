@@ -256,7 +256,7 @@ export async function GET(
                 fontFamily: '"Philosopher"',
               }}
             >
-              PARALLAXA.COM
+              EXPOSER.COM
             </div>
             <div
               style={{
@@ -267,7 +267,7 @@ export async function GET(
                 letterSpacing: '0.06em',
               }}
             >
-              @parallaxa
+              @exposer
             </div>
           </div>
         </div> </div>

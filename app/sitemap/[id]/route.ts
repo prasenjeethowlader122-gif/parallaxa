@@ -28,7 +28,7 @@ import {
 } from '@/lib/db/articles'
 
 const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app'
+  process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-exposer.vercel.app'
 ).replace(/\/$/, '')
 
 // These match the category slugs used in app/category/[name]/page.tsx

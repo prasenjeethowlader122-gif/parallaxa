@@ -46,10 +46,10 @@ export default function SignUpPage() {
   }
   
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <Link href="/" className="mb-12">
         <Image
-          src="https://v0-parallaxa.vercel.app/New Project 20 [79DB18E].png"
+          src="https://v0-exposer.vercel.app/New Project 20 [79DB18E].png"
           alt="logo"
           width={120}
           height={40}
@@ -59,8 +59,8 @@ export default function SignUpPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create account</h1>
-          <p className="text-gray-500 text-sm">Join to get your personalised news feed</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Create account</h1>
+          <p className="text-muted-foreground text-sm">Join to get your personalised news feed</p>
         </div>
 
         {error && (
@@ -72,7 +72,7 @@ export default function SignUpPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
               Full Name
             </label>
             <input
@@ -81,14 +81,14 @@ export default function SignUpPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Jane Smith"
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-gray-900 text-sm"
+              className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-background text-foreground text-sm"
               required
               minLength={2}
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
               Email Address
             </label>
             <input
@@ -97,13 +97,13 @@ export default function SignUpPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-gray-900 text-sm"
+              className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-background text-foreground text-sm"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
               Password
             </label>
             <div className="relative">
@@ -113,13 +113,13 @@ export default function SignUpPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-gray-900 text-sm"
+                className="w-full px-4 py-3 pr-12 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-background text-foreground text-sm"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-600"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -136,7 +136,7 @@ export default function SignUpPage() {
                       {rule.test(password) && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
                     </div>
                     <span className={`text-xs transition-colors ${
-                      rule.test(password) ? 'text-green-600' : 'text-gray-400'
+                      rule.test(password) ? 'text-green-600' : 'text-muted-foreground'
                     }`}>
                       {rule.label}
                     </span>
@@ -149,20 +149,20 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm mt-2"
+            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm mt-2"
           >
             {isLoading ? 'Creating account…' : 'Create Account'}
           </button>
         </form>
 
-        <p className="text-center text-gray-500 text-xs mt-6 leading-relaxed">
+        <p className="text-center text-muted-foreground text-xs mt-6 leading-relaxed">
           By creating an account you agree to our{' '}
           <Link href="/terms" className="underline hover:text-gray-700">Terms of Service</Link>
           {' '}and{' '}
           <Link href="/privacy" className="underline hover:text-gray-700">Privacy Policy</Link>.
         </p>
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-muted-foreground text-sm mt-6">
           Already have an account?{' '}
           <Link href="/auth/signin" className="text-black font-semibold hover:underline">
             Sign in

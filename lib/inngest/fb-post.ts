@@ -26,9 +26,9 @@ import type { GetFunctionInput } from 'inngest'
 const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN;
 const FB_PAGE_ID = process.env.FB_PAGE_ID;
 const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
-const RENDER_BASE = 'https://parallaxa-py-1.onrender.com'
+const RENDER_BASE = 'https://exposer-py-1.onrender.com'
 const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-parallaxa.vercel.app'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-exposer.vercel.app'
 ).replace(/\/$/, '')
 
 const hf = new OpenAI({

@@ -19,7 +19,7 @@ import { NextResponse } from 'next/server'
 import { getUniqueArticleDates } from '@/lib/db/articles'
 
 const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-parallaxa.vercel.app'
+  process.env.NEXT_PUBLIC_BASE_URL ?? 'https://v0-exposer.vercel.app'
 ).replace(/\/$/, '')
 
 // Revalidate the index once per hour so new article dates appear quickly

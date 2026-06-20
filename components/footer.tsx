@@ -5,16 +5,16 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
   
   return (
-    <footer className="bg-white border-t border-gray-100 py-6 no-print">
+    <footer className="bg-background border-t border-border py-6 no-print">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
 
         {/* Left: Branding & Copyright */}
         <div className="flex items-center gap-4">
-          <span className="text-sm font-serif font-bold uppercase tracking-tight text-gray-900">
-            Parallaxa&apos;s Views
+          <span className="text-sm font-serif font-bold uppercase tracking-tight text-foreground">
+            Exposer
           </span>
           <span className="hidden md:inline h-4 w-px bg-gray-200" />
-          <p className="text-[11px] text-gray-400 uppercase tracking-widest">
+          <p className="text-[11px] text-muted-foreground uppercase tracking-widest">
             &copy; {currentYear} All rights reserved
           </p>
         </div>
@@ -30,7 +30,7 @@ export function Footer() {
             <Link
               key={link.text}
               href={link.href}
-              className="text-[11px] text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-widest"
+              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest"
             >
               {link.text}
             </Link>

@@ -72,11 +72,11 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
              
-              <h3 className={Fugaz.className + " text-white text-lg  leading-tight line-clamp-3"}>
+              <h3 className={Fugaz.className + " text-primary-foreground text-lg  leading-tight line-clamp-3"}>
 {article.title}
               </h3>
             
-              <div className="flex items-center gap-3 mt-2 text-xs text-white/70">
+              <div className="flex items-center gap-3 mt-2 text-xs text-primary-foreground/70">
                 <span className="font-medium">{article.author}</span>
                 <span>{formattedDate}</span>
               </div>
@@ -107,11 +107,11 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               </span>
           
             </div>
-            <h3 className={Fugaz.className + "  text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm"}>
+            <h3 className={Fugaz.className + "  text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-sm"}>
               {article.title}
             </h3>
-            <p className="text-xs text-gray-500 line-clamp-1 mt-1">{article.description}</p>
-            <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{article.description}</p>
+            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Eye className="w-3 h-3" />
                 {
@@ -138,7 +138,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {article.breaking && (
-            <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">
+            <div className="absolute top-3 left-3 bg-red-600 text-primary-foreground px-3 py-1 rounded text-xs font-bold">
               Breaking
             </div>
           )}
@@ -152,11 +152,11 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               <span className="text-xs font-bold text-red-600">🔥 Trending</span>
             )}
           </div>
-          <h3 className={Fugaz.className + " text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors text-base"}>
+          <h3 className={Fugaz.className + " text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-base"}>
             {article.title}
           </h3>
           <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>
-          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
             <span>{formattedDate}</span>
             <span>{article.readTime} min read</span>
           </div>

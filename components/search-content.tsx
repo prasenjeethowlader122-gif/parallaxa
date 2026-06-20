@@ -35,12 +35,12 @@ export function SearchContent() {
 
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-4">
-          <SearchIcon className="w-6 h-6 text-gray-900" />
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Search Results</h1>
+          <SearchIcon className="w-6 h-6 text-foreground" />
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Search Results</h1>
         </div>
         {query && (
           <p className="text-lg text-gray-600">
-            Results for: <span className="font-semibold text-gray-900">"{query}"</span>
+            Results for: <span className="font-semibold text-foreground">"{query}"</span>
           </p>
         )}
       </div>
@@ -58,7 +58,7 @@ export function SearchContent() {
       ) : results.length === 0 ? (
         <div className="text-center py-12">
           <SearchIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">No results found</h2>
+          <h2 className="text-2xl font-semibold text-foreground mb-2">No results found</h2>
           <p className="text-gray-600 mb-6">
             We couldn't find any articles matching "{query}"
           </p>
