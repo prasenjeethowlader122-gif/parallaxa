@@ -274,16 +274,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   }, [])
 
   const markdownTheme = EditorView.theme({
-    '&': { fontSize: '1.05rem', fontFamily: 'var(--font-slabo), serif', background: 'transparent !important', color: '#313334' },
-    '.cm-content': { padding: '0', caretColor: '#585f64' },
+    '&': { fontSize: '1.05rem', fontFamily: 'var(--font-slabo), serif', background: '#ffffff !important', color: '#0a0a0a' },
+    '.cm-content': { padding: '0', caretColor: '#0a0a0a' },
     '.cm-line': { padding: '0', lineHeight: '1.8' },
     '.cm-focused': { outline: 'none !important' },
-    '.cm-editor': { background: 'transparent !important' },
+    '.cm-editor': { background: '#ffffff !important' },
     '.cm-scroller': { overflow: 'visible' },
-    '.cm-header-1': { fontSize: '1.6em', fontWeight: 'bold', color: '#1a1b1c' },
-    '.cm-header-2': { fontSize: '1.3em', fontWeight: 'bold', color: '#1a1b1c' },
-    '.cm-header-3': { fontSize: '1.1em', fontWeight: '600', color: '#313334' },
-    '.cm-strong': { fontWeight: 'bold', color: '#1a1b1c' },
+    '.cm-header-1': { fontSize: '1.6em', fontWeight: 'bold', color: '#000000' },
+    '.cm-header-2': { fontSize: '1.3em', fontWeight: 'bold', color: '#000000' },
+    '.cm-header-3': { fontSize: '1.1em', fontWeight: '600', color: '#1a1a1a' },
+    '.cm-strong': { fontWeight: 'bold', color: '#000000' },
     '.cm-em': { fontStyle: 'italic', color: '#5e5f61' },
     '.cm-strikethrough': { textDecoration: 'line-through', color: '#9e9fa0' },
     '.cm-monospace': { fontFamily: 'monospace', background: '#efedee', color: '#585f64', borderRadius: '4px', padding: '0 4px' },
@@ -571,7 +571,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 <div className="p-3 bg-white">
                   <p className="text-xs font-semibold text-[#313334] line-clamp-2 break-words">{seoTitle || title || 'Article Title'}</p>
                   <p className="text-[10px] text-[#9e9fa0] mt-1 line-clamp-2 break-words">{metaDescription || 'Description…'}</p>
-                  <p className="text-[9px] text-[#c0bebe] mt-1 uppercase tracking-wide">exposer.com</p>
+                  <p className="text-[9px] text-[#c0bebe] mt-1 uppercase tracking-wide">bangladeshhinduunion.org</p>
                 </div>
               </div>
             </div>

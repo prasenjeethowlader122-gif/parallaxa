@@ -10,12 +10,12 @@ export function Footer() {
 
         {/* Left: Branding & Copyright */}
         <div className="flex items-center gap-4">
-          <span className="text-sm font-serif font-bold uppercase tracking-tight text-foreground">
-            Exposer
+          <span className="text-sm font-sans font-bold uppercase tracking-tight text-foreground">
+            Bangladesh Hindu Union
           </span>
           <span className="hidden md:inline h-4 w-px bg-gray-200" />
           <p className="text-[11px] text-muted-foreground uppercase tracking-widest">
-            &copy; {currentYear} All rights reserved
+            &copy; {currentYear} Bangladesh Hindu Union. All rights reserved
           </p>
         </div>
 

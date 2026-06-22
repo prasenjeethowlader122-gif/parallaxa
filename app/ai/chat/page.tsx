@@ -482,7 +482,7 @@ export default function ExposerAi() {
             <div className="w-6 h-6 bg-neutral-900 rounded-md flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-neutral-800 tracking-tight">Exposer</span>
+            <span className="text-sm font-semibold text-neutral-800 tracking-tight">Bangladesh Hindu Union</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -585,7 +585,7 @@ export default function ExposerAi() {
             </div>
           </div>
           <p className="text-center text-xs text-neutral-400 mt-2">
-            Exposer can make mistakes. Verify important information.
+            Bangladesh Hindu Union AI can make mistakes. Verify important information.
           </p>
         </div>
       </div>

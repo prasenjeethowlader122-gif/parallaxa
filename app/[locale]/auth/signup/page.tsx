@@ -48,13 +48,9 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <Link href="/" className="mb-12">
-        <Image
-          src="https://v0-exposer.vercel.app/New Project 20 [79DB18E].png"
-          alt="logo"
-          width={120}
-          height={40}
-          className="h-8 w-auto"
-        />
+        <span className="text-xl font-bold uppercase tracking-tight text-foreground">
+          Bangladesh Hindu Union
+        </span>
       </Link>
 
       <div className="w-full max-w-md">

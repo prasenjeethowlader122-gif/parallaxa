@@ -187,11 +187,8 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
        <Link href="/" className="flex items-center gap-2 mt-8">
-              <div className="flex items-center justify-center w-6 h-6 bg-red-600 rounded">
-                <span className="text-white text-sm font-black">E</span>
-              </div>
-              <span className="text-[12px] font-semibold text-foreground tracking-tight">
-                Exposer<span className="text-red-600">.</span>
+              <span className="text-xl font-bold uppercase tracking-tight text-foreground">
+                Bangladesh Hindu Union
               </span>
             </Link>
       <Suspense fallback={<div className="w-full max-w-md text-center text-muted-foreground text-sm">Loading…</div>}>

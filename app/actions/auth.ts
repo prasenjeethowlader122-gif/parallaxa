@@ -37,7 +37,7 @@ export async function registerAction(formData: FormData) {
   
   // TODO: send verification email with user.verification_token
   
-  redirect('/login?registered=true');
+  redirect('/auth/signin?registered=true');
 }
 
 export async function loginAction(formData: FormData) {
@@ -61,7 +61,7 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function logoutAction() {
-  await signOut({ redirectTo: '/login' });
+  await signOut({ redirectTo: '/auth/signin' });
 }
 
 export async function forgotPasswordAction(formData: FormData) {
@@ -86,7 +86,7 @@ export async function resetPasswordAction(formData: FormData) {
   const ok = await resetPassword(token, password);
   if (!ok) return { error: 'Token is invalid or expired.' };
   
-  redirect('/login?reset=true');
+  redirect('/auth/signin?reset=true');
 }
 
 export async function verifyEmailAction(token: string) {

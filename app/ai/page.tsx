@@ -1,8 +1,6 @@
 'use client'
 
 import { Header } from '@/components/header'
-import ExposerLogoSvg from '../../public/exposer-logo.svg'
-import Image from 'next/image'
 import { ArrowUp, Globe, Paperclip, TrendingUp, Star, Newspaper, Zap, Lightbulb } from 'lucide-react'
 import { useState, useRef, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -52,7 +50,9 @@ export default function AiInterface() {
 
         {/* Logo + heading */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <Image src={ExposerLogoSvg} height={40} alt="Exposer logo" priority />
+          <span className="text-xl font-bold uppercase tracking-tight text-neutral-900">
+            Bangladesh Hindu Union
+          </span>
           <h1 className="text-4xl font-semibold text-neutral-900 tracking-tight">
             What do you want to know?
           </h1>

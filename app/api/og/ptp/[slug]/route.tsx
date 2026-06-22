@@ -256,7 +256,7 @@ export async function GET(
                 fontFamily: '"Philosopher"',
               }}
             >
-              EXPOSER.COM
+              BANGLADESH HINDU UNION
             </div>
             <div
               style={{
@@ -267,7 +267,7 @@ export async function GET(
                 letterSpacing: '0.06em',
               }}
             >
-              @exposer
+              @bhu
             </div>
           </div>
         </div> </div>
