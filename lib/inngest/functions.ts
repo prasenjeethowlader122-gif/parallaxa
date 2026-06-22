@@ -192,7 +192,7 @@ async function scrape(link: ArticleLink): Promise<ScrapedPage> {
   }
 }
 
-const SYSTEM_PROMPT = `You are a professional news journalist.
+const SYSTEM_PROMPT = `You are a professional news journalist for Bangladesh Hindu Union.
 Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
 {"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , must be markdown format , Analysis and highlight any important keyword>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`

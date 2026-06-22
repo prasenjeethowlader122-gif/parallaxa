@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
-import { Fugaz } from '@/lib/font'
+import { Fugaz, sansFont } from '@/lib/font'
 
 const NAV_LINKS = [
   { href: '/', label: 'Home', icon: 'home' },
@@ -177,14 +177,10 @@ export function Header({
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
-            <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-red-600 rounded-lg">
-              <span className={`${Fugaz.className} text-primary-foreground text-2xl font-black`}>E</span>
-            </div>
             <div className="flex flex-col leading-none">
-              <span className={`${Fugaz.className} text-[24px] font-black text-foreground tracking-tighter uppercase`}>
-                Exposer
+              <span className={`${sansFont.className} text-[24px] font-extrabold text-foreground tracking-tight uppercase`}>
+                Bangladesh Hindu Union
               </span>
-              <span className="text-[9px] text-red-600 font-bold uppercase tracking-[0.2em] mt-0.5">The Truth Unveiled</span>
             </div>
           </Link>
 
@@ -343,11 +339,8 @@ export function Header({
               </span>
             </button>
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-7 h-7 bg-red-600 rounded">
-                <span className={`${Fugaz.className} text-primary-foreground text-lg font-black`}>E</span>
-              </div>
-              <span className={`${Fugaz.className} text-[18px] font-black text-foreground tracking-tighter uppercase`}>
-                Exposer
+              <span className={`${sansFont.className} text-[18px] font-extrabold text-foreground tracking-tight uppercase`}>
+                Bangladesh Hindu Union
               </span>
             </Link>
           </div>

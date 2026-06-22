@@ -59,7 +59,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
   return (
     <div className="md:hidden">
       {/* Progress bar */}
-      <div className="h-0.5 bg-gray-100 mx-4 rounded-full overflow-hidden mb-1">
+      <div className="h-0.5 bg-gray-200 mx-4 rounded-full overflow-hidden mb-1">
         <div
           className="h-full bg-primary rounded-full transition-all duration-400"
           style={{ width: `${((current + 1) / total) * 100}%` }}
@@ -160,7 +160,7 @@ export default function HomeClient({ initialLatest, initialWorld, initialTech }:
         <CoverFlowSlider articles={initialLatest} />
 
         <div
-          className="hidden md:grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
+          className="hidden md:grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
           style={{ gridTemplateRows: 'repeat(2, minmax(260px, auto))' }}
         >
           {mostRecent && (

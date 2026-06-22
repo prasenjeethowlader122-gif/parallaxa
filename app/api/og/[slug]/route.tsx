@@ -88,10 +88,6 @@ export async function GET(
     ? opentype.loadSync(bengaliPath)
     : philosopherFont
 
-  // ── Logo base64 ──
-  const logoPath = path.join(process.cwd(), 'public/New Project 25 [4D921DE].png')
-  const logoBase64 = fs.readFileSync(logoPath).toString('base64')
-
   // ── Article image ──
   let articleImgTag = ''
   if (article.image) {
@@ -130,10 +126,10 @@ export async function GET(
     const w = philosopherFont.getAdvanceWidth(rt, 16)
     return textToPath(philosopherFont, rt, 1032 - w, 718, 16, '#aaaaaa')
   })()
-  const footerLeftPath = textToPath(philosopherFont, 'EXPOSER.COM', 48, 1065, 16, '#bbbbbb')
+  const footerLeftPath = textToPath(philosopherFont, 'BANGLADESH HINDU UNION', 48, 1065, 16, '#bbbbbb')
   const footerRightPath = (() => {
-    const w = philosopherFont.getAdvanceWidth('@exposer', 16)
-    return textToPath(philosopherFont, '@exposer', 1032 - w, 1065, 16, '#C0392B')
+    const w = philosopherFont.getAdvanceWidth('@bhu', 16)
+    return textToPath(philosopherFont, '@bhu', 1032 - w, 1065, 16, '#C0392B')
   })()
 
   const svg = `
@@ -164,9 +160,7 @@ export async function GET(
   </defs>
   <rect width="1080" height="670" fill="url(#scrim)"/>
 
-  <!-- Logo -->
-  <image href="data:image/png;base64,${logoBase64}"
-         x="48" y="36" width="100" height="100"/>
+  <!-- Logo removed -->
 
   <!-- Date (path) -->
   ${datePath}

@@ -6,8 +6,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Exposer - International News Portal',
-  description: 'Your trusted source for breaking news and analysis.',
+  title: 'Bangladesh Hindu Union - Unity, Culture, and News',
+  description: 'The official platform for the Bangladesh Hindu Union, providing the latest news, cultural updates, and community highlights from across Bangladesh.',
 }
 
 export default async function RootLayout({
