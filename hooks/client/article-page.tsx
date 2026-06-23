@@ -50,7 +50,7 @@ function authorInitials(name: string): string {
 }
 
 function toAuthorSlug(name: string): string {
-  return name.toLowerCase().replace(/\\s+/g, '-').replace(/[^\\w-]/g, '')
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
 }
 
 // ── Code Block ────────────────────────────────────────────────────────────────
@@ -260,7 +260,7 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
 function RelatedItem({ article }: { article: NewsArticle }) {
   return (
     <Link
-      href={`/article/${article.id}`}
+      href={`/article/${article.slug || article.id}`}
       className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0 group"
     >
       <div className="relative w-18 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-100" style={{ width: 72, height: 54 }}>
@@ -314,10 +314,21 @@ export default function ArticlePage({
     if (initialArticle) {
       setArticle(initialArticle)
       setIsLoading(false)
+    } else if (slug) {
+      setIsLoading(true)
+      fetch(`/api/articles/slug/${slug}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            setArticle(data)
+          }
+        })
+        .catch(err => console.error("Error fetching article:", err))
+        .finally(() => setIsLoading(false))
     }
     if (initialRelated) setRelatedArticles(initialRelated)
     if (initialMostRead) setMostRead(initialMostRead)
-  }, [initialArticle, initialRelated, initialMostRead])
+  }, [initialArticle, initialRelated, initialMostRead, slug])
   
   // Close share dropdown on outside click
   useEffect(() => {
