@@ -15,7 +15,6 @@ export class BlockRegistry {
 
   register(config: BlockConfig) {
     this.blocks.set(config.name, config)
-    console.log(`✓ Registered block: ${config.name}`)
   }
 
   getBlock(name: string) {
@@ -32,35 +31,32 @@ export const blockRegistry = new BlockRegistry()
 export function createCustomBlockPlugin() {
   return (tree: Root) => {
     visit(tree, 'paragraph', (node: Paragraph, index, parent) => {
-      if (!node.children || node.children.length === 0) return
+      // We only want to transform paragraphs that contain ONLY a single text node
+      // matching one of our custom block patterns.
+      if (!node.children || node.children.length !== 1) return
 
       const textNode = node.children[0] as Text
       if (!textNode || textNode.type !== 'text') return
 
       const text = textNode.value
 
-      // Try to match any registered block
       for (const block of blockRegistry.getAllBlocks()) {
         const match = text.match(block.pattern)
-        if (!match) continue
+        if (match) {
+          const url = match[1] || ''
+          const blockData = block.handler(match, url)
 
-        const url = match[1] || ''
-        const blockData = block.handler(match, url)
-
-        const customNode = {
-          type: block.name,
-          url,
-          children: [],
-          data: {
-            hName: 'div',
+          // Transform the paragraph node into a custom block node
+          // We use the block name for hName so it can be picked up by the custom components map.
+          node.data = {
+            hName: block.name,
             hProperties: blockData.hProperties,
-          },
-        }
+          }
+          // Clear children as this is now a leaf node representing an embed.
+          node.children = []
 
-        if (parent && typeof index === 'number') {
-          parent.children[index] = customNode
+          break
         }
-        break // Exit after first match
       }
     })
   }
