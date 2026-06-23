@@ -22,14 +22,14 @@ blockRegistry.register({
   name: 'fbpost',
   label: 'Facebook',
   icon: 'facebook',
-  pattern: /^\s*\[!fbpost\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!fbpost\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => ({
     type: 'fbpost',
     hProperties: {
       className: 'custom-block fbpost-embed',
       dataUrl: url,
       htmlContent: `<iframe
-        src="https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500" 
+        src="https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url || '')}&show_text=true&width=500"
         width="500" 
         height="700" 
         style="border:none;overflow:hidden" 
@@ -42,14 +42,14 @@ blockRegistry.register({
   }),
 })
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  TWITTER/X BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'tweet',
   label: 'Twitter',
   icon: 'twitter',
-  pattern: /^\s*\[!tweet\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!tweet\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => ({
     type: 'tweet',
     hProperties: {
@@ -67,10 +67,10 @@ blockRegistry.register({
   name: 'youtube',
   label: 'YouTube',
   icon: 'youtube',
-  pattern: /^\s*\[!youtube\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!youtube\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => {
     // YouTube video ID extract করুন
-    const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+    const videoIdMatch = (url || '').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
     const videoId = videoIdMatch ? videoIdMatch[1] : url
 
     return {
@@ -98,7 +98,7 @@ blockRegistry.register({
   name: 'tiktok',
   label: 'TikTok',
   icon: 'play',
-  pattern: /^\s*\[!tiktok\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!tiktok\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => ({
     type: 'tiktok',
     hProperties: {
@@ -116,7 +116,7 @@ blockRegistry.register({
   name: 'instagram',
   label: 'Instagram',
   icon: 'instagram',
-  pattern: /^\s*\[!instagram\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!instagram\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => ({
     type: 'instagram',
     hProperties: {
@@ -134,7 +134,7 @@ blockRegistry.register({
   name: 'reddit',
   label: 'Reddit',
   icon: 'share',
-  pattern: /^\s*\[!reddit\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!reddit\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => ({
     type: 'reddit',
     hProperties: {
@@ -145,16 +145,16 @@ blockRegistry.register({
   }),
 })
 
-// ━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  VIMEO VIDEO BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'vimeo',
   label: 'Vimeo',
   icon: 'play',
-  pattern: /^\s*\[!vimeo\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!vimeo\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => {
-    const videoIdMatch = url.match(/vimeo\.com\/(\d+)/)
+    const videoIdMatch = (url || '').match(/vimeo\.com\/(\d+)/)
     const videoId = videoIdMatch ? videoIdMatch[1] : url
 
     return {
@@ -175,14 +175,14 @@ blockRegistry.register({
   },
 })
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  CODEPEN EMBED BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'codepen',
   label: 'CodePen',
   icon: 'code',
-  pattern: /^\s*\[!codepen\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!codepen\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => ({
     type: 'codepen',
     hProperties: {
@@ -210,10 +210,8 @@ blockRegistry.register({
   name: 'gist',
   label: 'Gist',
   icon: 'github',
-  pattern: /^\s*\[!gist\(url="(.+?)"\)\]\s*$/,
+  pattern: /\[!gist\(url=["']?(.+?)["']?\)\]/,
   handler: (match, url) => {
-    const gistId = url.split('/').pop()?.replace('.js', '')
-
     return {
       type: 'gist',
       hProperties: {

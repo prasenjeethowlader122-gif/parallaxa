@@ -1,6 +1,3 @@
-import { visit } from 'unist-util-visit'
-import { Root, Paragraph, Text } from 'mdast'
-
 export interface BlockConfig {
   name: string
   label: string
@@ -30,36 +27,71 @@ export class BlockRegistry {
 
 export const blockRegistry = new BlockRegistry()
 
+/**
+ * MDX Remark Plugin to transform custom block syntax into HAST-compatible nodes.
+ * Syntax: [!blockname(url="...")]
+ */
 export function createCustomBlockPlugin() {
-  return (tree: Root) => {
-    visit(tree, 'paragraph', (node: Paragraph, index, parent) => {
-      // We only want to transform paragraphs that contain ONLY a single text node
-      // matching one of our custom block patterns.
-      if (!node.children || node.children.length !== 1) return
+  return (tree: any) => {
+    if (!tree) return
 
-      const textNode = node.children[0] as Text
-      if (!textNode || textNode.type !== 'text') return
+    const registeredBlocks = blockRegistry.getAllBlocks()
 
-      const text = textNode.value
+    function walk(node: any) {
+      if (!node) return
 
-      for (const block of blockRegistry.getAllBlocks()) {
-        const match = text.match(block.pattern)
-        if (match) {
-          const url = match[1] || ''
-          const blockData = block.handler(match, url)
-
-          // Transform the paragraph node into a custom block node
-          // We use the block name for hName so it can be picked up by the custom components map.
-          node.data = {
-            hName: block.name,
-            hProperties: blockData.hProperties,
+      if (node.type === 'paragraph' && node.children) {
+        // Collect text content from all children (text nodes and link nodes)
+        let textContent = ''
+        for (const child of node.children) {
+          if (child.type === 'text') {
+            textContent += child.value
+          } else if (child.type === 'link') {
+            // Include link text, as remark-gfm might have already linked the URL
+            textContent += (child.children || []).map((c: any) => c.value || '').join('')
+          } else if (child.value) {
+            textContent += child.value
           }
-          // Clear children as this is now a leaf node representing an embed.
-          node.children = []
+        }
 
-          break
+        const text = textContent.trim()
+
+        if (text.startsWith('[!') && text.endsWith(')]')) {
+          for (const block of registeredBlocks) {
+            const match = text.match(block.pattern)
+            if (match) {
+              try {
+                const url = match[1] || ''
+                const blockData = block.handler(match, url)
+
+                // Transform the paragraph node into a custom block node
+                // node.data is recognized by remark-rehype to set HAST properties
+                node.data = node.data || {}
+                node.data.hName = block.name
+                node.data.hProperties = blockData.hProperties
+
+                // Clear children so it becomes a leaf node for the custom renderer
+                node.children = []
+
+                return // Stop processing this paragraph
+              } catch (e) {
+                console.error(`[MDX Plugin] Error handling block ${block.name}:`, e)
+              }
+            }
+          }
         }
       }
-    })
+
+      // Continue walking children
+      if (node.children && Array.isArray(node.children)) {
+        node.children.forEach(walk)
+      }
+    }
+
+    try {
+      walk(tree)
+    } catch (e) {
+      console.error('[MDX Plugin] Critical error during tree walk:', e)
+    }
   }
 }
