@@ -8,6 +8,7 @@ import CodeMirror from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { EditorView } from '@codemirror/view'
+import { autocompletion } from '@codemirror/autocomplete'
 import rehypeRaw from 'rehype-raw'
 import {
   History, ChevronRight, SearchCheck, Accessibility, Tag, Share2, Settings,
@@ -744,8 +745,22 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   <CodeMirror
                     value={content}
                     onChange={(val) => handleContentChange(val)}
-                    extensions={[markdown({ base: markdownLanguage, codeLanguages: languages }), EditorView.lineWrapping, markdownTheme]}
-                    basicSetup={{ lineNumbers: false, foldGutter: false, dropCursor: false, allowMultipleSelections: false, indentOnInput: false, highlightActiveLine: false, highlightSelectionMatches: false }}
+                    extensions={[
+                      markdown({ base: markdownLanguage, codeLanguages: languages }),
+                      EditorView.lineWrapping,
+                      markdownTheme,
+                      autocompletion()
+                    ]}
+                    basicSetup={{
+                      lineNumbers: false,
+                      foldGutter: false,
+                      dropCursor: false,
+                      allowMultipleSelections: false,
+                      indentOnInput: false,
+                      highlightActiveLine: false,
+                      highlightSelectionMatches: false,
+                      completionKeymap: true
+                    }}
                     className={slabo.className + " w-full min-h-[400px] outline-none"}
                     placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
                   />

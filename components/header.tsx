@@ -179,8 +179,8 @@ export function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
             <div className="flex flex-col leading-none">
-              <span className={`${sansFont.className} text-[24px] font-extrabold text-foreground tracking-tight uppercase`}>
-                Bangladesh Hindu Union
+              <span className="text-[24px] font-extrabold text-foreground tracking-tight uppercase">
+                বাংলাদেশ হিন্দু ইউনিয়ন
               </span>
             </div>
           </Link>
@@ -367,8 +367,8 @@ export function Header({
               </span>
             </button>
             <Link href="/" className="flex items-center gap-2">
-              <span className={`${sansFont.className} text-[18px] font-extrabold text-foreground tracking-tight uppercase`}>
-                Bangladesh Hindu Union
+              <span className="text-[18px] font-extrabold text-foreground tracking-tight uppercase">
+                বাংলাদেশ হিন্দু ইউনিয়ন
               </span>
             </Link>
           </div>

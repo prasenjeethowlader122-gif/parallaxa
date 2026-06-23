@@ -14,7 +14,7 @@ const NavLists = [
   {
     name: '#home',
     icon: HomeIcon,
-    index: <HomeView />
+    index: <HomeView initialLatest={[]} initialWorld={[]} initialTech={[]} />
   },
   {
     name: '#articles',

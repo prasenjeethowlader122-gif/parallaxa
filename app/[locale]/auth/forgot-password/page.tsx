@@ -28,18 +28,21 @@ export default function ForgotPasswordPage() {
   }
   
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-      <Link href="/" className="mb-12">
-        <span className="text-xl font-bold uppercase tracking-tight text-foreground">
-          Bangladesh Hindu Union
-        </span>
-      </Link>
-
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Reset password</h1>
-          <p className="text-muted-foreground text-sm">Enter your email and we'll send a reset link</p>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center">
+          <Link href="/" className="mb-8">
+            <span className="text-2xl font-bold uppercase tracking-tight text-foreground">
+              বাংলাদেশ হিন্দু ইউনিয়ন
+            </span>
+          </Link>
         </div>
+
+        <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Reset password</h1>
+            <p className="text-muted-foreground text-sm">Enter your email and we'll send a reset link</p>
+          </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 mb-6">
@@ -81,11 +84,12 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        <p className="text-center mt-8">
-          <Link href="/auth/signin" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-gray-700 text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Sign In
-          </Link>
-        </p>
+          <p className="text-center mt-8">
+            <Link href="/auth/signin" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-gray-700 text-sm">
+              <ArrowLeft className="w-4 h-4" /> Back to Sign In
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
