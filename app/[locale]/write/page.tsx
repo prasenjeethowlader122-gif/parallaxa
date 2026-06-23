@@ -7,8 +7,9 @@ import React, { useState, useRef, useCallback, useEffect, ComponentPropsWithoutR
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
-import { EditorView } from '@codemirror/view'
-import { autocompletion } from '@codemirror/autocomplete'
+import { EditorView, Decoration, DecorationSet, ViewUpdate, ViewPlugin } from '@codemirror/view'
+import { autocompletion, CompletionContext } from '@codemirror/autocomplete'
+import { RangeSetBuilder } from '@codemirror/state'
 import rehypeRaw from 'rehype-raw'
 import {
   History, ChevronRight, SearchCheck, Accessibility, Tag, Share2, Settings,
@@ -16,11 +17,15 @@ import {
   CheckCircle2, AlertCircle, Save, Send, X, Check, Copy, List, ListOrdered,
   Strikethrough, Code, Minus, RotateCcw, RotateCw, Clock, Star, Zap, TrendingUp,
   Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
+  Youtube, Facebook, Twitter, Instagram, Play, Github
 } from 'lucide-react';
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import Markdown, { Components } from 'react-markdown'
+import { createCustomBlockPlugin } from '@/lib/mdx/block-registry'
+import '@/lib/mdx/blocks'
+import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 
 type SidebarTab = 'metadata' | 'seo' | 'accessibility' | 'tags' | 'distribution'
 type ViewMode = 'write' | 'preview' | 'split'
@@ -61,6 +66,7 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
 }
 
 const mdComponents: Components = {
+  ...customBlockComponents,
   code: CodeBlock as Components['code'],
   h1: ({ children }) => <h1 className="font-['Newsreader'] text-2xl sm:text-3xl font-bold text-[#1a1b1c] mt-6 mb-3 leading-tight break-words">{children}</h1>,
   h2: ({ children }) => <h2 className="font-['Newsreader'] text-xl sm:text-2xl font-semibold text-[#1a1b1c] mt-5 mb-2 leading-snug break-words">{children}</h2>,
@@ -123,7 +129,7 @@ function MarkdownPreview({ content }: { content: string }) {
   return (
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
-        remarkPlugins={[remarkGfm, remarkMath]}
+        remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin()]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={mdComponents}
       >
@@ -234,7 +240,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishing, setPublishing] = useState(false)
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<any>(null)
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { data: session } = useSession()
@@ -288,12 +294,6 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     }
   }, [title])
 
-  useEffect(() => {
-    if (textareaRef.current && viewMode === 'write') {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${Math.max(textareaRef.current.scrollHeight, 400)}px`
-    }
-  }, [content, viewMode])
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1280px)')
@@ -323,7 +323,57 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     '.cm-gutters': { display: 'none' },
     '.cm-activeLineGutter': { display: 'none' },
     '.cm-activeLine': { background: 'transparent' },
+    '.cm-custom-block': { color: '#d97706', fontWeight: 'bold', backgroundColor: '#fffbeb', padding: '2px 4px', borderRadius: '4px', border: '1px solid #fef3c7' }
   })
+
+  const customBlockHighlight = ViewPlugin.fromClass(class {
+    decorations: DecorationSet
+
+    constructor(view: EditorView) {
+      this.decorations = this.getDecorations(view)
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.getDecorations(update.view)
+      }
+    }
+
+    getDecorations(view: EditorView) {
+      const builder = new RangeSetBuilder<Decoration>()
+      const text = view.state.doc.toString()
+      const regex = /\[!.+?\(url=".+?"\)\]/g
+      let match
+      while ((match = regex.exec(text)) !== null) {
+        builder.add(match.index, match.index + match[0].length, Decoration.mark({
+          class: 'cm-custom-block'
+        }))
+      }
+      return builder.finish()
+    }
+  }, {
+    decorations: v => v.decorations
+  })
+
+  const customBlockCompletions = (context: CompletionContext) => {
+    let word = context.matchBefore(/\[!/)
+    if (!word) return null
+    if (word.from === word.to && !context.explicit) return null
+    return {
+      from: word.from,
+      options: [
+        { label: '[!fbpost(url="")]', type: 'function', apply: '[!fbpost(url="")]' },
+        { label: '[!tweet(url="")]', type: 'function', apply: '[!tweet(url="")]' },
+        { label: '[!youtube(url="")]', type: 'function', apply: '[!youtube(url="")]' },
+        { label: '[!tiktok(url="")]', type: 'function', apply: '[!tiktok(url="")]' },
+        { label: '[!instagram(url="")]', type: 'function', apply: '[!instagram(url="")]' },
+        { label: '[!reddit(url="")]', type: 'function', apply: '[!reddit(url="")]' },
+        { label: '[!vimeo(url="")]', type: 'function', apply: '[!vimeo(url="")]' },
+        { label: '[!codepen(url="")]', type: 'function', apply: '[!codepen(url="")]' },
+        { label: '[!gist(url="")]', type: 'function', apply: '[!gist(url="")]' },
+      ]
+    }
+  }
 
   const pushHistory = useCallback((val: string) => {
     setHistory((prev) => [...prev.slice(0, historyIndex + 1), val].slice(-100))
@@ -336,23 +386,36 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const handleContentChange = (val: string) => { setContent(val); markUnsaved(); pushHistory(val) }
 
   const insertMarkdown = useCallback((before: string, after = '', placeholder = '') => {
-    const ta = textareaRef.current
-    if (!ta) return
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    const selected = content.slice(start, end) || placeholder
-    handleContentChange(content.slice(0, start) + before + selected + after + content.slice(end))
-    setTimeout(() => { ta.focus(); const c = start + before.length + selected.length; ta.setSelectionRange(c, c) }, 0)
-  }, [content])
+    const view = editorRef.current?.view
+    if (!view) return
+
+    const { state } = view
+    const { from, to } = state.selection.main
+    const selected = state.sliceDoc(from, to) || placeholder
+
+    view.dispatch({
+      changes: { from, to, insert: before + selected + after },
+      selection: { anchor: from + before.length + selected.length },
+      scrollIntoView: true
+    })
+    view.focus()
+  }, [])
 
   const insertLinePrefix = useCallback((prefix: string) => {
-    const ta = textareaRef.current
-    if (!ta) return
-    const start = ta.selectionStart
-    const lineStart = content.lastIndexOf('\n', start - 1) + 1
-    handleContentChange(content.slice(0, lineStart) + prefix + content.slice(lineStart))
-    setTimeout(() => { ta.focus(); ta.setSelectionRange(start + prefix.length, start + prefix.length) }, 0)
-  }, [content])
+    const view = editorRef.current?.view
+    if (!view) return
+
+    const { state } = view
+    const { from } = state.selection.main
+    const line = state.doc.lineAt(from)
+
+    view.dispatch({
+      changes: { from: line.from, insert: prefix },
+      selection: { anchor: from + prefix.length },
+      scrollIntoView: true
+    })
+    view.focus()
+  }, [])
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase().replace(/\s+/g, '-')
@@ -701,7 +764,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
             <ToolbarBtn icon={<Link size={14} />} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
             <ToolbarBtn icon={<ImageIcon size={14} />} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
-            <ToolbarBtn icon={<Minus size={14} />} label="Divider" onClick={() => handleContentChange(content + '\n\n---\n\n')} />
+            <ToolbarBtn icon={<Minus size={14} />} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
+            <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
+            <ToolbarBtn icon={<Youtube size={14} className="text-[#FF0000]" />} label="YouTube" onClick={() => insertMarkdown('[!youtube(url="', '")]')} />
+            <ToolbarBtn icon={<Facebook size={14} className="text-[#1877F2]" />} label="Facebook" onClick={() => insertMarkdown('[!fbpost(url="', '")]')} />
+            <ToolbarBtn icon={<Twitter size={14} className="text-[#1DA1F2]" />} label="Twitter" onClick={() => insertMarkdown('[!tweet(url="', '")]')} />
+            <ToolbarBtn icon={<Instagram size={14} className="text-[#E4405F]" />} label="Instagram" onClick={() => insertMarkdown('[!instagram(url="', '")]')} />
+            <ToolbarBtn icon={<Play size={14} className="text-[#00ADEF]" />} label="Vimeo" onClick={() => insertMarkdown('[!vimeo(url="', '")]')} />
+            <ToolbarBtn icon={<Github size={14} className="text-[#181717]" />} label="Gist" onClick={() => insertMarkdown('[!gist(url="', '")]')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 sm:hidden shrink-0" />
             <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="sm:hidden p-1.5 text-[#585f64] rounded-lg disabled:opacity-30 shrink-0"><RotateCcw size={14} /></button>
             <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="sm:hidden p-1.5 text-[#585f64] rounded-lg disabled:opacity-30 shrink-0"><RotateCw size={14} /></button>
@@ -743,13 +813,15 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                     </div>
                   </div>
                   <CodeMirror
+                    ref={editorRef}
                     value={content}
                     onChange={(val) => handleContentChange(val)}
                     extensions={[
                       markdown({ base: markdownLanguage, codeLanguages: languages }),
                       EditorView.lineWrapping,
                       markdownTheme,
-                      autocompletion()
+                      customBlockHighlight,
+                      autocompletion({ override: [customBlockCompletions] })
                     ]}
                     basicSetup={{
                       lineNumbers: false,
