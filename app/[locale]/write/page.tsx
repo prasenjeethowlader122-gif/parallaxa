@@ -17,13 +17,13 @@ import {
   CheckCircle2, AlertCircle, Save, Send, X, Check, Copy, List, ListOrdered,
   Strikethrough, Code, Minus, RotateCcw, RotateCw, Clock, Star, Zap, TrendingUp,
   Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
-  Youtube, Facebook, Twitter, Instagram, Play, Github
+  Youtube, Facebook, Twitter, Instagram, Play, Github, Box, ChevronDown
 } from 'lucide-react';
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import Markdown, { Components } from 'react-markdown'
-import { createCustomBlockPlugin } from '@/lib/mdx/block-registry'
+import { createCustomBlockPlugin, blockRegistry } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 
@@ -142,9 +142,13 @@ function MarkdownPreview({ content }: { content: string }) {
 const ToolbarBtn = ({ icon, label, onClick, active }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean }) => (
   <button title={label} onClick={onClick}
     className={`p-1.5 sm:p-2 rounded-lg transition-all shrink-0 ${active ? 'bg-[#585f64] text-white' : 'text-[#585f64] hover:bg-black/5 hover:text-[#313334]'}`}>
-    {icon}
+    {typeof icon === 'string' ? <span className="material-symbols-rounded !text-[18px]">{icon}</span> : icon}
   </button>
 )
+
+const DynamicIcon = ({ name, size = 18, className }: { name: string; size?: number; className?: string }) => {
+  return <span className={`material-symbols-rounded !text-[${size}px] ${className || ''}`}>{name}</span>;
+};
 
 const SidebarLink = ({ icon, label, active = false, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) => (
   <button onClick={onClick}
@@ -239,8 +243,10 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const [redirectUrl, setRedirectUrl] = useState('')
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [embedsOpen, setEmbedsOpen] = useState(false)
 
   const editorRef = useRef<any>(null)
+  const embedsRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { data: session } = useSession()
@@ -300,6 +306,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     const handler = (e: MediaQueryListEvent) => { if (e.matches) setMobileDrawerOpen(false) }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (embedsRef.current && !embedsRef.current.contains(e.target as Node)) {
+        setEmbedsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
   const markdownTheme = EditorView.theme({
@@ -750,28 +766,57 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         )}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
-            <ToolbarBtn icon={<Bold size={14} />} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
-            <ToolbarBtn icon={<Italic size={14} />} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
-            <ToolbarBtn icon={<Strikethrough size={14} />} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
-            <ToolbarBtn icon={<Code size={14} />} label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
+            <ToolbarBtn icon="format_bold" label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
+            <ToolbarBtn icon="format_italic" label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
+            <ToolbarBtn icon="format_strikethrough" label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
+            <ToolbarBtn icon="code" label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon={<Heading1 size={14} />} label="Heading 1" onClick={() => insertLinePrefix('# ')} />
-            <ToolbarBtn icon={<Heading2 size={14} />} label="Heading 2" onClick={() => insertLinePrefix('## ')} />
+            <ToolbarBtn icon="format_h1" label="Heading 1" onClick={() => insertLinePrefix('# ')} />
+            <ToolbarBtn icon="format_h2" label="Heading 2" onClick={() => insertLinePrefix('## ')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon={<List size={14} />} label="Bullet List" onClick={() => insertLinePrefix('- ')} />
-            <ToolbarBtn icon={<ListOrdered size={14} />} label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
-            <ToolbarBtn icon={<Quote size={14} />} label="Blockquote" onClick={() => insertLinePrefix('> ')} />
+            <ToolbarBtn icon="format_list_bulleted" label="Bullet List" onClick={() => insertLinePrefix('- ')} />
+            <ToolbarBtn icon="format_list_numbered" label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
+            <ToolbarBtn icon="format_quote" label="Blockquote" onClick={() => insertLinePrefix('> ')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon={<Link size={14} />} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
-            <ToolbarBtn icon={<ImageIcon size={14} />} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
-            <ToolbarBtn icon={<Minus size={14} />} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
+            <ToolbarBtn icon="link" label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
+            <ToolbarBtn icon="image" label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
+            <ToolbarBtn icon="horizontal_rule" label="Divider" onClick={() => insertMarkdown('\n---\n')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon={<Youtube size={14} className="text-[#FF0000]" />} label="YouTube" onClick={() => insertMarkdown('[!youtube(url="', '")]')} />
-            <ToolbarBtn icon={<Facebook size={14} className="text-[#1877F2]" />} label="Facebook" onClick={() => insertMarkdown('[!fbpost(url="', '")]')} />
-            <ToolbarBtn icon={<Twitter size={14} className="text-[#1DA1F2]" />} label="Twitter" onClick={() => insertMarkdown('[!tweet(url="', '")]')} />
-            <ToolbarBtn icon={<Instagram size={14} className="text-[#E4405F]" />} label="Instagram" onClick={() => insertMarkdown('[!instagram(url="', '")]')} />
-            <ToolbarBtn icon={<Play size={14} className="text-[#00ADEF]" />} label="Vimeo" onClick={() => insertMarkdown('[!vimeo(url="', '")]')} />
-            <ToolbarBtn icon={<Github size={14} className="text-[#181717]" />} label="Gist" onClick={() => insertMarkdown('[!gist(url="', '")]')} />
+
+            <div className="relative" ref={embedsRef}>
+              <button
+                onClick={() => setEmbedsOpen(!embedsOpen)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${embedsOpen ? 'bg-[#585f64] text-white' : 'text-[#585f64] hover:bg-black/5'}`}
+              >
+                <span className="material-symbols-rounded !text-[18px]">add_box</span>
+                <span className="hidden sm:inline">Embeds</span>
+                <ChevronDown size={12} className={`transition-transform duration-200 ${embedsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {embedsOpen && (
+                <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-[#e4e2e1] rounded-xl shadow-xl py-1.5 z-[100] animate-in fade-in zoom-in duration-200">
+                  <div className="px-3 py-1 mb-1 border-b border-[#f5f3f3]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#9e9fa0]">Custom Blocks</p>
+                  </div>
+                  <div className="max-h-[60vh] overflow-y-auto">
+                    {blockRegistry.getAllBlocks().map((block) => (
+                      <button
+                        key={block.name}
+                        onClick={() => {
+                          insertMarkdown(`[!${block.name}(url="`, '")]');
+                          setEmbedsOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-xs text-[#5e5f61] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
+                      >
+                        <DynamicIcon name={typeof block.icon === 'string' ? block.icon : block.name} size={14} />
+                        <span>{block.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 sm:hidden shrink-0" />
             <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="sm:hidden p-1.5 text-[#585f64] rounded-lg disabled:opacity-30 shrink-0"><RotateCcw size={14} /></button>
             <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="sm:hidden p-1.5 text-[#585f64] rounded-lg disabled:opacity-30 shrink-0"><RotateCw size={14} /></button>
