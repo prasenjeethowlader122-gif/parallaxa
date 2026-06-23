@@ -3,6 +3,8 @@ import { Root, Paragraph, Text } from 'mdast'
 
 export interface BlockConfig {
   name: string
+  label: string
+  icon: string | React.ReactNode
   pattern: RegExp
   handler: (match: RegExpMatchArray, url?: string) => {
     type: string
