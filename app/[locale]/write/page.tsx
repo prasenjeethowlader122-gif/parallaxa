@@ -8,14 +8,13 @@ import CodeMirror from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { EditorView } from '@codemirror/view'
-// FIX: removed duplicate rehype-raw import conflict — combined properly below
 import rehypeRaw from 'rehype-raw'
 import {
   History, ChevronRight, SearchCheck, Accessibility, Tag, Share2, Settings,
   HelpCircle, Bold, Italic, Heading1, Heading2, Quote, Link, Image as ImageIcon,
   CheckCircle2, AlertCircle, Save, Send, X, Check, Copy, List, ListOrdered,
   Strikethrough, Code, Minus, RotateCcw, RotateCw, Clock, Star, Zap, TrendingUp,
-  Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal,
+  Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
 } from 'lucide-react';
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -69,7 +68,37 @@ const mdComponents: Components = {
   ul: ({ children }) => <ul className="list-disc pl-5 sm:pl-6 my-3 flex flex-col gap-1.5 text-base sm:text-[1.05rem] text-[#313334]">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal pl-5 sm:pl-6 my-3 flex flex-col gap-1.5 text-base sm:text-[1.05rem] text-[#313334]">{children}</ol>,
   li: ({ children }) => <li className="leading-relaxed break-words">{children}</li>,
-  blockquote: ({ children }) => <blockquote className="border-l-4 border-[#585f64] pl-4 sm:pl-5 my-4 text-[#5e5f61] italic text-base sm:text-lg font-['Newsreader']">{children}</blockquote>,
+  blockquote: ({ children }) => {
+    const childrenArray = React.Children.toArray(children);
+    const firstChild = childrenArray[0];
+
+    if (React.isValidElement(firstChild) && (firstChild as any).type === 'p') {
+      const pChildren = React.Children.toArray((firstChild as any).props.children);
+      const firstPChild = pChildren[0];
+
+      if (typeof firstPChild === 'string' && firstPChild.trim().startsWith('[!NOTE]')) {
+        const cleanFirstChild = firstPChild.trim().replace('[!NOTE]', '').trim();
+        const remainingPChildren = pChildren.slice(1);
+
+        return (
+          <div className="my-6 p-4 sm:p-5 bg-blue-50/50 border border-blue-100 rounded-2xl flex gap-3 sm:gap-4 items-start shadow-sm font-sans not-italic text-left">
+            <div className="shrink-0 w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+              <Info size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-blue-500/80 mb-1">Note</p>
+              <div className="text-blue-900/80 text-sm sm:text-[15px] leading-relaxed">
+                {cleanFirstChild}
+                {remainingPChildren}
+                {childrenArray.slice(1)}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    }
+    return <blockquote className="border-l-4 border-[#585f64] pl-4 sm:pl-5 my-4 text-[#5e5f61] italic text-base sm:text-lg font-['Newsreader']">{children}</blockquote>;
+  },
   table: ({ children }) => <div className="overflow-x-auto my-4 rounded-xl border border-[#e4e2e1] max-w-full"><table className="min-w-full text-xs sm:text-sm">{children}</table></div>,
   thead: ({ children }) => <thead className="bg-[#f5f3f3] text-[#585f64]">{children}</thead>,
   tbody: ({ children }) => <tbody className="divide-y divide-[#efedee]">{children}</tbody>,
@@ -86,7 +115,6 @@ const mdComponents: Components = {
   ),
 }
 
-// FIX: rehypePlugins combined into single array — previously [rehypeRaw] was overwritten by [rehypeKatex]
 function MarkdownPreview({ content }: { content: string }) {
   if (!content.trim()) {
     return <div className="text-[#c0bebe] font-['Newsreader'] italic text-lg sm:text-xl text-center py-16">Nothing to preview yet…</div>
@@ -350,7 +378,6 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     { success: true, text: 'AMP compatibility configured' },
   ]
 
-  // FIX: response.json() একবারই call করা হচ্ছে — আগে ok check, তারপর json parse
   const handlePublish = async () => {
     setPublishing(true);
     try {
@@ -371,7 +398,6 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         body: JSON.stringify(payload),
       });
 
-      // FIX: json() একবার পড়া হচ্ছে, তারপর ok check
       const j = await response.json();
       if (!response.ok) {
         throw new Error(j.error || 'Publish failed');

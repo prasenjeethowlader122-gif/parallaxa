@@ -28,6 +28,7 @@ export function Header({
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
+  const locale = pathname.split('/')[1] || 'en'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -277,11 +278,12 @@ export function Header({
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
             {NAV_LINKS.map(({ href, label, badge }) => {
-              const isActive = pathname === href
+              const localizedHref = `/${locale}${href === '/' ? '' : href}`
+              const isActive = pathname === localizedHref
               return (
                 <Link
                   key={href}
-                  href={href}
+                  href={localizedHref}
                   className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                     isActive
                       ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
@@ -297,6 +299,32 @@ export function Header({
                 </Link>
               )
             })}
+
+            {session && (
+              <>
+                <Link
+                  href={`/${locale}/write`}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    pathname === `/${locale}/write`
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="material-symbols-rounded !text-[18px]">edit_note</span>
+                  Write
+                </Link>
+                <Link
+                  href={`/${locale}/dashboard`}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    pathname === `/${locale}/dashboard`
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </div>
@@ -415,11 +443,12 @@ export function Header({
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Sections</p>
             <div className="grid grid-cols-3 gap-2.5 mb-5">
               {NAV_LINKS.map(({ href, label, badge, icon }) => {
-                const isActive = pathname === href
+                const localizedHref = `/${locale}${href === '/' ? '' : href}`
+                const isActive = pathname === localizedHref
                 return (
                   <Link
                     key={href}
-                    href={href}
+                    href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
                     className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
                       isActive
@@ -445,6 +474,46 @@ export function Header({
                   </Link>
                 )
               })}
+              {session && (
+                <>
+                  <Link
+                    href={`/${locale}/write`}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
+                      pathname === `/${locale}/write`
+                        ? 'bg-primary border-gray-900'
+                        : 'bg-card border-border hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pathname === `/${locale}/write` ? 'bg-background/15' : 'bg-background border border-border'}`}>
+                      <span className={`material-symbols-rounded !text-[18px] ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-gray-600'}`}>
+                        edit_note
+                      </span>
+                    </div>
+                    <span className={`text-xs font-medium leading-tight ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-foreground'}`}>
+                      Write
+                    </span>
+                  </Link>
+                  <Link
+                    href={`/${locale}/dashboard`}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
+                      pathname === `/${locale}/dashboard`
+                        ? 'bg-primary border-gray-900'
+                        : 'bg-card border-border hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pathname === `/${locale}/dashboard` ? 'bg-background/15' : 'bg-background border border-border'}`}>
+                      <span className={`material-symbols-rounded !text-[18px] ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-gray-600'}`}>
+                        dashboard
+                      </span>
+                    </div>
+                    <span className={`text-xs font-medium leading-tight ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-foreground'}`}>
+                      Dashboard
+                    </span>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
