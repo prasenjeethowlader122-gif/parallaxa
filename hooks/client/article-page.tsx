@@ -16,6 +16,9 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, getAllArticles, getArticleBySlug } from '@/lib/db/articles'
+import { createCustomBlockPlugin } from '@/lib/mdx/block-registry'
+import '@/lib/mdx/blocks'
+import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -94,6 +97,7 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > 
 // ── MD Component Map ──────────────────────────────────────────────────────────
 
 const mdComponents: Components = {
+  ...customBlockComponents,
   code: CodeBlock as Components['code'],
   h1: ({ children }) => (
     <h1 className={`${Fugaz.className} text-2xl sm:text-3xl font-bold text-gray-900 mt-8 mb-3 leading-tight uppercase`}>{children}</h1>
@@ -172,7 +176,7 @@ const mdComponents: Components = {
 function ArticleMarkdown({ content }: { content: string }) {
   return (
     <Markdown
-      remarkPlugins={[remarkGfm, remarkMath]}
+      remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin()]}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
       components={mdComponents}
     >
