@@ -14,7 +14,6 @@ const passwordRules = [
 ]
 
 export default function SignUpPage() {
-  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,27 +45,30 @@ export default function SignUpPage() {
   }
   
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-      <Link href="/" className="mb-12">
-        <span className="text-xl font-bold uppercase tracking-tight text-foreground">
-          Bangladesh Hindu Union
-        </span>
-      </Link>
-
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Create account</h1>
-          <p className="text-muted-foreground text-sm">Join to get your personalised news feed</p>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center">
+          <Link href="/" className="mb-8">
+            <span className="text-2xl font-bold uppercase tracking-tight text-foreground">
+              বাংলাদেশ হিন্দু ইউনিয়ন
+            </span>
+          </Link>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 mb-6">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-red-800 text-sm">{error}</p>
+        <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Create account</h1>
+            <p className="text-muted-foreground text-sm">Join to get your personalised news feed</p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 mb-6">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
               Full Name
@@ -164,11 +166,12 @@ export default function SignUpPage() {
             Sign in
           </Link>
         </p>
-        <p className="text-center mt-3">
-          <Link href="/" className="text-red-600 hover:text-red-700 text-sm font-medium">
-            ← Back to Home
-          </Link>
-        </p>
+          <p className="text-center mt-3">
+            <Link href="/" className="text-red-600 hover:text-red-700 text-sm font-medium">
+              ← Back to Home
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

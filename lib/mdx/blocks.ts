@@ -20,7 +20,7 @@ import { blockRegistry } from './block-registry'
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'fbpost',
-  pattern: /^\[!fbpost\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!fbpost\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => ({
     type: 'fbpost',
     hProperties: {
@@ -45,7 +45,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'tweet',
-  pattern: /^\[!tweet\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!tweet\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => ({
     type: 'tweet',
     hProperties: {
@@ -61,7 +61,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'youtube',
-  pattern: /^\[!youtube\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!youtube\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => {
     // YouTube video ID extract করুন
     const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
@@ -90,7 +90,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'tiktok',
-  pattern: /^\[!tiktok\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!tiktok\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => ({
     type: 'tiktok',
     hProperties: {
@@ -106,7 +106,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'instagram',
-  pattern: /^\[!instagram\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!instagram\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => ({
     type: 'instagram',
     hProperties: {
@@ -122,7 +122,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'reddit',
-  pattern: /^\[!reddit\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!reddit\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => ({
     type: 'reddit',
     hProperties: {
@@ -138,7 +138,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'vimeo',
-  pattern: /^\[!vimeo\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!vimeo\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => {
     const videoIdMatch = url.match(/vimeo\.com\/(\d+)/)
     const videoId = videoIdMatch ? videoIdMatch[1] : url
@@ -166,7 +166,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'codepen',
-  pattern: /^\[!codepen\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!codepen\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => ({
     type: 'codepen',
     hProperties: {
@@ -192,7 +192,7 @@ blockRegistry.register({
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'gist',
-  pattern: /^\[!gist\(url="(.+?)"\)\]$/,
+  pattern: /^\s*\[!gist\(url="(.+?)"\)\]\s*$/,
   handler: (match, url) => {
     const gistId = url.split('/').pop()?.replace('.js', '')
 

@@ -185,15 +185,22 @@ function SignInForm() {
 // Page shell wraps the form in Suspense to satisfy Next.js static generation
 export default function SignInPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-       <Link href="/" className="flex items-center gap-2 mt-8">
-              <span className="text-xl font-bold uppercase tracking-tight text-foreground">
-                Bangladesh Hindu Union
-              </span>
-            </Link>
-      <Suspense fallback={<div className="w-full max-w-md text-center text-muted-foreground text-sm">Loading…</div>}>
-        <SignInForm />
-      </Suspense>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center">
+          <Link href="/" className="flex items-center gap-2 mb-8">
+            <span className="text-2xl font-bold uppercase tracking-tight text-foreground">
+              বাংলাদেশ হিন্দু ইউনিয়ন
+            </span>
+          </Link>
+        </div>
+
+        <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
+          <Suspense fallback={<div className="text-center text-muted-foreground text-sm">Loading…</div>}>
+            <SignInForm />
+          </Suspense>
+        </div>
+      </div>
     </div>
   )
 }
