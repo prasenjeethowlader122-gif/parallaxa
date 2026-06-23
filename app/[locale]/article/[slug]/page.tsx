@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getArticleBySlug, incrementArticleViews } from '@/lib/db/articles';
+import { getArticleBySlug, incrementArticleViews, getAllArticles, getArticlesByCategory } from '@/lib/db/articles';
 import { translateBatch } from '@/lib/trans';
 import ArticlePage from '@/hooks/client/article-page';
 
@@ -87,6 +87,21 @@ export default async function ArticlePageOpen({
 
   incrementArticleViews(article.id).catch(() => {});
 
+  // Fetch related and most read on server to avoid client-side DB calls
+  const [allArticles, relatedInCategory] = await Promise.all([
+    getAllArticles(10, 0),
+    getArticlesByCategory(article.category)
+  ]);
+
+  const related = relatedInCategory
+    .filter(a => a.id !== article.id)
+    .slice(0, 3);
+
+  const popular = allArticles
+    .filter(a => a.id !== article.id)
+    .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
+    .slice(0, 4);
+
   let translatedArticle = { ...article };
   if (locale !== 'en') {
     const textsToTranslate = [article.title, article.description, article.content];
@@ -107,8 +122,8 @@ export default async function ArticlePageOpen({
             headline: translatedArticle.title,
             description: translatedArticle.description,
             image: [translatedArticle.image],
-            datePublished: translatedArticle.date.toISOString(),
-            dateModified: translatedArticle.updatedAt ? new Date(translatedArticle.updatedAt).toISOString() : translatedArticle.date.toISOString(),
+            datePublished: new Date(translatedArticle.date).toISOString(),
+            dateModified: translatedArticle.updatedAt ? new Date(translatedArticle.updatedAt).toISOString() : new Date(translatedArticle.date).toISOString(),
             author: [
               {
                 '@type': 'Person',
@@ -118,7 +133,11 @@ export default async function ArticlePageOpen({
           }),
         }}
       />
-      <ArticlePage initialArticle={translatedArticle} />
+      <ArticlePage
+        initialArticle={translatedArticle}
+        initialRelated={related}
+        initialMostRead={popular}
+      />
     </>
   );
 }

@@ -1,11 +1,15 @@
 import localFont from 'next/font/local'
-import { Hind_Siliguri } from 'next/font/google'
 
-// Bangla Font: Hind Siliguri
-export const banglaFont = Hind_Siliguri({
-  weight: ['300', '400', '500', '600', '700'],
-  subsets: ['bengali'],
-  variable: '--font-bangla',
+// Bangla Font: Ekushy Font
+export const banglaFont = localFont({
+  src: [
+    {
+      path: '../public/local/font/Ekush-Regular.ttf',
+      style: 'normal',
+      weight: '400'
+    }
+  ],
+  variable: '--font-bangla'
 })
 
 // Body Font: Miranda Sans (exported as sansFont)

@@ -15,7 +15,7 @@ import { slabo, Fugaz } from '@/lib/font'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
-import { NewsArticle, getAllArticles, getArticleBySlug } from '@/lib/db/articles'
+import { NewsArticle } from '@/lib/db/articles'
 import { createCustomBlockPlugin } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
@@ -283,14 +283,24 @@ function RelatedItem({ article }: { article: NewsArticle }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function ArticlePage({ initialArticle, slug: propSlug }: { initialArticle?: NewsArticle, slug?: string }) {
+export default function ArticlePage({
+  initialArticle,
+  initialRelated,
+  initialMostRead,
+  slug: propSlug
+}: {
+  initialArticle?: NewsArticle,
+  initialRelated?: NewsArticle[],
+  initialMostRead?: NewsArticle[],
+  slug?: string
+}) {
   const params = useParams()
   const slug = (params.slug as string) || propSlug
   
   const [article, setArticle] = useState < NewsArticle | null > (initialArticle || null)
-  const [relatedArticles, setRelatedArticles] = useState < NewsArticle[] > ([])
-  const [mostRead, setMostRead] = useState < NewsArticle[] > ([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [relatedArticles, setRelatedArticles] = useState < NewsArticle[] > (initialRelated || [])
+  const [mostRead, setMostRead] = useState < NewsArticle[] > (initialMostRead || [])
+  const [isLoading, setIsLoading] = useState(!initialArticle)
   const [copied, setCopied] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
@@ -299,32 +309,15 @@ export default function ArticlePage({ initialArticle, slug: propSlug }: { initia
   const mainRef = useRef < HTMLDivElement > (null)
   const progress = useReadingProgress(mainRef)
   
-  // Load article data
+  // Update state if initial props change
   useEffect(() => {
-    const load = async () => {
-      try {
-        const found = initialArticle || await getArticleBySlug(slug)
-        if (found) {
-          setArticle(found)
-          const all = await getAllArticles()
-          const related = all
-            .filter((a) => a.category === found.category && a.id !== found.id)
-            .slice(0, 3)
-          const popular = all
-            .filter((a) => a.id !== found.id)
-            .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
-            .slice(0, 4)
-          setRelatedArticles(related)
-          setMostRead(popular)
-        }
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setIsLoading(false)
-      }
+    if (initialArticle) {
+      setArticle(initialArticle)
+      setIsLoading(false)
     }
-    load()
-  }, [slug])
+    if (initialRelated) setRelatedArticles(initialRelated)
+    if (initialMostRead) setMostRead(initialMostRead)
+  }, [initialArticle, initialRelated, initialMostRead])
   
   // Close share dropdown on outside click
   useEffect(() => {
@@ -574,7 +567,7 @@ export default function ArticlePage({ initialArticle, slug: propSlug }: { initia
                     {toDigitalNumber(article.views ?? 0)}
                   </span>
                   <span className="text-gray-300">·</span>
-                  <span className="text-gray-400">{formatRelativeTime(article.date)}</span>
+                  <span className="text-gray-400">{formatRelativeTime(article.date.toString())}</span>
                 </div>
               </div>
 
