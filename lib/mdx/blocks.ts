@@ -16,7 +16,7 @@ import { blockRegistry } from './block-registry'
  */
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 📱 FACEBOOK POST BLOCK
+//  FACEBOOK POST BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'fbpost',
@@ -41,7 +41,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━
-// 🐦 TWITTER/X BLOCK
+//  TWITTER/X BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'tweet',
@@ -57,7 +57,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 📹 YOUTUBE VIDEO BLOCK
+//  YOUTUBE VIDEO BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'youtube',
@@ -86,7 +86,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🎵 TIKTOK VIDEO BLOCK
+//  TIKTOK VIDEO BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'tiktok',
@@ -102,7 +102,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 📷 INSTAGRAM POST BLOCK
+//  INSTAGRAM POST BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'instagram',
@@ -118,7 +118,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🔗 REDDIT POST BLOCK
+//  REDDIT POST BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'reddit',
@@ -134,7 +134,7 @@ blockRegistry.register({
 })
 
 // ━━━━━��━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🎬 VIMEO VIDEO BLOCK
+//  VIMEO VIDEO BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'vimeo',
@@ -162,7 +162,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🎥 CODEPEN EMBED BLOCK
+//  CODEPEN EMBED BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'codepen',
@@ -188,7 +188,7 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 📊 GITHUB GIST BLOCK
+//  GITHUB GIST BLOCK
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
   name: 'gist',

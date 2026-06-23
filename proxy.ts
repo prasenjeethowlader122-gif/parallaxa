@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 
 const SUPPORTED_LOCALES = ['en', 'fr', 'de', 'es', 'ar', 'bn', 'zh']
-const DEFAULT_LOCALE = 'en'
+const DEFAULT_LOCALE = 'bn'
 
 const COUNTRY_TO_LOCALE: Record<string, string> = {
   US: 'en', GB: 'en', AU: 'en', CA: 'en',
