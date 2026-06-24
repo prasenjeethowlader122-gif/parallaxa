@@ -1,0 +1,44 @@
+2026-06-24T15:14:23.866033462Z ==> Downloading cache...
+2026-06-24T15:14:23.900324793Z ==> Cloning from https://github.com/prasenjeethowlader122-gif/parallaxa
+2026-06-24T15:14:25.88617216Z ==> Checking out commit 7446d98272735bb750502ab7eefcd4ce89ff4f1f in branch main
+2026-06-24T15:14:43.755915522Z ==> Downloaded 885MB in 8s. Extraction took 12s.
+2026-06-24T15:14:57.414369622Z ==> Using Node.js version 24.14.1 (default)
+2026-06-24T15:14:57.414381723Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-06-24T15:14:57.457327478Z ==> Running build command 'npm install; npm run build'...
+2026-06-24T15:15:01.845110601Z 
+2026-06-24T15:15:01.948131057Z > workspace@0.0.0 preinstall
+2026-06-24T15:15:01.948144598Z > sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+2026-06-24T15:15:01.948149978Z 
+2026-06-24T15:15:01.948380144Z Use pnpm instead
+2026-06-24T15:15:01.952976208Z npm error code 1
+2026-06-24T15:15:01.955295625Z npm error path /opt/render/project/src
+2026-06-24T15:15:01.955307346Z npm error command failed
+2026-06-24T15:15:01.955313106Z npm error command sh -c sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+2026-06-24T15:15:01.955317626Z npm error A complete log of this run can be found in: /opt/render/.cache/_logs/2026-06-24T15_14_57_581Z-debug-0.log
+2026-06-24T15:15:02.151587326Z 
+2026-06-24T15:15:02.151607586Z > workspace@0.0.0 build
+2026-06-24T15:15:02.151612026Z > pnpm run typecheck && pnpm -r --if-present run build
+2026-06-24T15:15:02.151615746Z 
+2026-06-24T15:15:02.54833667Z 
+2026-06-24T15:15:02.548357611Z > workspace@0.0.0 typecheck /opt/render/project/src
+2026-06-24T15:15:02.548363251Z > pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+2026-06-24T15:15:02.548367251Z 
+2026-06-24T15:15:02.954424717Z 
+2026-06-24T15:15:02.954449277Z > workspace@0.0.0 typecheck:libs /opt/render/project/src
+2026-06-24T15:15:02.954455758Z > tsc --build
+2026-06-24T15:15:02.954460607Z 
+2026-06-24T15:15:03.285970144Z error TS2688: Cannot find type definition file for 'node'.
+2026-06-24T15:15:03.285995014Z   The file is in the program because:
+2026-06-24T15:15:03.286002424Z     Entry point of type library 'node' specified in compilerOptions
+2026-06-24T15:15:03.286269741Z lib/db/src/index.ts(1,25): error TS2307: Cannot find module 'drizzle-orm/node-postgres' or its corresponding type declarations.
+2026-06-24T15:15:03.286289761Z lib/db/src/index.ts(2,16): error TS2307: Cannot find module 'pg' or its corresponding type declarations.
+2026-06-24T15:15:03.286336602Z lib/db/src/index.ts(7,6): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+2026-06-24T15:15:03.286359593Z lib/db/src/index.ts(13,50): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+2026-06-24T15:15:03.601359549Z lib/api-client-react/src/generated/api.ts(8,26): error TS2307: Cannot find module '@tanstack/react-query' or its corresponding type declarations.
+2026-06-24T15:15:03.60138931Z lib/api-client-react/src/generated/api.ts(14,8): error TS2307: Cannot find module '@tanstack/react-query' or its corresponding type declarations.
+2026-06-24T15:15:03.60141276Z lib/api-client-react/src/generated/api.ts(64,5): error TS7031: Binding element 'signal' implicitly has an 'any' type.
+2026-06-24T15:15:03.61507469Z lib/api-zod/src/generated/api.ts(8,22): error TS2307: Cannot find module 'zod' or its corresponding type declarations.
+2026-06-24T15:15:03.641889125Z  ELIFECYCLE  Command failed with exit code 1.
+2026-06-24T15:15:03.673508199Z  ELIFECYCLE  Command failed with exit code 1.
+2026-06-24T15:15:03.751021303Z ==> Build failed 😞
+2026-06-24T15:15:03.751041363Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys

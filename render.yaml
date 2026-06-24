@@ -1,0 +1,26 @@
+services:
+  # ── Express API (web service) ─────────────────────────────────────────────
+  - type: web
+    name: bangladesh-hindu-union-api
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+
+  # ── React/Vite frontend (static site) ────────────────────────────────────
+  - type: web
+    name: bangladesh-hindu-union
+    runtime: static
+    region: singapore
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build
+    staticPublishPath: artifacts/bangladesh-hindu-union/dist
+    envVars:
+      - key: NODE_ENV
+        value: production
