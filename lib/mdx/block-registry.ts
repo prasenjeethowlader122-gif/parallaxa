@@ -7,6 +7,7 @@ export interface BlockConfig {
   handler: (match: RegExpMatchArray) => {
     type: string
     hProperties: Record<string, any>
+    hName?: string
   }
 }
 
@@ -64,16 +65,19 @@ export function createCustomBlockPlugin() {
               try {
                 const blockData = block.handler(match)
 
-                // Transform the paragraph node into a custom block node
                 // node.data is recognized by remark-rehype to set HAST properties
                 node.data = node.data || {}
-                node.data.hName = blockData.type || block.name
+                node.data.hName = blockData.hName || blockData.type || block.name
                 node.data.hProperties = blockData.hProperties
 
-                // Clear children so it becomes a leaf node for the custom renderer
+                // If it was a paragraph, we might want to keep it as a paragraph
+                // but rehype will use hName to render it.
+                // Or we can change the type to something that won't be wrapped in <p>
+                // but that's tricky in remark.
+
                 node.children = []
 
-                return // Stop processing this paragraph
+                return // Stop processing this node
               } catch (e) {
                 console.error(`[MDX Plugin] Error handling block ${block.name}:`, e)
               }

@@ -63,6 +63,7 @@ blockRegistry.register({
 
     return {
       type: 'embed',
+      hName: 'embed',
       hProperties: {
         className: `custom-block ${type}-embed`,
         dataUrl: url,
@@ -79,16 +80,20 @@ blockRegistry.register({
   name: 'run',
   label: 'Run Code',
   icon: 'terminal',
-  pattern: /\[!run\s*\(([\s\S]+?)\)\s*\]/,
+  pattern: /\[!run\s*\(([\s\S]*?)\)\s*\]/,
   template: '[!run()]',
   handler: (match) => {
-    const rawContent = match[1] || ''
-    // Extract code from code="..." or just the content
-    const codeMatch = rawContent.match(/code=["']?([\s\S]+?)["']?$/)
-    const code = codeMatch ? codeMatch[1] : rawContent
+    let code = (match[1] || '').trim()
+
+    // Check if it's in the format code="..."
+    const codeMatch = code.match(/^code=["']([\s\S]*?)["']$/)
+    if (codeMatch) {
+      code = codeMatch[1]
+    }
 
     return {
       type: 'run',
+      hName: 'run',
       hProperties: {
         className: 'custom-block run-code',
         htmlContent: code,
@@ -104,15 +109,20 @@ blockRegistry.register({
   name: 'style',
   label: 'Custom CSS',
   icon: 'palette',
-  pattern: /\[!style\s*\(([\s\S]+?)\)\s*\]/,
+  pattern: /\[!style\s*\(([\s\S]*?)\)\s*\]/,
   template: '[!style()]',
   handler: (match) => {
-    const rawContent = match[1] || ''
-    const cssMatch = rawContent.match(/css=["']?([\s\S]+?)["']?$/)
-    const css = cssMatch ? cssMatch[1] : rawContent
+    let css = (match[1] || '').trim()
+
+    // Check if it's in the format css="..."
+    const cssMatch = css.match(/^css=["']([\s\S]*?)["']$/)
+    if (cssMatch) {
+      css = cssMatch[1]
+    }
 
     return {
       type: 'style',
+      hName: 'style',
       hProperties: {
         className: 'custom-block custom-style',
         htmlContent: `<style>${css}</style>`,
@@ -138,6 +148,7 @@ legacyBlocks.forEach(name => {
       const embedResult = (blockRegistry.getBlock('embed') as any).handler(['', url])
       return {
         type: name,
+        hName: name,
         hProperties: embedResult.hProperties
       }
     }
