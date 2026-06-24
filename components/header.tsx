@@ -6,16 +6,20 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
 import { Fugaz, sansFont } from '@/lib/font'
+import {
+  Home, Globe, Cpu, Briefcase, Trophy, FlaskConical, Activity, MessageSquare,
+  X, Languages, ChevronDown, Search, Bell, FileEdit, Menu, LayoutDashboard
+} from 'lucide-react'
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home', icon: 'home' },
-  { href: '/category/World', label: 'World', icon: 'public' },
-  { href: '/category/Technology', label: 'Technology', icon: 'memory' },
-  { href: '/category/Business', label: 'Business', icon: 'work' },
-  { href: '/category/Sports', label: 'Sports', icon: 'sports_score' },
-  { href: '/category/Science', label: 'Science', icon: 'science' },
-  { href: '/category/Health', label: 'Health', icon: 'medical_services' },
-  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: 'forum' },
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/category/World', label: 'World', icon: Globe },
+  { href: '/category/Technology', label: 'Technology', icon: Cpu },
+  { href: '/category/Business', label: 'Business', icon: Briefcase },
+  { href: '/category/Sports', label: 'Sports', icon: Trophy },
+  { href: '/category/Science', label: 'Science', icon: FlaskConical },
+  { href: '/category/Health', label: 'Health', icon: Activity },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
 ]
 
 export function Header({
@@ -125,7 +129,7 @@ export function Header({
             className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity p-1"
             aria-label="Dismiss"
           >
-            <span className="material-symbols-rounded !text-[16px]">close</span>
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -149,9 +153,9 @@ export function Header({
           </div>
           <div className="relative group">
             <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-full px-2.5 py-0.5 hover:bg-background uppercase">
-              <span className="material-symbols-rounded !text-[14px]">language</span>
+              <Languages className="w-3.5 h-3.5" />
               {(pathname.split('/')[1] || 'en').toUpperCase()}
-              <span className="material-symbols-rounded !text-[12px]">expand_more</span>
+              <ChevronDown className="w-3 h-3" />
             </button>
             <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded-xl shadow-xl p-1 w-24 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
               {['en', 'es', 'fr', 'de', 'ja'].map((lang) => (
@@ -197,7 +201,7 @@ export function Header({
                 className="flex items-center gap-1.5 px-3 h-10 text-xs text-muted-foreground border-r border-border hover:bg-gray-100 transition-colors"
               >
                 {searchCategory}
-                <span className="material-symbols-rounded !text-[14px]">expand_more</span>
+                <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {isCatOpen && (
                 <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-[120px]">
@@ -231,7 +235,7 @@ export function Header({
               className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground hover:bg-gray-700 transition-colors flex-shrink-0"
               aria-label="Search"
             >
-              <span className="material-symbols-rounded !text-[20px]">search</span>
+              <Search className="w-5 h-5" />
             </button>
           </form>
 
@@ -241,7 +245,7 @@ export function Header({
               className="relative w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-card hover:text-foreground transition-colors"
               aria-label="Notifications"
             >
-              <span className="material-symbols-rounded !text-[20px]">notifications</span>
+              <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
             </button>
 
@@ -310,7 +314,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <span className="material-symbols-rounded !text-[18px]">edit_note</span>
+                  <FileEdit className="w-4.5 h-4.5" />
                   Write
                 </Link>
                 <Link
@@ -362,9 +366,7 @@ export function Header({
               className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
               aria-label="Menu"
             >
-              <span className="material-symbols-rounded !text-[24px]">
-                {isMenuOpen ? 'close' : 'menu'}
-              </span>
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <Link href="/" className="flex items-center gap-2">
               <span className="text-[18px] font-extrabold text-foreground tracking-tight uppercase">
@@ -380,12 +382,10 @@ export function Header({
               className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
               aria-label="Search"
             >
-              <span className="material-symbols-rounded !text-[24px]">
-                {isSearchOpen ? 'close' : 'search'}
-              </span>
+              {isSearchOpen ? <X className="w-6 h-6" /> : <Search className="w-6 h-6" />}
             </button>
             <button className="relative w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors">
-              <span className="material-symbols-rounded !text-[24px]">notifications</span>
+              <Bell className="w-6 h-6" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
             </button>
           </div>
@@ -408,7 +408,7 @@ export function Header({
                 className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground flex-shrink-0"
                 aria-label="Search"
               >
-                <span className="material-symbols-rounded !text-[20px]">search</span>
+                <Search className="w-5 h-5" />
               </button>
             </form>
           </div>
@@ -427,7 +427,7 @@ export function Header({
           <div className="px-5 pt-5 pb-4 border-b border-border">
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Quick search</p>
             <form onSubmit={handleSearch} className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-10">
-              <span className="material-symbols-rounded !text-[18px] text-muted-foreground flex-shrink-0">search</span>
+              <Search className="w-4.5 h-4.5 text-muted-foreground flex-shrink-0" />
               <input
                 type="text"
                 placeholder="Search stories, topics…"
@@ -442,7 +442,7 @@ export function Header({
           <div className="px-5 pt-5">
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Sections</p>
             <div className="grid grid-cols-3 gap-2.5 mb-5">
-              {NAV_LINKS.map(({ href, label, badge, icon }) => {
+              {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
                 const isActive = pathname === localizedHref
                 return (
@@ -457,10 +457,8 @@ export function Header({
                     }`}
                   >
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-background/15' : 'bg-background border border-border'}`}>
-                      {icon && (
-                        <span className={`material-symbols-rounded !text-[18px] ${isActive ? 'text-primary-foreground' : 'text-gray-600'}`}>
-                          {icon}
-                        </span>
+                      {Icon && (
+                        <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-primary-foreground' : 'text-gray-600'}`} />
                       )}
                     </div>
                     <span className={`text-xs font-medium leading-tight ${isActive ? 'text-primary-foreground' : 'text-foreground'}`}>
@@ -486,9 +484,7 @@ export function Header({
                     }`}
                   >
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pathname === `/${locale}/write` ? 'bg-background/15' : 'bg-background border border-border'}`}>
-                      <span className={`material-symbols-rounded !text-[18px] ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-gray-600'}`}>
-                        edit_note
-                      </span>
+                      <FileEdit className={`w-4.5 h-4.5 ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-gray-600'}`} />
                     </div>
                     <span className={`text-xs font-medium leading-tight ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-foreground'}`}>
                       Write
@@ -504,9 +500,7 @@ export function Header({
                     }`}
                   >
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pathname === `/${locale}/dashboard` ? 'bg-background/15' : 'bg-background border border-border'}`}>
-                      <span className={`material-symbols-rounded !text-[18px] ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-gray-600'}`}>
-                        dashboard
-                      </span>
+                      <LayoutDashboard className={`w-4.5 h-4.5 ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-gray-600'}`} />
                     </div>
                     <span className={`text-xs font-medium leading-tight ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-foreground'}`}>
                       Dashboard

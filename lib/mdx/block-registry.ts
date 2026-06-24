@@ -57,7 +57,7 @@ export function createCustomBlockPlugin() {
 
         const text = textContent.trim()
 
-        if (text.includes('[!') && text.includes(')]')) {
+        if (text.includes('[!')) {
           for (const block of registeredBlocks) {
             const match = text.match(block.pattern)
             if (match) {
