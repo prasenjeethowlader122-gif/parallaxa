@@ -3,7 +3,8 @@ export interface BlockConfig {
   label: string
   icon: string | React.ReactNode
   pattern: RegExp
-  handler: (match: RegExpMatchArray, url?: string) => {
+  template?: string
+  handler: (match: RegExpMatchArray) => {
     type: string
     hProperties: Record<string, any>
   }
@@ -56,18 +57,17 @@ export function createCustomBlockPlugin() {
 
         const text = textContent.trim()
 
-        if (text.startsWith('[!') && text.endsWith(')]')) {
+        if (text.includes('[!') && text.includes(')]')) {
           for (const block of registeredBlocks) {
             const match = text.match(block.pattern)
             if (match) {
               try {
-                const url = match[1] || ''
-                const blockData = block.handler(match, url)
+                const blockData = block.handler(match)
 
                 // Transform the paragraph node into a custom block node
                 // node.data is recognized by remark-rehype to set HAST properties
                 node.data = node.data || {}
-                node.data.hName = block.name
+                node.data.hName = blockData.type || block.name
                 node.data.hProperties = blockData.hProperties
 
                 // Clear children so it becomes a leaf node for the custom renderer
