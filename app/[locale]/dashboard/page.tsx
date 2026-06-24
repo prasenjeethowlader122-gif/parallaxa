@@ -6,9 +6,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
-import { Home as HomeIcon, FileText as PagesIcon } from 'lucide-react';
+import { Home as HomeIcon, FileText as PagesIcon, BarChart3 } from 'lucide-react';
 import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
+import AnalysisView from '@/components/dashboard/AnalysisView';
 
 const NavLists = [
   {
@@ -20,6 +21,11 @@ const NavLists = [
     name: '#articles',
     icon: PagesIcon,
     index: <ArticlesView />
+  },
+  {
+    name: '#analysis',
+    icon: BarChart3,
+    index: <AnalysisView />
   }
 ];
 

@@ -17,7 +17,9 @@ import {
   CheckCircle2, AlertCircle, Save, Send, X, Check, Copy, List, ListOrdered,
   Strikethrough, Code, Minus, RotateCcw, RotateCw, Clock, Star, Zap, TrendingUp,
   Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
-  Youtube, Facebook, Twitter, Instagram, Play, Github, Box, ChevronDown
+  Youtube, Facebook, Twitter, Instagram, Play, Github, Box, ChevronDown,
+  Heading3, Type, ListSeparator, Layout, SquarePlus, Highlighter, Palette, Terminal,
+  Type as FontIcon
 } from 'lucide-react';
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -26,9 +28,10 @@ import Markdown, { Components } from 'react-markdown'
 import { createCustomBlockPlugin, blockRegistry } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
+import VisualEditor from '@/components/VisualEditor'
 
 type SidebarTab = 'metadata' | 'seo' | 'accessibility' | 'tags' | 'distribution'
-type ViewMode = 'write' | 'preview' | 'split'
+type ViewMode = 'write' | 'preview' | 'split' | 'visual'
 type Visibility = 'public' | 'private' | 'unlisted'
 type ArticleStatus = 'draft' | 'published' | 'scheduled'
 
@@ -139,15 +142,40 @@ function MarkdownPreview({ content }: { content: string }) {
   )
 }
 
-const ToolbarBtn = ({ icon, label, onClick, active }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean }) => (
+const ToolbarBtn = ({ icon: Icon, label, onClick, active }: { icon: any; label: string; onClick: () => void; active?: boolean }) => (
   <button title={label} onClick={onClick}
     className={`p-1.5 sm:p-2 rounded-lg transition-all shrink-0 ${active ? 'bg-[#585f64] text-white' : 'text-[#585f64] hover:bg-black/5 hover:text-[#313334]'}`}>
-    {typeof icon === 'string' ? <span className="material-symbols-rounded !text-[18px]">{icon}</span> : icon}
+    <Icon className="w-4.5 h-4.5" />
   </button>
 )
 
 const DynamicIcon = ({ name, size = 18, className }: { name: string; size?: number; className?: string }) => {
-  return <span className={`material-symbols-rounded !text-[${size}px] ${className || ''}`}>{name}</span>;
+  // Mapping Material icons to Lucide as a fallback
+  const iconMap: Record<string, any> = {
+    'format_bold': Bold,
+    'format_italic': Italic,
+    'format_strikethrough': Strikethrough,
+    'code': Code,
+    'format_h1': Heading1,
+    'format_h2': Heading2,
+    'format_list_bulleted': List,
+    'format_list_numbered': ListOrdered,
+    'format_quote': Quote,
+    'link': Link,
+    'image': ImageIcon,
+    'horizontal_rule': Minus,
+    'add_box': SquarePlus,
+    'share': Share2,
+    'terminal': Terminal,
+    'palette': Palette,
+    'extension': Box,
+    'youtube': Youtube,
+    'facebook': Facebook,
+    'twitter': Twitter,
+    'instagram': Instagram,
+  };
+  const Icon = iconMap[name] || Box;
+  return <Icon size={size} className={className} />;
 };
 
 const SidebarLink = ({ icon, label, active = false, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) => (
@@ -689,24 +717,40 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
   const SidebarInner = () => (
     <div className="flex flex-col h-full min-w-0 overflow-hidden">
-      <div className="px-4 pb-3 shrink-0">
-        <h2 className="font-['Newsreader'] text-lg font-bold">Editorial Settings</h2>
-        <p className="text-[10px] text-[#9e9fa0] mt-0.5">Article ID: {id ?? 'new'}</p>
+      <div className="px-5 pb-4 shrink-0">
+        <h2 className="font-['Newsreader'] text-xl font-bold text-gray-900">Editorial Settings</h2>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#9e9fa0] mt-1.5">Article ID: {id ?? 'new'}</p>
       </div>
-      <nav className="flex flex-col gap-0.5 px-1 shrink-0">
-        {([
-          { id: 'metadata', icon: <FileText size={15} />, label: 'Metadata' },
-          { id: 'seo', icon: <SearchCheck size={15} />, label: 'SEO' },
-          { id: 'accessibility', icon: <Accessibility size={15} />, label: 'Accessibility' },
-          { id: 'tags', icon: <Tag size={15} />, label: 'Tags' },
-          { id: 'distribution', icon: <Share2 size={15} />, label: 'Distribution' },
-        ] as { id: SidebarTab; icon: React.ReactNode; label: string }[]).map(({ id: tabId, icon, label }) => (
-          <SidebarLink key={tabId} icon={icon} label={label} active={activeTab === tabId}
-            onClick={() => { setActiveTab(tabId); setMobileDrawerOpen(false) }} />
-        ))}
-      </nav>
-      <div className="flex-1 overflow-y-auto px-2 pt-3 pb-3 min-w-0 bg-white">
-        {renderSidebarPanel()}
+
+      <div className="px-2 mb-4 shrink-0">
+        <div className="bg-white rounded-2xl border border-gray-100 p-1 flex flex-col gap-0.5">
+          {([
+            { id: 'metadata', icon: <FileText size={16} />, label: 'Metadata' },
+            { id: 'seo', icon: <SearchCheck size={16} />, label: 'SEO' },
+            { id: 'accessibility', icon: <Accessibility size={16} />, label: 'Accessibility' },
+            { id: 'tags', icon: <Tag size={16} />, label: 'Tags' },
+            { id: 'distribution', icon: <Share2 size={16} />, label: 'Distribution' },
+          ] as { id: SidebarTab; icon: React.ReactNode; label: string }[]).map(({ id: tabId, icon, label }) => (
+            <button
+              key={tabId}
+              onClick={() => { setActiveTab(tabId); setMobileDrawerOpen(false) }}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm ${
+                activeTab === tabId
+                  ? 'bg-gray-900 text-white font-semibold'
+                  : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              <span className="shrink-0">{icon}</span>
+              <span className="truncate">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 pb-10 min-w-0 custom-scrollbar">
+        <div className="py-2">
+          {renderSidebarPanel()}
+        </div>
       </div>
     </div>
   )
@@ -729,11 +773,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <span className="whitespace-nowrap">{saveLabel()}</span>
             </div>
             <div className="flex items-center bg-[#efedee] rounded-2xl p-0.5 shrink-0 ml-1">
-              {(['write', 'split', 'preview'] as ViewMode[]).map((m) => (
+              {(['write', 'visual', 'split', 'preview'] as ViewMode[]).map((m) => (
                 <button key={m} onClick={() => setViewMode(m)}
                   className={`px-2 sm:px-3 py-1.5 rounded-2xl text-[10px] font-semibold transition-all ${viewMode === m ? 'bg-white text-[#313334] shadow-sm' : 'text-[#5e5f61]'}`}>
                   <span className="hidden sm:inline capitalize">{m}</span>
-                  <span className="sm:hidden" aria-label={m}>{m === 'write' ? '✏️' : m === 'preview' ? '👁' : '⧉'}</span>
+                  <span className="sm:hidden" aria-label={m}>{m === 'write' ? '✏️' : m === 'visual' ? '✨' : m === 'preview' ? '👁' : '⧉'}</span>
                 </button>
               ))}
             </div>
@@ -763,21 +807,21 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         )}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
-            <ToolbarBtn icon="format_bold" label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
-            <ToolbarBtn icon="format_italic" label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
-            <ToolbarBtn icon="format_strikethrough" label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
-            <ToolbarBtn icon="code" label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
+            <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
+            <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
+            <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
+            <ToolbarBtn icon={Code} label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon="format_h1" label="Heading 1" onClick={() => insertLinePrefix('# ')} />
-            <ToolbarBtn icon="format_h2" label="Heading 2" onClick={() => insertLinePrefix('## ')} />
+            <ToolbarBtn icon={Heading1} label="Heading 1" onClick={() => insertLinePrefix('# ')} />
+            <ToolbarBtn icon={Heading2} label="Heading 2" onClick={() => insertLinePrefix('## ')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon="format_list_bulleted" label="Bullet List" onClick={() => insertLinePrefix('- ')} />
-            <ToolbarBtn icon="format_list_numbered" label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
-            <ToolbarBtn icon="format_quote" label="Blockquote" onClick={() => insertLinePrefix('> ')} />
+            <ToolbarBtn icon={List} label="Bullet List" onClick={() => insertLinePrefix('- ')} />
+            <ToolbarBtn icon={ListOrdered} label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
+            <ToolbarBtn icon={Quote} label="Blockquote" onClick={() => insertLinePrefix('> ')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
-            <ToolbarBtn icon="link" label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
-            <ToolbarBtn icon="image" label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
-            <ToolbarBtn icon="horizontal_rule" label="Divider" onClick={() => insertMarkdown('\n---\n')} />
+            <ToolbarBtn icon={Link} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
+            <ToolbarBtn icon={ImageIcon} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
+            <ToolbarBtn icon={Minus} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
             <div className="h-4 w-px bg-[#e4e2e1] mx-1 shrink-0" />
 
             <div className="relative" ref={embedsRef}>
@@ -785,28 +829,25 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 onClick={() => setEmbedsOpen(!embedsOpen)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${embedsOpen ? 'bg-[#585f64] text-white' : 'text-[#585f64] hover:bg-black/5'}`}
               >
-                <span className="material-symbols-rounded !text-[18px]">add_box</span>
+                <SquarePlus className="w-4.5 h-4.5" />
                 <span className="hidden sm:inline">Embeds</span>
                 <ChevronDown size={12} className={`transition-transform duration-200 ${embedsOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {embedsOpen && (
-                <div className="absolute top-full left-0 mt-2 w-52 bg-white border border-[#e4e2e1] rounded-2xl shadow-2xl py-2 z-[100] animate-in fade-in zoom-in duration-200 overflow-hidden">
-                  <div className="px-4 py-2 mb-1 border-b border-[#f5f3f3] bg-[#fcf8f9]">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#585f64]">Advanced Blocks</p>
+                <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-[#e4e2e1] rounded-2xl shadow-2xl py-3 z-[100] animate-in fade-in zoom-in duration-200 overflow-hidden">
+                  <div className="px-4 pb-2 mb-2 border-b border-[#f5f3f3]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Advanced Components</p>
                   </div>
-                  <div className="max-h-[60vh] overflow-y-auto py-1">
+                  <div className="grid grid-cols-3 gap-1 px-2">
                     {blockRegistry.getAllBlocks().filter(b => ['embed', 'run', 'style'].includes(b.name)).map((block) => (
                       <button
                         key={block.name}
                         onClick={() => {
                           if (block.template) {
-                            // Find position of "") or () to place cursor inside
                             const closingIdx = block.template.lastIndexOf(')');
                             const before = block.template.slice(0, closingIdx);
                             const after = block.template.slice(closingIdx);
-
-                            // If it has url="", place cursor inside quotes
                             if (before.endsWith('url=""')) {
                               insertMarkdown(before.slice(0, -1), '"' + after);
                             } else {
@@ -817,19 +858,21 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                           }
                           setEmbedsOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-[#5e5f61] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-[#efedee] flex items-center justify-center text-[#585f64]">
-                          <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={16} />
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-gray-900 group-hover:text-white transition-all">
+                          <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={18} />
                         </div>
-                        <span className="font-medium">{block.label}</span>
+                        <span className="text-[10px] font-semibold text-gray-600 truncate w-full text-center">{block.label}</span>
                       </button>
                     ))}
+                  </div>
 
-                    <div className="px-4 py-2 mt-2 mb-1 border-y border-[#f5f3f3] bg-[#fcf8f9]">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#585f64]">Quick Social</p>
-                    </div>
+                  <div className="px-4 py-2 mt-2 mb-2 border-y border-[#f5f3f3] bg-[#fcf8f9]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Social Embeds</p>
+                  </div>
 
+                  <div className="grid grid-cols-4 gap-1 px-2">
                     {blockRegistry.getAllBlocks().filter(b => !['embed', 'run', 'style'].includes(b.name)).map((block) => (
                       <button
                         key={block.name}
@@ -837,10 +880,12 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                           insertMarkdown(`[!${block.name}(url="`, '")]');
                           setEmbedsOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[11px] text-[#5e5f61] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
+                        title={block.label}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-50 transition-colors group"
                       >
-                        <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={14} className="opacity-60" />
-                        <span>{block.label}</span>
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-gray-900 group-hover:text-white transition-all">
+                          <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={14} />
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -888,30 +933,37 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                       ))}
                     </div>
                   </div>
-                  <CodeMirror
-                    ref={editorRef}
-                    value={content}
-                    onChange={(val) => handleContentChange(val)}
-                    extensions={[
-                      markdown({ base: markdownLanguage, codeLanguages: languages }),
-                      EditorView.lineWrapping,
-                      markdownTheme,
-                      customBlockHighlight,
-                      autocompletion({ override: [customBlockCompletions] })
-                    ]}
-                    basicSetup={{
-                      lineNumbers: false,
-                      foldGutter: false,
-                      dropCursor: false,
-                      allowMultipleSelections: false,
-                      indentOnInput: false,
-                      highlightActiveLine: false,
-                      highlightSelectionMatches: false,
-                      completionKeymap: true
-                    }}
-                    className={slabo.className + " w-full min-h-[400px] outline-none"}
-                    placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
-                  />
+                  {viewMode === 'visual' ? (
+                    <VisualEditor
+                      content={content}
+                      onChange={(val) => handleContentChange(val)}
+                    />
+                  ) : (
+                    <CodeMirror
+                      ref={editorRef}
+                      value={content}
+                      onChange={(val) => handleContentChange(val)}
+                      extensions={[
+                        markdown({ base: markdownLanguage, codeLanguages: languages }),
+                        EditorView.lineWrapping,
+                        markdownTheme,
+                        customBlockHighlight,
+                        autocompletion({ override: [customBlockCompletions] })
+                      ]}
+                      basicSetup={{
+                        lineNumbers: false,
+                        foldGutter: false,
+                        dropCursor: false,
+                        allowMultipleSelections: false,
+                        indentOnInput: false,
+                        highlightActiveLine: false,
+                        highlightSelectionMatches: false,
+                        completionKeymap: true
+                      }}
+                      className={slabo.className + " w-full min-h-[400px] outline-none"}
+                      placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
+                    />
+                  )}
                 </div>
               </div>
             )}

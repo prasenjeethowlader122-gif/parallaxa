@@ -19,6 +19,11 @@ import { NewsArticle } from '@/lib/db/articles'
 import { createCustomBlockPlugin } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
+import {
+  Check, Copy, ArrowLeft, ChevronRight, Volume2, Bookmark, BookmarkCheck,
+  Printer, Share2, Facebook, Link as LinkIcon, Clock, Eye, Twitter, Linkedin
+} from 'lucide-react'
+import { FaFacebook, FaTwitter, FaLinkedinIn } from 'react-icons/fa'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -81,9 +86,7 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef < 'code' > 
           }}
           className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white transition-colors shrink-0"
         >
-          <span className="material-symbols-rounded !text-[14px]">
-            {copied ? 'check' : 'content_copy'}
-          </span>
+          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
@@ -224,21 +227,21 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
         onClick={onTwitter}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <span className="material-symbols-rounded !text-[18px] text-sky-500 flex-shrink-0">share</span>
+        <FaTwitter className="w-4.5 h-4.5 text-sky-500 flex-shrink-0" />
         Share on X / Twitter
       </button>
       <button
         onClick={onFacebook}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <span className="material-symbols-rounded !text-[18px] text-blue-600 flex-shrink-0">facebook</span>
+        <FaFacebook className="w-4.5 h-4.5 text-blue-600 flex-shrink-0" />
         Share on Facebook
       </button>
       <button
         onClick={onLinkedin}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <span className="material-symbols-rounded !text-[18px] text-blue-700 flex-shrink-0">share</span>
+        <FaLinkedinIn className="w-4.5 h-4.5 text-blue-700 flex-shrink-0" />
         Share on LinkedIn
       </button>
       <hr className="my-1 border-gray-100" />
@@ -247,8 +250,8 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
         {copied
-          ? <span className="material-symbols-rounded !text-[18px] text-green-500 flex-shrink-0">check</span>
-          : <span className="material-symbols-rounded !text-[18px] flex-shrink-0">link</span>}
+          ? <Check className="w-4.5 h-4.5 text-green-500 flex-shrink-0" />
+          : <LinkIcon className="w-4.5 h-4.5 flex-shrink-0" />}
         {copied ? 'Copied!' : 'Copy link'}
       </button>
     </div>
@@ -394,7 +397,7 @@ export default function ArticlePage({
         <Header />
         <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <Link href="/" className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 mb-8 text-sm font-medium">
-            <span className="material-symbols-rounded !text-[18px]">arrow_back</span> Back to News
+            <ArrowLeft className="w-4.5 h-4.5" /> Back to News
           </Link>
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-3">Article Not Found</h1>
@@ -438,11 +441,11 @@ export default function ArticlePage({
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-gray-400 min-w-0">
             <Link href="/" className="hover:text-gray-600 transition-colors shrink-0">Home</Link>
-            <span className="material-symbols-rounded !text-[14px] shrink-0">chevron_right</span>
+            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
             <Link href={`/category/${article.category}`} className="hover:text-gray-600 transition-colors shrink-0 capitalize">
               {article.category}
             </Link>
-            <span className="material-symbols-rounded !text-[14px] shrink-0">chevron_right</span>
+            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate text-gray-500">{article.title}</span>
           </div>
 
@@ -450,7 +453,7 @@ export default function ArticlePage({
           <div className="flex items-center gap-1.5 shrink-0">
             {/* Listen (decorative) */}
             <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors">
-              <span className="material-symbols-rounded !text-[16px]">volume_up</span>
+              <Volume2 className="w-4 h-4" />
               Listen
             </button>
 
@@ -463,9 +466,7 @@ export default function ArticlePage({
                   : 'border-gray-200 text-gray-500 hover:bg-gray-50'
               }`}
             >
-              <span className="material-symbols-rounded !text-[16px]">
-                {bookmarked ? 'bookmark_added' : 'bookmark'}
-              </span>
+              {bookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
               <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
             </button>
 
@@ -474,7 +475,7 @@ export default function ArticlePage({
               onClick={handlePrint}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
             >
-              <span className="material-symbols-rounded !text-[16px]">print</span>
+              <Printer className="w-4 h-4" />
               Print
             </button>
 
@@ -484,7 +485,7 @@ export default function ArticlePage({
                 onClick={handleNativeShare}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
               >
-                <span className="material-symbols-rounded !text-[16px]">share</span>
+                <Share2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Share</span>
               </button>
               {shareOpen && (
@@ -570,11 +571,11 @@ export default function ArticlePage({
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1.5">
-                    <span className="material-symbols-rounded !text-[16px]">schedule</span>
+                    <Clock className="w-4 h-4" />
                     {readTime} min read
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="material-symbols-rounded !text-[16px]">visibility</span>
+                    <Eye className="w-4 h-4" />
                     {toDigitalNumber(article.views ?? 0)}
                   </span>
                   <span className="text-gray-300">·</span>
@@ -615,28 +616,28 @@ export default function ArticlePage({
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on X/Twitter"
                     >
-                      <span className="material-symbols-rounded !text-[18px]">share</span>
+                      <FaTwitter className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={handleShareFacebook}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on Facebook"
                     >
-                      <span className="material-symbols-rounded !text-[18px]">facebook</span>
+                      <FaFacebook className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={handleShareLinkedin}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on LinkedIn"
                     >
-                      <span className="material-symbols-rounded !text-[18px]">share</span>
+                      <FaLinkedinIn className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={handleCopyLink}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Copy link"
                     >
-                      {copied ? <span className="material-symbols-rounded !text-[18px] text-green-500">check</span> : <span className="material-symbols-rounded !text-[18px]">link</span>}
+                      {copied ? <Check className="w-4.5 h-4.5 text-green-500" /> : <LinkIcon className="w-4.5 h-4.5" />}
                     </button>
                   </div>
                 </div>
@@ -711,7 +712,7 @@ export default function ArticlePage({
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
                   >
                     See all {article.category} stories
-                    <span className="material-symbols-rounded !text-[18px]">chevron_right</span>
+                    <ChevronRight className="w-4.5 h-4.5" />
                   </Link>
                 </div>
               )}

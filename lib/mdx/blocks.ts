@@ -13,7 +13,7 @@ blockRegistry.register({
   name: 'embed',
   label: 'Social Embed',
   icon: 'share',
-  pattern: /\[!embed\(url=["']?(.+?)["']?\)\]/,
+  pattern: /\[!embed\s*\(\s*url\s*=\s*["']?(.+?)["']?\s*\)\s*\]/,
   template: '[!embed(url="")]',
   handler: (match) => {
     const url = (match[1] || '').trim()
@@ -79,7 +79,7 @@ blockRegistry.register({
   name: 'run',
   label: 'Run Code',
   icon: 'terminal',
-  pattern: /\[!run\(([\s\S]+?)\)\]/,
+  pattern: /\[!run\s*\(([\s\S]+?)\)\s*\]/,
   template: '[!run()]',
   handler: (match) => {
     const rawContent = match[1] || ''
@@ -104,7 +104,7 @@ blockRegistry.register({
   name: 'style',
   label: 'Custom CSS',
   icon: 'palette',
-  pattern: /\[!style\(([\s\S]+?)\)\]/,
+  pattern: /\[!style\s*\(([\s\S]+?)\)\s*\]/,
   template: '[!style()]',
   handler: (match) => {
     const rawContent = match[1] || ''
@@ -131,7 +131,7 @@ legacyBlocks.forEach(name => {
     name,
     label: name.charAt(0).toUpperCase() + name.slice(1),
     icon: 'extension',
-    pattern: new RegExp(`\\[!${name}\\(url=["']?(.+?)["']?\\)\\]`),
+    pattern: new RegExp(`\\[!${name}\\s*\\(\\s*url\\s*=\\s*["']?(.+?)["']?\\s*\\)\\s*\\]`),
     handler: (match) => {
       const url = match[1] || ''
       // We can just reuse the embed logic here
