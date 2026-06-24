@@ -41,6 +41,28 @@ export const CustomBlockRenderer: React.FC<CustomBlockProps> = ({
 
 // Custom MDX component handlers
 export const customBlockComponents = {
+  embed: (props: any) => (
+    <CustomBlockRenderer
+      className={props.className || "custom-block embed"}
+      dataUrl={props.dataUrl}
+      htmlContent={props.htmlContent}
+    />
+  ),
+  run: (props: any) => (
+    <CustomBlockRenderer
+      className="custom-block run-code"
+      dataUrl=""
+      htmlContent={props.htmlContent}
+    />
+  ),
+  style: (props: any) => (
+    <CustomBlockRenderer
+      className="custom-block custom-style"
+      dataUrl=""
+      htmlContent={props.htmlContent}
+    />
+  ),
+  // Backward compatibility
   fbpost: (props: any) => (
     <CustomBlockRenderer
       className="custom-block fbpost-embed"

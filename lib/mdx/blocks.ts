@@ -2,225 +2,146 @@ import { blockRegistry } from './block-registry'
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * CUSTOM MDX BLOCKS - সহজেই নতুন block যোগ করুন
+ * CUSTOM MDX BLOCKS - Unified & New Blocks
  * ═══════════════════════════════════════════════════════════════════════════
- *
- * SYNTAX: [!blockname(url="https://...")]
- *
- * EXAMPLES:
- *   [!fbpost(url="https://facebook.com/...")]
- *   [!tweet(url="https://twitter.com/...")]
- *   [!youtube(url="https://youtube.com/...")]
- *   [!tiktok(url="https://tiktok.com/...")]
- *   [!instagram(url="https://instagram.com/...")]
  */
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  FACEBOOK POST BLOCK
+//  UNIFIED EMBED BLOCK (Social Media & Video)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
-  name: 'fbpost',
-  label: 'Facebook',
-  icon: 'facebook',
-  pattern: /\[!fbpost\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => ({
-    type: 'fbpost',
-    hProperties: {
-      className: 'custom-block fbpost-embed',
-      dataUrl: url,
-      htmlContent: `<iframe
-        src="https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url || '')}&show_text=true&width=500"
-        width="500" 
-        height="700" 
-        style="border:none;overflow:hidden" 
-        scrolling="no" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
-      </iframe>`,
-    },
-  }),
-})
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TWITTER/X BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'tweet',
-  label: 'Twitter',
-  icon: 'twitter',
-  pattern: /\[!tweet\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => ({
-    type: 'tweet',
-    hProperties: {
-      className: 'custom-block tweet-embed',
-      dataUrl: url,
-      htmlContent: `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>`,
-    },
-  }),
-})
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  YOUTUBE VIDEO BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'youtube',
-  label: 'YouTube',
-  icon: 'youtube',
-  pattern: /\[!youtube\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => {
-    // YouTube video ID extract করুন
-    const videoIdMatch = (url || '').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
-    const videoId = videoIdMatch ? videoIdMatch[1] : url
-
-    return {
-      type: 'youtube',
-      hProperties: {
-        className: 'custom-block youtube-embed',
-        dataUrl: url,
-        htmlContent: `<iframe
-          width="100%" 
-          height="400" 
-          src="https://www.youtube.com/embed/${videoId}" 
-          frameborder="0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-          allowfullscreen>
-        </iframe>`,
-      },
-    }
-  },
-})
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TIKTOK VIDEO BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'tiktok',
-  label: 'TikTok',
-  icon: 'play',
-  pattern: /\[!tiktok\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => ({
-    type: 'tiktok',
-    hProperties: {
-      className: 'custom-block tiktok-embed',
-      dataUrl: url,
-      htmlContent: `<blockquote class="tiktok-embed" cite="${url}" data-unique-id="0" style="max-width: 500px;"><section></section></blockquote><script async src="https://www.tiktok.com/embed.js"></script>`,
-    },
-  }),
-})
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  INSTAGRAM POST BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'instagram',
-  label: 'Instagram',
-  icon: 'instagram',
-  pattern: /\[!instagram\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => ({
-    type: 'instagram',
-    hProperties: {
-      className: 'custom-block instagram-embed',
-      dataUrl: url,
-      htmlContent: `<blockquote class="instagram-media" data-instgrm-permalink="${url}" data-instgrm-version="14"><section></section></blockquote><script async src="//www.instagram.com/embed.js"></script>`,
-    },
-  }),
-})
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  REDDIT POST BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'reddit',
-  label: 'Reddit',
+  name: 'embed',
+  label: 'Social Embed',
   icon: 'share',
-  pattern: /\[!reddit\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => ({
-    type: 'reddit',
-    hProperties: {
-      className: 'custom-block reddit-embed',
-      dataUrl: url,
-      htmlContent: `<blockquote class="reddit-embed" data-embed-height="500"><a href="${url}">Post</a></blockquote><script async src="https://embed.reddit.com/widgets.js" charset="UTF-8"></script>`,
-    },
-  }),
-})
+  pattern: /\[!embed\(url=["']?(.+?)["']?\)\]/,
+  template: '[!embed(url="")]',
+  handler: (match) => {
+    const url = (match[1] || '').trim()
+    let htmlContent = ''
+    let type = 'generic-embed'
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  VIMEO VIDEO BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'vimeo',
-  label: 'Vimeo',
-  icon: 'play',
-  pattern: /\[!vimeo\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => {
-    const videoIdMatch = (url || '').match(/vimeo\.com\/(\d+)/)
-    const videoId = videoIdMatch ? videoIdMatch[1] : url
+    if (url.includes('facebook.com')) {
+      type = 'fbpost'
+      htmlContent = `<iframe src="https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500" width="100%" height="700" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`
+    }
+    else if (url.includes('twitter.com') || url.includes('x.com')) {
+      type = 'tweet'
+      htmlContent = `<blockquote class="twitter-tweet"><a href="${url}"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>`
+    }
+    else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      type = 'youtube'
+      const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)
+      const videoId = videoIdMatch ? videoIdMatch[1] : ''
+      htmlContent = `<iframe width="100%" height="400" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+    }
+    else if (url.includes('tiktok.com')) {
+      type = 'tiktok'
+      htmlContent = `<blockquote class="tiktok-embed" cite="${url}" data-unique-id="0" style="max-width: 500px;"><section></section></blockquote><script async src="https://www.tiktok.com/embed.js"></script>`
+    }
+    else if (url.includes('instagram.com')) {
+      type = 'instagram'
+      htmlContent = `<blockquote class="instagram-media" data-instgrm-permalink="${url}" data-instgrm-version="14"><section></section></blockquote><script async src="//www.instagram.com/embed.js"></script>`
+    }
+    else if (url.includes('reddit.com')) {
+      type = 'reddit'
+      htmlContent = `<blockquote class="reddit-embed" data-embed-height="500"><a href="${url}">Post</a></blockquote><script async src="https://embed.reddit.com/widgets.js" charset="UTF-8"></script>`
+    }
+    else if (url.includes('vimeo.com')) {
+      type = 'vimeo'
+      const videoIdMatch = url.match(/vimeo\.com\/(\d+)/)
+      const videoId = videoIdMatch ? videoIdMatch[1] : ''
+      htmlContent = `<iframe src="https://player.vimeo.com/video/${videoId}" width="100%" height="400" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`
+    }
+    else if (url.includes('codepen.io')) {
+      type = 'codepen'
+      htmlContent = `<iframe height="400" style="width: 100%;" scrolling="no" title="Pen" src="${url}" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true"></iframe>`
+    }
+    else if (url.includes('gist.github.com')) {
+      type = 'gist'
+      htmlContent = `<script src="${url}.js"></script>`
+    }
 
     return {
-      type: 'vimeo',
+      type: 'embed',
       hProperties: {
-        className: 'custom-block vimeo-embed',
+        className: `custom-block ${type}-embed`,
         dataUrl: url,
-        htmlContent: `<iframe
-          src="https://player.vimeo.com/video/${videoId}" 
-          width="100%" 
-          height="400" 
-          frameborder="0" 
-          allow="autoplay; fullscreen; picture-in-picture" 
-          allowfullscreen>
-        </iframe>`,
+        htmlContent: htmlContent || `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`,
       },
     }
   },
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  CODEPEN EMBED BLOCK
+//  RUN CODE BLOCK (HTML/JS/Components)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({
-  name: 'codepen',
-  label: 'CodePen',
-  icon: 'code',
-  pattern: /\[!codepen\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => ({
-    type: 'codepen',
-    hProperties: {
-      className: 'custom-block codepen-embed',
-      dataUrl: url,
-      htmlContent: `<iframe
-        height="400" 
-        style="width: 100%;" 
-        scrolling="no" 
-        title="Pen" 
-        src="${url}" 
-        frameborder="no" 
-        loading="lazy" 
-        allowtransparency="true" 
-        allowfullscreen="true">
-      </iframe>`,
-    },
-  }),
-})
+  name: 'run',
+  label: 'Run Code',
+  icon: 'terminal',
+  pattern: /\[!run\(([\s\S]+?)\)\]/,
+  template: '[!run()]',
+  handler: (match) => {
+    const rawContent = match[1] || ''
+    // Extract code from code="..." or just the content
+    const codeMatch = rawContent.match(/code=["']?([\s\S]+?)["']?$/)
+    const code = codeMatch ? codeMatch[1] : rawContent
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  GITHUB GIST BLOCK
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-blockRegistry.register({
-  name: 'gist',
-  label: 'Gist',
-  icon: 'github',
-  pattern: /\[!gist\(url=["']?(.+?)["']?\)\]/,
-  handler: (match, url) => {
     return {
-      type: 'gist',
+      type: 'run',
       hProperties: {
-        className: 'custom-block gist-embed',
-        dataUrl: url,
-        htmlContent: `<script src="${url}.js"></script>`,
+        className: 'custom-block run-code',
+        htmlContent: code,
       },
     }
   },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CUSTOM STYLE BLOCK (CSS)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'style',
+  label: 'Custom CSS',
+  icon: 'palette',
+  pattern: /\[!style\(([\s\S]+?)\)\]/,
+  template: '[!style()]',
+  handler: (match) => {
+    const rawContent = match[1] || ''
+    const cssMatch = rawContent.match(/css=["']?([\s\S]+?)["']?$/)
+    const css = cssMatch ? cssMatch[1] : rawContent
+
+    return {
+      type: 'style',
+      hProperties: {
+        className: 'custom-block custom-style',
+        htmlContent: `<style>${css}</style>`,
+      },
+    }
+  },
+})
+
+// Keep old blocks for backward compatibility but redirect them to the new unified handler if needed
+// or just update them to the new handler signature.
+
+const legacyBlocks = ['fbpost', 'tweet', 'youtube', 'tiktok', 'instagram', 'reddit', 'vimeo', 'codepen', 'gist']
+
+legacyBlocks.forEach(name => {
+  blockRegistry.register({
+    name,
+    label: name.charAt(0).toUpperCase() + name.slice(1),
+    icon: 'extension',
+    pattern: new RegExp(`\\[!${name}\\(url=["']?(.+?)["']?\\)\\]`),
+    handler: (match) => {
+      const url = match[1] || ''
+      // We can just reuse the embed logic here
+      const embedResult = (blockRegistry.getBlock('embed') as any).handler(['', url])
+      return {
+        type: name,
+        hProperties: embedResult.hProperties
+      }
+    }
+  })
 })
 
 export { blockRegistry }

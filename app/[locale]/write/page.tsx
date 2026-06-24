@@ -375,19 +375,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     let word = context.matchBefore(/\[!/)
     if (!word) return null
     if (word.from === word.to && !context.explicit) return null
+
+    const options = blockRegistry.getAllBlocks().map(block => ({
+      label: block.template || `[!${block.name}()]`,
+      type: 'function',
+      apply: block.template || `[!${block.name}()]`
+    }))
+
     return {
       from: word.from,
-      options: [
-        { label: '[!fbpost(url="")]', type: 'function', apply: '[!fbpost(url="")]' },
-        { label: '[!tweet(url="")]', type: 'function', apply: '[!tweet(url="")]' },
-        { label: '[!youtube(url="")]', type: 'function', apply: '[!youtube(url="")]' },
-        { label: '[!tiktok(url="")]', type: 'function', apply: '[!tiktok(url="")]' },
-        { label: '[!instagram(url="")]', type: 'function', apply: '[!instagram(url="")]' },
-        { label: '[!reddit(url="")]', type: 'function', apply: '[!reddit(url="")]' },
-        { label: '[!vimeo(url="")]', type: 'function', apply: '[!vimeo(url="")]' },
-        { label: '[!codepen(url="")]', type: 'function', apply: '[!codepen(url="")]' },
-        { label: '[!gist(url="")]', type: 'function', apply: '[!gist(url="")]' },
-      ]
+      options
     }
   }
 
@@ -794,21 +791,55 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               </button>
 
               {embedsOpen && (
-                <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-[#e4e2e1] rounded-xl shadow-xl py-1.5 z-[100] animate-in fade-in zoom-in duration-200">
-                  <div className="px-3 py-1 mb-1 border-b border-[#f5f3f3]">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#9e9fa0]">Custom Blocks</p>
+                <div className="absolute top-full left-0 mt-2 w-52 bg-white border border-[#e4e2e1] rounded-2xl shadow-2xl py-2 z-[100] animate-in fade-in zoom-in duration-200 overflow-hidden">
+                  <div className="px-4 py-2 mb-1 border-b border-[#f5f3f3] bg-[#fcf8f9]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#585f64]">Advanced Blocks</p>
                   </div>
-                  <div className="max-h-[60vh] overflow-y-auto">
-                    {blockRegistry.getAllBlocks().map((block) => (
+                  <div className="max-h-[60vh] overflow-y-auto py-1">
+                    {blockRegistry.getAllBlocks().filter(b => ['embed', 'run', 'style'].includes(b.name)).map((block) => (
+                      <button
+                        key={block.name}
+                        onClick={() => {
+                          if (block.template) {
+                            // Find position of "") or () to place cursor inside
+                            const closingIdx = block.template.lastIndexOf(')');
+                            const before = block.template.slice(0, closingIdx);
+                            const after = block.template.slice(closingIdx);
+
+                            // If it has url="", place cursor inside quotes
+                            if (before.endsWith('url=""')) {
+                              insertMarkdown(before.slice(0, -1), '"' + after);
+                            } else {
+                              insertMarkdown(before, after);
+                            }
+                          } else {
+                            insertMarkdown(`[!${block.name}(`, ')]');
+                          }
+                          setEmbedsOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-[#5e5f61] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-[#efedee] flex items-center justify-center text-[#585f64]">
+                          <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={16} />
+                        </div>
+                        <span className="font-medium">{block.label}</span>
+                      </button>
+                    ))}
+
+                    <div className="px-4 py-2 mt-2 mb-1 border-y border-[#f5f3f3] bg-[#fcf8f9]">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#585f64]">Quick Social</p>
+                    </div>
+
+                    {blockRegistry.getAllBlocks().filter(b => !['embed', 'run', 'style'].includes(b.name)).map((block) => (
                       <button
                         key={block.name}
                         onClick={() => {
                           insertMarkdown(`[!${block.name}(url="`, '")]');
                           setEmbedsOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-xs text-[#5e5f61] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[11px] text-[#5e5f61] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
                       >
-                        <DynamicIcon name={typeof block.icon === 'string' ? block.icon : block.name} size={14} />
+                        <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={14} className="opacity-60" />
                         <span>{block.label}</span>
                       </button>
                     ))}
