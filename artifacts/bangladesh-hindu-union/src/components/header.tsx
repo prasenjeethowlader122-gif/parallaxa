@@ -100,7 +100,7 @@ export function Header({
   }
 
   const handleSignOut = async () => {
-    await signOut({ redirect: true, redirectUrl: '/' })
+    await signOut({ redirectTo: '/bn' })
   }
 
   const today = new Date().toLocaleDateString('en-US', {

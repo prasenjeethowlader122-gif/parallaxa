@@ -1,12 +1,20 @@
+import type React from 'react'
+
 export interface BlockConfig {
   name: string
   label: string
   icon: string | React.ReactNode
   pattern: RegExp
   template?: string
+  /**
+   * IMPORTANT: hProperties keys MUST use data-* naming (e.g. "data-url", "data-html").
+   * rehype lowercases all camelCase property names when converting to HTML attributes,
+   * so `htmlContent` becomes `htmlcontent` in the rendered props.
+   * data-* attributes are preserved verbatim and reliably passed to React components.
+   */
   handler: (match: RegExpMatchArray) => {
     type: string
-    hProperties: Record<string, any>
+    hProperties: Record<string, string>
     hName?: string
   }
 }

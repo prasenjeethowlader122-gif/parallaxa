@@ -1,129 +1,58 @@
 import React from 'react'
 
+/**
+ * Props come from the remark/rehype pipeline via hProperties data-* attributes.
+ * rehype lowercases camelCase keys, so we use data-html and data-url instead of
+ * htmlContent/dataUrl to ensure reliable pass-through.
+ */
 interface CustomBlockProps {
-  className: string
-  dataUrl: string
-  htmlContent?: string
+  className?: string
+  'data-url'?: string
+  'data-html'?: string
   children?: React.ReactNode
+  [key: string]: unknown
 }
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * CUSTOM BLOCK RENDERER
- * ═══════════════════════════════════════════════════════════════════════════
- * সকল custom MDX blocks render করার জন্য unified component
- */
-
-export const CustomBlockRenderer: React.FC<CustomBlockProps> = ({
-  className,
-  dataUrl,
-  htmlContent,
-  children,
-}) => {
-  const blockType = (className || '').split(' ')[1] || 'generic'
+export const CustomBlockRenderer: React.FC<CustomBlockProps> = (props) => {
+  const html = props['data-html'] as string | undefined
+  const url = props['data-url'] as string | undefined
+  const className = (props.className as string) || 'custom-block'
+  const blockType = className.split(' ')[1] || 'generic'
 
   return (
-    <div className={`custom-block-wrapper ${blockType}-wrapper`}>
-      {htmlContent ? (
+    <div className={`custom-block-wrapper ${blockType}-wrapper my-4`}>
+      {html ? (
         <div
           className={className}
-          data-url={dataUrl}
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
+          data-url={url}
+          dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (
-        <div className={className} data-url={dataUrl}>
-          {children}
+        <div className={className} data-url={url}>
+          {props.children}
         </div>
       )}
     </div>
   )
 }
 
-// Custom MDX component handlers
-export const customBlockComponents = {
-  embed: (props: any) => (
-    <CustomBlockRenderer
-      className={props.className || "custom-block embed"}
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  run: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block run-code"
-      dataUrl=""
-      htmlContent={props.htmlContent}
-    />
-  ),
-  style: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block custom-style"
-      dataUrl=""
-      htmlContent={props.htmlContent}
-    />
-  ),
-  // Backward compatibility
-  fbpost: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block fbpost-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  tweet: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block tweet-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  youtube: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block youtube-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  tiktok: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block tiktok-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  instagram: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block instagram-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  reddit: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block reddit-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  vimeo: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block vimeo-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  codepen: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block codepen-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
-  gist: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block gist-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
-  ),
+/**
+ * Component map for react-markdown.
+ * Keys must match the hName set in block handlers (e.g. 'customembed', 'customrun', etc.)
+ * because react-markdown uses the element tag name as the component key.
+ */
+export const customBlockComponents: Record<string, React.FC<any>> = {
+  customembed: (props) => <CustomBlockRenderer {...props} />,
+  customrun: (props) => <CustomBlockRenderer {...props} />,
+  customstyle: (props) => <CustomBlockRenderer {...props} />,
+  // Legacy shorthand blocks
+  customfbpost: (props) => <CustomBlockRenderer {...props} />,
+  customtweet: (props) => <CustomBlockRenderer {...props} />,
+  customyoutube: (props) => <CustomBlockRenderer {...props} />,
+  customtiktok: (props) => <CustomBlockRenderer {...props} />,
+  custominstagram: (props) => <CustomBlockRenderer {...props} />,
+  customreddit: (props) => <CustomBlockRenderer {...props} />,
+  customvimeo: (props) => <CustomBlockRenderer {...props} />,
+  customcodepen: (props) => <CustomBlockRenderer {...props} />,
+  customgist: (props) => <CustomBlockRenderer {...props} />,
 }

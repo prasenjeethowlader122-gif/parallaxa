@@ -278,7 +278,7 @@ function RelatedItem({ article }: { article: NewsArticle }) {
         <h4 className={`${Fugaz.className} text-[13px] font-medium leading-snug text-gray-900 group-hover:underline line-clamp-3`}>
           {article.title}
         </h4>
-        <p className="text-[11px] text-gray-400 mt-1">{formatRelativeTime(article.date)}</p>
+        <p className="text-[11px] text-gray-400 mt-1">{formatRelativeTime(article.date as string)}</p>
       </div>
     </Link>
   )
@@ -594,9 +594,9 @@ export default function ArticlePage({
                     priority
                   />
                 </div>
-                {article.imageCaption && (
+                {(article as any).imageCaption && (
                   <p className="text-xs text-gray-400 mt-3 leading-relaxed italic">
-                    {article.imageCaption}
+                    {(article as any).imageCaption}
                   </p>
                 )}
               </div>

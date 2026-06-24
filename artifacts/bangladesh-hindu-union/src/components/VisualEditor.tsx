@@ -83,7 +83,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       // We compare the markdown version to avoid trivial HTML differences causing jumps
       const currentMarkdown = turndownRef.current?.turndown(currentHtml);
       if (currentMarkdown !== content) {
-        editor.commands.setContent(newHtml, false);
+        editor.commands.setContent(newHtml);
       }
     }
   }, [content, editor])
@@ -218,7 +218,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
         <EditorContent editor={editor} />
       </div>
 
-      <style jsx global>{`
+      <style>{`
         .ProseMirror p.is-editor-empty:first-child::before {
           content: attr(data-placeholder);
           float: left;
