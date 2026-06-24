@@ -1,0 +1,2 @@
+- [Next.js to Vite migration shims](nextjs-vite-shims.md) — key shim patterns for migrating Next.js apps to Vite+wouter
+- [Bangladesh Hindu Union stack](bhu-stack.md) — app-specific architecture decisions for this project

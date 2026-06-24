@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Bangladesh Hindu Union"
+version = "1.0.0"
+id = "artifacts/bangladesh-hindu-union"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18163
+
+[services.development]
+run = "pnpm --filter @workspace/bangladesh-hindu-union run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bangladesh-hindu-union", "run", "build" ]
+publicDir = "artifacts/bangladesh-hindu-union/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18163"
+BASE_PATH = "/"

@@ -1,0 +1,47 @@
+
+
+import Link from '@/components/ui/next-link-shim'
+import { categories } from '@/lib/db/articles'
+import { usePathname } from '@/hooks/use-navigation'
+
+export function CategoryFilter() {
+  const pathname = usePathname()
+  
+  const isActive = (category: string) => {
+    return pathname === `/category/${category}`
+  }
+  
+  return (
+    <div className="bg-background border-b border-gray-200 sticky top-16 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4 overflow-x-auto py-3 scrollbar-hide">
+          <Link href="/">
+            <button
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname === '/'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              All News
+            </button>
+          </Link>
+
+          {categories.map((category) => (
+            <Link key={category} href={`/category/${category}`}>
+              <button
+                className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive(category)
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {category}
+              </button>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
