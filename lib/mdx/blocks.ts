@@ -74,6 +74,130 @@ blockRegistry.register({
 })
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  GOAL BLOCK (Progress with Goal)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'goal',
+  label: 'Goal',
+  icon: 'trending_up',
+  pattern: /\[!goal\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!goal(title="Current Progress" current="50" total="100" unit="%")]',
+  handler: (match) => {
+    const rawParams = match[1] || ''
+    const params: Record<string, string> = {}
+    const re = /(\w+)\s*=\s*(?:["']([^"']*)["']|(\S+))/g
+    let m
+    while ((m = re.exec(rawParams)) !== null) {
+      params[m[1]] = m[2] ?? m[3] ?? ''
+    }
+
+    return {
+      type: 'goal',
+      hName: 'goal',
+      hProperties: {
+        className: 'custom-block goal-block',
+        title: params.title || 'Goal Progress',
+        current: params.current || '0',
+        total: params.total || '100',
+        unit: params.unit || '',
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CALLOUT BLOCK (Alerts/Notes)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'callout',
+  label: 'Callout',
+  icon: 'info',
+  pattern: /\[!callout\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!callout(type="info" title="Note" message="This is a callout message.")]',
+  handler: (match) => {
+    const rawParams = match[1] || ''
+    const params: Record<string, string> = {}
+    const re = /(\w+)\s*=\s*(?:["']([^"']*)["']|(\S+))/g
+    let m
+    while ((m = re.exec(rawParams)) !== null) {
+      params[m[1]] = m[2] ?? m[3] ?? ''
+    }
+
+    return {
+      type: 'callout',
+      hName: 'callout',
+      hProperties: {
+        className: `custom-block callout-block callout-${params.type || 'info'}`,
+        type: params.type || 'info',
+        title: params.title || '',
+        message: params.message || '',
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  BUTTON BLOCK (CTA)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'button',
+  label: 'Button',
+  icon: 'link',
+  pattern: /\[!button\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!button(text="Click Here" url="https://" color="#1a1b1c")]',
+  handler: (match) => {
+    const rawParams = match[1] || ''
+    const params: Record<string, string> = {}
+    const re = /(\w+)\s*=\s*(?:["']([^"']*)["']|(\S+))/g
+    let m
+    while ((m = re.exec(rawParams)) !== null) {
+      params[m[1]] = m[2] ?? m[3] ?? ''
+    }
+
+    return {
+      type: 'button',
+      hName: 'button',
+      hProperties: {
+        className: 'custom-block button-block',
+        text: params.text || 'Button',
+        url: params.url || '#',
+        color: params.color || '#1a1b1c',
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  BADGE BLOCK
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'badge',
+  label: 'Badge',
+  icon: 'tag',
+  pattern: /\[!badge\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!badge(text="New" color="blue")]',
+  handler: (match) => {
+    const rawParams = match[1] || ''
+    const params: Record<string, string> = {}
+    const re = /(\w+)\s*=\s*(?:["']([^"']*)["']|(\S+))/g
+    let m
+    while ((m = re.exec(rawParams)) !== null) {
+      params[m[1]] = m[2] ?? m[3] ?? ''
+    }
+
+    return {
+      type: 'badge',
+      hName: 'badge',
+      hProperties: {
+        className: `custom-block badge-block badge-${params.color || 'gray'}`,
+        text: params.text || '',
+        color: params.color || 'gray',
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  RUN CODE BLOCK (HTML/JS/Components)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 blockRegistry.register({

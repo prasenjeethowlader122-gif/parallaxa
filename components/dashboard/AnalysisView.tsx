@@ -52,6 +52,8 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
     const width = 600 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
+    svg.attr("viewBox", `0 0 600 300`).attr("preserveAspectRatio", "xMidYMid meet");
+
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
     const x = d3.scaleBand().rangeRound([0, width]).padding(0.3).domain(categoryData.map(d => d.label));
@@ -107,6 +109,8 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
     const margin = { top: 20, right: 30, bottom: 40, left: 40 };
     const width = 600 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
+
+    svg.attr("viewBox", `0 0 600 300`).attr("preserveAspectRatio", "xMidYMid meet");
 
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -171,6 +175,8 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
     const width = 600;
     const height = 300;
     const radius = Math.min(width, height) / 2 - 40;
+
+    svg.attr("viewBox", `0 0 600 300`).attr("preserveAspectRatio", "xMidYMid meet");
 
     const g = svg.append("g").attr("transform", `translate(${width / 2},${height / 2})`);
 
@@ -242,7 +248,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
             <p className="text-sm text-gray-500 mt-1">Advanced analytics and data visualization.</p>
           </div>
 
-          <div className="flex bg-gray-50 p-1 rounded-xl shrink-0">
+          <div className="flex bg-gray-50 p-1 rounded-xl shrink-0 overflow-x-auto no-scrollbar">
             {[
               { id: 'overview', label: 'Overview', icon: BarChart },
               { id: 'trends', label: 'Trends', icon: LineChart },
@@ -251,7 +257,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-900'
@@ -264,20 +270,20 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
           </div>
         </div>
 
-        <div className="p-6 sm:p-8">
-          <div className="w-full aspect-[2/1] min-h-[300px] flex items-center justify-center">
+        <div className="p-4 sm:p-8">
+          <div className="w-full aspect-[2/1] min-h-[250px] sm:min-h-[300px] flex items-center justify-center">
             {activeTab === 'overview' && (
-              <svg ref={barChartRef} width="100%" height="300" viewBox="0 0 600 300" className="overflow-visible"></svg>
+              <svg ref={barChartRef} width="100%" height="100%" className="max-h-[300px] overflow-visible"></svg>
             )}
             {activeTab === 'trends' && (
-              <svg ref={lineChartRef} width="100%" height="300" viewBox="0 0 600 300" className="overflow-visible"></svg>
+              <svg ref={lineChartRef} width="100%" height="100%" className="max-h-[300px] overflow-visible"></svg>
             )}
             {activeTab === 'distribution' && (
-              <svg ref={pieChartRef} width="100%" height="300" viewBox="0 0 600 300" className="overflow-visible"></svg>
+              <svg ref={pieChartRef} width="100%" height="100%" className="max-h-[300px] overflow-visible"></svg>
             )}
           </div>
 
-          <div className="mt-10 grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
             {categoryData.map((d, i) => (
               <div key={d.label} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-lg transition-all group">
                 <div className="flex items-center gap-2 mb-3">
