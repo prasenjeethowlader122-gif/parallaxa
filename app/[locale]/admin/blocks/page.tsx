@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import CodeMirror from '@uiw/react-codemirror'
@@ -8,9 +8,9 @@ import { html } from '@codemirror/lang-html'
 import {
   Plus, Trash2, Edit3, Save, X, Copy, Check, ChevronDown,
   ChevronUp, Info, Puzzle, Code2, Eye, RefreshCw, AlertCircle,
-  Sparkles, BookOpen, Terminal, Layout, Share2, Play, Palette,
+  Sparkles, BookOpen, Terminal, Share2, Play, Palette,
   Lightbulb, AlertTriangle, Info as InfoIcon, Quote, BarChart3,
-  MousePointer2, Box
+  Box
 } from 'lucide-react'
 
 interface BlockParam {
@@ -51,7 +51,7 @@ const PRESET_TEMPLATES = [
       { name: 'text', label: 'বার্তা', placeholder: 'এখানে লিখুন…', defaultValue: '' },
       { name: 'type', label: 'ধরন (info/warning/success)', placeholder: 'info', defaultValue: 'info' },
     ],
-    htmlTemplate: `<div style="border-left: 4px solid #3b82f6; background: #eff6ff; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 15px; line-height: 1.6; color: #1e3a5f;">
+    htmlTemplate: `<div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-[15px] leading-6 text-slate-800 shadow-sm">
   {{text}}
 </div>`,
   },
@@ -64,7 +64,7 @@ const PRESET_TEMPLATES = [
     params: [
       { name: 'text', label: 'সতর্কতা', placeholder: 'সতর্কতার বার্তা…', defaultValue: '' },
     ],
-    htmlTemplate: `<div style="border-left: 4px solid #f59e0b; background: #fffbeb; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 15px; line-height: 1.6; color: #78350f;">
+    htmlTemplate: `<div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-[15px] leading-6 text-amber-900 shadow-sm">
   <strong>সতর্কতা:</strong> {{text}}
 </div>`,
   },
@@ -78,10 +78,10 @@ const PRESET_TEMPLATES = [
       { name: 'text', label: 'তথ্য', placeholder: 'গুরুত্বপূর্ণ তথ্য…', defaultValue: '' },
       { name: 'source', label: 'উৎস', placeholder: 'উৎস প্রতিষ্ঠান', defaultValue: '' },
     ],
-    htmlTemplate: `<div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin: 16px 0; background: #f9fafb;">
-  <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 8px;">তথ্য</div>
-  <p style="margin: 0 0 8px; font-size: 16px; line-height: 1.65; color: #111827;">{{text}}</p>
-  <div style="font-size: 12px; color: #9ca3af;">— উৎস: {{source}}</div>
+    htmlTemplate: `<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5 shadow-sm">
+  <div class="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">তথ্য</div>
+  <p class="m-0 mb-2 text-sm sm:text-base leading-7 text-slate-900">{{text}}</p>
+  <div class="text-[11px] text-slate-400">— উৎস: {{source}}</div>
 </div>`,
   },
   {
@@ -94,9 +94,9 @@ const PRESET_TEMPLATES = [
       { name: 'text', label: 'উদ্ধৃতি', placeholder: 'উদ্ধৃতি লিখুন…', defaultValue: '' },
       { name: 'author', label: 'ব্যক্তি/উৎস', placeholder: 'নাম বা পদ', defaultValue: '' },
     ],
-    htmlTemplate: `<blockquote style="border-left: 4px solid #ef4444; padding: 20px 24px; margin: 24px 0; background: #fef2f2; border-radius: 0 12px 12px 0;">
-  <p style="font-size: 20px; font-style: italic; color: #991b1b; margin: 0 0 10px; line-height: 1.5; font-family: Georgia, serif;">"{{text}}"</p>
-  <cite style="font-size: 13px; color: #b91c1c; font-style: normal; font-weight: 600;">— {{author}}</cite>
+    htmlTemplate: `<blockquote class="rounded-2xl border-l-4 border-red-500 bg-red-50 px-5 py-5 sm:px-6 sm:py-6 shadow-sm">
+  <p class="m-0 mb-3 font-serif text-lg sm:text-xl italic leading-8 text-red-900">"{{text}}"</p>
+  <cite class="text-xs sm:text-sm not-italic font-semibold text-red-700">— {{author}}</cite>
 </blockquote>`,
   },
   {
@@ -110,10 +110,10 @@ const PRESET_TEMPLATES = [
       { name: 'label', label: 'বিবরণ', placeholder: 'নিহত মানুষ', defaultValue: '' },
       { name: 'source', label: 'উৎস', placeholder: 'জাতিসংঘ', defaultValue: '' },
     ],
-    htmlTemplate: `<div style="text-align: center; padding: 28px 20px; margin: 20px 0; border: 1px solid #e5e7eb; border-radius: 16px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
-  <div style="font-size: 48px; font-weight: 800; color: #111827; line-height: 1; margin-bottom: 8px;">{{number}}</div>
-  <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px; font-weight: 500;">{{label}}</div>
-  <div style="font-size: 11px; color: #9ca3af;">সূত্র: {{source}}</div>
+    htmlTemplate: `<div class="my-5 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 px-5 py-7 sm:px-6 sm:py-8 text-center shadow-sm">
+  <div class="mb-2 text-4xl sm:text-5xl font-black leading-none text-slate-900">{{number}}</div>
+  <div class="mb-1 text-sm sm:text-[15px] font-medium text-slate-500">{{label}}</div>
+  <div class="text-[11px] text-slate-400">সূত্র: {{source}}</div>
 </div>`,
   },
 ]
@@ -130,51 +130,54 @@ function ParamRow({
   onRemove: (index: number) => void
 }) {
   return (
-    <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
-      <div className="flex-1 grid grid-cols-2 gap-2 min-w-0">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4 shadow-sm">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">নাম (code)</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">নাম (code)</label>
           <input
             value={param.name}
             onChange={e => onChange(index, 'name', e.target.value.replace(/[^a-z0-9_]/g, ''))}
             placeholder="param_name"
-            className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 font-mono focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono outline-none transition focus:ring-2 focus:ring-slate-300"
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">লেবেল</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">লেবেল</label>
           <input
             value={param.label}
             onChange={e => onChange(index, 'label', e.target.value)}
             placeholder="Parameter Label"
-            className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none transition focus:ring-2 focus:ring-slate-300"
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">Placeholder</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Placeholder</label>
           <input
             value={param.placeholder}
             onChange={e => onChange(index, 'placeholder', e.target.value)}
             placeholder="উদাহরণ মান…"
-            className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none transition focus:ring-2 focus:ring-slate-300"
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">Default মান</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Default মান</label>
           <input
             value={param.defaultValue}
             onChange={e => onChange(index, 'defaultValue', e.target.value)}
             placeholder="ডিফল্ট মান…"
-            className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none transition focus:ring-2 focus:ring-slate-300"
           />
         </div>
       </div>
-      <button
-        onClick={() => onRemove(index)}
-        className="mt-5 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-      >
-        <X size={14} />
-      </button>
+      <div className="mt-3 flex justify-end">
+        <button
+          onClick={() => onRemove(index)}
+          aria-label={`Remove parameter ${param.name || index + 1}`}
+          className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-white hover:text-red-500"
+        >
+          <X size={14} /> Remove
+        </button>
+      </div>
     </div>
   )
 }
@@ -187,7 +190,7 @@ function LivePreview({ template, params }: { template: string; params: BlockPara
 
   if (!template.trim()) {
     return (
-      <div className="flex items-center justify-center h-24 text-gray-400 text-sm italic border-2 border-dashed border-gray-200 rounded-xl">
+      <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm italic text-slate-400">
         Template লিখুন preview দেখতে
       </div>
     )
@@ -195,7 +198,7 @@ function LivePreview({ template, params }: { template: string; params: BlockPara
 
   return (
     <div
-      className="min-h-[60px] rounded-xl border border-gray-100 overflow-hidden"
+      className="min-h-[80px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
       dangerouslySetInnerHTML={{ __html: rendered }}
     />
   )
@@ -203,19 +206,23 @@ function LivePreview({ template, params }: { template: string; params: BlockPara
 
 function SyntaxUsage({ name, params }: { name: string; params: BlockParam[] }) {
   const [copied, setCopied] = useState(false)
-  const usage = `[!${name || 'blockname'}(${params.map(p => `${p.name}="${p.defaultValue || p.placeholder || '...'}""`).join(' ')})]`
+  const usage = `[!${name || 'blockname'}(${params.map(p => `${p.name}="${p.defaultValue || p.placeholder || '...'}"`).join(' ')})]`
 
-  const copy = () => {
-    navigator.clipboard.writeText(usage)
+  const copy = async () => {
+    await navigator.clipboard.writeText(usage)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl px-4 py-3 flex items-center gap-3">
-      <code className="text-green-400 text-xs font-mono flex-1 break-all">{usage}</code>
-      <button onClick={copy} className="shrink-0 text-gray-500 hover:text-white transition-colors">
-        {copied ? <Check size={13} /> : <Copy size={13} />}
+    <div className="flex items-center gap-3 rounded-2xl bg-slate-900 px-4 py-3 shadow-sm">
+      <code className="min-w-0 flex-1 break-all font-mono text-xs text-emerald-400">{usage}</code>
+      <button
+        onClick={copy}
+        aria-label="Copy usage"
+        className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+      >
+        {copied ? <Check size={14} /> : <Copy size={14} />}
       </button>
     </div>
   )
@@ -254,9 +261,19 @@ export default function BlockManagerPage() {
     }
   }, [])
 
-  useEffect(() => { fetchBlocks() }, [fetchBlocks])
+  useEffect(() => {
+    fetchBlocks()
+  }, [fetchBlocks])
 
-  const resetForm = () => setForm({ name: '', label: '', description: '', icon: 'extension', params: [], htmlTemplate: '' })
+  const resetForm = () =>
+    setForm({
+      name: '',
+      label: '',
+      description: '',
+      icon: 'extension',
+      params: [],
+      htmlTemplate: '',
+    })
 
   const openEdit = (block: CustomBlock) => {
     setForm({
@@ -275,6 +292,7 @@ export default function BlockManagerPage() {
     resetForm()
     setEditingId('new')
     setPreviewTab('edit')
+    setError(null)
   }
 
   const loadPreset = (preset: typeof PRESET_TEMPLATES[0]) => {
@@ -289,6 +307,7 @@ export default function BlockManagerPage() {
     setEditingId('new')
     setShowPresets(false)
     setPreviewTab('edit')
+    setError(null)
   }
 
   const save = async () => {
@@ -296,8 +315,10 @@ export default function BlockManagerPage() {
       setError('নাম, লেবেল ও HTML template আবশ্যক')
       return
     }
+
     setSaving(true)
     setError(null)
+
     try {
       const isNew = editingId === 'new'
       const url = isNew ? '/api/blocks' : `/api/blocks/${editingId}`
@@ -360,44 +381,48 @@ export default function BlockManagerPage() {
 
   const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
     const iconMap: Record<string, any> = {
-      'share': Share2,
-      'terminal': Terminal,
-      'palette': Palette,
-      'extension': Box,
-      'play': Play,
-      'info': InfoIcon,
-      'warning': AlertTriangle,
-      'lightbulb': Lightbulb,
-      'quote': Quote,
-      'stat': BarChart3,
-      'image': Eye,
-    };
-    const Icon = iconMap[name] || Box;
-    return <Icon className={className} size={18} />;
+      share: Share2,
+      terminal: Terminal,
+      palette: Palette,
+      extension: Box,
+      play: Play,
+      info: InfoIcon,
+      warning: AlertTriangle,
+      lightbulb: Lightbulb,
+      quote: Quote,
+      stat: BarChart3,
+      image: Eye,
+    }
+    const Icon = iconMap[name] || Box
+    return <Icon className={className} size={18} />
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f3f3] flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       <Header />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
 
-        {/* Page Title */}
-        <div className="flex items-center justify-between mb-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-['Newsreader'] text-3xl font-bold text-[#1a1b1c]">Custom Block Manager</h1>
-            <p className="text-sm text-[#9e9fa0] mt-1">নতুন block তৈরি করুন, সম্পাদনা করুন, মুছুন</p>
+            <h1 className="font-['Newsreader'] text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+              Custom Block Manager
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              নতুন block তৈরি করুন, সম্পাদনা করুন, মুছুন
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowPresets(p => !p)}
-              className="flex items-center gap-2 px-4 py-2 border border-[#dcdad9] bg-white text-sm font-medium text-[#5e5f61] rounded-2xl hover:bg-[#efedee] transition-colors"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"
             >
               <Sparkles size={14} />
               Preset
             </button>
             <button
               onClick={openNew}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1a1b1c] text-white text-sm font-semibold rounded-2xl hover:bg-[#3d4042] transition-colors"
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
             >
               <Plus size={14} />
               নতুন Block
@@ -406,143 +431,169 @@ export default function BlockManagerPage() {
         </div>
 
         {error && (
-          <div className="mb-5 flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm">
+          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             <AlertCircle size={16} className="shrink-0" />
-            {error}
-            <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
+            <span className="min-w-0 flex-1">{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="rounded-lg p-1 text-red-400 transition hover:bg-white hover:text-red-600"
+              aria-label="Close error"
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
 
-        {/* Preset Templates */}
         {showPresets && (
-          <div className="mb-6 bg-white rounded-2xl border border-[#e4e2e1] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-sm text-[#1a1b1c]">Preset Templates</h2>
-              <button onClick={() => setShowPresets(false)} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg">
+          <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900">Preset Templates</h2>
+              <button
+                onClick={() => setShowPresets(false)}
+                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
+                aria-label="Close presets"
+              >
                 <X size={14} />
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               {PRESET_TEMPLATES.map(p => (
                 <button
                   key={p.name}
                   onClick={() => loadPreset(p)}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-[#e4e2e1] hover:border-[#585f64] hover:bg-[#f5f3f3] transition-all text-center group"
+                  className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-center transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-gray-900 group-hover:text-white transition-all mb-1">
+                  <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-500 transition group-hover:bg-slate-950 group-hover:text-white">
                     <p.icon size={20} />
                   </div>
-                  <span className="text-xs font-semibold text-[#1a1b1c]">{p.label}</span>
-                  <span className="text-[10px] text-[#9e9fa0] leading-tight">{p.description}</span>
+                  <span className="text-xs font-semibold text-slate-900">{p.label}</span>
+                  <span className="text-[10px] leading-tight text-slate-500">{p.description}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div className={`grid gap-6 ${isEditing ? 'lg:grid-cols-5' : 'grid-cols-1'}`}>
-
-          {/* Left — Block List */}
+        <div className={`grid gap-6 ${isEditing ? 'grid-cols-1 lg:grid-cols-5' : 'grid-cols-1'}`}>
           <div className={isEditing ? 'lg:col-span-2' : 'col-span-1'}>
-
-            {/* Built-in Blocks */}
-            <div className="bg-white rounded-2xl border border-[#e4e2e1] mb-4 overflow-hidden">
+            <div className="mb-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
               <button
                 onClick={() => setExpandedBuiltin(e => !e)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#f5f3f3] transition-colors"
+                aria-expanded={expandedBuiltin}
+                className="flex w-full items-center justify-between px-4 py-4 transition hover:bg-slate-50 sm:px-5"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 bg-[#efedee] rounded-lg flex items-center justify-center">
-                    <BookOpen size={13} className="text-[#585f64]" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <BookOpen size={14} />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-semibold text-[#1a1b1c]">Built-in Blocks</p>
-                    <p className="text-[10px] text-[#9e9fa0]">{BUILTIN_BLOCKS.length}টি বিল্ট-ইন ব্লক</p>
+                    <p className="text-sm font-semibold text-slate-900">Built-in Blocks</p>
+                    <p className="text-[10px] text-slate-500">{BUILTIN_BLOCKS.length}টি বিল্ট-ইন ব্লক</p>
                   </div>
                 </div>
-                {expandedBuiltin ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+                {expandedBuiltin ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
               </button>
+
               {expandedBuiltin && (
-                <div className="border-t border-[#e4e2e1] divide-y divide-[#f0eeed]">
+                <div className="divide-y divide-slate-100 border-t border-slate-100">
                   {BUILTIN_BLOCKS.map(b => (
-                    <div key={b.name} className="px-5 py-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <b.icon size={16} className="text-[#585f64]" />
-                          <span className="text-sm font-semibold text-[#1a1b1c]">{b.label}</span>
-                          <span className="text-[10px] px-2 py-0.5 bg-[#efedee] text-[#9e9fa0] rounded-full">built-in</span>
+                    <div key={b.name} className="px-4 py-3 sm:px-5">
+                      <div className="mb-1 flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <b.icon size={16} className="text-slate-600" />
+                          <span className="truncate text-sm font-semibold text-slate-900">{b.label}</span>
+                          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">built-in</span>
                         </div>
                         <button
-                          onClick={() => { navigator.clipboard.writeText(b.usage); setCopiedSyntax(b.name); setTimeout(() => setCopiedSyntax(null), 1500) }}
-                          className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg"
-                          title="Copy usage"
+                          onClick={() => {
+                            navigator.clipboard.writeText(b.usage)
+                            setCopiedSyntax(b.name)
+                            setTimeout(() => setCopiedSyntax(null), 1500)
+                          }}
+                          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                          aria-label={`Copy ${b.name} usage`}
                         >
-                          {copiedSyntax === b.name ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                          {copiedSyntax === b.name ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
                         </button>
                       </div>
-                      <p className="text-[11px] text-[#9e9fa0]">{b.description}</p>
+                      <p className="text-[11px] leading-5 text-slate-500">{b.description}</p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* User Blocks */}
-            <div className="bg-white rounded-2xl border border-[#e4e2e1] overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#e4e2e1] flex items-center justify-between">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
                 <div className="flex items-center gap-2">
-                  <Puzzle size={14} className="text-[#585f64]" />
-                  <span className="text-sm font-semibold text-[#1a1b1c]">আমার Blocks</span>
+                  <Puzzle size={14} className="text-slate-500" />
+                  <span className="text-sm font-semibold text-slate-900">আমার Blocks</span>
                 </div>
-                {loading && <RefreshCw size={13} className="animate-spin text-gray-400" />}
+                {loading && <RefreshCw size={13} className="animate-spin text-slate-400" />}
               </div>
 
               {!loading && blocks.length === 0 ? (
-                <div className="px-5 py-10 text-center">
-                  <div className="flex justify-center mb-3">
-                    <Box size={40} className="text-gray-300" />
+                <div className="px-5 py-12 text-center">
+                  <div className="mb-3 flex justify-center">
+                    <Box size={40} className="text-slate-300" />
                   </div>
-                  <p className="text-sm text-[#9e9fa0]">এখনো কোনো custom block নেই</p>
-                  <button onClick={openNew} className="mt-4 text-xs text-[#585f64] underline underline-offset-2">প্রথম block তৈরি করুন</button>
+                  <p className="text-sm text-slate-500">এখনো কোনো custom block নেই</p>
+                  <button
+                    onClick={openNew}
+                    className="mt-4 text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-4"
+                  >
+                    প্রথম block তৈরি করুন
+                  </button>
                 </div>
               ) : (
-                <div className="divide-y divide-[#f0eeed]">
+                <div className="divide-y divide-slate-100">
                   {blocks.map(block => (
                     <div
                       key={block.id}
-                      className={`px-5 py-3.5 hover:bg-[#faf9f9] transition-colors ${editingId === block.id ? 'bg-[#f5f3f3] ring-1 ring-inset ring-[#dcdad9]' : ''}`}
+                      className={`px-4 py-3.5 sm:px-5 transition ${
+                        editingId === block.id ? 'bg-slate-50 ring-1 ring-inset ring-slate-200' : 'hover:bg-slate-50'
+                      }`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
                           <DynamicIcon name={block.icon} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-semibold text-[#1a1b1c]">{block.label}</span>
-                            <code className="text-[10px] px-1.5 py-0.5 bg-[#efedee] text-[#585f64] rounded font-mono">{block.name}</code>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-slate-900">{block.label}</span>
+                            <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+                              {block.name}
+                            </code>
                           </div>
-                          {block.description && <p className="text-[11px] text-[#9e9fa0] mt-0.5 line-clamp-1">{block.description}</p>}
-                          <p className="text-[10px] text-[#c0bebe] mt-1">{block.params.length}টি parameter</p>
+                          {block.description && (
+                            <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-500">
+                              {block.description}
+                            </p>
+                          )}
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            {block.params.length}টি parameter
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
+                        <div className="flex shrink-0 items-center gap-1">
                           <button
                             onClick={() => copyUsage(block.name, block.params)}
-                            className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
-                            title="Usage copy করুন"
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                            aria-label={`Copy usage for ${block.label}`}
                           >
-                            {copiedSyntax === block.name ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
+                            {copiedSyntax === block.name ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                           </button>
                           <button
                             onClick={() => openEdit(block)}
-                            className="p-1.5 text-gray-400 hover:text-[#585f64] rounded-lg transition-colors"
-                            title="সম্পাদনা"
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                            aria-label={`Edit ${block.label}`}
                           >
                             <Edit3 size={13} />
                           </button>
                           <button
                             onClick={() => deleteBlock(block.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
-                            title="মুছুন"
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+                            aria-label={`Delete ${block.label}`}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -555,38 +606,43 @@ export default function BlockManagerPage() {
             </div>
           </div>
 
-          {/* Right — Create/Edit Form */}
           {isEditing && (
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl border border-[#e4e2e1] overflow-hidden sticky top-4">
-                {/* Form Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-[#e4e2e1]">
-                  <h2 className="font-semibold text-sm text-[#1a1b1c]">
+              <div className="sticky top-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
+                  <h2 className="text-sm font-semibold text-slate-900">
                     {editingId === 'new' ? 'নতুন Block তৈরি' : 'Block সম্পাদনা'}
                   </h2>
-                  <button onClick={() => { setEditingId(null); resetForm(); setError(null) }} className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg">
+                  <button
+                    onClick={() => {
+                      setEditingId(null)
+                      resetForm()
+                      setError(null)
+                    }}
+                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                    aria-label="Close editor"
+                  >
                     <X size={14} />
                   </button>
                 </div>
 
-                <div className="p-5 flex flex-col gap-5 overflow-y-auto max-h-[calc(100vh-200px)]">
-
-                  {/* Basic Info */}
-                  <div className="grid grid-cols-[auto_1fr_1fr] gap-3 items-start">
+                <div className="max-h-[calc(100vh-180px)] overflow-y-auto p-4 sm:p-5">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr_1fr]">
                     <div>
-                      <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">Icon</label>
+                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Icon</label>
                       <select
                         value={form.icon}
                         onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
-                        className="w-full text-xs border border-gray-200 rounded-xl px-2 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none transition focus:ring-2 focus:ring-slate-300"
                       >
                         {['share', 'terminal', 'palette', 'extension', 'play', 'info', 'warning', 'lightbulb', 'quote', 'stat', 'image'].map(icon => (
                           <option key={icon} value={icon}>{icon}</option>
                         ))}
                       </select>
                     </div>
+
                     <div>
-                      <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">
+                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                         Block নাম <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -594,82 +650,97 @@ export default function BlockManagerPage() {
                         onChange={e => setForm(f => ({ ...f, name: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') }))}
                         placeholder="callout"
                         disabled={editingId !== 'new'}
-                        className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 font-mono focus:outline-none focus:ring-1 focus:ring-gray-300 disabled:bg-gray-50 disabled:text-gray-400"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono outline-none transition focus:ring-2 focus:ring-slate-300 disabled:bg-slate-50 disabled:text-slate-400"
                       />
-                      <p className="text-[10px] text-gray-400 mt-1">শুধু ছোট হাতের অক্ষর, সংখ্যা, - বা _</p>
+                      <p className="mt-1 text-[10px] text-slate-400">শুধু ছোট হাতের অক্ষর, সংখ্যা, - বা _</p>
                     </div>
+
                     <div>
-                      <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">
+                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                         Display লেবেল <span className="text-red-500">*</span>
                       </label>
                       <input
                         value={form.label}
                         onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                         placeholder="Callout Box"
-                        className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-slate-300"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">বিবরণ</label>
+                  <div className="mt-4">
+                    <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">বিবরণ</label>
                     <input
                       value={form.description}
                       onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                       placeholder="এই block কী করে?"
-                      className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-slate-300"
                     />
                   </div>
 
-                  {/* Parameters */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-                        Parameters <span className="text-[#9e9fa0] normal-case font-normal">— template-এ {'{{name}}'} দিয়ে ব্যবহার করুন</span>
+                  <div className="mt-5">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        Parameters <span className="font-normal normal-case text-slate-500">— template-এ {'{{name}}'} দিয়ে ব্যবহার করুন</span>
                       </label>
                       <button
                         onClick={addParam}
-                        className="flex items-center gap-1 text-[10px] font-semibold text-[#585f64] hover:text-[#1a1b1c] transition-colors"
+                        className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
                       >
                         <Plus size={11} /> যোগ করুন
                       </button>
                     </div>
-                    <div className="flex flex-col gap-2">
+
+                    <div className="flex flex-col gap-3">
                       {form.params.map((p, i) => (
-                        <ParamRow key={i} param={p} index={i} onChange={updateParam} onRemove={removeParam} />
+                        <ParamRow
+                          key={i}
+                          param={p}
+                          index={i}
+                          onChange={updateParam}
+                          onRemove={removeParam}
+                        />
                       ))}
+
                       {form.params.length === 0 && (
-                        <p className="text-xs text-gray-400 italic py-2">কোনো parameter নেই — static HTML block তৈরি করতে পারেন</p>
+                        <p className="py-2 text-xs italic text-slate-400">
+                          কোনো parameter নেই — static HTML block তৈরি করতে পারেন
+                        </p>
                       )}
                     </div>
                   </div>
 
-                  {/* HTML Template */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+                  <div className="mt-5">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                         HTML Template <span className="text-red-500">*</span>
                       </label>
-                      <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+
+                      <div className="inline-flex overflow-hidden rounded-xl border border-slate-200 bg-white">
                         <button
                           onClick={() => setPreviewTab('edit')}
-                          className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold transition-colors ${previewTab === 'edit' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                          className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition ${
+                            previewTab === 'edit' ? 'bg-slate-950 text-white' : 'text-slate-500 hover:bg-slate-50'
+                          }`}
                         >
                           <Code2 size={10} /> কোড
                         </button>
                         <button
                           onClick={() => setPreviewTab('preview')}
-                          className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold transition-colors ${previewTab === 'preview' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                          className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition ${
+                            previewTab === 'preview' ? 'bg-slate-950 text-white' : 'text-slate-500 hover:bg-slate-50'
+                          }`}
                         >
                           <Eye size={10} /> Preview
                         </button>
                       </div>
                     </div>
+
                     {previewTab === 'edit' ? (
-                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                      <div className="overflow-hidden rounded-2xl border border-slate-200">
                         <CodeMirror
                           value={form.htmlTemplate}
-                          height="300px"
+                          height="320px"
                           extensions={[html()]}
                           onChange={(value) => setForm(f => ({ ...f, htmlTemplate: value }))}
                           theme="light"
@@ -677,41 +748,47 @@ export default function BlockManagerPage() {
                         />
                       </div>
                     ) : (
-                      <div className="border border-gray-200 rounded-xl p-4 bg-white min-h-[120px]">
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <LivePreview template={form.htmlTemplate} params={form.params} />
                       </div>
                     )}
-                    <p className="text-[10px] text-gray-400 mt-1.5 flex items-center gap-1">
-                      <Info size={10} />
-                      Parameter মানের জন্য {'{{param_name}}'} ব্যবহার করুন। Inline styles ব্যবহার করুন কারণ article CSS আলাদা।
+
+                    <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-5 text-slate-400">
+                      <Info size={10} className="mt-0.5" />
+                      Parameter মানের জন্য {'{{param_name}}'} ব্যবহার করুন। Inline styles বা utility classes ব্যবহার করুন কারণ article CSS আলাদা।
                     </p>
                   </div>
 
-                  {/* Syntax Preview */}
                   {form.name && (
-                    <div>
-                      <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1.5">Article-এ ব্যবহারের syntax</label>
+                    <div className="mt-5">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        Article-এ ব্যবহারের syntax
+                      </label>
                       <SyntaxUsage name={form.name} params={form.params} />
                     </div>
                   )}
 
-                  {/* Save */}
                   {error && (
-                    <p className="text-sm text-red-600 flex items-center gap-2">
+                    <p className="mt-4 flex items-center gap-2 text-sm text-red-600">
                       <AlertCircle size={14} /> {error}
                     </p>
                   )}
-                  <div className="flex gap-3 pt-1">
+
+                  <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                     <button
-                      onClick={() => { setEditingId(null); resetForm(); setError(null) }}
-                      className="flex-1 py-2.5 border border-[#dcdad9] rounded-2xl text-sm font-medium text-[#5e5f61] hover:bg-[#f5f3f3] transition-colors"
+                      onClick={() => {
+                        setEditingId(null)
+                        resetForm()
+                        setError(null)
+                      }}
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 sm:flex-1"
                     >
                       বাতিল
                     </button>
                     <button
                       onClick={save}
                       disabled={saving || !form.name || !form.label || !form.htmlTemplate}
-                      className="flex-1 py-2.5 bg-[#1a1b1c] text-white rounded-2xl text-sm font-semibold hover:bg-[#3d4042] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
                     >
                       {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
                       {saving ? 'সেভ হচ্ছে…' : 'সেভ করুন'}
@@ -723,29 +800,32 @@ export default function BlockManagerPage() {
           )}
         </div>
 
-        {/* Help */}
-        <div className="mt-8 bg-white rounded-2xl border border-[#e4e2e1] p-5">
-          <h3 className="text-sm font-semibold text-[#1a1b1c] mb-3 flex items-center gap-2">
+        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
             <Info size={14} /> কীভাবে ব্যবহার করবেন
           </h3>
-          <div className="grid sm:grid-cols-3 gap-4 text-xs text-[#5e5f61]">
-            <div className="flex flex-col gap-1.5">
-              <div className="font-semibold text-[#1a1b1c]">১. Block তৈরি করুন</div>
-              <p>একটি নাম, লেবেল দিন। Parameters যোগ করুন এবং HTML template লিখুন। <code className="bg-[#efedee] px-1 rounded">{'{{param}}'}</code> দিয়ে মান বসানো হবে।</p>
+          <div className="grid gap-4 text-xs text-slate-600 sm:grid-cols-3">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-slate-50 p-4">
+              <div className="font-semibold text-slate-900">১. Block তৈরি করুন</div>
+              <p>
+                একটি নাম, লেবেল দিন। Parameters যোগ করুন এবং HTML template লিখুন। <code className="rounded bg-slate-200 px-1">{'{{param}}'}</code> দিয়ে মান বসানো হবে।
+              </p>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <div className="font-semibold text-[#1a1b1c]">২. Article-এ ব্যবহার করুন</div>
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-slate-50 p-4">
+              <div className="font-semibold text-slate-900">২. Article-এ ব্যবহার করুন</div>
               <p>Write page-এ markdown editor-এ লিখুন:</p>
-              <code className="bg-[#efedee] px-2 py-1 rounded text-[10px] break-all">[!blockname(param1="মান")]</code>
+              <code className="break-all rounded bg-slate-200 px-2 py-1 text-[10px]">
+                [!blockname(param1="মান")]
+              </code>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <div className="font-semibold text-[#1a1b1c]">৩. Preview দেখুন</div>
-              <p>Article preview বা Published article-এ block টি render হবে। Inline styles ব্যবহার করুন সেরা ফলাফলের জন্য।</p>
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-slate-50 p-4">
+              <div className="font-semibold text-slate-900">৩. Preview দেখুন</div>
+              <p>Article preview বা Published article-এ block render হবে।</p>
             </div>
           </div>
         </div>
-
       </main>
+
       <Footer />
     </div>
   )
