@@ -3,10 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import CodeMirror from '@uiw/react-codemirror'
+import { html } from '@codemirror/lang-html'
 import {
   Plus, Trash2, Edit3, Save, X, Copy, Check, ChevronDown,
   ChevronUp, Info, Puzzle, Code2, Eye, RefreshCw, AlertCircle,
-  Sparkles, BookOpen, Terminal, Layout
+  Sparkles, BookOpen, Terminal, Layout, Share2, Play, Palette,
+  Lightbulb, AlertTriangle, Info as InfoIcon, Quote, BarChart3,
+  MousePointer2, Box
 } from 'lucide-react'
 
 interface BlockParam {
@@ -30,14 +34,16 @@ interface CustomBlock {
 }
 
 const BUILTIN_BLOCKS = [
-  { name: 'embed', label: 'Social Embed', icon: '🔗', description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
-  { name: 'run', label: 'Run Code', icon: '▶️', description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
-  { name: 'style', label: 'Custom CSS', icon: '🎨', description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
+  { name: 'embed', label: 'Social Embed', icon: Share2, description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
+  { name: 'screenshot', label: 'Screenshot', icon: Eye, description: 'সোশ্যাল মিডিয়া পোস্ট বা ওয়েবসাইটের স্ক্রিনশট দেখান', usage: '[!screenshot(url="https://...")]' },
+  { name: 'run', label: 'Run Code', icon: Play, description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
+  { name: 'style', label: 'Custom CSS', icon: Palette, description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
 ]
 
 const PRESET_TEMPLATES = [
   {
-    icon: '💡',
+    icon: Lightbulb,
+    iconName: 'lightbulb',
     name: 'callout',
     label: 'Callout Box',
     description: 'সাধারণ তথ্য বাক্স',
@@ -46,11 +52,12 @@ const PRESET_TEMPLATES = [
       { name: 'type', label: 'ধরন (info/warning/success)', placeholder: 'info', defaultValue: 'info' },
     ],
     htmlTemplate: `<div style="border-left: 4px solid #3b82f6; background: #eff6ff; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 15px; line-height: 1.6; color: #1e3a5f;">
-  <strong>💡</strong> {{text}}
+  {{text}}
 </div>`,
   },
   {
-    icon: '⚠️',
+    icon: AlertTriangle,
+    iconName: 'warning',
     name: 'warning',
     label: 'Warning Box',
     description: 'সতর্কতা বাক্স',
@@ -58,11 +65,12 @@ const PRESET_TEMPLATES = [
       { name: 'text', label: 'সতর্কতা', placeholder: 'সতর্কতার বার্তা…', defaultValue: '' },
     ],
     htmlTemplate: `<div style="border-left: 4px solid #f59e0b; background: #fffbeb; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 15px; line-height: 1.6; color: #78350f;">
-  <strong>⚠️ সতর্কতা:</strong> {{text}}
+  <strong>সতর্কতা:</strong> {{text}}
 </div>`,
   },
   {
-    icon: '📌',
+    icon: InfoIcon,
+    iconName: 'info',
     name: 'fact',
     label: 'Fact Box',
     description: 'তথ্য বাক্স — তথ্য ও উৎস সহ',
@@ -71,13 +79,14 @@ const PRESET_TEMPLATES = [
       { name: 'source', label: 'উৎস', placeholder: 'উৎস প্রতিষ্ঠান', defaultValue: '' },
     ],
     htmlTemplate: `<div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin: 16px 0; background: #f9fafb;">
-  <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 8px;">📌 তথ্য</div>
+  <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 8px;">তথ্য</div>
   <p style="margin: 0 0 8px; font-size: 16px; line-height: 1.65; color: #111827;">{{text}}</p>
   <div style="font-size: 12px; color: #9ca3af;">— উৎস: {{source}}</div>
 </div>`,
   },
   {
-    icon: '🗣️',
+    icon: Quote,
+    iconName: 'quote',
     name: 'pullquote',
     label: 'Pull Quote',
     description: 'বড় উদ্ধৃতি হাইলাইট',
@@ -91,7 +100,8 @@ const PRESET_TEMPLATES = [
 </blockquote>`,
   },
   {
-    icon: '📊',
+    icon: BarChart3,
+    iconName: 'stat',
     name: 'stat',
     label: 'Stat Highlight',
     description: 'বড় সংখ্যা/তথ্য হাইলাইট',
@@ -226,7 +236,7 @@ export default function BlockManagerPage() {
     name: '',
     label: '',
     description: '',
-    icon: '🧩',
+    icon: 'extension',
     params: [] as BlockParam[],
     htmlTemplate: '',
   })
@@ -246,7 +256,7 @@ export default function BlockManagerPage() {
 
   useEffect(() => { fetchBlocks() }, [fetchBlocks])
 
-  const resetForm = () => setForm({ name: '', label: '', description: '', icon: '🧩', params: [], htmlTemplate: '' })
+  const resetForm = () => setForm({ name: '', label: '', description: '', icon: 'extension', params: [], htmlTemplate: '' })
 
   const openEdit = (block: CustomBlock) => {
     setForm({
@@ -272,7 +282,7 @@ export default function BlockManagerPage() {
       name: preset.name,
       label: preset.label,
       description: preset.description,
-      icon: preset.icon,
+      icon: preset.iconName || 'extension',
       params: preset.params.map(p => ({ ...p })),
       htmlTemplate: preset.htmlTemplate,
     })
@@ -348,6 +358,24 @@ export default function BlockManagerPage() {
 
   const isEditing = editingId !== null
 
+  const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
+    const iconMap: Record<string, any> = {
+      'share': Share2,
+      'terminal': Terminal,
+      'palette': Palette,
+      'extension': Box,
+      'play': Play,
+      'info': InfoIcon,
+      'warning': AlertTriangle,
+      'lightbulb': Lightbulb,
+      'quote': Quote,
+      'stat': BarChart3,
+      'image': Eye,
+    };
+    const Icon = iconMap[name] || Box;
+    return <Icon className={className} size={18} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f3f3] flex flex-col">
       <Header />
@@ -399,9 +427,11 @@ export default function BlockManagerPage() {
                 <button
                   key={p.name}
                   onClick={() => loadPreset(p)}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-[#e4e2e1] hover:border-[#585f64] hover:bg-[#f5f3f3] transition-all text-center"
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-[#e4e2e1] hover:border-[#585f64] hover:bg-[#f5f3f3] transition-all text-center group"
                 >
-                  <span className="text-2xl">{p.icon}</span>
+                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-gray-900 group-hover:text-white transition-all mb-1">
+                    <p.icon size={20} />
+                  </div>
                   <span className="text-xs font-semibold text-[#1a1b1c]">{p.label}</span>
                   <span className="text-[10px] text-[#9e9fa0] leading-tight">{p.description}</span>
                 </button>
@@ -438,7 +468,7 @@ export default function BlockManagerPage() {
                     <div key={b.name} className="px-5 py-3">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{b.icon}</span>
+                          <b.icon size={16} className="text-[#585f64]" />
                           <span className="text-sm font-semibold text-[#1a1b1c]">{b.label}</span>
                           <span className="text-[10px] px-2 py-0.5 bg-[#efedee] text-[#9e9fa0] rounded-full">built-in</span>
                         </div>
@@ -469,7 +499,9 @@ export default function BlockManagerPage() {
 
               {!loading && blocks.length === 0 ? (
                 <div className="px-5 py-10 text-center">
-                  <div className="text-3xl mb-3">🧩</div>
+                  <div className="flex justify-center mb-3">
+                    <Box size={40} className="text-gray-300" />
+                  </div>
                   <p className="text-sm text-[#9e9fa0]">এখনো কোনো custom block নেই</p>
                   <button onClick={openNew} className="mt-4 text-xs text-[#585f64] underline underline-offset-2">প্রথম block তৈরি করুন</button>
                 </div>
@@ -481,7 +513,9 @@ export default function BlockManagerPage() {
                       className={`px-5 py-3.5 hover:bg-[#faf9f9] transition-colors ${editingId === block.id ? 'bg-[#f5f3f3] ring-1 ring-inset ring-[#dcdad9]' : ''}`}
                     >
                       <div className="flex items-start gap-3">
-                        <span className="text-xl mt-0.5 shrink-0">{block.icon}</span>
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 mt-0.5">
+                          <DynamicIcon name={block.icon} />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-semibold text-[#1a1b1c]">{block.label}</span>
@@ -541,12 +575,15 @@ export default function BlockManagerPage() {
                   <div className="grid grid-cols-[auto_1fr_1fr] gap-3 items-start">
                     <div>
                       <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">Icon</label>
-                      <input
+                      <select
                         value={form.icon}
                         onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
-                        maxLength={4}
-                        className="w-14 h-10 text-center text-xl border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-300"
-                      />
+                        className="w-full text-xs border border-gray-200 rounded-xl px-2 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                      >
+                        {['share', 'terminal', 'palette', 'extension', 'play', 'info', 'warning', 'lightbulb', 'quote', 'stat', 'image'].map(icon => (
+                          <option key={icon} value={icon}>{icon}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">
@@ -629,13 +666,16 @@ export default function BlockManagerPage() {
                       </div>
                     </div>
                     {previewTab === 'edit' ? (
-                      <textarea
-                        value={form.htmlTemplate}
-                        onChange={e => setForm(f => ({ ...f, htmlTemplate: e.target.value }))}
-                        placeholder={`<div style="border-left: 4px solid #3b82f6; padding: 14px 18px; background: #eff6ff; border-radius: 0 8px 8px 0;">\n  <strong>💡</strong> {{text}}\n</div>`}
-                        rows={10}
-                        className="w-full text-xs font-mono border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none bg-gray-50"
-                      />
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <CodeMirror
+                          value={form.htmlTemplate}
+                          height="300px"
+                          extensions={[html()]}
+                          onChange={(value) => setForm(f => ({ ...f, htmlTemplate: value }))}
+                          theme="light"
+                          className="text-xs"
+                        />
+                      </div>
                     ) : (
                       <div className="border border-gray-200 rounded-xl p-4 bg-white min-h-[120px]">
                         <LivePreview template={form.htmlTemplate} params={form.params} />

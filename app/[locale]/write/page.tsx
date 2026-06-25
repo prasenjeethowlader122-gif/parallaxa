@@ -19,7 +19,7 @@ import {
   Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
   Youtube, Facebook, Twitter, Instagram, Play, Github, Box, ChevronDown,
   Heading3, Type, ListSeparator, Layout, SquarePlus, Highlighter, Palette, Terminal,
-  Type as FontIcon
+  Type as FontIcon, Eye, Sparkles, PenTool, Columns2
 } from 'lucide-react';
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -173,6 +173,7 @@ const DynamicIcon = ({ name, size = 18, className }: { name: string; size?: numb
     'facebook': Facebook,
     'twitter': Twitter,
     'instagram': Instagram,
+    'image': ImageIcon,
   };
   const Icon = iconMap[name] || Box;
   return <Icon size={size} className={className} />;
@@ -783,9 +784,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <div className="flex items-center bg-[#efedee] rounded-2xl p-0.5 shrink-0 ml-1">
               {(['write', 'visual', 'split', 'preview'] as ViewMode[]).map((m) => (
                 <button key={m} onClick={() => setViewMode(m)}
-                  className={`px-2 sm:px-3 py-1.5 rounded-2xl text-[10px] font-semibold transition-all ${viewMode === m ? 'bg-white text-[#313334] shadow-sm' : 'text-[#5e5f61]'}`}>
+                  className={`px-2 sm:px-3 py-1.5 rounded-2xl text-[10px] font-semibold transition-all ${viewMode === m ? 'bg-white text-[#313334] shadow-sm' : 'text-[#5e5f61] hover:text-[#313334]'}`}>
                   <span className="hidden sm:inline capitalize">{m}</span>
-                  <span className="sm:hidden" aria-label={m}>{m === 'write' ? '✏️' : m === 'visual' ? '✨' : m === 'preview' ? '👁' : '⧉'}</span>
+                  <span className="sm:hidden" aria-label={m}>
+                    {m === 'write' ? <PenTool size={14} /> :
+                     m === 'visual' ? <Sparkles size={14} /> :
+                     m === 'preview' ? <Eye size={14} /> :
+                     <Columns2 size={14} />}
+                  </span>
                 </button>
               ))}
             </div>
@@ -814,7 +820,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           </aside>
         )}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
-          {viewMode !== 'visual' && <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
+          {viewMode !== 'visual' && <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0 z-20" style={{ scrollbarWidth: 'none' }}>
             <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
             <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
             <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
@@ -848,7 +854,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Advanced Components</p>
                   </div>
                   <div className="grid grid-cols-3 gap-1 px-2">
-                    {blockRegistry.getAllBlocks().filter(b => ['embed', 'run', 'style'].includes(b.name)).map((block) => (
+                    {blockRegistry.getAllBlocks().filter(b => ['embed', 'run', 'style', 'screenshot'].includes(b.name)).map((block) => (
                       <button
                         key={block.name}
                         onClick={() => {
