@@ -806,7 +806,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           </aside>
         )}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
+          {viewMode !== 'visual' && <div className="flex items-center px-2 sm:px-3 py-1.5 bg-white overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
             <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
             <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
             <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
@@ -898,10 +898,10 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="sm:hidden p-1.5 text-[#585f64] rounded-lg disabled:opacity-30 shrink-0"><RotateCw size={14} /></button>
             <div className="flex-1 min-w-[8px]" />
             <span className="hidden sm:block text-[10px] text-[#9e9fa0] whitespace-nowrap pr-1 shrink-0">{countWords(content)}w · ~{estimateReadTime(content)}min</span>
-          </div>
+          </div>}
 
           <div className="flex-1 overflow-hidden flex min-w-0">
-            {(viewMode === 'write' || viewMode === 'split') && (
+            {(viewMode === 'write' || viewMode === 'split' || viewMode === 'visual') && (
               <div className={`${viewMode === 'split' ? 'w-1/2 border-r border-[#e4e2e1]' : 'w-full'} overflow-y-auto min-w-0`}>
                 <div className="mx-auto px-4 sm:px-8 py-8 sm:py-12 flex flex-col gap-5 w-full max-w-3xl">
                   {coverImage && (
