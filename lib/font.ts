@@ -4,7 +4,7 @@ import localFont from 'next/font/local'
 export const banglaFont = localFont({
   src: [
     {
-      path: '../public/local/font/Ekush-Regular.ttf',
+      path: '../public/local/font/TiroBangla-Regular.ttf',
       style: 'normal',
       weight: '400'
     }

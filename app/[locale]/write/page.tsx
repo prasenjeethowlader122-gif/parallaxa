@@ -1242,7 +1242,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
           {/* Toolbar */}
           {viewMode !== 'visual' && (
-            <div className="flex items-center px-2 py-1 bg-white border-b border-[#f5f3f3] overflow-x-auto shrink-0 gap-0.5" style={{ scrollbarWidth: 'none' }}>
+            <div className="flex items-center z-5  px-2 py-1 bg-white border-b border-[#f5f3f3] overflow-none overflow-x-auto shrink-0 gap-0.5" style={{ scrollbarWidth: 'none' }}>
               <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
               <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
               <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
