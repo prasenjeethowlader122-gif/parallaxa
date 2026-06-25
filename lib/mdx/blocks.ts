@@ -131,6 +131,38 @@ blockRegistry.register({
   },
 })
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SCREENSHOT BLOCK (Social Media Screenshot)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'screenshot',
+  label: 'Screenshot',
+  icon: 'image',
+  pattern: /\[!screenshot\s*\(\s*url\s*=\s*["']?(.+?)["']?\s*\)\s*\]/,
+  template: '[!screenshot(url="")]',
+  handler: (match) => {
+    const url = (match[1] || '').trim()
+    const screenshotUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&embed=screenshot.url`
+
+    return {
+      type: 'screenshot',
+      hName: 'screenshot',
+      hProperties: {
+        className: 'custom-block screenshot-block',
+        dataUrl: url,
+        htmlContent: `<div class="screenshot-container" style="margin: 20px 0; border: 1px solid #e4e2e1; rounded: 12px; overflow: hidden; background: #fcf8f9;">
+          <a href="${url}" target="_blank" rel="noopener noreferrer" style="display: block;">
+            <img src="${screenshotUrl}" alt="Screenshot of ${url}" style="width: 100%; height: auto; display: block;" loading="lazy" />
+          </a>
+          <div style="padding: 10px 15px; font-size: 12px; color: #9e9fa0; border-top: 1px solid #e4e2e1; background: #fff;">
+            Source: <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #585f64; text-decoration: underline;">${url}</a>
+          </div>
+        </div>`,
+      },
+    }
+  },
+})
+
 // Keep old blocks for backward compatibility but redirect them to the new unified handler if needed
 // or just update them to the new handler signature.
 

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/lang-html": "latest",
     "@codemirror/lang-markdown": "latest",
     "@codemirror/language-data": "latest",
     "@google/generative-ai": "latest",

@@ -2,14 +2,16 @@
 
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useParams } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
-import { Home as HomeIcon, FileText as PagesIcon, BarChart3 } from 'lucide-react';
+import { Home as HomeIcon, FileText as PagesIcon, BarChart3, LayoutGrid } from 'lucide-react';
 import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
+import Link from 'next/link';
 
 const NavLists = [
   {
@@ -26,11 +28,18 @@ const NavLists = [
     name: '#analysis',
     icon: BarChart3,
     index: <AnalysisView />
+  },
+  {
+    name: '/admin/blocks',
+    icon: LayoutGrid,
+    label: 'Blocks'
   }
 ];
 
 export default function Dashboard() {
   const { data: session } = useSession();
+  const params = useParams();
+  const locale = params?.locale as string || 'bn';
   const isDesktop = !useIsMobile();
   const [currentActiveTab, setCurrentActiveTab] = useState('#home');
 
@@ -48,9 +57,24 @@ export default function Dashboard() {
         {/* Nav List Sidebar/Topbar */}
         <div className={`flex px-4 ${isDesktop ? 'w-64 flex-col' : 'w-full flex-row justify-start gap-4 border-b border-gray-100'}`}>
           {
-            NavLists.filter(nav => nav.name.startsWith('#')).map((_nav) => {
+            NavLists.map((_nav) => {
               const isActive = _nav.name === currentActiveTab;
               
+              if (_nav.name.startsWith('/')) {
+                return (
+                  <Link
+                    key={_nav.name}
+                    href={`/${locale}${_nav.name}`}
+                    className={`p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors ${
+                      isDesktop ? 'justify-start' : 'justify-center'
+                    } text-gray-500 hover:text-black`}
+                  >
+                    <_nav.icon className="w-4 h-4" />
+                    <p>{_nav.label}</p>
+                  </Link>
+                )
+              }
+
               return (
                 <button 
                   key={_nav.name}
