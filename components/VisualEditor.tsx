@@ -15,8 +15,10 @@ import {
   Bold, Italic, Strikethrough, Code, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon,
   Youtube, Undo, Redo, Minus, X, ExternalLink, Type, AlignLeft,
-  Terminal
+  Terminal, SquarePlus, ChevronDown, Search
 } from 'lucide-react'
+import { BlockSearchPanel } from './mdx/BlockSearchPanel'
+import { blockRegistry } from '@/lib/mdx/block-registry'
 
 interface VisualEditorProps {
   content: string
@@ -141,8 +143,10 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
   const tdRef = useRef<TurndownService | null>(null)
   const [modal, setModal] = useState<'image' | 'link' | 'youtube' | 'embed' | null>(null)
   const [slashMenu, setSlashMenu] = useState(false)
+  const [blockSearchOpen, setBlockSearchOpen] = useState(false)
   const [slashPos, setSlashPos] = useState({ x: 0, y: 0 })
   const slashRef = useRef<HTMLDivElement>(null)
+  const blockSearchRef = useRef<HTMLDivElement>(null)
 
   if (!tdRef.current) {
     tdRef.current = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' })
@@ -207,10 +211,13 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       if (slashRef.current && !slashRef.current.contains(e.target as Node)) {
         setSlashMenu(false)
       }
+      if (blockSearchRef.current && !blockSearchRef.current.contains(e.target as Node)) {
+        setBlockSearchOpen(false)
+      }
     }
-    if (slashMenu) document.addEventListener('mousedown', handler)
+    document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [slashMenu])
+  }, [slashMenu, blockSearchOpen])
 
   if (!editor) return null
 
@@ -243,6 +250,17 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
     setModal(null)
   }
 
+  const handleBlockInsert = (block: { name: string; template?: string }) => {
+    if (block.template) {
+      editor.chain().focus().insertContent(block.template).run()
+    } else {
+      editor.chain().focus().insertContent(`[!${block.name}(url="")]`).run()
+    }
+    setBlockSearchOpen(false)
+  }
+
+  const allBlocks = blockRegistry.getAllBlocks()
+
   return (
     <div className="w-full flex flex-col relative">
       {modal === 'image' && (
@@ -259,66 +277,95 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       )}
 
       {/* Main Toolbar */}
-      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-0.5 px-1.5 py-1.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-sm mb-5">
-        <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (Ctrl+B)">
-          <Bold size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic (Ctrl+I)">
-          <Italic size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
-          <Strikethrough size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} title="Inline Code">
-          <Code size={14} />
-        </ToolBtn>
+      <div className="sticky top-0 z-20 flex items-center gap-0.5 px-1.5 py-1.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-sm mb-5 overflow-visible">
+        <div className="flex items-center overflow-x-auto no-scrollbar gap-0.5 flex-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+          <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (Ctrl+B)">
+            <Bold size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic (Ctrl+I)">
+            <Italic size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
+            <Strikethrough size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} title="Inline Code">
+            <Code size={14} />
+          </ToolBtn>
+
+          <Sep />
+
+          <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="শিরোনাম ১">
+            <Heading1 size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="শিরোনাম ২">
+            <Heading2 size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="শিরোনাম ৩">
+            <Heading3 size={14} />
+          </ToolBtn>
+
+          <Sep />
+
+          <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="বুলেট লিস্ট">
+            <List size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="নম্বর লিস্ট">
+            <ListOrdered size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="উদ্ধৃতি">
+            <Quote size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="কোড ব্লক">
+            <Terminal size={14} />
+          </ToolBtn>
+
+          <Sep />
+
+          <ToolBtn onClick={() => setModal('link')} active={editor.isActive('link')} title="লিংক">
+            <LinkIcon size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => setModal('image')} title="ছবি">
+            <ImageIcon size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => setModal('youtube')} title="YouTube ভিডিও">
+            <Youtube size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => setModal('embed')} title="Social Embed">
+            <ExternalLink size={14} />
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="বিভাজক রেখা">
+            <Minus size={14} />
+          </ToolBtn>
+        </div>
 
         <Sep />
 
-        <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="শিরোনাম ১">
-          <Heading1 size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="শিরোনাম ২">
-          <Heading2 size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="শিরোনাম ৩">
-          <Heading3 size={14} />
-        </ToolBtn>
+        {/* Block Search - Outside overflow div */}
+        <div className="relative" ref={blockSearchRef}>
+          <button
+            onMouseDown={e => { e.preventDefault(); setBlockSearchOpen(!blockSearchOpen) }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+              blockSearchOpen
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+          >
+            <SquarePlus size={14} />
+            <span className="hidden sm:inline">Blocks</span>
+            <Search size={11} className="hidden sm:inline opacity-60" />
+            <ChevronDown size={11} className={`transition-transform duration-200 ${blockSearchOpen ? 'rotate-180' : ''}`} />
+          </button>
 
-        <Sep />
-
-        <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="বুলেট লিস্ট">
-          <List size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="নম্বর লিস্ট">
-          <ListOrdered size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="উদ্ধৃতি">
-          <Quote size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="কোড ব্লক">
-          <Terminal size={14} />
-        </ToolBtn>
-
-        <Sep />
-
-        <ToolBtn onClick={() => setModal('link')} active={editor.isActive('link')} title="লিংক">
-          <LinkIcon size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => setModal('image')} title="ছবি">
-          <ImageIcon size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => setModal('youtube')} title="YouTube ভিডিও">
-          <Youtube size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => setModal('embed')} title="Social Embed">
-          <ExternalLink size={14} />
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="বিভাজক রেখা">
-          <Minus size={14} />
-        </ToolBtn>
-
-        <div className="flex-1" />
+          {blockSearchOpen && (
+            <div className="absolute top-full right-0 mt-2 z-50">
+              <BlockSearchPanel
+                blocks={allBlocks}
+                onInsert={handleBlockInsert}
+                onClose={() => setBlockSearchOpen(false)}
+              />
+            </div>
+          )}
+        </div>
 
         <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo (Ctrl+Z)">
           <Undo size={14} />

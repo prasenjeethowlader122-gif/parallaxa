@@ -52,10 +52,10 @@ export default function Dashboard() {
         <small className="text-gray-500">Welcome to dashboard page.</small>
       </div>
 
-      <div className={`w-full flex ${isDesktop ? 'flex-row' : 'flex-col'}`}>
+      <div className={`w-full flex-1 flex ${isDesktop ? 'flex-row' : 'flex-col'} overflow-hidden`}>
         
         {/* Nav List Sidebar/Topbar */}
-        <div className={`flex px-4 ${isDesktop ? 'w-64 flex-col' : 'w-full flex-row justify-start gap-4 border-b border-gray-100'}`}>
+        <div className={`flex px-4 shrink-0 ${isDesktop ? 'w-64 flex-col border-r border-gray-100' : 'w-full flex-row justify-start gap-2 border-b border-gray-100 overflow-x-auto no-scrollbar scrollbar-hide'}`}>
           {
             NavLists.map((_nav) => {
               const isActive = _nav.name === currentActiveTab;
@@ -79,7 +79,7 @@ export default function Dashboard() {
                 <button 
                   key={_nav.name}
                   onClick={() => setCurrentActiveTab(_nav.name)}
-                  className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors ${
+                    className={`relative p-3 px-4 flex flex-row text-sm items-center gap-2 capitalize transition-colors shrink-0 ${
                     isDesktop ? 'justify-start' : 'justify-center'
                   } ${
                     isActive ? 'text-black font-bold' : 'text-gray-500 hover:text-black'
@@ -105,8 +105,10 @@ export default function Dashboard() {
         </div>
         
         {/* Content Area */}
-        <div className="flex-1 p-4">
-          {NavLists.find(tab => tab.name === currentActiveTab)?.index}
+        <div className="flex-1 p-4 overflow-y-auto">
+          <div className="max-w-7xl mx-auto">
+            {NavLists.find(tab => tab.name === currentActiveTab)?.index}
+          </div>
         </div>
         
       </div>
