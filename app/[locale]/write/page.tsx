@@ -25,7 +25,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import Markdown, { Components } from 'react-markdown'
-import { createCustomBlockPlugin, blockRegistry } from '@/lib/mdx/block-registry'
+import { createCustomBlockPlugin, blockRegistry, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 import VisualEditor from '@/components/VisualEditor'
@@ -125,14 +125,14 @@ const mdComponents: Components = {
   ),
 }
 
-function MarkdownPreview({ content }: { content: string }) {
+function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBBlockConfig[] }) {
   if (!content.trim()) {
     return <div className="text-[#c0bebe] font-['Newsreader'] italic text-lg sm:text-xl text-center py-16">Nothing to preview yet…</div>
   }
   return (
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
-        remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin]}
+        remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={mdComponents}
       >
@@ -272,6 +272,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [embedsOpen, setEmbedsOpen] = useState(false)
+  const [dbBlocks, setDbBlocks] = useState<DBBlockConfig[]>([])
 
   const editorRef = useRef<any>(null)
   const embedsRef = useRef<HTMLDivElement>(null)
@@ -282,6 +283,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   useEffect(() => {
     if (session?.user) { setAuthor(session.user.name ?? '') }
   }, [session?.user])
+
+  useEffect(() => {
+    fetch('/api/blocks?user=1')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => Array.isArray(data) ? setDbBlocks(data) : null)
+      .catch(() => null)
+  }, [])
 
   useEffect(() => {
     if (saveStatus === 'unsaved') {
@@ -987,7 +995,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                       <span className="flex items-center gap-1"><Clock size={11} />~{estimateReadTime(content)} min</span>
                     </div>
                   )}
-                  <MarkdownPreview content={content} />
+                  <MarkdownPreview content={content} dbBlocks={dbBlocks} />
                   {tags.length > 0 && (
                     <div className="flex gap-2 mt-8 pt-5 border-t border-[#e4e2e1] flex-wrap">
                       {tags.map(t => <span key={t} className="px-3 py-1 bg-[#efedee] text-[#5e5f61] rounded-2xl text-xs font-medium">#{t}</span>)}

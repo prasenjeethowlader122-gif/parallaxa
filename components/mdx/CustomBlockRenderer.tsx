@@ -7,13 +7,6 @@ interface CustomBlockProps {
   children?: React.ReactNode
 }
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * CUSTOM BLOCK RENDERER
- * ═══════════════════════════════════════════════════════════════════════════
- * সকল custom MDX blocks render করার জন্য unified component
- */
-
 export const CustomBlockRenderer: React.FC<CustomBlockProps> = ({
   className,
   dataUrl,
@@ -39,11 +32,25 @@ export const CustomBlockRenderer: React.FC<CustomBlockProps> = ({
   )
 }
 
-// Custom MDX component handlers
+/**
+ * Renderer for user-created DB blocks.
+ * hName is 'dbblock', props: blockname, htmlcontent
+ */
+export const DBBlockRenderer: React.FC<{ blockname?: string; htmlcontent?: string; children?: React.ReactNode }> = ({
+  blockname = '',
+  htmlcontent = '',
+}) => (
+  <div
+    className={`custom-block db-block db-block--${blockname}`}
+    data-block={blockname}
+    dangerouslySetInnerHTML={{ __html: htmlcontent }}
+  />
+)
+
 export const customBlockComponents = {
   embed: (props: any) => (
     <CustomBlockRenderer
-      className={props.className || "custom-block embed"}
+      className={props.className || 'custom-block embed'}
       dataUrl={props.dataUrl}
       htmlContent={props.htmlContent}
     />
@@ -62,68 +69,35 @@ export const customBlockComponents = {
       htmlContent={props.htmlContent}
     />
   ),
+  dbblock: (props: any) => (
+    <DBBlockRenderer blockname={props.blockname} htmlcontent={props.htmlcontent} />
+  ),
   // Backward compatibility
   fbpost: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block fbpost-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block fbpost-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   tweet: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block tweet-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block tweet-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   youtube: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block youtube-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block youtube-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   tiktok: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block tiktok-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block tiktok-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   instagram: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block instagram-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block instagram-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   reddit: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block reddit-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block reddit-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   vimeo: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block vimeo-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block vimeo-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   codepen: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block codepen-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block codepen-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
   gist: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block gist-embed"
-      dataUrl={props.dataUrl}
-      htmlContent={props.htmlContent}
-    />
+    <CustomBlockRenderer className="custom-block gist-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
 }

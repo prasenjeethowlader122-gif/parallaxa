@@ -16,7 +16,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle } from '@/lib/db/articles'
-import { createCustomBlockPlugin } from '@/lib/mdx/block-registry'
+import { createCustomBlockPlugin, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 import {
@@ -174,12 +174,26 @@ const mdComponents: Components = {
   }
 }
 
+// ── DB blocks hook ─────────────────────────────────────────────────────────────
+
+function useDBBlocks(): DBBlockConfig[] {
+  const [blocks, setBlocks] = useState<DBBlockConfig[]>([])
+  useEffect(() => {
+    fetch('/api/blocks?user=1')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => Array.isArray(data) ? setBlocks(data) : null)
+      .catch(() => null)
+  }, [])
+  return blocks
+}
+
 // ── Article Markdown ──────────────────────────────────────────────────────────
 
 function ArticleMarkdown({ content }: { content: string }) {
+  const dbBlocks = useDBBlocks()
   return (
     <Markdown
-      remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin]}
+      remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
       components={mdComponents}
     >
