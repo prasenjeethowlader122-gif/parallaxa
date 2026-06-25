@@ -132,7 +132,7 @@ function MarkdownPreview({ content }: { content: string }) {
   return (
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
-        remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin()]}
+        remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={mdComponents}
       >

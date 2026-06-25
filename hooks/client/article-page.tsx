@@ -179,7 +179,7 @@ const mdComponents: Components = {
 function ArticleMarkdown({ content }: { content: string }) {
   return (
     <Markdown
-      remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin()]}
+      remarkPlugins={[remarkGfm, remarkMath, createCustomBlockPlugin]}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
       components={mdComponents}
     >
