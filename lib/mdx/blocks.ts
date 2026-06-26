@@ -368,8 +368,8 @@ blockRegistry.register({
   handler: (match) => {
     const params = parseBlockParams(match[1] || '')
     return {
-      type: 'table',
-      hName: 'table',
+      type: 'customtable',
+      hName: 'customtable',
       hProperties: {
         className: 'custom-block styled-table-block',
         ...params,
