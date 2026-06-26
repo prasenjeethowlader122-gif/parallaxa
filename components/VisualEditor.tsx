@@ -161,7 +161,8 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
     tdRef.current.addRule('mdxBlock', {
       filter: (node) => node.nodeName === 'DIV' && node.hasAttribute('data-mdx-block'),
       replacement: (content, node: any) => {
-        return node.getAttribute('data-mdx-block') || ''
+        const code = node.getAttribute('data-mdx-block') || ''
+        return `\n\n${code}\n\n`
       },
     })
 
@@ -212,8 +213,10 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
 
   useEffect(() => {
     if (!editor) return
-    const currentMd = toMarkdown(editor.getHTML())
-    if (currentMd !== content) {
+    const currentMd = toMarkdown(editor.getHTML()).trim()
+    const targetMd = content.trim()
+
+    if (currentMd !== targetMd) {
       // We need to wrap [!block()] patterns in <div data-mdx-block="..."> before parsing to HTML
       const pattern = /\[![a-zA-Z0-9_-]+\([\s\S]*?\)\s*\]/g
       const processedContent = content.replace(pattern, (match) => {
@@ -222,7 +225,8 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
         return `<div data-mdx-block='${escapedMatch}'></div>`
       })
 
-      editor.commands.setContent(marked.parse(processedContent) as string, false)
+      const html = marked.parse(processedContent) as string
+      editor.commands.setContent(html, false)
     }
   }, [content, editor, toMarkdown])
 

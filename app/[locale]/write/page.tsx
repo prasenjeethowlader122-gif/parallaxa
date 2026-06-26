@@ -845,45 +845,48 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
   const SidebarInner = () => {
     const tabs = [
-      { id: 'metadata' as SidebarTab, icon: <FileText size={14} />, label: 'Metadata' },
-      { id: 'seo' as SidebarTab, icon: <SearchCheck size={14} />, label: 'SEO' },
-      { id: 'accessibility' as SidebarTab, icon: <Accessibility size={14} />, label: 'Accessibility' },
-      { id: 'tags' as SidebarTab, icon: <Tag size={14} />, label: 'Tags' },
-      { id: 'distribution' as SidebarTab, icon: <Share2 size={14} />, label: 'Distribution' },
+      { id: 'metadata' as SidebarTab, icon: <FileText size={16} />, label: 'Metadata' },
+      { id: 'seo' as SidebarTab, icon: <SearchCheck size={16} />, label: 'SEO' },
+      { id: 'accessibility' as SidebarTab, icon: <Accessibility size={16} />, label: 'Accessibility' },
+      { id: 'tags' as SidebarTab, icon: <Tag size={16} />, label: 'Tags' },
+      { id: 'distribution' as SidebarTab, icon: <Share2 size={16} />, label: 'Distribution' },
     ]
 
     return (
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col h-full overflow-hidden bg-white/50 backdrop-blur-xl">
         {/* Sidebar header */}
-        <div className="px-5 py-4 border-b border-[#eeecec] shrink-0">
-          <h2 className="font-['Newsreader'] text-[17px] font-bold text-[#1a1b1c]">Editorial Settings</h2>
-          <p className="text-[10px] font-medium text-[#c8c6c6] mt-0.5 uppercase tracking-widest">
-            {id ? `Article #${id}` : 'New article'}
-          </p>
+        <div className="px-6 py-6 border-b border-gray-100 shrink-0">
+          <h2 className="font-['Newsreader'] text-[20px] font-bold text-slate-900 tracking-tight">Editorial Hub</h2>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              {id ? `Revision #${id.slice(0, 8)}` : 'Live Draft'}
+            </p>
+          </div>
         </div>
 
         {/* Tab nav */}
-        <div className="px-3 py-3 border-b border-[#eeecec] shrink-0">
-          <div className="flex flex-col gap-0.5">
+        <div className="px-3 py-4 border-b border-gray-100 shrink-0">
+          <div className="flex flex-col gap-1">
             {tabs.map(({ id: tabId, icon, label }) => (
               <button
                 key={tabId}
                 onClick={() => { setActiveTab(tabId); setMobileDrawerOpen(false) }}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] transition-all text-left w-full ${
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] transition-all text-left w-full group ${
                   activeTab === tabId
-                    ? 'bg-[#1a1b1c] text-white font-semibold'
-                    : 'text-[#7a8086] hover:bg-[#f5f3f3] hover:text-[#313334]'
+                    ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
+                    : 'text-slate-500 hover:bg-gray-50 hover:text-slate-900'
                 }`}
               >
-                <span className="shrink-0">{icon}</span>
-                <span>{label}</span>
+                <span className={`shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
+                <span className="font-medium">{label}</span>
                 {tabId === 'seo' && (
-                  <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                    seoScore >= 70 ? 'bg-emerald-100 text-emerald-700' :
-                    seoScore >= 40 ? 'bg-amber-100 text-amber-700' :
-                    'bg-red-100 text-red-700'
+                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    seoScore >= 70 ? 'bg-emerald-500 text-white' :
+                    seoScore >= 40 ? 'bg-amber-500 text-white' :
+                    'bg-rose-500 text-white'
                   }`}>
-                    {seoScore}
+                    {seoScore}%
                   </span>
                 )}
               </button>
@@ -892,8 +895,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         </div>
 
         {/* Panel content */}
-        <div className="flex-1 overflow-y-auto px-4 pb-10 custom-scrollbar">
-          <div className="py-4">{renderSidebarPanel()}</div>
+        <div className="flex-1 overflow-y-auto px-5 pb-10 no-scrollbar">
+          <div className="py-6">{renderSidebarPanel()}</div>
         </div>
       </div>
     )
@@ -910,112 +913,83 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       <Header />
 
       {/* Top nav bar */}
-      <header className="w-full sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#eeecec]">
-        <div className="flex items-center justify-between px-4 lg:px-6 py-2.5 gap-3">
+      <header className="w-full sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-3 gap-4">
 
           {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs text-[#b8b9ba] min-w-0 flex-1">
-            <span className="hidden sm:inline text-[#b8b9ba]">Drafts</span>
-            <ChevronRight size={10} className="hidden sm:inline shrink-0 text-[#dcdad9]" />
-            <span className="text-[#313334] font-medium truncate">{title || 'Untitled'}</span>
+          <div className="flex items-center gap-3 text-sm text-slate-400 min-w-0 flex-1">
+            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-200">
+              <Highlighter size={16} />
+            </div>
+            <span className="hidden md:inline font-bold uppercase tracking-widest text-[10px] text-slate-300">Editor</span>
+            <ChevronRight size={14} className="hidden md:inline shrink-0 text-slate-200" />
+            <span className="text-slate-900 font-bold truncate max-w-[200px]">{title || 'Untitled Story'}</span>
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Save indicator */}
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-[#9e9fa0] bg-[#f5f3f3] rounded-lg">
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                saveStatus === 'saving' ? 'bg-amber-400 animate-pulse' :
-                saveStatus === 'unsaved' ? 'bg-red-400' :
-                'bg-emerald-500'
+            <div className="hidden lg:flex items-center gap-2 px-3 py-2 text-[10px] font-bold text-slate-400 bg-slate-50 rounded-full border border-slate-100">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${
+                saveStatus === 'saving' ? 'bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
+                saveStatus === 'unsaved' ? 'bg-rose-400' :
+                'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
               }`} />
-              <span className="whitespace-nowrap">{saveLabel()}</span>
+              <span className="whitespace-nowrap tracking-wider uppercase">{saveLabel()}</span>
             </div>
 
             {/* View mode switcher */}
-            <div className="flex items-center bg-[#f5f3f3] rounded-xl p-0.5 ml-1">
+            <div className="flex items-center bg-slate-100 rounded-2xl p-1 ml-2 shadow-inner">
               {(['write', 'visual', 'split', 'preview'] as ViewMode[]).map(m => (
                 <button
                   key={m}
                   onClick={() => setViewMode(m)}
                   title={m}
-                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+                  className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 ${
                     viewMode === m
-                      ? 'bg-white text-[#1a1b1c] shadow-sm'
-                      : 'text-[#9e9fa0] hover:text-[#585f64]'
+                      ? 'bg-white text-slate-900 shadow-md ring-1 ring-slate-200/50'
+                      : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
-                  <span className="hidden sm:inline capitalize">{m}</span>
-                  <span className="sm:hidden">
-                    {m === 'write' ? <PenTool size={13} /> :
-                     m === 'visual' ? <Sparkles size={13} /> :
-                     m === 'preview' ? <Eye size={13} /> :
-                     <Columns2 size={13} />}
+                  <span className="hidden md:inline capitalize tracking-tight">{m}</span>
+                  <span className="md:hidden">
+                    {m === 'write' ? <PenTool size={14} /> :
+                     m === 'visual' ? <Sparkles size={14} /> :
+                     m === 'preview' ? <Eye size={14} /> :
+                     <Columns2 size={14} />}
                   </span>
                 </button>
               ))}
             </div>
 
-            {/* Undo / Redo */}
-            <div className="hidden sm:flex items-center gap-0.5 ml-0.5">
-              <button
-                onClick={undo}
-                disabled={historyIndex <= 0}
-                title="Undo"
-                className="p-2 text-[#9e9fa0] hover:bg-[#f0eeee] hover:text-[#585f64] rounded-lg disabled:opacity-30 transition-colors"
-              >
-                <RotateCcw size={14} />
-              </button>
-              <button
-                onClick={redo}
-                disabled={historyIndex >= history.length - 1}
-                title="Redo"
-                className="p-2 text-[#9e9fa0] hover:bg-[#f0eeee] hover:text-[#585f64] rounded-lg disabled:opacity-30 transition-colors"
-              >
-                <RotateCw size={14} />
-              </button>
-            </div>
-
-            <div className="h-4 w-px bg-[#eeecec] mx-1 hidden sm:block" />
+            <div className="h-6 w-px bg-slate-200 mx-2 hidden sm:block" />
 
             {/* Sidebar toggle */}
             <button
               title="Toggle settings panel"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`hidden xl:flex p-2 rounded-lg transition-all ${
-                sidebarOpen ? 'bg-[#1a1b1c] text-white' : 'text-[#9e9fa0] hover:bg-[#f0eeee] hover:text-[#585f64]'
+              className={`hidden xl:flex p-2.5 rounded-xl transition-all duration-300 ${
+                sidebarOpen ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <PanelLeft size={14} />
+              <PanelLeft size={18} />
             </button>
             <button
               title="Article settings"
               onClick={() => setMobileDrawerOpen(true)}
-              className="xl:hidden p-2 text-[#9e9fa0] hover:bg-[#f0eeee] rounded-lg transition-colors"
+              className="xl:hidden p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
             >
-              <SlidersHorizontal size={14} />
-            </button>
-
-            {/* Save button */}
-            <button
-              onClick={() => {
-                setSaveStatus('saving')
-                setTimeout(() => { setSaveStatus('saved'); setLastSaved(new Date()) }, 600)
-              }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f5f3f3] text-[#585f64] text-xs font-semibold hover:bg-[#eeecec] active:scale-95 transition-all"
-            >
-              <Save size={12} />
-              Save
+              <SlidersHorizontal size={18} />
             </button>
 
             {/* Publish button */}
             <button
               onClick={() => setShowPublishModal(true)}
               disabled={!title.trim() || !content.trim()}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#1a1b1c] text-white text-xs font-semibold hover:bg-[#313334] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all shadow-xl shadow-slate-200 disabled:opacity-40 disabled:shadow-none"
             >
-              <Send size={12} />
-              <span>Publish</span>
+              <Send size={14} strokeWidth={2.5} />
+              <span className="hidden sm:inline tracking-tight">Publish</span>
             </button>
           </div>
         </div>
@@ -1032,59 +1006,57 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         )}
 
         {/* Editor area */}
-        <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-slate-50/30">
 
           {/* Toolbar */}
           {viewMode !== 'visual' && (
-            <div className="flex items-center z-20 px-2 py-1 bg-white border-b border-[#f5f3f3] overflow-visible shrink-0 gap-0.5">
-              <div className="flex items-center overflow-x-auto scrollbar-hide gap-0.5 flex-1 no-scrollbar" style={{ scrollbarWidth: 'none' }}>
-                <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
-                <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
-                <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
-                <ToolbarBtn icon={Code} label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
+            <div className="flex items-center z-20 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
+              <div className="flex items-center overflow-x-auto no-scrollbar gap-1 flex-1" style={{ scrollbarWidth: 'none' }}>
+                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5">
+                  <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
+                  <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
+                  <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
+                  <ToolbarBtn icon={Code} label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
+                </div>
 
-                <div className="h-4 w-px bg-[#f0eeee] mx-1 shrink-0" />
+                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                  <ToolbarBtn icon={Heading1} label="Heading 1" onClick={() => insertLinePrefix('# ')} />
+                  <ToolbarBtn icon={Heading2} label="Heading 2" onClick={() => insertLinePrefix('## ')} />
+                  <ToolbarBtn icon={Heading3} label="Heading 3" onClick={() => insertLinePrefix('### ')} />
+                </div>
 
-                <ToolbarBtn icon={Heading1} label="Heading 1" onClick={() => insertLinePrefix('# ')} />
-                <ToolbarBtn icon={Heading2} label="Heading 2" onClick={() => insertLinePrefix('## ')} />
-                <ToolbarBtn icon={Heading3} label="Heading 3" onClick={() => insertLinePrefix('### ')} />
+                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                  <ToolbarBtn icon={List} label="Bullet List" onClick={() => insertLinePrefix('- ')} />
+                  <ToolbarBtn icon={ListOrdered} label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
+                  <ToolbarBtn icon={Quote} label="Blockquote" onClick={() => insertLinePrefix('> ')} />
+                </div>
 
-                <div className="h-4 w-px bg-[#f0eeee] mx-1 shrink-0" />
-
-                <ToolbarBtn icon={List} label="Bullet List" onClick={() => insertLinePrefix('- ')} />
-                <ToolbarBtn icon={ListOrdered} label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
-                <ToolbarBtn icon={Quote} label="Blockquote" onClick={() => insertLinePrefix('> ')} />
-
-                <div className="h-4 w-px bg-[#f0eeee] mx-1 shrink-0" />
-
-                <ToolbarBtn icon={Link} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
-                <ToolbarBtn icon={ImageIcon} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
-                <ToolbarBtn icon={Minus} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
-
-                <div className="h-4 w-px bg-[#f0eeee] mx-1 shrink-0" />
+                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                  <ToolbarBtn icon={Link} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
+                  <ToolbarBtn icon={ImageIcon} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
+                  <ToolbarBtn icon={Minus} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
+                </div>
 
                 {/* Mobile undo/redo */}
-                <div className="h-4 w-px bg-[#f0eeee] mx-1 sm:hidden shrink-0" />
-                <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="sm:hidden p-2 text-[#9e9fa0] rounded-lg disabled:opacity-30"><RotateCcw size={13} /></button>
-                <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="sm:hidden p-2 text-[#9e9fa0] rounded-lg disabled:opacity-30"><RotateCw size={13} /></button>
+                <div className="sm:hidden flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="p-2 text-slate-400 rounded-lg disabled:opacity-30"><RotateCcw size={14} /></button>
+                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="p-2 text-slate-400 rounded-lg disabled:opacity-30"><RotateCw size={14} /></button>
+                </div>
               </div>
 
-              <div className="h-4 w-px bg-[#f0eeee] mx-1 shrink-0" />
-
-              {/* Block Search - Moved outside overflow-x-auto to avoid clipping */}
-              <div className="relative" ref={blockSearchRef}>
+              {/* Block Search */}
+              <div className="relative ml-1" ref={blockSearchRef}>
                 <button
                   onClick={() => setBlockSearchOpen(!blockSearchOpen)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                     blockSearchOpen
-                      ? 'bg-[#1a1b1c] text-white'
-                      : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
+                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
+                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <SquarePlus size={14} />
+                  <SquarePlus size={16} />
                   <span className="hidden sm:inline">Blocks</span>
-                  <Search size={11} className="hidden sm:inline opacity-60" />
-                  <ChevronDown size={11} className={`transition-transform duration-200 ${blockSearchOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${blockSearchOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {blockSearchOpen && (
@@ -1095,10 +1067,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   />
                 )}
               </div>
-              <div className="h-4 w-px bg-[#f0eeee] mx-1 shrink-0" />
-              <span className="hidden sm:block text-[10px] text-[#c8c6c6] whitespace-nowrap pr-2 font-medium tabular-nums">
-                {countWords(content).toLocaleString()}w · ~{estimateReadTime(content)}min
-              </span>
+
+              <div className="hidden lg:flex items-center gap-2 ml-4 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-bold text-emerald-700 whitespace-nowrap tabular-nums">
+                  {countWords(content).toLocaleString()} WORDS
+                </span>
+              </div>
             </div>
           )}
 
@@ -1260,63 +1235,81 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
       {/* Publish modal */}
       {showPublishModal && (
-        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-[420px] overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] w-full sm:max-w-[480px] overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Pill handle (mobile) */}
-            <div className="flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-[#e4e2e1]" />
+            <div className="flex justify-center pt-5 pb-1 sm:hidden">
+              <div className="w-12 h-1.5 rounded-full bg-slate-100" />
             </div>
 
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0eeee]">
-              <div>
-                <h3 className="font-['Newsreader'] text-[17px] font-bold text-[#1a1b1c]">Publish Article</h3>
-                <p className="text-[11px] text-[#b8b9ba] mt-0.5">Review before going live</p>
+            <div className="px-8 pt-8 pb-6 text-center">
+              <div className="w-16 h-16 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-inner">
+                <Sparkles size={32} />
               </div>
-              <button
-                onClick={() => setShowPublishModal(false)}
-                className="p-1.5 hover:bg-[#f0eeee] rounded-lg transition-colors text-[#9e9fa0]"
-              >
-                <X size={15} />
-              </button>
+              <h3 className="font-['Newsreader'] text-3xl font-bold text-slate-900 tracking-tight">Ready to publish?</h3>
+              <p className="text-slate-500 mt-2 text-sm">Fine-tune the final details before going live.</p>
             </div>
 
-            <div className="p-6 flex flex-col gap-5">
+            <div className="px-8 pb-8 flex flex-col gap-6">
               {/* Article summary */}
-              <div className="p-4 bg-[#f5f3f3] rounded-xl">
-                <p className="text-[13px] font-semibold text-[#1a1b1c] line-clamp-2 leading-snug">{title || 'Untitled'}</p>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[#b8b9ba] mt-2">
-                  <span className="tabular-nums">{countWords(content).toLocaleString()} words</span>
-                  <span>~{estimateReadTime(content)} min read</span>
-                  <span className="capitalize">{visibility}</span>
-                  {category && <span>{category}</span>}
+              <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100/50">
+                <p className="text-lg font-bold text-slate-900 line-clamp-2 leading-tight font-['Newsreader'] tracking-tight">{title || 'Untitled Article'}</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <Clock size={12} className="text-slate-400" />
+                    ~{estimateReadTime(content)} MIN READ
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <Layout size={12} className="text-slate-400" />
+                    {category || 'Uncategorized'}
+                  </div>
                 </div>
               </div>
 
               {/* Checklist */}
-              <div className="flex flex-col gap-2.5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#b8b9ba]">Pre-publish checks</p>
-                <SEOItem success={!!title.trim()} text="Title is set" />
-                <SEOItem success={!!content.trim()} text="Content is not empty" />
-                <SEOItem success={!!category} text="Category assigned" />
-                <SEOItem success={seoScore >= 50} text={`SEO score: ${seoScore}/100`} />
+              <div className="space-y-3 px-2">
+                <div className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${!!title.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                    <span className="text-sm font-medium text-slate-600">Catchy headline</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${!!content.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                    <span className="text-sm font-medium text-slate-600">Polished content</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${seoScore >= 50 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                    <span className="text-sm font-medium text-slate-600">Search optimization ({seoScore}%)</span>
+                  </div>
+                </div>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-1">
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowPublishModal(false)}
-                  className="flex-1 py-3 rounded-xl border border-[#e4e2e1] text-sm font-medium text-[#7a8086] hover:bg-[#f5f3f3] hover:text-[#313334] transition-colors"
+                  className="flex-1 py-4 rounded-[1.5rem] bg-slate-50 text-sm font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
                 >
-                  Cancel
+                  Back
                 </button>
                 <button
                   onClick={handlePublish}
                   disabled={publishing}
-                  className="flex-1 py-3 rounded-xl bg-[#1a1b1c] text-white text-sm font-semibold hover:bg-[#313334] transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-[0.98]"
+                  className="flex-[2] py-4 rounded-[1.5rem] bg-slate-900 text-white text-sm font-bold hover:bg-black transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-slate-200"
                 >
                   {publishing
-                    ? <><Loader2 size={14} className="animate-spin" /> Publishing…</>
-                    : <><Send size={13} /> Confirm & Publish</>
+                    ? <><Loader2 size={16} className="animate-spin" /> Publishing…</>
+                    : <><Send size={16} /> Confirm & Publish</>
                   }
                 </button>
               </div>

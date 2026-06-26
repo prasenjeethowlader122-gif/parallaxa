@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getArticleBySlug, incrementArticleViews, getAllArticles, getArticlesByCategory } from '@/lib/db/articles';
+import { getAllCustomBlocks } from '@/lib/db/blocks';
 import { translateBatch } from '@/lib/trans';
 import ArticlePage from '@/hooks/client/article-page';
 
@@ -87,10 +88,11 @@ export default async function ArticlePageOpen({
 
   incrementArticleViews(article.id).catch(() => {});
 
-  // Fetch related and most read on server to avoid client-side DB calls
-  const [allArticles, relatedInCategory] = await Promise.all([
+  // Fetch related, most read and DB blocks on server to avoid client-side DB calls
+  const [allArticles, relatedInCategory, dbBlocks] = await Promise.all([
     getAllArticles(10, 0),
-    getArticlesByCategory(article.category)
+    getArticlesByCategory(article.category),
+    getAllCustomBlocks()
   ]);
 
   const related = relatedInCategory
@@ -137,6 +139,7 @@ export default async function ArticlePageOpen({
         initialArticle={translatedArticle}
         initialRelated={related}
         initialMostRead={popular}
+        initialDbBlocks={dbBlocks}
       />
     </>
   );
