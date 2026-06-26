@@ -7,6 +7,7 @@ import LinkExt from '@tiptap/extension-link'
 import ImageExt from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import YoutubeExt from '@tiptap/extension-youtube'
+import { MdxBlockExtension } from './mdx/MdxBlockExtension'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import TurndownService from 'turndown'
 import { gfm } from 'turndown-plugin-gfm'
@@ -154,7 +155,17 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
   }
 
   const toMarkdown = useCallback((html: string) => {
-    return tdRef.current?.turndown(html) ?? ''
+    if (!tdRef.current) return html
+
+    // Rule to handle mdxBlock nodes
+    tdRef.current.addRule('mdxBlock', {
+      filter: (node) => node.nodeName === 'DIV' && node.hasAttribute('data-mdx-block'),
+      replacement: (content, node: any) => {
+        return node.getAttribute('data-mdx-block') || ''
+      },
+    })
+
+    return tdRef.current.turndown(html)
   }, [])
 
   const editor = useEditor({
@@ -166,6 +177,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       }),
       ImageExt.configure({ HTMLAttributes: { class: 've-img' } }),
       YoutubeExt.configure({ width: '100%', height: 380 }),
+      MdxBlockExtension,
       Placeholder.configure({ placeholder: 'লিখুন, অথবা / চাপুন block যোগ করতে…' }),
     ],
     content: marked.parse(content) as string,
@@ -202,7 +214,15 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
     if (!editor) return
     const currentMd = toMarkdown(editor.getHTML())
     if (currentMd !== content) {
-      editor.commands.setContent(marked.parse(content) as string, false)
+      // We need to wrap [!block()] patterns in <div data-mdx-block="..."> before parsing to HTML
+      const pattern = /\[![a-zA-Z0-9_-]+\([\s\S]*?\)\s*\]/g
+      const processedContent = content.replace(pattern, (match) => {
+        // Escape single quotes to prevent breaking the attribute
+        const escapedMatch = match.replace(/'/g, '&#39;')
+        return `<div data-mdx-block='${escapedMatch}'></div>`
+      })
+
+      editor.commands.setContent(marked.parse(processedContent) as string, false)
     }
   }, [content, editor, toMarkdown])
 
@@ -246,16 +266,20 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
   }
 
   const insertEmbed = (url: string) => {
-    editor.chain().focus().insertContent(`[!embed(url="${url}")]`).run()
+    const code = `[!embed(url="${url}")]`
+    editor.chain().focus().insertContent({
+      type: 'mdxBlock',
+      attrs: { code }
+    }).run()
     setModal(null)
   }
 
   const handleBlockInsert = (block: { name: string; template?: string }) => {
-    if (block.template) {
-      editor.chain().focus().insertContent(block.template).run()
-    } else {
-      editor.chain().focus().insertContent(`[!${block.name}(url="")]`).run()
-    }
+    const code = block.template || `[!${block.name}(url="")]`
+    editor.chain().focus().insertContent({
+      type: 'mdxBlock',
+      attrs: { code }
+    }).run()
     setBlockSearchOpen(false)
   }
 
