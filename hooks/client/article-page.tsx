@@ -174,23 +174,9 @@ const mdComponents: Components = {
   }
 }
 
-// ── DB blocks hook ─────────────────────────────────────────────────────────────
-
-function useDBBlocks(): DBBlockConfig[] {
-  const [blocks, setBlocks] = useState<DBBlockConfig[]>([])
-  useEffect(() => {
-    fetch('/api/blocks?user=1')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => Array.isArray(data) ? setBlocks(data) : null)
-      .catch(() => null)
-  }, [])
-  return blocks
-}
-
 // ── Article Markdown ──────────────────────────────────────────────────────────
 
-function ArticleMarkdown({ content }: { content: string }) {
-  const dbBlocks = useDBBlocks()
+function ArticleMarkdown({ content, dbBlocks }: { content: string; dbBlocks: DBBlockConfig[] }) {
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
@@ -304,11 +290,13 @@ export default function ArticlePage({
   initialArticle,
   initialRelated,
   initialMostRead,
+  initialDbBlocks,
   slug: propSlug
 }: {
   initialArticle?: NewsArticle,
   initialRelated?: NewsArticle[],
   initialMostRead?: NewsArticle[],
+  initialDbBlocks?: DBBlockConfig[],
   slug?: string
 }) {
   const params = useParams()
@@ -317,6 +305,7 @@ export default function ArticlePage({
   const [article, setArticle] = useState < NewsArticle | null > (initialArticle || null)
   const [relatedArticles, setRelatedArticles] = useState < NewsArticle[] > (initialRelated || [])
   const [mostRead, setMostRead] = useState < NewsArticle[] > (initialMostRead || [])
+  const [dbBlocks, setDbBlocks] = useState < DBBlockConfig[] > (initialDbBlocks || [])
   const [isLoading, setIsLoading] = useState(!initialArticle)
   const [copied, setCopied] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -345,7 +334,17 @@ export default function ArticlePage({
     }
     if (initialRelated) setRelatedArticles(initialRelated)
     if (initialMostRead) setMostRead(initialMostRead)
-  }, [initialArticle, initialRelated, initialMostRead, slug])
+    if (initialDbBlocks) setDbBlocks(initialDbBlocks)
+  }, [initialArticle, initialRelated, initialMostRead, initialDbBlocks, slug])
+
+  useEffect(() => {
+    if (dbBlocks.length === 0 && !initialDbBlocks) {
+      fetch('/api/blocks?user=1')
+        .then(r => r.ok ? r.json() : [])
+        .then(data => Array.isArray(data) ? setDbBlocks(data) : null)
+        .catch(() => null)
+    }
+  }, [dbBlocks.length, initialDbBlocks])
   
   // Close share dropdown on outside click
   useEffect(() => {
@@ -617,7 +616,7 @@ export default function ArticlePage({
 
               {/* ── Article body ── */}
               <article className={`${slabo.className} py-6`}>
-                <ArticleMarkdown content={article.content} />
+                <ArticleMarkdown content={article.content} dbBlocks={dbBlocks} />
               </article>
 
               {/* ── Bottom share bar ── */}
