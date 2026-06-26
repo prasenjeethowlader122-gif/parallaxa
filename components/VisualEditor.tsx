@@ -46,12 +46,12 @@ function URLModal({ title, placeholder, label, onConfirm, onClose }: {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl p-5 w-full max-w-sm mx-4"
+        className="bg-white rounded-none shadow-none p-5 w-full max-w-sm mx-4"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-sm text-gray-900">{title}</h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-none transition-colors">
             <X size={14} />
           </button>
         </div>
@@ -61,7 +61,7 @@ function URLModal({ title, placeholder, label, onConfirm, onClose }: {
           value={url}
           onChange={e => setUrl(e.target.value)}
           placeholder={placeholder}
-          className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900/10 mb-4"
+          className="w-full text-sm border border-gray-200 rounded-none px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900/10 mb-4"
           onKeyDown={e => {
             if (e.key === 'Enter') confirm()
             if (e.key === 'Escape') onClose()
@@ -70,14 +70,14 @@ function URLModal({ title, placeholder, label, onConfirm, onClose }: {
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            className="flex-1 py-2 text-sm text-gray-500 border border-gray-200 rounded-none hover:bg-gray-50 transition-colors"
           >
             বাতিল
           </button>
           <button
             onClick={confirm}
             disabled={!url.trim()}
-            className="flex-1 py-2 text-sm text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-40"
+            className="flex-1 py-2 text-sm text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors disabled:opacity-40"
           >
             {label}
           </button>
@@ -98,7 +98,7 @@ const ToolBtn = ({ onClick, active, disabled, title, children }: {
     onMouseDown={e => { e.preventDefault(); onClick() }}
     disabled={disabled}
     title={title}
-    className={`p-1.5 rounded-lg transition-all shrink-0 ${
+    className={`p-1.5 rounded-none transition-all shrink-0 ${
       active
         ? 'bg-gray-900 text-white'
         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
@@ -117,7 +117,7 @@ const BubbleBtn = ({ onClick, active, title, children }: {
   <button
     onMouseDown={e => { e.preventDefault(); onClick() }}
     title={title}
-    className={`p-1.5 rounded-lg transition-all ${
+    className={`p-1.5 rounded-none transition-all ${
       active ? 'bg-white text-gray-900' : 'text-white/80 hover:bg-white/10 hover:text-white'
     }`}
   >
@@ -305,7 +305,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       )}
 
       {/* Main Toolbar */}
-      <div className="sticky top-0 z-20 flex items-center gap-0.5 px-1.5 py-1.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-sm mb-5 overflow-visible">
+      <div className="sticky top-0 z-20 flex items-center gap-0.5 px-1.5 py-1.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-none shadow-none mb-5 overflow-visible">
         <div className="flex items-center overflow-x-auto no-scrollbar gap-0.5 flex-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
           <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (Ctrl+B)">
             <Bold size={14} />
@@ -369,29 +369,26 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
         <Sep />
 
         {/* Block Search - Outside overflow div */}
-        <div className="relative" ref={blockSearchRef}>
+        <div className="relative ml-1" ref={blockSearchRef}>
           <button
             onMouseDown={e => { e.preventDefault(); setBlockSearchOpen(!blockSearchOpen) }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-none text-xs font-bold transition-all shrink-0 ${
               blockSearchOpen
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-slate-900 text-white shadow-none'
+                : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
-            <SquarePlus size={14} />
+            <SquarePlus size={16} />
             <span className="hidden sm:inline">Blocks</span>
-            <Search size={11} className="hidden sm:inline opacity-60" />
-            <ChevronDown size={11} className={`transition-transform duration-200 ${blockSearchOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`transition-transform duration-300 ${blockSearchOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {blockSearchOpen && (
-            <div className="absolute top-full right-0 mt-2 z-50">
-              <BlockSearchPanel
-                blocks={allBlocks}
-                onInsert={handleBlockInsert}
-                onClose={() => setBlockSearchOpen(false)}
-              />
-            </div>
+            <BlockSearchPanel
+              blocks={allBlocks}
+              onInsert={handleBlockInsert}
+              onClose={() => setBlockSearchOpen(false)}
+            />
           )}
         </div>
 
@@ -409,7 +406,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
         tippyOptions={{ duration: 120, placement: 'top' }}
         shouldShow={({ editor, from, to }) => from !== to && !editor.isActive('image')}
       >
-        <div className="flex items-center gap-0.5 bg-gray-900 rounded-xl shadow-xl p-1">
+        <div className="flex items-center gap-0.5 bg-gray-900 rounded-none shadow-none p-1">
           <BubbleBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
             <Bold size={13} />
           </BubbleBtn>
@@ -425,12 +422,12 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
           <BubbleSep />
           <button
             onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run() }}
-            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all ${editor.isActive('heading', { level: 1 }) ? 'bg-white text-gray-900' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
+            className={`px-2 py-1.5 rounded-none text-[10px] font-bold transition-all ${editor.isActive('heading', { level: 1 }) ? 'bg-white text-gray-900' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
             title="H1"
           >H1</button>
           <button
             onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run() }}
-            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all ${editor.isActive('heading', { level: 2 }) ? 'bg-white text-gray-900' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
+            className={`px-2 py-1.5 rounded-none text-[10px] font-bold transition-all ${editor.isActive('heading', { level: 2 }) ? 'bg-white text-gray-900' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
             title="H2"
           >H2</button>
           <BubbleSep />
@@ -449,7 +446,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       {slashMenu && (
         <div
           ref={slashRef}
-          className="absolute z-30 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 w-56 animate-in fade-in zoom-in-95 duration-100"
+          className="absolute z-30 bg-white border border-gray-100 rounded-none shadow-none py-2 w-56 animate-in fade-in zoom-in-95 duration-100"
           style={{ left: slashPos.x, top: slashPos.y }}
         >
           <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">Block যোগ করুন</p>
@@ -459,7 +456,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
               onMouseDown={e => { e.preventDefault(); runSlash(item.cmd) }}
               className="flex items-center gap-3 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
             >
-              <span className="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 shrink-0">
+              <span className="w-6 h-6 flex items-center justify-center rounded-none bg-gray-100 text-gray-500 shrink-0">
                 {item.icon}
               </span>
               {item.label}

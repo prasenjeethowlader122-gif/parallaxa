@@ -92,25 +92,25 @@ function MdxBlockView(props: any) {
   }
 
   return (
-    <NodeViewWrapper className="mdx-block-node my-6 relative group border border-transparent hover:border-gray-200 rounded-2xl transition-all duration-200">
+    <NodeViewWrapper className="mdx-block-node my-6 relative group border border-transparent hover:border-gray-200 rounded-none transition-all duration-200">
       {/* Label and Actions */}
       <div className="absolute -top-3 left-3 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
-        <div className="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase tracking-wider">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-none shadow-none flex items-center gap-1.5 uppercase tracking-wider">
+          <div className="w-1.5 h-1.5 rounded-none bg-emerald-400 animate-pulse" />
           {blockTitle}
         </div>
 
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full p-0.5 shadow-lg ml-1">
+        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-none p-0.5 shadow-none ml-1">
           <button
             onClick={() => { setEditParams(currentParams); setIsEditing(true) }}
-            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors"
+            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-none transition-colors"
             title="Edit Parameters"
           >
             <Pencil size={12} />
           </button>
           <button
             onClick={() => deleteNode()}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-none transition-colors"
             title="Remove Block"
           >
             <Trash2 size={12} />
@@ -119,10 +119,10 @@ function MdxBlockView(props: any) {
       </div>
 
       {/* Block Content */}
-      <div className="pointer-events-none select-none overflow-hidden rounded-2xl border border-gray-100/50">
+      <div className="pointer-events-none select-none overflow-hidden rounded-none border border-gray-100/50">
         {renderedContent || (
-          <div className="p-8 border-2 border-dashed border-gray-100 rounded-2xl text-gray-400 text-sm font-mono bg-gray-50/50 flex flex-col items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm">
+          <div className="p-8 border-2 border-dashed border-gray-100 rounded-none text-gray-400 text-sm font-mono bg-gray-50/50 flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 rounded-none bg-white flex items-center justify-center border border-gray-100 shadow-none">
               <ExternalLink size={16} className="text-gray-300" />
             </div>
             {code}
@@ -132,13 +132,13 @@ function MdxBlockView(props: any) {
 
       {/* Edit Modal / Popover */}
       {isEditing && (
-        <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col rounded-2xl border border-gray-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+        <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col rounded-none border border-gray-200 shadow-none animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
             <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
               <Pencil size={14} />
               Edit {blockTitle}
             </h4>
-            <button onClick={() => setIsEditing(false)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors">
+            <button onClick={() => setIsEditing(false)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-none transition-colors">
               <X size={16} />
             </button>
           </div>
@@ -151,7 +151,7 @@ function MdxBlockView(props: any) {
                   <textarea
                     value={value}
                     onChange={(e) => handleParamChange(key, e.target.value)}
-                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/5 transition-all resize-none min-h-[40px]"
+                    className="w-full text-sm border border-gray-200 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/5 transition-all resize-none min-h-[40px]"
                     rows={value.length > 50 ? 3 : 1}
                   />
                 </div>
@@ -164,13 +164,13 @@ function MdxBlockView(props: any) {
           <div className="p-4 bg-gray-50/50 border-t border-gray-100 flex gap-2">
             <button
               onClick={() => setIsEditing(false)}
-              className="flex-1 px-4 py-2 text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
+              className="flex-1 px-4 py-2 text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-none hover:bg-gray-50 transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 px-4 py-2 text-xs font-bold text-white bg-gray-900 rounded-xl hover:bg-black transition-all flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 text-xs font-bold text-white bg-gray-900 rounded-none hover:bg-black transition-all flex items-center justify-center gap-2"
             >
               <Check size={14} />
               Save Changes

@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import React, { useState, useRef, useCallback, useEffect, ComponentPropsWithoutRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
@@ -49,14 +50,14 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
 
   if (isInline) {
     return (
-      <code className="bg-[#efedee] text-[#585f64] px-1.5 py-0.5 rounded text-[0.82em] font-mono break-all">
+      <code className="bg-[#efedee] text-[#585f64] px-1.5 py-0.5 rounded-none text-[0.82em] font-mono break-all">
         {children}
       </code>
     )
   }
 
   return (
-    <div className="relative my-4 rounded-xl overflow-hidden border border-[#dcdad9] bg-[#1a1a1a] text-gray-100 max-w-full">
+    <div className="relative my-4 rounded-none overflow-hidden border border-[#dcdad9] bg-[#1a1a1a] text-gray-100 max-w-full">
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#222] border-b border-[#333]">
         <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{lang}</span>
         <button
@@ -96,8 +97,8 @@ const mdComponents: Components = {
         const cleanFirstChild = firstPChild.trim().replace('[!NOTE]', '').trim();
         const remainingPChildren = pChildren.slice(1);
         return (
-          <div className="my-6 p-5 bg-blue-50/60 border border-blue-100 rounded-2xl flex gap-4 items-start">
-            <div className="shrink-0 w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+          <div className="my-6 p-5 bg-blue-50/60 border border-blue-100 rounded-none flex gap-4 items-start">
+            <div className="shrink-0 w-8 h-8 rounded-none bg-blue-100 flex items-center justify-center text-blue-600">
               <Info size={16} />
             </div>
             <div className="flex-1 min-w-0">
@@ -113,7 +114,7 @@ const mdComponents: Components = {
     return <blockquote className="border-l-[3px] border-[#585f64] pl-5 my-5 text-[#5e5f61] italic text-lg font-['Newsreader']">{children}</blockquote>;
   },
   table: ({ children }) => (
-    <div className="overflow-x-auto my-5 rounded-xl border border-[#e4e2e1]">
+    <div className="overflow-x-auto my-5 rounded-none border border-[#e4e2e1]">
       <table className="min-w-full text-sm">{children}</table>
     </div>
   ),
@@ -137,7 +138,7 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
   if (!content.trim()) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-[#f5f3f3] flex items-center justify-center">
+        <div className="w-12 h-12 rounded-none bg-[#f5f3f3] flex items-center justify-center">
           <Eye size={20} className="text-[#c0bebe]" />
         </div>
         <p className="text-[#c0bebe] font-['Newsreader'] italic text-lg">Nothing to preview yet…</p>
@@ -167,7 +168,7 @@ const ToolbarBtn = ({
   <button
     title={label}
     onClick={onClick}
-    className={`p-2 rounded-lg transition-all shrink-0 ${
+    className={`p-2 rounded-none transition-all shrink-0 ${
       active
         ? 'bg-[#585f64] text-white'
         : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
@@ -207,14 +208,14 @@ const InputField = ({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
-          className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-lg px-3 py-2 resize-none focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
+          className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-none px-3 py-2 resize-none focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
         />
       : <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-lg px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
+          className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-none px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
         />
     }
     {hint && <p className="text-[10px] text-[#b8b9ba]">{hint}</p>}
@@ -235,11 +236,11 @@ const Toggle = ({
       onClick={() => onChange(!checked)}
       role="switch"
       aria-checked={checked}
-      className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors duration-200 ${
+      className={`relative shrink-0 w-8 h-[18px] rounded-none transition-colors duration-200 ${
         checked ? 'bg-[#585f64]' : 'bg-[#dcdad9]'
       }`}
     >
-      <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-transform duration-200 ${
+      <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-none bg-white shadow-none transition-transform duration-200 ${
         checked ? 'translate-x-[14px]' : 'translate-x-0'
       }`} />
     </button>
@@ -247,7 +248,7 @@ const Toggle = ({
 )
 
 const StatCard = ({ label, value }: { label: string; value: string }) => (
-  <div className="bg-white rounded-xl p-3.5 border border-[#e4e2e1]">
+  <div className="bg-white rounded-none p-3.5 border border-[#e4e2e1]">
     <p className="text-[9px] uppercase tracking-widest text-[#b8b9ba] mb-1">{label}</p>
     <p className="text-[15px] font-bold text-[#313334] tabular-nums">{value}</p>
   </div>
@@ -615,7 +616,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   <button
                     key={v}
                     onClick={() => { setVisibility(v); markUnsaved() }}
-                    className={`py-2 rounded-xl text-[10px] font-semibold capitalize transition-all ${
+                    className={`py-2 rounded-none text-[10px] font-semibold capitalize transition-all ${
                       visibility === v
                         ? 'bg-[#1a1b1c] text-white'
                         : 'bg-[#f5f3f3] text-[#7a8086] hover:bg-[#eeecec] hover:text-[#313334]'
@@ -627,7 +628,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4 flex flex-col gap-4">
+            <div className="bg-white rounded-none border border-[#e4e2e1] p-4 flex flex-col gap-4">
               <SidebarLabel>Article Badges</SidebarLabel>
               <Toggle label="Featured" description="Shown in featured sections" checked={featured} onChange={v => { setFeatured(v); markUnsaved() }} />
               <Toggle label="Breaking News" description="Urgent banner treatment" checked={breaking} onChange={v => { setBreaking(v); markUnsaved() }} />
@@ -640,7 +641,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={e => { setScheduledAt(e.target.value); markUnsaved() }}
-                className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-lg px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none transition-all"
+                className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-none px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none transition-all"
               />
               <p className="text-[10px] text-[#b8b9ba]">Leave blank to publish immediately</p>
             </div>
@@ -658,7 +659,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         return (
           <div className="flex flex-col gap-5">
             {/* SEO Score Widget */}
-            <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-[#e4e2e1]">
+            <div className="flex items-center gap-4 p-4 bg-white rounded-none border border-[#e4e2e1]">
               <div className="relative w-14 h-14 shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                   <circle cx="18" cy="18" r="14" fill="none" stroke="#f0eeee" strokeWidth="3.5" />
@@ -691,7 +692,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <select
                 value={twitterCard}
                 onChange={e => { setTwitterCard(e.target.value); markUnsaved() }}
-                className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-lg px-3 py-2 focus:ring-1 focus:ring-[#585f64] outline-none transition-all"
+                className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-none px-3 py-2 focus:ring-1 focus:ring-[#585f64] outline-none transition-all"
               >
                 <option value="summary">Summary</option>
                 <option value="summary_large_image">Summary + Large Image</option>
@@ -704,7 +705,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
             <div className="flex flex-col gap-2.5">
               <SidebarLabel>SEO Checklist</SidebarLabel>
-              <div className="bg-white rounded-xl border border-[#e4e2e1] p-3.5 flex flex-col gap-2.5">
+              <div className="bg-white rounded-none border border-[#e4e2e1] p-3.5 flex flex-col gap-2.5">
                 {seoChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
               </div>
             </div>
@@ -714,7 +715,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       case 'accessibility':
         return (
           <div className="flex flex-col gap-5">
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4">
+            <div className="bg-white rounded-none border border-[#e4e2e1] p-4">
               <SidebarLabel>A11y Checklist</SidebarLabel>
               <div className="flex flex-col gap-2.5 mt-3">
                 {a11yChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
@@ -722,11 +723,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             </div>
             <Toggle label="Allow Comments" description="Let readers engage below the article" checked={allowComments} onChange={v => { setAllowComments(v); markUnsaved() }} />
             <Toggle label="AMP Enabled" description="Faster mobile loads via AMP" checked={ampEnabled} onChange={v => { setAmpEnabled(v); markUnsaved() }} />
-            <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-100">
+            <div className="p-4 bg-amber-50/60 rounded-none border border-amber-100">
               <p className="text-xs font-semibold text-amber-800">Accessibility tip</p>
               <p className="text-[11px] text-amber-700 mt-1.5 leading-relaxed">
                 Always add alt text to images:{' '}
-                <code className="bg-amber-100 px-1.5 py-0.5 rounded text-[10px] font-mono">![description](url)</code>
+                <code className="bg-amber-100 px-1.5 py-0.5 rounded-none text-[10px] font-mono">![description](url)</code>
               </p>
             </div>
           </div>
@@ -742,18 +743,18 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
                 placeholder="Add a tag…"
-                className="flex-1 text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2.5 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
+                className="flex-1 text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-none px-3 py-2.5 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
               />
               <button
                 onClick={addTag}
-                className="shrink-0 px-4 py-2.5 bg-[#1a1b1c] text-white rounded-xl text-xs font-semibold hover:bg-[#313334] transition-colors"
+                className="shrink-0 px-4 py-2.5 bg-[#1a1b1c] text-white rounded-none text-xs font-semibold hover:bg-[#313334] transition-colors"
               >
                 Add
               </button>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {tags.map(tag => (
-                <span key={tag} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-[#e4e2e1] rounded-full text-xs text-[#313334] font-medium">
+                <span key={tag} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-[#e4e2e1] rounded-none text-xs text-[#313334] font-medium">
                   <Hash size={9} className="text-[#b8b9ba] shrink-0" />
                   <span className="max-w-[90px] truncate">{tag}</span>
                   <button onClick={() => removeTag(tag)} className="text-[#c8c6c6] hover:text-[#c0483d] transition-colors ml-0.5">
@@ -763,7 +764,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               ))}
               {tags.length === 0 && <p className="text-xs text-[#c8c6c6] italic">No tags yet.</p>}
             </div>
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4">
+            <div className="bg-white rounded-none border border-[#e4e2e1] p-4">
               <SidebarLabel>Suggested Tags</SidebarLabel>
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {['journalism', 'editorial', 'media', 'writing', 'content', 'typography', 'ui-design', 'publishing']
@@ -772,7 +773,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                     <button
                       key={t}
                       onClick={() => { setTags(prev => [...prev, t]); markUnsaved() }}
-                      className="px-2.5 py-1.5 bg-[#f5f3f3] rounded-full text-[10px] font-semibold text-[#7a8086] hover:bg-[#1a1b1c] hover:text-white transition-all"
+                      className="px-2.5 py-1.5 bg-[#f5f3f3] rounded-none text-[10px] font-semibold text-[#7a8086] hover:bg-[#1a1b1c] hover:text-white transition-all"
                     >
                       + {t}
                     </button>
@@ -785,14 +786,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       case 'distribution':
         return (
           <div className="flex flex-col gap-5">
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4 flex flex-col gap-4">
+            <div className="bg-white rounded-none border border-[#e4e2e1] p-4 flex flex-col gap-4">
               <SidebarLabel>Status</SidebarLabel>
               <div className="grid grid-cols-3 gap-1.5">
                 {(['draft', 'published', 'scheduled'] as ArticleStatus[]).map(s => (
                   <button
                     key={s}
                     onClick={() => { setStatus(s); markUnsaved() }}
-                    className={`py-2 rounded-xl text-[10px] font-semibold capitalize transition-all ${
+                    className={`py-2 rounded-none text-[10px] font-semibold capitalize transition-all ${
                       status === s
                         ? 'bg-[#1a1b1c] text-white'
                         : 'bg-[#f5f3f3] text-[#7a8086] hover:bg-[#eeecec]'
@@ -811,7 +812,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             {/* Social preview card */}
             <div className="flex flex-col gap-2">
               <SidebarLabel>Share Preview</SidebarLabel>
-              <div className="rounded-xl overflow-hidden border border-[#e4e2e1] bg-white">
+              <div className="rounded-none overflow-hidden border border-[#e4e2e1] bg-white">
                 {coverImage
                   ? <img src={coverImage} alt="OG preview" className="w-full h-28 object-cover" />
                   : (
@@ -831,7 +832,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <button
               onClick={() => setShowPublishModal(true)}
               disabled={!title.trim() || !content.trim()}
-              className="w-full py-3 rounded-xl bg-[#1a1b1c] text-white text-sm font-semibold hover:bg-[#313334] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-none bg-[#1a1b1c] text-white text-sm font-semibold hover:bg-[#313334] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <Send size={14} />
               Publish Article
@@ -858,7 +859,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         <div className="px-6 py-6 border-b border-gray-100 shrink-0">
           <h2 className="font-['Newsreader'] text-[20px] font-bold text-slate-900 tracking-tight">Editorial Hub</h2>
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="flex h-2 w-2 rounded-none bg-emerald-500" />
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               {id ? `Revision #${id.slice(0, 8)}` : 'Live Draft'}
             </p>
@@ -872,16 +873,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <button
                 key={tabId}
                 onClick={() => { setActiveTab(tabId); setMobileDrawerOpen(false) }}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] transition-all text-left w-full group ${
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-none text-[14px] transition-all text-left w-full group ${
                   activeTab === tabId
-                    ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
+                    ? 'bg-slate-900 text-white shadow-none'
                     : 'text-slate-500 hover:bg-gray-50 hover:text-slate-900'
                 }`}
               >
                 <span className={`shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
                 <span className="font-medium">{label}</span>
                 {tabId === 'seo' && (
-                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-none ${
                     seoScore >= 70 ? 'bg-emerald-500 text-white' :
                     seoScore >= 40 ? 'bg-amber-500 text-white' :
                     'bg-rose-500 text-white'
@@ -918,7 +919,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-3 text-sm text-slate-400 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-200">
+            <div className="w-8 h-8 rounded-none bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-none">
               <Highlighter size={16} />
             </div>
             <span className="hidden md:inline font-bold uppercase tracking-widest text-[10px] text-slate-300">Editor</span>
@@ -929,25 +930,25 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           {/* Controls */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Save indicator */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-2 text-[10px] font-bold text-slate-400 bg-slate-50 rounded-full border border-slate-100">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${
-                saveStatus === 'saving' ? 'bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
+            <div className="hidden lg:flex items-center gap-2 px-3 py-2 text-[10px] font-bold text-slate-400 bg-slate-50 rounded-none border border-slate-100">
+              <span className={`w-2 h-2 rounded-none shrink-0 ${
+                saveStatus === 'saving' ? 'bg-amber-400 animate-pulse shadow-none' :
                 saveStatus === 'unsaved' ? 'bg-rose-400' :
-                'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                'bg-emerald-500 shadow-none'
               }`} />
               <span className="whitespace-nowrap tracking-wider uppercase">{saveLabel()}</span>
             </div>
 
             {/* View mode switcher */}
-            <div className="flex items-center bg-slate-100 rounded-2xl p-1 ml-2 shadow-inner">
+            <div className="flex items-center bg-slate-100 rounded-none p-1 ml-2 shadow-none">
               {(['write', 'visual', 'split', 'preview'] as ViewMode[]).map(m => (
                 <button
                   key={m}
                   onClick={() => setViewMode(m)}
                   title={m}
-                  className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 ${
+                  className={`px-3 py-2 rounded-none text-[11px] font-bold transition-all duration-300 ${
                     viewMode === m
-                      ? 'bg-white text-slate-900 shadow-md ring-1 ring-slate-200/50'
+                      ? 'bg-white text-slate-900 shadow-none ring-1 ring-slate-200/50'
                       : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
@@ -968,8 +969,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <button
               title="Toggle settings panel"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`hidden xl:flex p-2.5 rounded-xl transition-all duration-300 ${
-                sidebarOpen ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+              className={`hidden xl:flex p-2.5 rounded-none transition-all duration-300 ${
+                sidebarOpen ? 'bg-slate-900 text-white shadow-none' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <PanelLeft size={18} />
@@ -977,7 +978,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <button
               title="Article settings"
               onClick={() => setMobileDrawerOpen(true)}
-              className="xl:hidden p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
+              className="xl:hidden p-2.5 text-slate-400 hover:bg-slate-50 rounded-none transition-colors"
             >
               <SlidersHorizontal size={18} />
             </button>
@@ -986,7 +987,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <button
               onClick={() => setShowPublishModal(true)}
               disabled={!title.trim() || !content.trim()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all shadow-xl shadow-slate-200 disabled:opacity-40 disabled:shadow-none"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-none bg-slate-900 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all shadow-none disabled:opacity-40 disabled:shadow-none"
             >
               <Send size={14} strokeWidth={2.5} />
               <span className="hidden sm:inline tracking-tight">Publish</span>
@@ -999,11 +1000,21 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       <div className="flex overflow-hidden" style={{ height: 'calc(100dvh - 113px)' }}>
 
         {/* Sidebar */}
-        {sidebarOpen && (
-          <aside className="hidden xl:flex h-full w-[268px] shrink-0 bg-[#faf9f9] flex-col overflow-hidden border-r border-[#eeecec]">
-            <SidebarInner />
-          </aside>
-        )}
+        <AnimatePresence mode="wait">
+          {sidebarOpen && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 268, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="hidden xl:flex h-full shrink-0 bg-[#faf9f9] flex-col overflow-hidden border-r border-[#eeecec]"
+            >
+              <div className="w-[268px]">
+                <SidebarInner />
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
         {/* Editor area */}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-slate-50/30">
@@ -1012,35 +1023,35 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           {viewMode !== 'visual' && (
             <div className="flex items-center z-20 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
               <div className="flex items-center overflow-x-auto no-scrollbar gap-1 flex-1" style={{ scrollbarWidth: 'none' }}>
-                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5">
+                <div className="flex items-center bg-gray-50 rounded-none p-1 gap-0.5">
                   <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
                   <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
                   <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
                   <ToolbarBtn icon={Code} label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
                 </div>
 
-                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                <div className="flex items-center bg-gray-50 rounded-none p-1 gap-0.5 ml-1">
                   <ToolbarBtn icon={Heading1} label="Heading 1" onClick={() => insertLinePrefix('# ')} />
                   <ToolbarBtn icon={Heading2} label="Heading 2" onClick={() => insertLinePrefix('## ')} />
                   <ToolbarBtn icon={Heading3} label="Heading 3" onClick={() => insertLinePrefix('### ')} />
                 </div>
 
-                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                <div className="flex items-center bg-gray-50 rounded-none p-1 gap-0.5 ml-1">
                   <ToolbarBtn icon={List} label="Bullet List" onClick={() => insertLinePrefix('- ')} />
                   <ToolbarBtn icon={ListOrdered} label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
                   <ToolbarBtn icon={Quote} label="Blockquote" onClick={() => insertLinePrefix('> ')} />
                 </div>
 
-                <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
+                <div className="flex items-center bg-gray-50 rounded-none p-1 gap-0.5 ml-1">
                   <ToolbarBtn icon={Link} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
                   <ToolbarBtn icon={ImageIcon} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
                   <ToolbarBtn icon={Minus} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
                 </div>
 
                 {/* Mobile undo/redo */}
-                <div className="sm:hidden flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
-                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="p-2 text-slate-400 rounded-lg disabled:opacity-30"><RotateCcw size={14} /></button>
-                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="p-2 text-slate-400 rounded-lg disabled:opacity-30"><RotateCw size={14} /></button>
+                <div className="sm:hidden flex items-center bg-gray-50 rounded-none p-1 gap-0.5 ml-1">
+                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="p-2 text-slate-400 rounded-none disabled:opacity-30"><RotateCcw size={14} /></button>
+                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="p-2 text-slate-400 rounded-none disabled:opacity-30"><RotateCw size={14} /></button>
                 </div>
               </div>
 
@@ -1048,9 +1059,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <div className="relative ml-1" ref={blockSearchRef}>
                 <button
                   onClick={() => setBlockSearchOpen(!blockSearchOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-none text-xs font-bold transition-all shrink-0 ${
                     blockSearchOpen
-                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
+                      ? 'bg-slate-900 text-white shadow-none'
                       : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
@@ -1068,8 +1079,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 )}
               </div>
 
-              <div className="hidden lg:flex items-center gap-2 ml-4 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="hidden lg:flex items-center gap-2 ml-4 px-4 py-2 bg-emerald-50 rounded-none border border-emerald-100">
+                <span className="flex h-1.5 w-1.5 rounded-none bg-emerald-500 animate-pulse" />
                 <span className="text-[11px] font-bold text-emerald-700 whitespace-nowrap tabular-nums">
                   {countWords(content).toLocaleString()} WORDS
                 </span>
@@ -1087,12 +1098,12 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
                   {/* Cover image */}
                   {coverImage && (
-                    <div className="relative rounded-2xl overflow-hidden aspect-video group">
+                    <div className="relative rounded-none overflow-hidden aspect-video group">
                       <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button
                           onClick={() => setCoverImage('')}
-                          className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-xl text-xs font-semibold text-[#1a1b1c] hover:bg-white transition-colors"
+                          className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-none text-xs font-semibold text-[#1a1b1c] hover:bg-white transition-colors"
                         >
                           Remove cover
                         </button>
@@ -1103,9 +1114,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   {/* Badges */}
                   {(breaking || featured || trending) && (
                     <div className="flex gap-2 flex-wrap">
-                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-full text-[10px] font-bold uppercase tracking-wide"><Zap size={8} /> Breaking</span>}
-                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[10px] font-bold uppercase tracking-wide"><Star size={8} /> Featured</span>}
-                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide"><TrendingUp size={8} /> Trending</span>}
+                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-none text-[10px] font-bold uppercase tracking-wide"><Zap size={8} /> Breaking</span>}
+                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-none text-[10px] font-bold uppercase tracking-wide"><Star size={8} /> Featured</span>}
+                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-none text-[10px] font-bold uppercase tracking-wide"><TrendingUp size={8} /> Trending</span>}
                     </div>
                   )}
 
@@ -1127,7 +1138,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                         ~{estimateReadTime(content)} min read
                       </span>
                       {tags.slice(0, 3).map(t => (
-                        <span key={t} className="px-2 py-0.5 bg-[#f5f3f3] text-[#9e9fa0] rounded-full text-[9px] font-semibold uppercase tracking-wider">#{t}</span>
+                        <span key={t} className="px-2 py-0.5 bg-[#f5f3f3] text-[#9e9fa0] rounded-none text-[9px] font-semibold uppercase tracking-wider">#{t}</span>
                       ))}
                     </div>
                   </div>
@@ -1171,13 +1182,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 <div className="mx-auto px-5 sm:px-10 py-10 sm:py-14 w-full max-w-3xl">
                   {(breaking || featured || trending) && (
                     <div className="flex gap-2 mb-6 flex-wrap">
-                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-full text-[10px] font-bold uppercase tracking-wide"><Zap size={8} /> Breaking</span>}
-                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[10px] font-bold uppercase tracking-wide"><Star size={8} /> Featured</span>}
-                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide"><TrendingUp size={8} /> Trending</span>}
+                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-none text-[10px] font-bold uppercase tracking-wide"><Zap size={8} /> Breaking</span>}
+                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-none text-[10px] font-bold uppercase tracking-wide"><Star size={8} /> Featured</span>}
+                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-none text-[10px] font-bold uppercase tracking-wide"><TrendingUp size={8} /> Trending</span>}
                     </div>
                   )}
                   {coverImage && (
-                    <figure className="mb-8 rounded-2xl overflow-hidden">
+                    <figure className="mb-8 rounded-none overflow-hidden">
                       <img src={coverImage} alt="Cover" className="w-full object-cover max-h-72" />
                     </figure>
                   )}
@@ -1195,7 +1206,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   {tags.length > 0 && (
                     <div className="flex gap-2 mt-10 pt-6 border-t border-[#f0eeee] flex-wrap">
                       {tags.map(t => (
-                        <span key={t} className="px-3 py-1.5 bg-[#f5f3f3] text-[#7a8086] rounded-full text-xs font-semibold">#{t}</span>
+                        <span key={t} className="px-3 py-1.5 bg-[#f5f3f3] text-[#7a8086] rounded-none text-xs font-semibold">#{t}</span>
                       ))}
                     </div>
                   )}
@@ -1207,43 +1218,52 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       </div>
 
       {/* Mobile drawer */}
-      {mobileDrawerOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px] xl:hidden"
-            onClick={() => setMobileDrawerOpen(false)}
-          />
-          <div
-            className="fixed top-0 right-0 bottom-0 z-[70] bg-[#faf9f9] flex flex-col shadow-2xl xl:hidden overflow-hidden"
-            style={{ width: 'min(300px, 90vw)' }}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#eeecec] bg-white shrink-0">
-              <h2 className="font-['Newsreader'] text-[15px] font-bold text-[#1a1b1c]">Article Settings</h2>
-              <button
-                onClick={() => setMobileDrawerOpen(false)}
-                className="p-1.5 hover:bg-[#f0eeee] rounded-lg transition-colors text-[#9e9fa0] hover:text-[#313334]"
-              >
-                <X size={15} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <SidebarInner />
-            </div>
-          </div>
-        </>
-      )}
+      <AnimatePresence>
+        {mobileDrawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px] xl:hidden"
+              onClick={() => setMobileDrawerOpen(false)}
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 z-[70] bg-[#faf9f9] flex flex-col shadow-none xl:hidden overflow-hidden"
+              style={{ width: 'min(300px, 90vw)' }}
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#eeecec] bg-white shrink-0">
+                <h2 className="font-['Newsreader'] text-[15px] font-bold text-[#1a1b1c]">Article Settings</h2>
+                <button
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="p-1.5 hover:bg-[#f0eeee] rounded-none transition-colors text-[#9e9fa0] hover:text-[#313334]"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <SidebarInner />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Publish modal */}
       {showPublishModal && (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] w-full sm:max-w-[480px] overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-8 duration-500">
+          <div className="bg-white rounded-none sm:rounded-none shadow-none w-full sm:max-w-[480px] overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Pill handle (mobile) */}
             <div className="flex justify-center pt-5 pb-1 sm:hidden">
-              <div className="w-12 h-1.5 rounded-full bg-slate-100" />
+              <div className="w-12 h-1.5 rounded-none bg-slate-100" />
             </div>
 
             <div className="px-8 pt-8 pb-6 text-center">
-              <div className="w-16 h-16 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-inner">
+              <div className="w-16 h-16 bg-emerald-50 rounded-none flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-none">
                 <Sparkles size={32} />
               </div>
               <h3 className="font-['Newsreader'] text-3xl font-bold text-slate-900 tracking-tight">Ready to publish?</h3>
@@ -1252,14 +1272,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
             <div className="px-8 pb-8 flex flex-col gap-6">
               {/* Article summary */}
-              <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100/50">
+              <div className="p-6 bg-slate-50 rounded-none border border-slate-100/50">
                 <p className="text-lg font-bold text-slate-900 line-clamp-2 leading-tight font-['Newsreader'] tracking-tight">{title || 'Untitled Article'}</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-none border border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     <Clock size={12} className="text-slate-400" />
                     ~{estimateReadTime(content)} MIN READ
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-none border border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     <Layout size={12} className="text-slate-400" />
                     {category || 'Uncategorized'}
                   </div>
@@ -1270,7 +1290,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <div className="space-y-3 px-2">
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${!!title.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                    <div className={`w-5 h-5 rounded-none flex items-center justify-center ${!!title.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
                       <Check size={12} strokeWidth={3} />
                     </div>
                     <span className="text-sm font-medium text-slate-600">Catchy headline</span>
@@ -1278,7 +1298,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 </div>
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${!!content.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                    <div className={`w-5 h-5 rounded-none flex items-center justify-center ${!!content.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
                       <Check size={12} strokeWidth={3} />
                     </div>
                     <span className="text-sm font-medium text-slate-600">Polished content</span>
@@ -1286,7 +1306,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 </div>
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${seoScore >= 50 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
+                    <div className={`w-5 h-5 rounded-none flex items-center justify-center ${seoScore >= 50 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
                       <Check size={12} strokeWidth={3} />
                     </div>
                     <span className="text-sm font-medium text-slate-600">Search optimization ({seoScore}%)</span>
@@ -1298,14 +1318,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowPublishModal(false)}
-                  className="flex-1 py-4 rounded-[1.5rem] bg-slate-50 text-sm font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
+                  className="flex-1 py-4 rounded-none bg-slate-50 text-sm font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
                 >
                   Back
                 </button>
                 <button
                   onClick={handlePublish}
                   disabled={publishing}
-                  className="flex-[2] py-4 rounded-[1.5rem] bg-slate-900 text-white text-sm font-bold hover:bg-black transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-slate-200"
+                  className="flex-[2] py-4 rounded-none bg-slate-900 text-white text-sm font-bold hover:bg-black transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 shadow-none"
                 >
                   {publishing
                     ? <><Loader2 size={16} className="animate-spin" /> Publishing…</>

@@ -73,7 +73,7 @@ export const customBlockComponents = {
       </html>
     `;
     return (
-      <div className="my-6 rounded-xl overflow-hidden border border-gray-200 bg-white">
+      <div className="my-6 rounded-none overflow-hidden border border-gray-200 bg-white">
         <iframe
           title="Custom Code"
           sandbox={sandbox}
@@ -98,7 +98,7 @@ export const customBlockComponents = {
     const total = parseFloat(props.total) || 100
     const percentage = Math.min(100, Math.max(0, (current / total) * 100))
     return (
-      <div className="my-6 p-5 bg-white border border-gray-100 rounded-2xl shadow-sm">
+      <div className="my-6 p-5 bg-white border border-gray-100 rounded-none shadow-none">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
             <TrendingUp size={16} className="text-emerald-500" />
@@ -108,7 +108,7 @@ export const customBlockComponents = {
             {props.current} / {props.total} {props.unit}
           </span>
         </div>
-        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-2 w-full bg-gray-100 rounded-none overflow-hidden">
           <div
             className="h-full bg-emerald-500 transition-all duration-1000"
             style={{ width: `${percentage}%` }}
@@ -137,7 +137,7 @@ export const customBlockComponents = {
       error: 'text-red-900',
     }
     return (
-      <div className={`my-6 p-4 rounded-xl border flex gap-3 ${bgColors[props.type] || bgColors.info}`}>
+      <div className={`my-6 p-4 rounded-none border flex gap-3 ${bgColors[props.type] || bgColors.info}`}>
         <div className="shrink-0 mt-0.5">
           {icons[props.type] || icons.info}
         </div>
@@ -154,7 +154,7 @@ export const customBlockComponents = {
         href={props.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center px-6 py-2.5 rounded-xl text-white text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-black/5"
+        className="inline-flex items-center px-6 py-2.5 rounded-none text-white text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-none"
         style={{ backgroundColor: props.color || '#1a1b1c' }}
       >
         {props.text}
@@ -170,7 +170,7 @@ export const customBlockComponents = {
       gray: 'bg-gray-100 text-gray-700',
     }
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${colors[props.color] || colors.gray}`}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider ${colors[props.color] || colors.gray}`}>
         {props.text}
       </span>
     )
@@ -185,7 +185,7 @@ export const customBlockComponents = {
       warning: 'bg-amber-50 border-amber-100',
     }
     return (
-      <div className={`my-6 p-5 rounded-2xl border ${bgColors[props.type] || bgColors.info} shadow-sm`}>
+      <div className={`my-6 p-5 rounded-none border ${bgColors[props.type] || bgColors.info} shadow-none`}>
         <div className="flex items-center gap-2 mb-2">
           {icons[props.type] || icons.info}
           <h4 className="text-sm font-bold text-gray-900">{props.title || 'Information'}</h4>
@@ -197,7 +197,7 @@ export const customBlockComponents = {
     )
   },
   reference: (props: any) => (
-    <div className="my-4 p-4 bg-gray-50 border border-gray-100 rounded-xl flex items-start gap-3">
+    <div className="my-4 p-4 bg-gray-50 border border-gray-100 rounded-none flex items-start gap-3">
       <Book size={16} className="text-gray-400 mt-1 shrink-0" />
       <div className="text-xs text-gray-600 italic">
         <span className="font-bold text-gray-900 not-italic">{props.author}</span> {props.year ? `(${props.year})` : ''}.
@@ -212,7 +212,7 @@ export const customBlockComponents = {
     </div>
   ),
   tika: (props: any) => (
-    <div className="my-4 p-4 bg-yellow-50/50 border-l-4 border-yellow-400 rounded-r-xl flex items-start gap-3">
+    <div className="my-4 p-4 bg-yellow-50/50 border-l-4 border-yellow-400 rounded-none flex items-start gap-3">
       <StickyNote size={16} className="text-yellow-600 mt-1 shrink-0" />
       <div className="text-sm text-yellow-900">
         <span className="font-bold block mb-1 text-[10px] uppercase tracking-wider text-yellow-600">টিকা</span>
@@ -220,11 +220,11 @@ export const customBlockComponents = {
       </div>
     </div>
   ),
-  table: (props: any) => {
+  customtable: (props: any) => {
     const headers = (props.headers || '').split(',').filter(Boolean)
     const rows = (props.rows || '').split('|').map((row: string) => row.split(','))
     return (
-      <div className="my-6 overflow-x-auto rounded-xl border border-gray-200">
+      <div className="my-6 overflow-x-auto rounded-none border border-gray-200">
         {props.title && (
           <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
             {props.title}

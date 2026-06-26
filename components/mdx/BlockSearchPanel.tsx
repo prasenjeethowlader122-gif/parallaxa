@@ -75,19 +75,19 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
   ] as const
 
   return (
-    <div className="absolute top-full left-0 mt-2 w-[340px] bg-white border border-[#e4e2e1] rounded-2xl shadow-xl z-[100] overflow-hidden">
+    <div className="absolute top-full left-0 mt-2 w-[340px] bg-white border border-[#e4e2e1] rounded-none shadow-none z-[100] overflow-hidden">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-[#f0eeee]">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-[#585f64] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-none bg-[#585f64] flex items-center justify-center">
               <SquarePlus size={13} className="text-white" />
             </div>
             <h3 className="text-[13px] font-semibold text-[#1a1b1c]">Insert Block</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[#9e9fa0] hover:text-[#313334] hover:bg-[#f0eeee] transition-colors"
+            className="p-1 rounded-none text-[#9e9fa0] hover:text-[#313334] hover:bg-[#f0eeee] transition-colors"
           >
             <X size={14} />
           </button>
@@ -102,7 +102,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search blocks…"
-            className="w-full pl-8 pr-3 py-2 text-xs bg-[#f5f3f3] border-0 rounded-lg outline-none text-[#313334] placeholder-[#b8b9ba] focus:ring-1 focus:ring-[#585f64] transition-all"
+            className="w-full pl-8 pr-3 py-2 text-xs bg-[#f5f3f3] border-0 rounded-none outline-none text-[#313334] placeholder-[#b8b9ba] focus:ring-1 focus:ring-[#585f64] transition-all"
           />
           {query && (
             <button
@@ -122,7 +122,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
             <button
               key={cat.id}
               onClick={() => setCategory(cat.id)}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded-none text-[10px] font-semibold transition-all ${
                 category === cat.id
                   ? 'bg-[#585f64] text-white'
                   : 'text-[#7a8086] hover:bg-[#eeecec] hover:text-[#313334]'
@@ -140,14 +140,14 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
           <button
             onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
             title={viewMode === 'grid' ? 'Switch to list' : 'Switch to grid'}
-            className="p-1.5 rounded-lg text-[#9e9fa0] hover:bg-[#eeecec] hover:text-[#585f64] transition-colors"
+            className="p-1.5 rounded-none text-[#9e9fa0] hover:bg-[#eeecec] hover:text-[#585f64] transition-colors"
           >
             {viewMode === 'grid' ? <ListIcon size={12} /> : <Grid3x3 size={12} />}
           </button>
           <button
             onClick={() => setSort(s => s === 'label' ? 'name' : 'label')}
             title="Toggle sort"
-            className="p-1.5 rounded-lg text-[#9e9fa0] hover:bg-[#eeecec] hover:text-[#585f64] transition-colors"
+            className="p-1.5 rounded-none text-[#9e9fa0] hover:bg-[#eeecec] hover:text-[#585f64] transition-colors"
           >
             <ArrowUpDown size={12} />
           </button>
@@ -158,7 +158,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
       <div className="max-h-[280px] overflow-y-auto p-2 custom-scrollbar">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10">
-            <div className="w-10 h-10 rounded-xl bg-[#f5f3f3] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-[#f5f3f3] flex items-center justify-center">
               <Search size={16} className="text-[#c8c6c6]" />
             </div>
             <p className="text-xs text-[#b8b9ba]">No blocks match "{query}"</p>
@@ -170,9 +170,9 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
                 key={block.name}
                 onClick={() => { onInsert(block); onClose() }}
                 title={block.label}
-                className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-[#f5f3f3] active:scale-95 transition-all group"
+                className="flex flex-col items-center gap-1.5 p-2.5 rounded-none hover:bg-[#f5f3f3] active:scale-95 transition-all group"
               >
-                <div className="w-9 h-9 rounded-xl bg-[#f5f3f3] border border-[#eeecec] flex items-center justify-center text-[#7a8086] group-hover:bg-[#1a1b1c] group-hover:text-white group-hover:border-transparent transition-all">
+                <div className="w-9 h-9 rounded-none bg-[#f5f3f3] border border-[#eeecec] flex items-center justify-center text-[#7a8086] group-hover:bg-[#1a1b1c] group-hover:text-white group-hover:border-transparent transition-all">
                   <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={16} />
                 </div>
                 <span className="text-[9px] font-semibold text-[#7a8086] group-hover:text-[#313334] truncate w-full text-center leading-tight">
@@ -187,9 +187,9 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
               <button
                 key={block.name}
                 onClick={() => { onInsert(block); onClose() }}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f5f3f3] active:scale-[0.99] transition-all group text-left"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-[#f5f3f3] active:scale-[0.99] transition-all group text-left"
               >
-                <div className="w-8 h-8 rounded-lg bg-[#f5f3f3] border border-[#eeecec] flex items-center justify-center text-[#7a8086] group-hover:bg-[#1a1b1c] group-hover:text-white group-hover:border-transparent transition-all shrink-0">
+                <div className="w-8 h-8 rounded-none bg-[#f5f3f3] border border-[#eeecec] flex items-center justify-center text-[#7a8086] group-hover:bg-[#1a1b1c] group-hover:text-white group-hover:border-transparent transition-all shrink-0">
                   <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={14} />
                 </div>
                 <div className="flex-1 min-w-0">
