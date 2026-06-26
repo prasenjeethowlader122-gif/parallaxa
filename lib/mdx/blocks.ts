@@ -1,4 +1,4 @@
-import { blockRegistry } from './block-registry'
+import { blockRegistry, parseBlockParams } from './block-registry'
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -289,6 +289,94 @@ blockRegistry.register({
 
 // Keep old blocks for backward compatibility but redirect them to the new unified handler if needed
 // or just update them to the new handler signature.
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  INFOBOX BLOCK
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'infobox',
+  label: 'InfoBox',
+  icon: 'info',
+  pattern: /\[!infobox\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!infobox(title="Quick Facts" content="Details go here..." type="info")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'infobox',
+      hName: 'infobox',
+      hProperties: {
+        className: `custom-block infobox-block infobox-${params.type || 'info'}`,
+        ...params,
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  REFERENCE BLOCK
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'reference',
+  label: 'Reference',
+  icon: 'book',
+  pattern: /\[!reference\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!reference(text="Source Title" url="https://" author="Author Name" year="2024")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'reference',
+      hName: 'reference',
+      hProperties: {
+        className: 'custom-block reference-block',
+        ...params,
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TIKA BLOCK (Notes)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'tika',
+  label: 'Tika (Note)',
+  icon: 'sticky_note_2',
+  pattern: /\[!tika\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!tika(text="এখানে আপনার টিকা লিখুন...")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'tika',
+      hName: 'tika',
+      hProperties: {
+        className: 'custom-block tika-block',
+        ...params,
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  STYLED TABLE BLOCK
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'table',
+  label: 'Styled Table',
+  icon: 'table_chart',
+  pattern: /\[!table\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!table(title="Data Table" headers="Name,Age,Location" rows="John,25,NY|Jane,22,CA")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'table',
+      hName: 'table',
+      hProperties: {
+        className: 'custom-block styled-table-block',
+        ...params,
+      },
+    }
+  },
+})
 
 const legacyBlocks = ['fbpost', 'tweet', 'youtube', 'tiktok', 'instagram', 'reddit', 'vimeo', 'codepen', 'gist']
 

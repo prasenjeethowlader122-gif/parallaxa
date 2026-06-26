@@ -10,7 +10,7 @@ import {
   ChevronUp, Info, Puzzle, Code2, Eye, RefreshCw, AlertCircle,
   Sparkles, BookOpen, Terminal, Share2, Play, Palette,
   Lightbulb, AlertTriangle, Info as InfoIcon, Quote, BarChart3,
-  Box
+  Box, Search, Book, StickyNote, Table as TableIcon
 } from 'lucide-react'
 
 interface BlockParam {
@@ -36,6 +36,10 @@ interface CustomBlock {
 const BUILTIN_BLOCKS = [
   { name: 'embed', label: 'Social Embed', icon: Share2, description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
   { name: 'screenshot', label: 'Screenshot', icon: Eye, description: 'সোশ্যাল মিডিয়া পোস্ট বা ওয়েবসাইটের স্ক্রিনশট দেখান', usage: '[!screenshot(url="https://...")]' },
+  { name: 'infobox', label: 'InfoBox', icon: InfoIcon, description: 'গুরুত্বপূর্ণ তথ্য বা সতর্কতা দেখান', usage: '[!infobox(title="Title" content="Message" type="info")]' },
+  { name: 'reference', label: 'Reference', icon: Book, description: 'তথ্যসূত্র বা সাইটেশন যোগ করুন', usage: '[!reference(text="Title" author="Name")]' },
+  { name: 'tika', label: 'Tika (Note)', icon: StickyNote, description: 'টিকা বা নোট যোগ করুন', usage: '[!tika(text="এখানে লিখুন...")]' },
+  { name: 'table', label: 'Styled Table', icon: TableIcon, description: 'সুন্দরভাবে তথ্য সাজিয়ে টেবিল তৈরি করুন', usage: '[!table(headers="Name,Age" rows="John,25|Jane,22")]' },
   { name: 'run', label: 'Run Code', icon: Play, description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
   { name: 'style', label: 'Custom CSS', icon: Palette, description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
 ]
@@ -114,6 +118,47 @@ const PRESET_TEMPLATES = [
   <div class="mb-2 text-4xl sm:text-5xl font-black leading-none text-slate-900">{{number}}</div>
   <div class="mb-1 text-sm sm:text-[15px] font-medium text-slate-500">{{label}}</div>
   <div class="text-[11px] text-slate-400">সূত্র: {{source}}</div>
+</div>`,
+  },
+  {
+    icon: InfoIcon,
+    iconName: 'info',
+    name: 'infobox',
+    label: 'Info Box (New)',
+    description: 'নতুন স্টাইলিশ ইনফো বক্স',
+    params: [
+      { name: 'title', label: 'শিরোনাম', placeholder: 'Quick Facts', defaultValue: 'Quick Facts' },
+      { name: 'content', label: 'বিস্তারিত', placeholder: 'এখানে লিখুন…', defaultValue: '' },
+      { name: 'type', label: 'টাইপ (info/warning)', placeholder: 'info', defaultValue: 'info' },
+    ],
+    htmlTemplate: `<div class="my-6 p-5 rounded-2xl border border-blue-100 bg-blue-50 shadow-sm">
+  <div class="flex items-center gap-2 mb-2">
+    <h4 class="text-sm font-bold text-gray-900">{{title}}</h4>
+  </div>
+  <div class="text-sm leading-relaxed text-gray-800">
+    {{content}}
+  </div>
+</div>`,
+  },
+  {
+    icon: Book,
+    iconName: 'book',
+    name: 'reference',
+    label: 'Reference (New)',
+    description: 'নতুন স্টাইলিশ রেফারেন্স',
+    params: [
+      { name: 'text', label: 'শিরোনাম', placeholder: 'Source Title', defaultValue: '' },
+      { name: 'author', label: 'লেখক', placeholder: 'Author Name', defaultValue: '' },
+      { name: 'year', label: 'বছর', placeholder: '2024', defaultValue: '' },
+      { name: 'url', label: 'URL', placeholder: 'https://...', defaultValue: '' },
+    ],
+    htmlTemplate: `<div class="my-4 p-4 bg-gray-50 border border-gray-100 rounded-xl flex items-start gap-3">
+  <div class="text-xs text-gray-600 italic">
+    <span class="font-bold text-gray-900 not-italic">{{author}}</span> ({{year}}).
+    <a href="{{url}}" target="_blank" rel="noopener noreferrer" class="mx-1 text-blue-600 hover:underline">
+      {{text}}
+    </a>
+  </div>
 </div>`,
   },
 ]
@@ -230,6 +275,7 @@ function SyntaxUsage({ name, params }: { name: string; params: BlockParam[] }) {
 
 export default function BlockManagerPage() {
   const [blocks, setBlocks] = useState<CustomBlock[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -392,6 +438,9 @@ export default function BlockManagerPage() {
       quote: Quote,
       stat: BarChart3,
       image: Eye,
+      book: Book,
+      sticky_note_2: StickyNote,
+      table_chart: TableIcon,
     }
     const Icon = iconMap[name] || Box
     return <Icon className={className} size={18} />
@@ -443,6 +492,19 @@ export default function BlockManagerPage() {
             </button>
           </div>
         )}
+
+        <div className="mb-6 relative">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="ব্লক খুঁজুন (নাম বা লেবেল দিয়ে)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-11 pr-4 py-3 border border-slate-200 rounded-2xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-all shadow-sm"
+          />
+        </div>
 
         {showPresets && (
           <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
@@ -548,7 +610,10 @@ export default function BlockManagerPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {blocks.map(block => (
+                  {blocks.filter(b =>
+                    b.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    b.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map(block => (
                     <div
                       key={block.id}
                       className={`px-4 py-3.5 sm:px-5 transition ${

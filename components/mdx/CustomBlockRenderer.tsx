@@ -1,5 +1,5 @@
 import React from 'react'
-import { Info, AlertTriangle, CheckCircle2, XCircle, TrendingUp } from 'lucide-react'
+import { Info, AlertTriangle, CheckCircle2, XCircle, TrendingUp, Book, StickyNote } from 'lucide-react'
 
 interface CustomBlockProps {
   className: string
@@ -56,13 +56,33 @@ export const customBlockComponents = {
       htmlContent={props.htmlContent}
     />
   ),
-  run: (props: any) => (
-    <CustomBlockRenderer
-      className="custom-block run-code"
-      dataUrl=""
-      htmlContent={props.htmlContent}
-    />
-  ),
+  run: (props: any) => {
+    const sandbox = "allow-scripts allow-popups allow-forms";
+    const srcDoc = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { margin: 0; font-family: sans-serif; }
+          </style>
+        </head>
+        <body>
+          ${props.htmlContent}
+        </body>
+      </html>
+    `;
+    return (
+      <div className="my-6 rounded-xl overflow-hidden border border-gray-200 bg-white">
+        <iframe
+          title="Custom Code"
+          sandbox={sandbox}
+          srcDoc={srcDoc}
+          style={{ width: '100%', height: 'auto', minHeight: '300px', border: 'none' }}
+        />
+      </div>
+    );
+  },
   style: (props: any) => (
     <CustomBlockRenderer
       className="custom-block custom-style"
@@ -153,6 +173,82 @@ export const customBlockComponents = {
       <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${colors[props.color] || colors.gray}`}>
         {props.text}
       </span>
+    )
+  },
+  infobox: (props: any) => {
+    const icons: Record<string, any> = {
+      info: <Info size={18} className="text-blue-500" />,
+      warning: <AlertTriangle size={18} className="text-amber-500" />,
+    }
+    const bgColors: Record<string, string> = {
+      info: 'bg-blue-50 border-blue-100',
+      warning: 'bg-amber-50 border-amber-100',
+    }
+    return (
+      <div className={`my-6 p-5 rounded-2xl border ${bgColors[props.type] || bgColors.info} shadow-sm`}>
+        <div className="flex items-center gap-2 mb-2">
+          {icons[props.type] || icons.info}
+          <h4 className="text-sm font-bold text-gray-900">{props.title || 'Information'}</h4>
+        </div>
+        <div className="text-sm leading-relaxed text-gray-800">
+          {props.content}
+        </div>
+      </div>
+    )
+  },
+  reference: (props: any) => (
+    <div className="my-4 p-4 bg-gray-50 border border-gray-100 rounded-xl flex items-start gap-3">
+      <Book size={16} className="text-gray-400 mt-1 shrink-0" />
+      <div className="text-xs text-gray-600 italic">
+        <span className="font-bold text-gray-900 not-italic">{props.author}</span> {props.year ? `(${props.year})` : ''}.
+        {props.url ? (
+          <a href={props.url} target="_blank" rel="noopener noreferrer" className="mx-1 text-blue-600 hover:underline">
+            {props.text}
+          </a>
+        ) : (
+          <span className="mx-1">{props.text}</span>
+        )}
+      </div>
+    </div>
+  ),
+  tika: (props: any) => (
+    <div className="my-4 p-4 bg-yellow-50/50 border-l-4 border-yellow-400 rounded-r-xl flex items-start gap-3">
+      <StickyNote size={16} className="text-yellow-600 mt-1 shrink-0" />
+      <div className="text-sm text-yellow-900">
+        <span className="font-bold block mb-1 text-[10px] uppercase tracking-wider text-yellow-600">টিকা</span>
+        {props.text}
+      </div>
+    </div>
+  ),
+  table: (props: any) => {
+    const headers = (props.headers || '').split(',').filter(Boolean)
+    const rows = (props.rows || '').split('|').map((row: string) => row.split(','))
+    return (
+      <div className="my-6 overflow-x-auto rounded-xl border border-gray-200">
+        {props.title && (
+          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+            {props.title}
+          </div>
+        )}
+        <table className="w-full text-sm text-left">
+          <thead className="bg-gray-50 text-gray-700">
+            <tr>
+              {headers.map((h: string, i: number) => (
+                <th key={i} className="px-4 py-3 font-bold">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {rows.map((row: string[], i: number) => (
+              <tr key={i} className="hover:bg-gray-50 transition-colors">
+                {row.map((cell: string, j: number) => (
+                  <td key={j} className="px-4 py-3 text-gray-600">{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     )
   },
   // Backward compatibility

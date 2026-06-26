@@ -49,7 +49,7 @@ export const blockRegistry = new BlockRegistry()
 /**
  * Parse params from block syntax: key="value" key2='value2' key3=value3
  */
-function parseBlockParams(raw: string): Record<string, string> {
+export function parseBlockParams(raw: string): Record<string, string> {
   const parsed: Record<string, string> = {}
   const re = /(\w+)\s*=\s*(?:["']([^"']*)["']|(\S+))/g
   let m: RegExpExecArray | null
