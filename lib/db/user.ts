@@ -1,6 +1,5 @@
 import { sql } from './index';
 import { hash, compare } from 'bcrypt-ts';
-import { randomBytes } from 'crypto';
 
 export type User = {
   id: string;
@@ -39,7 +38,9 @@ export async function createUser(
   name ? : string
 ): Promise < User > {
   const hashed = await hash(password, 12);
-  const verificationToken = randomBytes(32).toString('hex');
+  const verificationToken = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
   
   const rows = await sql`
     INSERT INTO users (email, password, name, verification_token)
@@ -62,7 +63,9 @@ export async function verifyEmail(token: string): Promise < boolean > {
 export async function createPasswordResetToken(
   email: string
 ): Promise < string | null > {
-  const token = randomBytes(32).toString('hex');
+  const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
   const expires = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
   
   const rows = await sql`
