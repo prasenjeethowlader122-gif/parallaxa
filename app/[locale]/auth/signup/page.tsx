@@ -50,7 +50,7 @@ export default function SignUpPage() {
         <div className="flex flex-col items-center">
           <Link href="/" className="mb-8">
             <span className="text-2xl font-bold uppercase tracking-tight text-foreground">
-              বাংলাদেশ হিন্দু ইউনিয়ন
+              Only Hindu
             </span>
           </Link>
         </div>

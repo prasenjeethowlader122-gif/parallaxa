@@ -1,10 +1,10 @@
 import localFont from 'next/font/local'
 
-// Bangla Font: Ekushy Font
+// Bangla Font: Siyam Rupali
 export const banglaFont = localFont({
   src: [
     {
-      path: '../public/local/font/TiroBangla-Regular.ttf',
+      path: '../public/local/font/SiyamRupali.ttf',
       style: 'normal',
       weight: '400'
     }

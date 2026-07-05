@@ -184,7 +184,7 @@ export function Header({
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
             <div className="flex flex-col leading-none">
               <span className="text-[24px] font-extrabold text-foreground tracking-tight uppercase">
-                বাংলাদেশ হিন্দু ইউনিয়ন
+                Only Hindu
               </span>
             </div>
           </Link>
@@ -370,7 +370,7 @@ export function Header({
             </button>
             <Link href="/" className="flex items-center gap-2">
               <span className="text-[18px] font-extrabold text-foreground tracking-tight uppercase">
-                বাংলাদেশ হিন্দু ইউনিয়ন
+                Only Hindu
               </span>
             </Link>
           </div>
