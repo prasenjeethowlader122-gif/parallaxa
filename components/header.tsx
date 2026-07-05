@@ -132,7 +132,7 @@ export function Header({
 
   return (
     // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
-    <header className={`sticky top-0 z-50 bg-background ${className ?? ''}`}>
+    <header className={`sticky top-0 z-50 bg-background border-b border-border ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
         <div className="bg-red-600 text-primary-foreground text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
@@ -392,8 +392,15 @@ export function Header({
       {/* ── MOBILE TOP BAR ── */}
       <div className="md:hidden bg-background">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
-          {/* Left: logo (Menu icon removed) */}
+          {/* Left: logo (Menu icon restored) */}
           <div className="flex items-center gap-3 select-none h-full">
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 -ml-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
               <div className="flex flex-col leading-none h-full justify-center">
                 <Image
