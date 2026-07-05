@@ -1,15 +1,35 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
-import { Fugaz, sansFont } from '@/lib/font'
 import {
-  Home, Globe, Cpu, Briefcase, Trophy, FlaskConical, Activity, MessageSquare,
-  X, Languages, ChevronDown, Search, Bell, FileEdit, Menu, LayoutDashboard
+  Home,
+  Globe,
+  Cpu,
+  Briefcase,
+  Trophy,
+  FlaskConical,
+  Activity,
+  MessageSquare,
+  X,
+  Languages,
+  ChevronDown,
+  Search,
+  Bell,
+  FileEdit,
+  Menu,
+  LayoutDashboard,
 } from 'lucide-react'
+
+// যদি তুমি custom font ব্যবহার করো, চাইলে এগুলোও import করতে পারো
+// import { Fugaz, sansFont } from '@/lib/font'
+
+// Static logo from public (simple setup)
+const LOGO_SRC = '/20260705_150355.png'
 
 const NAV_LINKS = [
   { href: '/', label: 'Home', icon: Home },
@@ -111,17 +131,17 @@ export function Header({
   })
 
   return (
-    // KEY FIX: removed backdrop-blur-md from the header itself.
-    // backdrop-blur (and filter/transform) create a new containing block,
-    // which breaks fixed/absolute child positioning. Use solid bg instead.
+    // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
     <header className={`sticky top-0 z-50 bg-background ${className ?? ''}`}>
-
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
         <div className="bg-red-600 text-primary-foreground text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
           <span className="inline-block w-1.5 h-1.5 bg-background rounded-full animate-pulse flex-shrink-0" />
           <span>Breaking: Fed holds interest rates steady for third consecutive meeting —</span>
-          <Link href="/category/Business" className="underline underline-offset-2 opacity-80 hover:opacity-100 whitespace-nowrap">
+          <Link
+            href="/category/Business"
+            className="underline underline-offset-2 opacity-80 hover:opacity-100 whitespace-nowrap"
+          >
             Read full story
           </Link>
           <button
@@ -179,13 +199,17 @@ export function Header({
       {/* ── BRAND ROW (desktop) ── */}
       <div className="hidden md:block bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
             <div className="flex flex-col leading-none">
-              <span className="text-[24px] font-extrabold text-foreground tracking-tight uppercase">
-                Only Hindu
-              </span>
+              <Image
+                src={LOGO_SRC}
+                alt="Only Hindu"
+                width={170}
+                height={300}
+                priority
+                className="h-8 w-auto"
+              />
             </div>
           </Link>
 
@@ -209,7 +233,10 @@ export function Header({
                     <button
                       key={cat}
                       type="button"
-                      onClick={() => { setSearchCategory(cat); setIsCatOpen(false) }}
+                      onClick={() => {
+                        setSearchCategory(cat)
+                        setIsCatOpen(false)
+                      }}
                       className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                         searchCategory === cat
                           ? 'bg-primary text-primary-foreground'
@@ -253,7 +280,9 @@ export function Header({
               <div className="flex items-center gap-2">
                 <Link href="/dashboard">
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold hover:ring-2 hover:ring-gray-300 transition-all">
-                    {session.user.name?.charAt(0).toUpperCase() ?? session.user.email?.charAt(0).toUpperCase() ?? 'U'}
+                    {session.user.name?.charAt(0).toUpperCase() ??
+                      session.user.email?.charAt(0).toUpperCase() ??
+                      'U'}
                   </div>
                 </Link>
               </div>
@@ -338,12 +367,17 @@ export function Header({
         <div className="bg-card border-b border-border h-8 flex items-center overflow-hidden">
           <div className="flex items-center gap-1.5 px-4 h-full bg-primary text-primary-foreground flex-shrink-0">
             <span className="inline-block w-1.5 h-1.5 bg-background rounded-full animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">Breaking</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">
+              Breaking
+            </span>
           </div>
           <div className="overflow-hidden flex-1 flex items-center">
             <div className="flex animate-[ticker_32s_linear_infinite] whitespace-nowrap">
               {[...tickerArticles, ...tickerArticles].map((article, i) => (
-                <span key={i} className="text-[11px] text-muted-foreground px-7 border-r border-border last:border-r-0">
+                <span
+                  key={i}
+                  className="text-[11px] text-muted-foreground px-7 border-r border-border last:border-r-0"
+                >
                   <span className="font-semibold text-gray-800">
                     {article.category ?? 'Breaking'}:
                   </span>{' '}
@@ -358,27 +392,39 @@ export function Header({
       {/* ── MOBILE TOP BAR ── */}
       <div className="md:hidden bg-background border-b border-border">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
-
           {/* Left: hamburger + logo */}
           <div className="flex items-center gap-3 select-none">
             <button
-              onClick={() => { setIsMenuOpen(!isMenuOpen); setIsSearchOpen(false) }}
+              onClick={() => {
+                setIsMenuOpen(!isMenuOpen)
+                setIsSearchOpen(false)
+              }}
               className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
               aria-label="Menu"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-[18px] font-extrabold text-foreground tracking-tight uppercase">
-                Only Hindu
-              </span>
-            </Link>
+                  <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
+            <div className="flex flex-col leading-none">
+              <Image
+                src={LOGO_SRC}
+                alt="Only Hindu"
+                width={170}
+                height={300}
+                priority
+                className="h-8 w-auto"
+              />
+            </div>
+          </Link>
           </div>
 
           {/* Right: search + bell */}
           <div className="flex items-center gap-1">
             <button
-              onClick={() => { setIsSearchOpen(!isSearchOpen); setIsMenuOpen(false) }}
+              onClick={() => {
+                setIsSearchOpen(!isSearchOpen)
+                setIsMenuOpen(false)
+              }}
               className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
               aria-label="Search"
             >
@@ -394,7 +440,10 @@ export function Header({
         {/* Mobile search bar */}
         {isSearchOpen && (
           <div className="px-4 pb-3 border-t border-border pt-2">
-            <form onSubmit={handleSearch} className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 transition-all">
+            <form
+              onSubmit={handleSearch}
+              className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 transition-all"
+            >
               <input
                 type="text"
                 placeholder="Search stories, topics…"
@@ -416,17 +465,17 @@ export function Header({
       </div>
 
       {/* ── MOBILE MENU ── */}
-      {/* KEY FIX: changed from `fixed inset-0 top-14` to `absolute left-0 right-0 top-full`.
-          The header's backdrop-blur-md (now removed) was creating a new containing block,
-          trapping fixed children inside it. absolute+top-full anchors cleanly to the
-          bottom of the header without fighting stacking contexts. */}
       {isMenuOpen && (
         <div className="md:hidden absolute left-0 right-0 top-full z-50 bg-background flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] shadow-xl">
-
           {/* Search */}
           <div className="px-5 pt-5 pb-4 border-b border-border">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Quick search</p>
-            <form onSubmit={handleSearch} className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-10">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+              Quick search
+            </p>
+            <form
+              onSubmit={handleSearch}
+              className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-10"
+            >
               <Search className="w-4.5 h-4.5 text-muted-foreground flex-shrink-0" />
               <input
                 type="text"
@@ -440,7 +489,9 @@ export function Header({
 
           {/* Sections grid */}
           <div className="px-5 pt-5">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Sections</p>
+            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+              Sections
+            </p>
             <div className="grid grid-cols-3 gap-2.5 mb-5">
               {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
@@ -456,12 +507,24 @@ export function Header({
                         : 'bg-card border-border hover:bg-gray-100'
                     }`}
                   >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-background/15' : 'bg-background border border-border'}`}>
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                        isActive ? 'bg-background/15' : 'bg-background border border-border'
+                      }`}
+                    >
                       {Icon && (
-                        <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-primary-foreground' : 'text-gray-600'}`} />
+                        <Icon
+                          className={`w-4.5 h-4.5 ${
+                            isActive ? 'text-primary-foreground' : 'text-gray-600'
+                          }`}
+                        />
                       )}
                     </div>
-                    <span className={`text-xs font-medium leading-tight ${isActive ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    <span
+                      className={`text-xs font-medium leading-tight ${
+                        isActive ? 'text-primary-foreground' : 'text-foreground'
+                      }`}
+                    >
                       {label}
                     </span>
                     {badge && (
@@ -483,10 +546,28 @@ export function Header({
                         : 'bg-card border-border hover:bg-gray-100'
                     }`}
                   >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pathname === `/${locale}/write` ? 'bg-background/15' : 'bg-background border border-border'}`}>
-                      <FileEdit className={`w-4.5 h-4.5 ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-gray-600'}`} />
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                        pathname === `/${locale}/write`
+                          ? 'bg-background/15'
+                          : 'bg-background border border-border'
+                      }`}
+                    >
+                      <FileEdit
+                        className={`w-4.5 h-4.5 ${
+                          pathname === `/${locale}/write`
+                            ? 'text-primary-foreground'
+                            : 'text-gray-600'
+                        }`}
+                      />
                     </div>
-                    <span className={`text-xs font-medium leading-tight ${pathname === `/${locale}/write` ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    <span
+                      className={`text-xs font-medium leading-tight ${
+                        pathname === `/${locale}/write`
+                          ? 'text-primary-foreground'
+                          : 'text-foreground'
+                      }`}
+                    >
                       Write
                     </span>
                   </Link>
@@ -499,10 +580,28 @@ export function Header({
                         : 'bg-card border-border hover:bg-gray-100'
                     }`}
                   >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pathname === `/${locale}/dashboard` ? 'bg-background/15' : 'bg-background border border-border'}`}>
-                      <LayoutDashboard className={`w-4.5 h-4.5 ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-gray-600'}`} />
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                        pathname === `/${locale}/dashboard`
+                          ? 'bg-background/15'
+                          : 'bg-background border border-border'
+                      }`}
+                    >
+                      <LayoutDashboard
+                        className={`w-4.5 h-4.5 ${
+                          pathname === `/${locale}/dashboard`
+                            ? 'text-primary-foreground'
+                            : 'text-gray-600'
+                        }`}
+                      />
                     </div>
-                    <span className={`text-xs font-medium leading-tight ${pathname === `/${locale}/dashboard` ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    <span
+                      className={`text-xs font-medium leading-tight ${
+                        pathname === `/${locale}/dashboard`
+                          ? 'text-primary-foreground'
+                          : 'text-foreground'
+                      }`}
+                    >
                       Dashboard
                     </span>
                   </Link>
@@ -514,7 +613,9 @@ export function Header({
           {/* Trending */}
           {trendingArticles.length > 0 && (
             <div className="px-5 border-t border-border">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mt-4 mb-3">Trending now</p>
+              <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mt-4 mb-3">
+                Trending now
+              </p>
               <div className="flex flex-col gap-3 mb-6">
                 {trendingArticles.slice(0, 3).map((article, idx) => (
                   <Link
@@ -539,7 +640,10 @@ export function Header({
           <div className="mt-auto px-5 pb-8 pt-4 border-t border-border flex gap-2.5">
             {session?.user ? (
               <button
-                onClick={() => { handleSignOut(); setIsMenuOpen(false) }}
+                onClick={() => {
+                  handleSignOut()
+                  setIsMenuOpen(false)
+                }}
                 className="flex-1 h-11 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-card transition-colors"
               >
                 Sign out
