@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
+import 'katex/dist/katex.min.css'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -615,7 +616,7 @@ export default function ArticlePage({
               </div>
 
               {/* ── Article body ── */}
-              <article className={`${slabo.className} py-6`}>
+              <article className="py-6 overflow-hidden break-words [&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:text-5xl [&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:mr-3 [&>p:first-of-type]:first-letter:mt-2">
                 <ArticleMarkdown content={article.content} dbBlocks={dbBlocks} />
               </article>
 
