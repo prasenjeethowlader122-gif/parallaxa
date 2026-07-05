@@ -390,7 +390,7 @@ export function Header({
       )}
 
       {/* ── MOBILE TOP BAR ── */}
-      <div className="md:hidden bg-background border-b border-border">
+      <div className="md:hidden bg-background">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
           {/* Left: hamburger + logo */}
           <div className="flex items-center gap-3 select-none">
@@ -412,7 +412,7 @@ export function Header({
                 width={170}
                 height={300}
                 priority
-                className="h-8 w-auto"
+                className="h-full w-auto"
               />
             </div>
           </Link>

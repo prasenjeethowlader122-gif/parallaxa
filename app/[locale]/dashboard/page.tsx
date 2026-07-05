@@ -25,11 +25,6 @@ const NavLists = [
     index: <ArticlesView />
   },
   {
-    name: '#analysis',
-    icon: BarChart3,
-    index: <AnalysisView />
-  },
-  {
     name: '/admin/blocks',
     icon: LayoutGrid,
     label: 'Blocks'
