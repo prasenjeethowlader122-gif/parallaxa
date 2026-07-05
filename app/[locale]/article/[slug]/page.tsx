@@ -20,11 +20,12 @@ export async function generateMetadata({
     };
   }
 
-  let title = article.title;
-  let description = article.description;
+  let title = article.seoTitle || article.title;
+  let description = article.metaDescription || article.description;
 
   if (locale !== 'en') {
-    const translated = await translateBatch([article.title, article.description], locale);
+    // Translate the title and description (whether from custom SEO fields or original article fields)
+    const translated = await translateBatch([title, description], locale);
     title = translated[0];
     description = translated[1];
   }
@@ -36,14 +37,14 @@ export async function generateMetadata({
   return {
     title,
     description,
-    keywords: article.category,
+    keywords: article.focusKeyword ? `${article.category}, ${article.focusKeyword}` : article.category,
     authors: [{ name: article.author }],
     openGraph: {
       title,
       description,
       images: [
         {
-          url: ogImageUrl,
+          url: article.ogImage || ogImageUrl,
           width: 1200,
           height: 630,
           alt: title,
@@ -56,20 +57,20 @@ export async function generateMetadata({
       authors: [article.author],
     },
     twitter: {
-      card: 'summary_large_image',
+      card: article.twitterCard || 'summary_large_image',
       title,
       description,
-      images: [ogImageUrl],
+      images: [article.ogImage || ogImageUrl],
     },
     robots: {
-      index: true,
-      follow: true,
+      index: !article.noIndex,
+      follow: !article.noIndex,
       'max-image-preview': 'large',
       'max-snippet': -1,
       'max-video-preview': -1,
     },
     alternates: {
-      canonical: articleUrl,
+      canonical: article.canonicalUrl || articleUrl,
     },
   };
 }

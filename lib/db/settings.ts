@@ -45,16 +45,18 @@ export async function getSettings(): Promise<SystemSettings> {
     const rows = await sql`SELECT * FROM settings`
     const settings = { ...DEFAULT_SETTINGS }
 
-    rows.forEach((row: any) => {
-      const key = row.key as keyof SystemSettings
-      if (key in settings) {
-        if (typeof DEFAULT_SETTINGS[key] === 'number') {
-          (settings as any)[key] = Number(row.value)
-        } else {
-          (settings as any)[key] = row.value
+    if (rows && rows.length > 0) {
+      rows.forEach((row: any) => {
+        const key = row.key as keyof SystemSettings
+        if (key in settings) {
+          if (typeof DEFAULT_SETTINGS[key] === 'number') {
+            (settings as any)[key] = Number(row.value)
+          } else {
+            (settings as any)[key] = row.value
+          }
         }
-      }
-    })
+      })
+    }
 
     return settings
   } catch (e) {

@@ -4,17 +4,23 @@ import { auth } from '@/auth'
 
 export async function GET() {
   const session = await auth()
-  if (!session || session.user?.role !== 'admin') {
+  if (!session || (session.user as any)?.role !== 'admin') {
+    console.error('Unauthorized access attempt to settings API:', session?.user);
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
-  const settings = await getSettings()
-  return NextResponse.json(settings)
+  try {
+    const settings = await getSettings()
+    return NextResponse.json(settings)
+  } catch (err) {
+    console.error('Failed to fetch settings:', err);
+    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
+  }
 }
 
 export async function POST(req: Request) {
   const session = await auth()
-  if (!session || session.user?.role !== 'admin') {
+  if (!session || (session.user as any)?.role !== 'admin') {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
