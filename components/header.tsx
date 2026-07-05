@@ -52,7 +52,7 @@ export function Header({
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
-  const locale = pathname.split('/')[1] || 'en'
+  const locale = pathname.split('/')[1] || 'bn'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -174,7 +174,7 @@ export function Header({
           <div className="relative group">
             <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-full px-2.5 py-0.5 hover:bg-background uppercase">
               <Languages className="w-3.5 h-3.5" />
-              {(pathname.split('/')[1] || 'en').toUpperCase()}
+              {(pathname.split('/')[1] || 'bn').toUpperCase()}
               <ChevronDown className="w-3 h-3" />
             </button>
             <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded-xl shadow-xl p-1 w-24 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
@@ -200,15 +200,15 @@ export function Header({
       <div className="hidden md:block bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
-            <div className="flex flex-col leading-none">
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
+            <div className="flex flex-col leading-none h-full justify-center">
               <Image
                 src={LOGO_SRC}
                 alt="Only Hindu"
                 width={170}
                 height={300}
                 priority
-                className="h-8 w-auto"
+                className="h-14 w-auto"
               />
             </div>
           </Link>
@@ -392,30 +392,20 @@ export function Header({
       {/* ── MOBILE TOP BAR ── */}
       <div className="md:hidden bg-background">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
-          {/* Left: hamburger + logo */}
-          <div className="flex items-center gap-3 select-none">
-            <button
-              onClick={() => {
-                setIsMenuOpen(!isMenuOpen)
-                setIsSearchOpen(false)
-              }}
-              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
-              aria-label="Menu"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-                  <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
-            <div className="flex flex-col leading-none">
-              <Image
-                src={LOGO_SRC}
-                alt="Only Hindu"
-                width={170}
-                height={300}
-                priority
-                className="h-full w-auto"
-              />
-            </div>
-          </Link>
+          {/* Left: logo (Menu icon removed) */}
+          <div className="flex items-center gap-3 select-none h-full">
+            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
+              <div className="flex flex-col leading-none h-full justify-center">
+                <Image
+                  src={LOGO_SRC}
+                  alt="Only Hindu"
+                  width={170}
+                  height={300}
+                  priority
+                  className="h-12 w-auto"
+                />
+              </div>
+            </Link>
           </div>
 
           {/* Right: search + bell */}
