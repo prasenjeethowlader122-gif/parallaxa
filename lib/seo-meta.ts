@@ -14,7 +14,7 @@ import type { NewsArticle } from '@/lib/db/articles'
 export function buildArticleMetadata(
   article: NewsArticle,
   siteUrl: string,
-  siteName = 'Your News Site'
+  siteName = 'Only Hindu'
 ) {
   const title       = article.seoTitle       || article.title
   const description = article.metaDescription || article.description
@@ -70,7 +70,7 @@ export function buildArticleJsonLd(article: NewsArticle, siteUrl: string) {
     }],
     publisher: {
       '@type': 'Organization',
-      name: 'Your News Site',
+      name: 'Only Hindu',
       url:  siteUrl,
     },
     mainEntityOfPage: {

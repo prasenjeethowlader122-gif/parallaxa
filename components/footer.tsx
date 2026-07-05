@@ -11,11 +11,11 @@ export function Footer() {
         {/* Left: Branding & Copyright */}
         <div className="flex items-center gap-4">
           <span className="text-sm font-bold uppercase tracking-tight text-foreground">
-            বাংলাদেশ হিন্দু ইউনিয়ন
+            Only Hindu
           </span>
           <span className="hidden md:inline h-4 w-px bg-gray-200" />
           <p className="text-[11px] text-muted-foreground uppercase tracking-widest">
-            &copy; {currentYear} বাংলাদেশ হিন্দু ইউনিয়ন। সর্বস্বত্ব সংরক্ষিত।
+            &copy; {currentYear} Only Hindu। সর্বস্বত্ব সংরক্ষিত।
           </p>
         </div>
 

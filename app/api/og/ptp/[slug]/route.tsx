@@ -45,8 +45,8 @@ export async function GET(
         if (!r.ok) throw new Error(`Philosopher font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
-      fetch(new URL('/local/font/NotoSerifBengali-Bold.ttf', origin)).then(r => {
-        if (!r.ok) throw new Error(`Noto Serif Bengali font fetch failed: ${r.status}`)
+      fetch(new URL('/local/font/SiyamRupali.ttf', origin)).then(r => {
+        if (!r.ok) throw new Error(`Siyam Rupali font fetch failed: ${r.status}`)
         return r.arrayBuffer()
       }),
     ])
@@ -60,7 +60,7 @@ export async function GET(
   
   const displayHeadline = headline || article.title
   const isBangla = hasBengali(displayHeadline)
-  const headlineFont = isBangla ? '"NotoSerifBengali"' : '"Philosopher"'
+  const headlineFont = isBangla ? '"SiyamRupali"' : '"Philosopher"'
   const headlineFontSize = isBangla ? 51 : 56
   const headlineFontWeight = 400
   
@@ -256,7 +256,7 @@ export async function GET(
                 fontFamily: '"Philosopher"',
               }}
             >
-              BANGLADESH HINDU UNION
+              ONLY HINDU
             </div>
             <div
               style={{
@@ -267,7 +267,7 @@ export async function GET(
                 letterSpacing: '0.06em',
               }}
             >
-              @bhu
+              @onlyhindu
             </div>
           </div>
         </div> </div>
@@ -277,7 +277,7 @@ export async function GET(
       height: 1080,
       fonts: [
         { name: 'Philosopher', data: playfairData, style: 'normal', weight: 700 },
-        { name: 'NotoSerifBengali', data: tiroBanglaData, style: 'normal', weight: 700 },
+        { name: 'SiyamRupali', data: tiroBanglaData, style: 'normal', weight: 700 },
       ],
     }
   )

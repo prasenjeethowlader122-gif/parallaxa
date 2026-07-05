@@ -51,7 +51,7 @@ export default function AiInterface() {
         {/* Logo + heading */}
         <div className="flex flex-col items-center gap-4 text-center">
           <span className="text-xl font-bold uppercase tracking-tight text-neutral-900">
-            Bangladesh Hindu Union
+            Only Hindu
           </span>
           <h1 className="text-4xl font-semibold text-neutral-900 tracking-tight">
             What do you want to know?

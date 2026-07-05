@@ -81,7 +81,7 @@ export async function GET(
 
   // ── Fonts load ──
   const philosopherPath = path.join(process.cwd(), 'public/local/philosopher-font/Philosopher-Bold.ttf')
-  const bengaliPath = path.join(process.cwd(), 'public/local/font/NotoSerifBengali-Regular.ttf')
+  const bengaliPath = path.join(process.cwd(), 'public/local/font/SiyamRupali.ttf')
 
   const philosopherFont = opentype.loadSync(philosopherPath)
   const headlineFont = isBangla
@@ -126,10 +126,10 @@ export async function GET(
     const w = philosopherFont.getAdvanceWidth(rt, 16)
     return textToPath(philosopherFont, rt, 1032 - w, 718, 16, '#aaaaaa')
   })()
-  const footerLeftPath = textToPath(philosopherFont, 'BANGLADESH HINDU UNION', 48, 1065, 16, '#bbbbbb')
+  const footerLeftPath = textToPath(philosopherFont, 'ONLY HINDU', 48, 1065, 16, '#bbbbbb')
   const footerRightPath = (() => {
-    const w = philosopherFont.getAdvanceWidth('@bhu', 16)
-    return textToPath(philosopherFont, '@bhu', 1032 - w, 1065, 16, '#C0392B')
+    const w = philosopherFont.getAdvanceWidth('@onlyhindu', 16)
+    return textToPath(philosopherFont, '@onlyhindu', 1032 - w, 1065, 16, '#C0392B')
   })()
 
   const svg = `

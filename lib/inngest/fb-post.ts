@@ -18,23 +18,23 @@
 import { inngest } from './client'
 import { OpenAI } from 'openai'
 import { getArticleById, updateArticle } from '@/lib/db/articles'
+import { getSettings, SystemSettings } from '@/lib/db/settings'
 
 import type { GetFunctionInput } from 'inngest'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN;
-const FB_PAGE_ID = process.env.FB_PAGE_ID;
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
 const RENDER_BASE = 'https://exposer-py-1.onrender.com'
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://v0-exposer.vercel.app'
 ).replace(/\/$/, '')
 
-const hf = new OpenAI({
-  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
-  apiKey: process.env.HF_API_KEY || 'placeholder',
-})
+function getHfClient(apiKey: string) {
+  return new OpenAI({
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    apiKey: apiKey || 'placeholder',
+  })
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,7 +91,8 @@ async function generateCaption(article: {
   description: string
   category: string
   content: string
-}): Promise<CaptionResult> {
+}, settings: SystemSettings): Promise<CaptionResult> {
+  const hf = getHfClient(settings.ai_api_key)
   const SYSTEM = `You are a social media manager for a English  news page.
 Given a news article, produce:
 1. A Facebook post caption in English
@@ -112,7 +113,7 @@ Rules:
 - Do NOT include the article URL in the caption — it will be appended separately`
 
   const res = await hf.chat.completions.create({
-    model: HF_MODEL,
+    model: settings.ai_model,
     stream: false,
     max_tokens: 800,
     temperature: 0.7,
@@ -197,17 +198,18 @@ function throwFbError(res: Response, data: { error?: { message: string; code?: n
 async function uploadPhotoToFacebook(params: {
   renderUrl: string
   caption: string
+  settings: SystemSettings
 }): Promise<{ photoId: string; postId: string }> {
-  if (!FB_ACCESS_TOKEN || !FB_PAGE_ID) {
+  if (!params.settings.fb_access_token || !params.settings.fb_page_id) {
     throw new Error('Facebook credentials (FB_ACCESS_TOKEN, FB_PAGE_ID) are missing.')
   }
   const form = new FormData()
-  form.append('access_token', FB_ACCESS_TOKEN)
+  form.append('access_token', params.settings.fb_access_token)
   form.append('published', 'true')
   form.append('caption', params.caption)
   form.append('url', params.renderUrl)
 
-  const res = await fetch(`https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`, {
+  const res = await fetch(`https://graph.facebook.com/v21.0/${params.settings.fb_page_id}/photos`, {
     method: 'POST',
     body: form,
   })
@@ -215,25 +217,26 @@ async function uploadPhotoToFacebook(params: {
   if (!res.ok || data.error) throwFbError(res, data, 'photo')
 
   const photoId = data.id!
-  return { photoId, postId: data.post_id ?? `${FB_PAGE_ID}_${photoId}` }
+  return { photoId, postId: data.post_id ?? `${params.settings.fb_page_id}_${photoId}` }
 }
 
 async function uploadVideoToFacebook(params: {
   videoUrl: string
   caption: string
   title: string
+  settings: SystemSettings
 }): Promise<{ videoId: string; postId: string }> {
-  if (!FB_ACCESS_TOKEN || !FB_PAGE_ID) {
+  if (!params.settings.fb_access_token || !params.settings.fb_page_id) {
     throw new Error('Facebook credentials (FB_ACCESS_TOKEN, FB_PAGE_ID) are missing.')
   }
   const form = new FormData()
-  form.append('access_token', FB_ACCESS_TOKEN)
+  form.append('access_token', params.settings.fb_access_token)
   form.append('published', 'true')
   form.append('description', params.caption)   // Graph API uses "description" for video post text
   form.append('title', params.title.slice(0, 255))
   form.append('file_url', params.videoUrl)      // FB fetches the MP4 directly from this URL
 
-  const res = await fetch(`https://graph.facebook.com/v21.0/${FB_PAGE_ID}/videos`, {
+  const res = await fetch(`https://graph.facebook.com/v21.0/${params.settings.fb_page_id}/videos`, {
     method: 'POST',
     body: form,
   })
@@ -241,7 +244,7 @@ async function uploadVideoToFacebook(params: {
   if (!res.ok || data.error) throwFbError(res, data, 'video')
 
   const videoId = data.id!
-  return { videoId, postId: data.post_id ?? `${FB_PAGE_ID}_${videoId}` }
+  return { videoId, postId: data.post_id ?? `${params.settings.fb_page_id}_${videoId}` }
 }
 
 // ─── Unified upload router ────────────────────────────────────────────────────
@@ -251,6 +254,7 @@ async function uploadToFacebook(params: {
   caption: string
   title: string
   useVideo: boolean
+  settings: SystemSettings
   /** Direct video URL from the client — skips the render server entirely */
   manualVideoUrl?: string
 }): Promise<FacebookUploadResult> {
@@ -265,6 +269,7 @@ async function uploadToFacebook(params: {
         videoUrl,
         caption: params.caption,
         title: params.title,
+        settings: params.settings,
       })
       return { videoId, postId, uploadType: 'video' }
     } catch (err) {
@@ -281,7 +286,11 @@ async function uploadToFacebook(params: {
   // Photo path (default or fallback)
   const renderUrl = buildPhotoRenderUrl(params.renderParams)
   console.info(`[ptp] photo upload → ${renderUrl}`)
-  const { photoId, postId } = await uploadPhotoToFacebook({ renderUrl, caption: params.caption })
+  const { photoId, postId } = await uploadPhotoToFacebook({
+    renderUrl,
+    caption: params.caption,
+    settings: params.settings
+  })
   return { photoId, postId, uploadType: 'photo' }
 }
 
@@ -316,6 +325,11 @@ export const ptpFunction = inngest.createFunction(
       `[ptp] useVideo:${useVideo}  manualVideoUrl:${manualVideoUrl ?? 'none'}  articleId:${articleId}`,
     )
 
+    // ── Step 0: Load Settings ──────────────────────────────────────────────
+    const settings = await step.run('load-settings', async () => {
+      return await getSettings()
+    })
+
     // ── Step 1: Fetch article ──────────────────────────────────────────────
     const article = await step.run('fetch-article', async () => {
       const a = await getArticleById(articleId)
@@ -335,7 +349,7 @@ export const ptpFunction = inngest.createFunction(
           description: article.description ?? '',
           category: article.category ?? 'News',
           content: article.content ?? '',
-        })
+        }, settings)
       } catch (aiErr) {
         logger.warn(`[ptp] AI caption failed (${errMsg(aiErr)}), using fallback.`)
         return buildFallbackCaption({
@@ -372,6 +386,7 @@ export const ptpFunction = inngest.createFunction(
         caption: postText,
         title: article.title ?? '',
         useVideo,
+        settings,
         manualVideoUrl,   // ← passed straight through; undefined = use render server
       })
 

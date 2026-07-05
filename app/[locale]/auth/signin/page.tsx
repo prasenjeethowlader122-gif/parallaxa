@@ -190,7 +190,7 @@ export default function SignInPage() {
         <div className="flex flex-col items-center">
           <Link href="/" className="flex items-center gap-2 mb-8">
             <span className="text-2xl font-bold uppercase tracking-tight text-foreground">
-              বাংলাদেশ হিন্দু ইউনিয়ন
+              Only Hindu
             </span>
           </Link>
         </div>

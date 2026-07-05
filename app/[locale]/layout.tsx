@@ -5,8 +5,8 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 import '../globals.css'
 export const metadata: Metadata = {
-  title: 'বাংলাদেশ হিন্দু ইউনিয়ন - ঐক্য, সংস্কৃতি এবং সংবাদ',
-  description: 'বাংলাদেশ হিন্দু ইউনিয়ন-এর অফিশিয়াল প্ল্যাটফর্ম, যা প্রদান করে বাংলাদেশের সকল প্রান্তের সর্বশেষ সংবাদ, সাংস্কৃতিক আপডেট এবং কমিউনিটি হাইলাইটস।',
+  title: 'Only Hindu - ঐক্য, সংস্কৃতি এবং সংবাদ',
+  description: 'Only Hindu-এর অফিশিয়াল প্ল্যাটফর্ম, যা প্রদান করে বাংলাদেশের সকল প্রান্তের সর্বশেষ সংবাদ, সাংস্কৃতিক আপডেট এবং কমিউনিটি হাইলাইটস।',
 }
 
 export default async function RootLayout({

@@ -21,16 +21,13 @@ import {
   getArticleByTitle,
   searchArticlesByVector,
 } from '@/lib/db/articles'
+import { getSettings, SystemSettings } from '@/lib/db/settings'
 import type { GetFunctionInput } from 'inngest'
 import { auth } from '@/auth'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const FS_BASE = process.env.FIRESCRAPE_BASE_URL ?? 'https://exposer-py-1.onrender.com'
-
-// ✅ FIX: No "models/" prefix — required for OpenAI-compat layer
-const HF_MODEL = process.env.HF_MODEL ?? 'gemini-3.1-flash-lite-preview'
-const HF_EMBED_MODEL = process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004'
 
 const YAHOO_SOURCES = ['https://www.yahoo.com/news/']
 const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-storm-061908312.html'
@@ -41,11 +38,12 @@ const FALLBACK_URL = 'https://www.yahoo.com/news/articles/law-bondi-says-dems-st
  */
 const VECTOR_DUPLICATE_THRESHOLD = 0.15
 
-// ✅ FIX: No trailing slash on baseURL — OpenAI SDK appends /v1/... automatically
-const hf = new OpenAI({
-  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
-  apiKey: process.env.HF_API_KEY || 'placeholder',
-})
+function getHfClient(apiKey: string) {
+  return new OpenAI({
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    apiKey: apiKey || 'placeholder',
+  })
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -192,19 +190,20 @@ async function scrape(link: ArticleLink): Promise<ScrapedPage> {
   }
 }
 
-const SYSTEM_PROMPT = `You are a professional news journalist for Bangladesh Hindu Union.
+const SYSTEM_PROMPT = `You are a professional news journalist for Only Hindu.
 Write a full news article based ONLY on the provided source material.
 Respond with ONLY a valid JSON object — no markdown fences, no preamble:
 {"title":"<headline>","description":"<2-sentence summary>","content":"<4-5 paragraph body , must be markdown format , Analysis and highlight any important keyword>","category":"<Business|Technology|Sports|Entertainment|Science|Health|World>"}`
 
-async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
+async function generate(page: ScrapedPage, settings: SystemSettings): Promise<GeneratedArticle> {
+  const hf = getHfClient(settings.ai_api_key)
   const res = await hf.chat.completions.create({
-    model: HF_MODEL,
+    model: settings.ai_model,
     stream: false,
-    max_tokens: 2_500,
-    temperature: 0.6,
+    max_tokens: settings.ai_max_tokens,
+    temperature: settings.ai_temperature,
     messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: settings.ai_system_prompt },
       { role: 'user', content: `Source: ${page.url}\n\n${page.markdown}` },
     ],
   })
@@ -224,9 +223,13 @@ async function generate(page: ScrapedPage): Promise<GeneratedArticle> {
   }
 }
 
-async function embed(text: string): Promise<number[] | undefined> {
+async function embed(text: string, settings: SystemSettings): Promise<number[] | undefined> {
   try {
-    const r = await hf.embeddings.create({ model: HF_EMBED_MODEL, input: text })
+    const hf = getHfClient(settings.ai_api_key)
+    const r = await hf.embeddings.create({
+      model: process.env.HF_EMBEDDING_MODEL ?? 'text-embedding-004',
+      input: text
+    })
     const v = r.data[0]?.embedding
     if (!Array.isArray(v) || !v.length) throw new Error('No vector data')
     return v as number[]
@@ -297,6 +300,11 @@ export const newsPipelineFunction = inngest.createFunction(
     const userId = session?.user?.id ?? 'system'
     const authorName = session?.user?.name ?? 'Prasenjeet Howlader'
 
+    // ── Step -1: Load Settings ──────────────────────────────────────────────
+    const settings = await step.run('load-settings', async () => {
+      return await getSettings()
+    })
+
     // ── Step 0: Wake FireScrape ─────────────────────────────────────────────
     await fsWakeUp(step)
 
@@ -341,7 +349,7 @@ export const newsPipelineFunction = inngest.createFunction(
 
           // ── Generate ──────────────────────────────────────────────────────
           let gen: GeneratedArticle
-          try { gen = await generate(page) }
+          try { gen = await generate(page, settings) }
           catch (e) { throw new Error(`[generate] ${errMsg(e)}`) }
 
           // ── Layer 2: Title duplicate check ────────────────────────────────
@@ -353,7 +361,7 @@ export const newsPipelineFunction = inngest.createFunction(
 
           // ── Embed ─────────────────────────────────────────────────────────
           const embedText = buildEmbedText(gen, page)
-          const embedVector = await embed(embedText)
+          const embedVector = await embed(embedText, settings)
 
           // ── Layer 3: Vector similarity duplicate check ────────────────────
           if (embedVector) {
