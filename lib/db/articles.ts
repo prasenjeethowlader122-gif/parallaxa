@@ -1,5 +1,4 @@
 import { sql } from './index'
-import { neon } from '@neondatabase/serverless'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -448,8 +447,7 @@ export async function searchArticlesByVector(
 ): Promise < NewsArticle[] > {
   try {
     const vectorLiteral = `[${queryVector.join(',')}]`
-    const rawSql = neon(process.env.DATABASE_URL!)
-    const rows = await rawSql(
+    const rows = await sql(
         `SELECT *, (embedding <=> $1::vector) AS distance
        FROM   articles
        WHERE  status    = $2

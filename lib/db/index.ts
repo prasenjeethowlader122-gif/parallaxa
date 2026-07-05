@@ -1,9 +1,13 @@
 import { neon } from '@neondatabase/serverless';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not defined');
-}
+let _client: any;
 
-const sql = neon(process.env.DATABASE_URL);
-
-export { sql };
+export const sql = ((...args: any[]) => {
+  if (!_client) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL is not defined');
+    }
+    _client = neon(process.env.DATABASE_URL);
+  }
+  return _client(...args);
+}) as any;
