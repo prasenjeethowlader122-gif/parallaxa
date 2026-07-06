@@ -65,7 +65,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-3">
                  <Link
                   href={`/${locale}/write`}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all"
                 >
                   <span className="material-symbols-rounded text-lg">edit</span>
                   Create Article
@@ -77,8 +77,8 @@ export default function Dashboard() {
 
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Navigation Sidebar/Tabs */}
-          <div className={`flex shrink-0 ${isDesktop ? 'w-64 flex-col border-r border-slate-200 bg-white/50 py-6' : 'w-full flex-row border-b border-slate-200 bg-white overflow-x-auto no-scrollbar'}`}>
-            <nav className={`flex ${isDesktop ? 'flex-col px-3 gap-1' : 'flex-row px-4'}`}>
+          <div className={`flex shrink-0 ${isDesktop ? 'w-64 flex-col border-r border-slate-200 bg-white/50 py-6' : 'w-full bg-white border-b border-slate-200'}`}>
+            <nav className={`grid ${isDesktop ? 'grid-cols-1 px-3 gap-1' : 'grid-cols-2 sm:grid-cols-3 gap-2 p-4'}`}>
               {
                 NavLists.map((_nav) => {
                   const isActive = _nav.name === currentActiveTab;
@@ -102,15 +102,12 @@ export default function Dashboard() {
                       onClick={() => setCurrentActiveTab(_nav.name)}
                       className={`relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                         isActive
-                          ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
+                          ? 'bg-slate-900 text-white'
                           : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100'
-                      }`}
+                      } ${!isDesktop ? 'flex-col gap-1 p-4 h-auto justify-center' : ''}`}
                     >
                       <span className="material-symbols-rounded text-xl">{_nav.icon}</span>
                       <span>{_nav.label}</span>
-                      {!isDesktop && isActive && (
-                        <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-slate-950 rounded-full" />
-                      )}
                     </button>
                   )
                 })

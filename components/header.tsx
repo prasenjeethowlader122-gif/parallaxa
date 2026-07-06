@@ -181,12 +181,25 @@ export function Header({
 
       {/* ── BRAND ROW (desktop) ── */}
       <div className="hidden md:block bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-3 items-center gap-6">
-          {/* Left: Search */}
-          <form
-            onSubmit={handleDesktopSearch}
-            className="flex items-center border border-border rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
-          >
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+          <div className="flex items-center gap-8">
+            {/* Left: Logo */}
+            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
+              <Image
+                src={LOGO_SRC}
+                alt="Only Hindu"
+                width={170}
+                height={300}
+                priority
+                className="h-12 w-auto"
+              />
+            </Link>
+
+            {/* Center-ish: Search */}
+            <form
+              onSubmit={handleDesktopSearch}
+              className="flex items-center border border-border rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all w-80"
+            >
             <div className="relative flex-shrink-0" ref={catRef}>
               <button
                 type="button"
@@ -219,38 +232,25 @@ export function Header({
               )}
             </div>
 
-            <input
-              type="text"
-              placeholder="Search..."
-              value={desktopQuery}
-              onChange={(e) => setDesktopQuery(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent text-foreground placeholder-gray-400 min-w-0"
-            />
-            <button
-              type="submit"
-              className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground hover:bg-gray-700 transition-colors flex-shrink-0"
-              aria-label="Search"
-            >
-              <span className="material-symbols-rounded text-lg">search</span>
-            </button>
-          </form>
-
-          {/* Center: Logo */}
-          <div className="flex justify-center">
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
-              <Image
-                src={LOGO_SRC}
-                alt="Only Hindu"
-                width={170}
-                height={300}
-                priority
-                className="h-14 w-auto"
+              <input
+                type="text"
+                placeholder="Search..."
+                value={desktopQuery}
+                onChange={(e) => setDesktopQuery(e.target.value)}
+                className="flex-1 px-3 py-2 text-sm outline-none bg-transparent text-foreground placeholder-gray-400 min-w-0"
               />
-            </Link>
+              <button
+                type="submit"
+                className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground hover:bg-gray-700 transition-colors flex-shrink-0"
+                aria-label="Search"
+              >
+                <span className="material-symbols-rounded text-lg">search</span>
+              </button>
+            </form>
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center gap-3">
             {session?.user ? (
               <div className="flex items-center gap-2">
                 <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">

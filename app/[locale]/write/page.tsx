@@ -158,13 +158,13 @@ const ToolbarBtn = ({
   <button
     title={label}
     onClick={onClick}
-    className={`p-2 rounded-xl transition-all shrink-0 flex items-center justify-center ${
+    className={`w-10 h-10 rounded-xl transition-all shrink-0 flex items-center justify-center ${
       active
-        ? 'bg-[#585f64] text-white'
-        : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
+        ? 'bg-slate-900 text-white'
+        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
     } ${className}`}
   >
-    <span className="material-symbols-rounded text-[18px]">{icon}</span>
+    <span className="material-symbols-rounded text-[20px]">{icon}</span>
   </button>
 )
 
@@ -230,7 +230,7 @@ const Toggle = ({
         checked ? 'bg-[#585f64]' : 'bg-[#dcdad9]'
       }`}
     >
-      <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-xl bg-white shadow-none transition-transform duration-200 ${
+      <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-xl bg-white transition-transform duration-200 ${
         checked ? 'translate-x-[14px]' : 'translate-x-0'
       }`} />
     </button>
@@ -865,7 +865,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 onClick={() => { setActiveTab(tabId); setMobileDrawerOpen(false) }}
                 className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] transition-all text-left w-full group ${
                   activeTab === tabId
-                    ? 'bg-slate-900 text-white shadow-none'
+                    ? 'bg-slate-900 text-white'
                     : 'text-slate-500 hover:bg-gray-50 hover:text-slate-900'
                 }`}
               >
@@ -909,7 +909,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-3 text-sm text-slate-400 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-none">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
               <span className="material-symbols-rounded text-lg">edit_note</span>
             </div>
             <span className="hidden md:inline font-bold uppercase tracking-widest text-[10px] text-slate-300">Editor</span>
@@ -922,15 +922,15 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             {/* Save indicator */}
             <div className="hidden lg:flex items-center gap-2 px-3 py-2 text-[10px] font-bold text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
               <span className={`w-2 h-2 rounded-xl shrink-0 ${
-                saveStatus === 'saving' ? 'bg-amber-400 animate-pulse shadow-none' :
+                saveStatus === 'saving' ? 'bg-amber-400 animate-pulse' :
                 saveStatus === 'unsaved' ? 'bg-rose-400' :
-                'bg-emerald-500 shadow-none'
+                'bg-emerald-500'
               }`} />
               <span className="whitespace-nowrap tracking-wider uppercase">{saveLabel()}</span>
             </div>
 
             {/* View mode switcher */}
-            <div className="flex items-center bg-slate-100 rounded-xl p-1 ml-2 shadow-none">
+            <div className="flex items-center bg-slate-100 rounded-xl p-1 ml-2">
               {(['write', 'visual', 'split', 'preview'] as ViewMode[]).map(m => (
                 <button
                   key={m}
@@ -938,7 +938,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   title={m}
                   className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all duration-300 ${
                     viewMode === m
-                      ? 'bg-white text-slate-900 shadow-none ring-1 ring-slate-200/50'
+                    ? 'bg-white text-slate-900 ring-1 ring-slate-200/50'
                       : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
@@ -960,7 +960,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               title="Toggle settings panel"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className={`hidden xl:flex p-2.5 rounded-xl transition-all duration-300 ${
-                sidebarOpen ? 'bg-slate-900 text-white shadow-none' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+                sidebarOpen ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <span className="material-symbols-rounded">side_navigation</span>
@@ -977,7 +977,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <button
               onClick={() => setShowPublishModal(true)}
               disabled={!title.trim() || !content.trim()}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all shadow-xl shadow-slate-950/20 disabled:opacity-40 disabled:shadow-none uppercase tracking-widest"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all disabled:opacity-40 uppercase tracking-widest"
             >
               <span className="material-symbols-rounded text-lg">publish</span>
               <span className="hidden sm:inline tracking-tight">Publish</span>
@@ -1040,8 +1040,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
                 {/* Mobile undo/redo */}
                 <div className="sm:hidden flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
-                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="p-2 text-slate-400 rounded-xl disabled:opacity-30"><span className="material-symbols-rounded text-lg">undo</span></button>
-                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="p-2 text-slate-400 rounded-xl disabled:opacity-30"><span className="material-symbols-rounded text-lg">redo</span></button>
+                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="w-10 h-10 flex items-center justify-center text-slate-400 rounded-xl disabled:opacity-30 hover:bg-slate-100"><span className="material-symbols-rounded text-lg">undo</span></button>
+                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="w-10 h-10 flex items-center justify-center text-slate-400 rounded-xl disabled:opacity-30 hover:bg-slate-100"><span className="material-symbols-rounded text-lg">redo</span></button>
                 </div>
               </div>
 
@@ -1051,7 +1051,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   onClick={() => setBlockSearchOpen(!blockSearchOpen)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                     blockSearchOpen
-                      ? 'bg-slate-900 text-white shadow-none'
+                      ? 'bg-slate-900 text-white'
                       : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
@@ -1223,7 +1223,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 z-[70] bg-[#faf9f9] flex flex-col shadow-none xl:hidden overflow-hidden"
+              className="fixed top-0 right-0 bottom-0 z-[70] bg-[#faf9f9] flex flex-col xl:hidden overflow-hidden"
               style={{ width: 'min(300px, 90vw)' }}
             >
               <div className="px-5 py-4 border-b border-[#eeecec] bg-white shrink-0 flex items-center justify-between">
@@ -1246,14 +1246,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       {/* Publish modal */}
       {showPublishModal && (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-xl sm:rounded-xl shadow-none w-full sm:max-w-[480px] overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-8 duration-500">
+          <div className="bg-white rounded-xl sm:rounded-xl w-full sm:max-w-[480px] overflow-hidden border border-white/20 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Pill handle (mobile) */}
             <div className="flex justify-center pt-5 pb-1 sm:hidden">
               <div className="w-12 h-1.5 rounded-xl bg-slate-100" />
             </div>
 
             <div className="px-8 pt-8 pb-6 text-center">
-              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-xl shadow-emerald-500/10">
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600">
                 <span className="material-symbols-rounded text-4xl">auto_awesome</span>
               </div>
               <h3 className="font-['Newsreader'] text-3xl font-black text-slate-950 tracking-tight leading-none">Ready to publish?</h3>
@@ -1315,7 +1315,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 <button
                   onClick={handlePublish}
                   disabled={publishing}
-                  className="flex-[2] py-4 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-black transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 shadow-none"
+                  className="flex-[2] py-4 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-black transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95"
                 >
                   {publishing
                     ? <><Loader2 size={16} className="animate-spin" /> Publishing…</>
