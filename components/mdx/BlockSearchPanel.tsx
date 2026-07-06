@@ -52,12 +52,12 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
   ] as const
 
   return (
-    <div className="absolute top-full left-0 mt-3 w-[360px] bg-white border border-slate-200 rounded-[2rem] shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="absolute top-full left-0 mt-3 w-[360px] bg-white border border-slate-200 rounded-[2rem] z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Header */}
       <div className="px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/20">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
                <span className="material-symbols-rounded text-white text-lg">add_box</span>
             </div>
             <h3 className="text-sm font-bold text-slate-950 uppercase tracking-widest">Insert Block</h3>
@@ -101,7 +101,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
               onClick={() => setCategory(cat.id)}
               className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
                 category === cat.id
-                  ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
+                  ? 'bg-slate-900 text-white'
                   : 'text-slate-400 hover:bg-slate-100 hover:text-slate-950'
               }`}
             >
@@ -125,7 +125,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
       <div className="max-h-[320px] overflow-y-auto p-3 custom-scrollbar bg-slate-50/30">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12">
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100">
                <span className="material-symbols-rounded text-3xl text-slate-200">search_off</span>
             </div>
             <p className="text-xs text-slate-400 font-medium">No blocks match "{query}"</p>
@@ -136,7 +136,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
               <button
                 key={block.name}
                 onClick={() => { onInsert(block); onClose() }}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50 active:scale-95 transition-all group"
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 active:scale-95 transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all">
                    <span className="material-symbols-rounded text-xl">{typeof block.icon === 'string' ? block.icon : 'extension'}</span>
@@ -153,7 +153,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
               <button
                 key={block.name}
                 onClick={() => { onInsert(block); onClose() }}
-                className="flex items-center gap-4 px-4 py-3 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50 active:scale-[0.98] transition-all group text-left"
+                className="flex items-center gap-4 px-4 py-3 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 active:scale-[0.98] transition-all group text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
                    <span className="material-symbols-rounded text-lg">{typeof block.icon === 'string' ? block.icon : 'extension'}</span>
