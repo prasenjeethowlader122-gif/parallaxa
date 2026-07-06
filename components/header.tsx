@@ -6,40 +6,19 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
-import {
-  Home,
-  Globe,
-  Cpu,
-  Briefcase,
-  Trophy,
-  FlaskConical,
-  Activity,
-  MessageSquare,
-  X,
-  Languages,
-  ChevronDown,
-  Search,
-  Bell,
-  FileEdit,
-  Menu,
-  LayoutDashboard,
-} from 'lucide-react'
-
-// যদি তুমি custom font ব্যবহার করো, চাইলে এগুলোও import করতে পারো
-// import { Fugaz, sansFont } from '@/lib/font'
 
 // Static logo from public (simple setup)
 const LOGO_SRC = '/20260705_150355.png'
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/category/World', label: 'World', icon: Globe },
-  { href: '/category/Technology', label: 'Technology', icon: Cpu },
-  { href: '/category/Business', label: 'Business', icon: Briefcase },
-  { href: '/category/Sports', label: 'Sports', icon: Trophy },
-  { href: '/category/Science', label: 'Science', icon: FlaskConical },
-  { href: '/category/Health', label: 'Health', icon: Activity },
-  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
+  { href: '/', label: 'Home', icon: 'home' },
+  { href: '/category/World', label: 'World', icon: 'public' },
+  { href: '/category/Technology', label: 'Technology', icon: 'memory' },
+  { href: '/category/Business', label: 'Business', icon: 'work' },
+  { href: '/category/Sports', label: 'Sports', icon: 'sports_soccer' },
+  { href: '/category/Science', label: 'Science', icon: 'science' },
+  { href: '/category/Health', label: 'Health', icon: 'medical_services' },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: 'forum' },
 ]
 
 export function Header({
@@ -131,7 +110,6 @@ export function Header({
   })
 
   return (
-    // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
     <header className={`sticky top-0 z-50 bg-background border-b border-border ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
@@ -149,7 +127,7 @@ export function Header({
             className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity p-1"
             aria-label="Dismiss"
           >
-            <X className="w-4 h-4" />
+            <span className="material-symbols-rounded text-sm">close</span>
           </button>
         </div>
       )}
@@ -160,22 +138,27 @@ export function Header({
           <div className="flex items-center gap-5">
             <span className="text-xs text-muted-foreground">{today}</span>
             <div className="flex items-center gap-4">
-              {['Newsletter', 'Podcast', 'E-paper'].map((item) => (
+              {[
+                { label: 'Newsletter', icon: 'mail' },
+                { label: 'Podcast', icon: 'podcast' },
+                { label: 'E-paper', icon: 'newspaper' }
+              ].map((item) => (
                 <Link
-                  key={item}
+                  key={item.label}
                   href="#"
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {item}
+                  <span className="material-symbols-rounded text-sm">{item.icon}</span>
+                  {item.label}
                 </Link>
               ))}
             </div>
           </div>
           <div className="relative group">
             <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-full px-2.5 py-0.5 hover:bg-background uppercase">
-              <Languages className="w-3.5 h-3.5" />
+              <span className="material-symbols-rounded text-sm">language</span>
               {(pathname.split('/')[1] || 'bn').toUpperCase()}
-              <ChevronDown className="w-3 h-3" />
+              <span className="material-symbols-rounded text-xs">expand_more</span>
             </button>
             <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded-xl shadow-xl p-1 w-24 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
               {['en', 'es', 'fr', 'de', 'ja'].map((lang) => (
@@ -198,25 +181,11 @@ export function Header({
 
       {/* ── BRAND ROW (desktop) ── */}
       <div className="hidden md:block bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
-            <div className="flex flex-col leading-none h-full justify-center">
-              <Image
-                src={LOGO_SRC}
-                alt="Only Hindu"
-                width={170}
-                height={300}
-                priority
-                className="h-14 w-auto"
-              />
-            </div>
-          </Link>
-
-          {/* Search */}
+        <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-3 items-center gap-6">
+          {/* Left: Search */}
           <form
             onSubmit={handleDesktopSearch}
-            className="flex-1 max-w-md flex items-center border border-border rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
+            className="flex items-center border border-border rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
           >
             <div className="relative flex-shrink-0" ref={catRef}>
               <button
@@ -225,7 +194,7 @@ export function Header({
                 className="flex items-center gap-1.5 px-3 h-10 text-xs text-muted-foreground border-r border-border hover:bg-gray-100 transition-colors"
               >
                 {searchCategory}
-                <ChevronDown className="w-3.5 h-3.5" />
+                <span className="material-symbols-rounded text-xs">expand_more</span>
               </button>
               {isCatOpen && (
                 <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-[120px]">
@@ -252,7 +221,7 @@ export function Header({
 
             <input
               type="text"
-              placeholder="Search stories, topics, people…"
+              placeholder="Search..."
               value={desktopQuery}
               onChange={(e) => setDesktopQuery(e.target.value)}
               className="flex-1 px-3 py-2 text-sm outline-none bg-transparent text-foreground placeholder-gray-400 min-w-0"
@@ -262,28 +231,37 @@ export function Header({
               className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground hover:bg-gray-700 transition-colors flex-shrink-0"
               aria-label="Search"
             >
-              <Search className="w-5 h-5" />
+              <span className="material-symbols-rounded text-lg">search</span>
             </button>
           </form>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              className="relative w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-card hover:text-foreground transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
-            </button>
+          {/* Center: Logo */}
+          <div className="flex justify-center">
+            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
+              <Image
+                src={LOGO_SRC}
+                alt="Only Hindu"
+                width={170}
+                height={300}
+                priority
+                className="h-14 w-auto"
+              />
+            </Link>
+          </div>
 
+          {/* Right: Actions */}
+          <div className="flex items-center justify-end gap-3">
             {session?.user ? (
               <div className="flex items-center gap-2">
-                <Link href="/dashboard">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold hover:ring-2 hover:ring-gray-300 transition-all">
-                    {session.user.name?.charAt(0).toUpperCase() ??
-                      session.user.email?.charAt(0).toUpperCase() ??
-                      'U'}
+                <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold overflow-hidden">
+                    {session.user.image ? (
+                      <Image src={session.user.image} alt={session.user.name ?? ''} width={32} height={32} />
+                    ) : (
+                      session.user.name?.charAt(0).toUpperCase() ?? 'U'
+                    )}
                   </div>
+                  <span className="hidden lg:inline">{session.user.name}</span>
                 </Link>
               </div>
             ) : (
@@ -310,7 +288,7 @@ export function Header({
       <div className="hidden md:block bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {NAV_LINKS.map(({ href, label, badge }) => {
+            {NAV_LINKS.map(({ href, label, badge, icon }) => {
               const localizedHref = `/${locale}${href === '/' ? '' : href}`
               const isActive = pathname === localizedHref
               return (
@@ -323,6 +301,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
+                  <span className="material-symbols-rounded text-lg">{icon}</span>
                   {label}
                   {badge && (
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
@@ -343,7 +322,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <FileEdit className="w-4.5 h-4.5" />
+                  <span className="material-symbols-rounded text-lg">edit</span>
                   Write
                 </Link>
                 <Link
@@ -354,6 +333,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
+                  <span className="material-symbols-rounded text-lg">dashboard</span>
                   Dashboard
                 </Link>
               </>
@@ -366,7 +346,7 @@ export function Header({
       {includeTicker && tickerArticles.length > 0 && (
         <div className="bg-card border-b border-border h-8 flex items-center overflow-hidden">
           <div className="flex items-center gap-1.5 px-4 h-full bg-primary text-primary-foreground flex-shrink-0">
-            <span className="inline-block w-1.5 h-1.5 bg-background rounded-full animate-pulse" />
+            <span className="material-symbols-rounded text-xs animate-pulse">rss_feed</span>
             <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">
               Breaking
             </span>
@@ -392,46 +372,40 @@ export function Header({
       {/* ── MOBILE TOP BAR ── */}
       <div className="md:hidden bg-background">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
-          {/* Left: logo (Menu icon restored) */}
-          <div className="flex items-center gap-3 select-none h-full">
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
-              <div className="flex flex-col leading-none h-full justify-center">
-                <Image
-                  src={LOGO_SRC}
-                  alt="Only Hindu"
-                  width={170}
-                  height={300}
-                  priority
-                  className="h-12 w-auto"
-                />
-              </div>
-            </Link>
-          </div>
+          {/* Left: menu toggle */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="p-2 -ml-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <span className="material-symbols-rounded text-2xl">menu</span>
+          </button>
 
-          {/* Right: search + bell */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => {
-                setIsSearchOpen(!isSearchOpen)
-                setIsMenuOpen(false)
-              }}
-              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
-              aria-label="Search"
-            >
-              {isSearchOpen ? <X className="w-6 h-6" /> : <Search className="w-6 h-6" />}
-            </button>
-            <button className="relative w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors">
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
-            </button>
-          </div>
+          {/* Center: Logo */}
+          <Link href="/" className="flex items-center select-none h-full">
+            <Image
+              src={LOGO_SRC}
+              alt="Only Hindu"
+              width={170}
+              height={300}
+              priority
+              className="h-10 w-auto"
+            />
+          </Link>
+
+          {/* Right: search */}
+          <button
+            onClick={() => {
+              setIsSearchOpen(!isSearchOpen)
+              setIsMenuOpen(false)
+            }}
+            className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
+            aria-label="Search"
+          >
+            <span className="material-symbols-rounded text-2xl">
+              {isSearchOpen ? 'close' : 'search'}
+            </span>
+          </button>
         </div>
 
         {/* Mobile search bar */}
@@ -443,7 +417,7 @@ export function Header({
             >
               <input
                 type="text"
-                placeholder="Search stories, topics…"
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 px-4 py-2.5 text-sm outline-none bg-transparent text-foreground placeholder-gray-400"
@@ -454,7 +428,7 @@ export function Header({
                 className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground flex-shrink-0"
                 aria-label="Search"
               >
-                <Search className="w-5 h-5" />
+                <span className="material-symbols-rounded text-xl">search</span>
               </button>
             </form>
           </div>
@@ -463,206 +437,125 @@ export function Header({
 
       {/* ── MOBILE MENU ── */}
       {isMenuOpen && (
-        <div className="md:hidden absolute left-0 right-0 top-full z-50 bg-background flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] shadow-xl">
-          {/* Search */}
-          <div className="px-5 pt-5 pb-4 border-b border-border">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
-              Quick search
-            </p>
-            <form
-              onSubmit={handleSearch}
-              className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-10"
+        <div className="md:hidden absolute left-0 right-0 top-0 z-[100] h-screen bg-background flex flex-col shadow-xl overflow-hidden">
+          <div className="px-4 h-14 flex items-center justify-between border-b border-border">
+            <span className="font-bold text-lg">Menu</span>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
             >
-              <Search className="w-4.5 h-4.5 text-muted-foreground flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Search stories, topics…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 text-sm outline-none bg-transparent text-foreground placeholder-gray-400"
-              />
-            </form>
+              <span className="material-symbols-rounded text-2xl">close</span>
+            </button>
           </div>
 
-          {/* Sections grid */}
-          <div className="px-5 pt-5">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
-              Sections
-            </p>
-            <div className="grid grid-cols-3 gap-2.5 mb-5">
-              {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
-                const localizedHref = `/${locale}${href === '/' ? '' : href}`
-                const isActive = pathname === localizedHref
-                return (
-                  <Link
-                    key={href}
-                    href={localizedHref}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
-                      isActive
-                        ? 'bg-primary border-gray-900'
-                        : 'bg-card border-border hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        isActive ? 'bg-background/15' : 'bg-background border border-border'
-                      }`}
-                    >
-                      {Icon && (
-                        <Icon
-                          className={`w-4.5 h-4.5 ${
-                            isActive ? 'text-primary-foreground' : 'text-gray-600'
-                          }`}
-                        />
-                      )}
-                    </div>
-                    <span
-                      className={`text-xs font-medium leading-tight ${
-                        isActive ? 'text-primary-foreground' : 'text-foreground'
-                      }`}
-                    >
-                      {label}
-                    </span>
-                    {badge && (
-                      <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
-                        {badge}
-                      </span>
-                    )}
-                  </Link>
-                )
-              })}
-              {session && (
-                <>
-                  <Link
-                    href={`/${locale}/write`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
-                      pathname === `/${locale}/write`
-                        ? 'bg-primary border-gray-900'
-                        : 'bg-card border-border hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        pathname === `/${locale}/write`
-                          ? 'bg-background/15'
-                          : 'bg-background border border-border'
-                      }`}
-                    >
-                      <FileEdit
-                        className={`w-4.5 h-4.5 ${
-                          pathname === `/${locale}/write`
-                            ? 'text-primary-foreground'
-                            : 'text-gray-600'
-                        }`}
-                      />
-                    </div>
-                    <span
-                      className={`text-xs font-medium leading-tight ${
-                        pathname === `/${locale}/write`
-                          ? 'text-primary-foreground'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      Write
-                    </span>
-                  </Link>
-                  <Link
-                    href={`/${locale}/dashboard`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
-                      pathname === `/${locale}/dashboard`
-                        ? 'bg-primary border-gray-900'
-                        : 'bg-card border-border hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        pathname === `/${locale}/dashboard`
-                          ? 'bg-background/15'
-                          : 'bg-background border border-border'
-                      }`}
-                    >
-                      <LayoutDashboard
-                        className={`w-4.5 h-4.5 ${
-                          pathname === `/${locale}/dashboard`
-                            ? 'text-primary-foreground'
-                            : 'text-gray-600'
-                        }`}
-                      />
-                    </div>
-                    <span
-                      className={`text-xs font-medium leading-tight ${
-                        pathname === `/${locale}/dashboard`
-                          ? 'text-primary-foreground'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      Dashboard
-                    </span>
-                  </Link>
-                </>
-              )}
+          <div className="flex-1 overflow-y-auto">
+            {/* Quick search */}
+            <div className="px-5 py-4 border-b border-border">
+              <form
+                onSubmit={handleSearch}
+                className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-11"
+              >
+                <span className="material-symbols-rounded text-xl text-muted-foreground">search</span>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 text-sm outline-none bg-transparent text-foreground placeholder-gray-400"
+                />
+              </form>
             </div>
-          </div>
 
-          {/* Trending */}
-          {trendingArticles.length > 0 && (
-            <div className="px-5 border-t border-border">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mt-4 mb-3">
-                Trending now
+            {/* Sections grid */}
+            <div className="px-5 py-5">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+                Sections
               </p>
-              <div className="flex flex-col gap-3 mb-6">
-                {trendingArticles.slice(0, 3).map((article, idx) => (
-                  <Link
-                    key={article.id}
-                    href={`/article/${article.slug}`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex gap-3 group"
-                  >
-                    <span className="text-xl font-bold text-gray-200 group-hover:text-red-600 transition-colors">
-                      0{idx + 1}
-                    </span>
-                    <p className="text-sm font-medium text-foreground line-clamp-2 leading-snug">
-                      {article.title}
-                    </p>
-                  </Link>
-                ))}
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                {NAV_LINKS.map(({ href, label, badge, icon }) => {
+                  const localizedHref = `/${locale}${href === '/' ? '' : href}`
+                  const isActive = pathname === localizedHref
+                  return (
+                    <Link
+                      key={href}
+                      href={localizedHref}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`relative flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                        isActive
+                          ? 'bg-primary text-primary-foreground border-gray-900 shadow-md'
+                          : 'bg-card border-border hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="material-symbols-rounded text-xl">{icon}</span>
+                      <span className="text-sm font-medium">{label}</span>
+                      {badge && (
+                        <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
+                          {badge}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
               </div>
             </div>
-          )}
 
-          {/* Auth — pinned to bottom */}
-          <div className="mt-auto px-5 pb-8 pt-4 border-t border-border flex gap-2.5">
-            {session?.user ? (
-              <button
-                onClick={() => {
-                  handleSignOut()
-                  setIsMenuOpen(false)
-                }}
-                className="flex-1 h-11 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-card transition-colors"
-              >
-                Sign out
-              </button>
-            ) : (
-              <>
-                <Link
-                  href="/auth/signin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-foreground border border-gray-300 rounded-xl hover:bg-card transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-primary-foreground bg-primary rounded-xl hover:bg-gray-700 transition-colors"
-                >
-                  Get started
-                </Link>
-              </>
-            )}
+            {/* User account */}
+            <div className="px-5 py-4 border-t border-border">
+               <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+                Account
+              </p>
+              <div className="flex flex-col gap-2">
+                {session ? (
+                  <>
+                    <Link
+                      href={`/${locale}/dashboard`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-gray-100 transition-colors"
+                    >
+                      <span className="material-symbols-rounded text-xl">dashboard</span>
+                      <span className="text-sm font-medium">Dashboard</span>
+                    </Link>
+                    <Link
+                      href={`/${locale}/write`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-gray-100 transition-colors"
+                    >
+                      <span className="material-symbols-rounded text-xl">edit</span>
+                      <span className="text-sm font-medium">Write</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleSignOut()
+                        setIsMenuOpen(false)
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors w-full"
+                    >
+                      <span className="material-symbols-rounded text-xl">logout</span>
+                      <span className="text-sm font-medium">Sign out</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-gray-100 transition-colors"
+                    >
+                      <span className="material-symbols-rounded text-xl">login</span>
+                      <span className="text-sm font-medium">Sign in</span>
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground hover:bg-gray-800 transition-colors"
+                    >
+                      <span className="material-symbols-rounded text-xl">person_add</span>
+                      <span className="text-sm font-medium">Get started</span>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

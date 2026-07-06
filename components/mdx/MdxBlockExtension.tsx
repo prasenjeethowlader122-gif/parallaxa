@@ -3,7 +3,6 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 import { blockRegistry, parseBlockParams } from '@/lib/mdx/block-registry'
 import { customBlockComponents } from './CustomBlockRenderer'
 import React, { useState, useMemo } from 'react'
-import { Pencil, Trash2, X, Check, ExternalLink } from 'lucide-react'
 
 export const MdxBlockExtension = Node.create({
   name: 'mdxBlock',
@@ -92,88 +91,91 @@ function MdxBlockView(props: any) {
   }
 
   return (
-    <NodeViewWrapper className="mdx-block-node my-6 relative group border border-transparent hover:border-gray-200 rounded-none transition-all duration-200">
+    <NodeViewWrapper className="mdx-block-node my-8 relative group border border-transparent hover:border-slate-200 rounded-3xl transition-all duration-300">
       {/* Label and Actions */}
-      <div className="absolute -top-3 left-3 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
-        <div className="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-none shadow-none flex items-center gap-1.5 uppercase tracking-wider">
-          <div className="w-1.5 h-1.5 rounded-none bg-emerald-400 animate-pulse" />
+      <div className="absolute -top-4 left-6 z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+        <div className="bg-slate-950 text-white text-[10px] font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 uppercase tracking-widest border border-white/10">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           {blockTitle}
         </div>
 
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-none p-0.5 shadow-none ml-1">
+        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-xl">
           <button
             onClick={() => { setEditParams(currentParams); setIsEditing(true) }}
-            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-none transition-colors"
+            className="p-1.5 text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition-all"
             title="Edit Parameters"
           >
-            <Pencil size={12} />
+             <span className="material-symbols-rounded text-lg">edit</span>
           </button>
           <button
             onClick={() => deleteNode()}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-none transition-colors"
+            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             title="Remove Block"
           >
-            <Trash2 size={12} />
+             <span className="material-symbols-rounded text-lg">delete</span>
           </button>
         </div>
       </div>
 
       {/* Block Content */}
-      <div className="pointer-events-none select-none overflow-hidden rounded-none border border-gray-100/50">
+      <div className="select-none overflow-hidden rounded-[2rem] border border-slate-100 bg-white/50 transition-all group-hover:shadow-xl group-hover:shadow-slate-200/50">
         {renderedContent || (
-          <div className="p-8 border-2 border-dashed border-gray-100 rounded-none text-gray-400 text-sm font-mono bg-gray-50/50 flex flex-col items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-none bg-white flex items-center justify-center border border-gray-100 shadow-none">
-              <ExternalLink size={16} className="text-gray-300" />
+          <div className="p-12 border-2 border-dashed border-slate-100 rounded-[2rem] text-slate-400 text-sm font-mono bg-slate-50/50 flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+               <span className="material-symbols-rounded text-2xl text-slate-300">view_in_ar</span>
             </div>
-            {code}
+            <code className="text-[10px] bg-white px-3 py-1 rounded-full border border-slate-100 font-bold">{code}</code>
           </div>
         )}
       </div>
 
       {/* Edit Modal / Popover */}
       {isEditing && (
-        <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col rounded-none border border-gray-200 shadow-none animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
-            <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <Pencil size={14} />
-              Edit {blockTitle}
+        <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-md flex flex-col rounded-[2rem] border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
+          <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-slate-50/50">
+            <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 uppercase tracking-widest">
+               <span className="material-symbols-rounded text-lg">settings</span>
+               Edit {blockTitle}
             </h4>
-            <button onClick={() => setIsEditing(false)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-none transition-colors">
-              <X size={16} />
+            <button onClick={() => setIsEditing(false)} className="p-2 text-slate-400 hover:text-slate-950 rounded-xl hover:bg-white transition-all">
+               <span className="material-symbols-rounded">close</span>
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto p-8 space-y-6">
             {Object.keys(currentParams).length > 0 ? (
               Object.entries(editParams).map(([key, value]) => (
-                <div key={key} className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{key}</label>
+                <div key={key} className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block px-1">{key}</label>
                   <textarea
                     value={value}
                     onChange={(e) => handleParamChange(key, e.target.value)}
-                    className="w-full text-sm border border-gray-200 rounded-none px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/5 transition-all resize-none min-h-[40px]"
+                    className="w-full text-sm font-medium border border-slate-200 rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all resize-none min-h-[50px] bg-white"
                     rows={value.length > 50 ? 3 : 1}
                   />
                 </div>
               ))
             ) : (
-              <p className="text-xs text-gray-500 italic text-center py-4">No editable parameters found for this block.</p>
+              <div className="text-center py-10">
+                 <span className="material-symbols-rounded text-4xl text-slate-200 mb-2">info</span>
+                 <p className="text-xs text-slate-500 font-medium italic">No editable parameters found for this block.</p>
+              </div>
             )}
           </div>
 
-          <div className="p-4 bg-gray-50/50 border-t border-gray-100 flex gap-2">
+          <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
             <button
               onClick={() => setIsEditing(false)}
-              className="flex-1 px-4 py-2 text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-none hover:bg-gray-50 transition-all"
+              className="flex-1 px-6 py-3 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-all uppercase tracking-widest"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 px-4 py-2 text-xs font-bold text-white bg-gray-900 rounded-none hover:bg-black transition-all flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 text-xs font-bold text-white bg-slate-950 rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 uppercase tracking-widest"
             >
-              <Check size={14} />
-              Save Changes
+               <span className="material-symbols-rounded text-lg">check</span>
+               Save Changes
             </button>
           </div>
         </div>

@@ -1,5 +1,9 @@
 import React from 'react'
 import { Info, AlertTriangle, CheckCircle2, XCircle, TrendingUp, Book, StickyNote } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell
+} from 'recharts'
 
 interface CustomBlockProps {
   className: string
@@ -279,4 +283,62 @@ export const customBlockComponents = {
   gist: (props: any) => (
     <CustomBlockRenderer className="custom-block gist-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
   ),
+  verse: (props: any) => (
+    <div className="my-8 relative px-8 py-10 bg-slate-50 border-y border-slate-200 text-center overflow-hidden">
+      <div className="absolute top-4 left-4 text-6xl text-slate-200 font-serif select-none pointer-events-none opacity-50">“</div>
+      <div className="absolute bottom-4 right-4 text-6xl text-slate-200 font-serif select-none pointer-events-none opacity-50 rotate-180">“</div>
+
+      <div className="relative z-10">
+        <p className="text-xl sm:text-2xl font-serif leading-relaxed text-slate-800 italic mb-4">
+          {props.text}
+        </p>
+        <div className="flex items-center justify-center gap-2 text-sm font-semibold text-slate-500 uppercase tracking-widest">
+          <span>— {props.source}</span>
+          {props.reference && <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px]">{props.reference}</span>}
+        </div>
+      </div>
+    </div>
+  ),
+  chart: (props: any) => {
+    const labels = (props.labels || '').split(',')
+    const values = (props.values || '').split(',').map(Number)
+    const data = labels.map((label: string, i: number) => ({ name: label, value: values[i] || 0 }))
+    const colors = ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8']
+
+    return (
+      <div className="my-8 p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+        {props.title && <h4 className="text-sm font-bold text-slate-900 mb-6 text-center uppercase tracking-wider">{props.title}</h4>}
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            {props.type === 'pie' ? (
+              <PieChart>
+                <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {data.map((_: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Pie>
+                <ReTooltip />
+              </PieChart>
+            ) : props.type === 'line' ? (
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} />
+                <YAxis axisLine={false} tickLine={false} fontSize={12} />
+                <ReTooltip />
+                <Line type="monotone" dataKey="value" stroke="#0f172a" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            ) : (
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} />
+                <YAxis axisLine={false} tickLine={false} fontSize={12} />
+                <ReTooltip cursor={{ fill: '#f8fafc' }} />
+                <Bar dataKey="value" fill="#0f172a" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+      </div>
+    )
+  },
 }

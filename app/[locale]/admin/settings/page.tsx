@@ -3,11 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import {
-  Save, RefreshCw, AlertCircle, CheckCircle2,
-  Settings, Bot, Share2, Shield, Zap,
-  ChevronRight, ExternalLink
-} from 'lucide-react'
 import type { SystemSettings } from '@/lib/db/settings'
 
 export default function AdminSettingsPage() {
@@ -60,7 +55,7 @@ export default function AdminSettingsPage() {
       <div className="min-h-screen flex flex-col bg-slate-50">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-          <RefreshCw className="w-8 h-8 animate-spin text-slate-400" />
+          <span className="material-symbols-rounded animate-spin text-4xl text-slate-400">refresh</span>
         </main>
         <Footer />
       </div>
@@ -73,61 +68,63 @@ export default function AdminSettingsPage() {
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">System Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-950">System Settings</h1>
           <p className="mt-1 text-sm text-slate-500">Configure AI pipeline, Facebook integration, and system parameters.</p>
         </div>
 
         {error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
-            <AlertCircle className="w-5 h-5 shrink-0" />
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
+            <span className="material-symbols-rounded text-xl shrink-0">error</span>
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-100 bg-green-50 p-4 text-sm text-green-700 shadow-sm">
-            <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 p-4 text-sm text-green-700 shadow-sm">
+            <span className="material-symbols-rounded text-xl shrink-0">check_circle</span>
             <span>{success}</span>
           </div>
         )}
 
         <div className="grid gap-8">
           {/* AI Settings Section */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-              <Bot className="w-5 h-5 text-blue-600" />
-              <h2 className="text-sm font-semibold">AI Pipeline Configuration</h2>
+          <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
+                <span className="material-symbols-rounded text-lg">memory</span>
+              </div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">AI Pipeline Configuration</h2>
             </div>
-            <div className="p-6 space-y-6">
+            <div className="p-6 sm:p-8 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">AI Model</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">AI Model</label>
                   <input
                     value={settings?.ai_model || ''}
                     onChange={e => setSettings(s => s ? { ...s, ai_model: e.target.value } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">API Key</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">API Key</label>
                   <input
                     type="password"
                     value={settings?.ai_api_key || ''}
                     onChange={e => setSettings(s => s ? { ...s, ai_api_key: e.target.value } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Max Tokens</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">Max Tokens</label>
                   <input
                     type="number"
                     value={settings?.ai_max_tokens || 0}
                     onChange={e => setSettings(s => s ? { ...s, ai_max_tokens: Number(e.target.value) } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Temperature</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">Temperature</label>
                   <input
                     type="number"
                     step="0.1"
@@ -135,53 +132,55 @@ export default function AdminSettingsPage() {
                     max="1"
                     value={settings?.ai_temperature || 0}
                     onChange={e => setSettings(s => s ? { ...s, ai_temperature: Number(e.target.value) } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">System Prompt</label>
+                <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">System Prompt</label>
                 <textarea
-                  rows={6}
+                  rows={8}
                   value={settings?.ai_system_prompt || ''}
                   onChange={e => setSettings(s => s ? { ...s, ai_system_prompt: e.target.value } : null)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono leading-relaxed"
                 />
               </div>
             </div>
           </section>
 
           {/* Facebook Settings Section */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-              <Share2 className="w-5 h-5 text-indigo-600" />
-              <h2 className="text-sm font-semibold">Facebook Post Configuration</h2>
+          <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white">
+                <span className="material-symbols-rounded text-lg">share</span>
+              </div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Facebook Post Configuration</h2>
             </div>
-            <div className="p-6 space-y-6">
+            <div className="p-6 sm:p-8 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Page ID</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">Page ID</label>
                   <input
                     value={settings?.fb_page_id || ''}
                     onChange={e => setSettings(s => s ? { ...s, fb_page_id: e.target.value } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Access Token</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">Access Token</label>
                   <input
                     type="password"
                     value={settings?.fb_access_token || ''}
                     onChange={e => setSettings(s => s ? { ...s, fb_access_token: e.target.value } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Thumbnail Template</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">Thumbnail Template</label>
                   <select
                     value={settings?.fb_thumbnail_template || 'default'}
                     onChange={e => setSettings(s => s ? { ...s, fb_thumbnail_template: e.target.value } : null)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer"
                   >
                     <option value="default">Default News</option>
                     <option value="breaking">Breaking News Red</option>
@@ -194,19 +193,19 @@ export default function AdminSettingsPage() {
           </section>
 
           {/* Footer Save Button */}
-          <div className="flex justify-end gap-4 pb-12">
+          <div className="flex flex-col sm:flex-row justify-end gap-4 pb-12">
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all"
+              className="px-8 py-3 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all uppercase tracking-widest"
             >
               Reset Changes
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 px-8 py-2.5 rounded-xl bg-slate-900 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-all shadow-md shadow-slate-900/10"
+              className="inline-flex items-center justify-center gap-2 px-10 py-3 rounded-xl bg-slate-950 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
             >
-              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? <span className="material-symbols-rounded animate-spin text-lg">refresh</span> : <span className="material-symbols-rounded text-lg">save</span>}
               {saving ? 'Saving...' : 'Save Settings'}
             </button>
           </div>

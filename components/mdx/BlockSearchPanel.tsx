@@ -1,32 +1,9 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import {
-  Bold, Italic, Strikethrough, Code, Heading1, Heading2,
-  List, ListOrdered, Quote, Link, Image as ImageIcon,
-  Minus, SquarePlus, Share2, Terminal, Palette, Box,
-  Youtube, Facebook, Twitter, Instagram, X, Search,
-  XCircle, List as ListIcon, Grid3x3, ArrowUpDown, ChevronRight,
-  TrendingUp, Info, Tag
-} from 'lucide-react'
 
 export type BlockSortKey = 'name' | 'label' | 'recent'
 export type BlockViewMode = 'grid' | 'list'
-
-export const DynamicIcon = ({ name, size = 18, className }: { name: string; size?: number; className?: string }) => {
-  const iconMap: Record<string, any> = {
-    'format_bold': Bold, 'format_italic': Italic, 'format_strikethrough': Strikethrough,
-    'code': Code, 'format_h1': Heading1, 'format_h2': Heading2,
-    'format_list_bulleted': List, 'format_list_numbered': ListOrdered,
-    'format_quote': Quote, 'link': Link, 'image': ImageIcon,
-    'horizontal_rule': Minus, 'add_box': SquarePlus, 'share': Share2,
-    'terminal': Terminal, 'palette': Palette, 'extension': Box,
-    'youtube': Youtube, 'facebook': Facebook, 'twitter': Twitter, 'instagram': Instagram,
-    'trending_up': TrendingUp, 'info': Info, 'tag': Tag,
-  };
-  const Icon = iconMap[name] || Box;
-  return <Icon size={size} className={className} />;
-};
 
 export interface BlockSearchPanelProps {
   blocks: Array<{ name: string; label: string; icon: any; template?: string }>
@@ -45,8 +22,8 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
     searchRef.current?.focus()
   }, [])
 
-  const socialNames = ['youtube', 'facebook', 'twitter', 'instagram', 'github']
-  const utilityNames = ['embed', 'run', 'style', 'screenshot']
+  const socialNames = ['youtube', 'facebook', 'twitter', 'instagram', 'github', 'tiktok', 'reddit', 'vimeo', 'gist', 'tweet', 'fbpost']
+  const utilityNames = ['embed', 'run', 'style', 'screenshot', 'goal', 'callout', 'button', 'badge', 'infobox', 'reference', 'tika', 'table', 'verse', 'chart']
 
   const categorize = (name: string) => {
     if (socialNames.includes(name)) return 'social'
@@ -70,68 +47,65 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
 
   const categories = [
     { id: 'all', label: 'All', count: blocks.length },
-    { id: 'utility', label: 'Components', count: blocks.filter(b => utilityNames.includes(b.name)).length },
-    { id: 'social', label: 'Social', count: blocks.filter(b => socialNames.includes(b.name)).length },
+    { id: 'utility', label: 'Components', count: blocks.filter(b => categorize(b.name) === 'utility').length },
+    { id: 'social', label: 'Social', count: blocks.filter(b => categorize(b.name) === 'social').length },
   ] as const
 
   return (
-    <div className="absolute top-full left-0 mt-2 w-[340px] bg-white border border-[#e4e2e1] rounded-none shadow-none z-[100] overflow-hidden">
+    <div className="absolute top-full left-0 mt-3 w-[360px] bg-white border border-slate-200 rounded-[2rem] shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-[#f0eeee]">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-none bg-[#585f64] flex items-center justify-center">
-              <SquarePlus size={13} className="text-white" />
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/20">
+               <span className="material-symbols-rounded text-white text-lg">add_box</span>
             </div>
-            <h3 className="text-[13px] font-semibold text-[#1a1b1c]">Insert Block</h3>
+            <h3 className="text-sm font-bold text-slate-950 uppercase tracking-widest">Insert Block</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-none text-[#9e9fa0] hover:text-[#313334] hover:bg-[#f0eeee] transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-950 hover:bg-white transition-all"
           >
-            <X size={14} />
+             <span className="material-symbols-rounded text-xl">close</span>
           </button>
         </div>
 
         {/* Search input */}
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b8b9ba]" />
+           <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
           <input
             ref={searchRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search blocks…"
-            className="w-full pl-8 pr-3 py-2 text-xs bg-[#f5f3f3] border-0 rounded-none outline-none text-[#313334] placeholder-[#b8b9ba] focus:ring-1 focus:ring-[#585f64] transition-all"
+            className="w-full pl-11 pr-10 py-3 text-xs bg-white border border-slate-100 rounded-xl outline-none text-slate-900 placeholder-slate-300 focus:ring-4 focus:ring-slate-900/5 transition-all font-medium"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#b8b9ba] hover:text-[#585f64] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-950 transition-colors"
             >
-              <XCircle size={12} />
+               <span className="material-symbols-rounded text-lg">cancel</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Filters */}
-      <div className="px-4 py-2.5 flex items-center justify-between border-b border-[#f0eeee] bg-[#faf9f9]">
-        <div className="flex items-center gap-1">
+      <div className="px-6 py-3 flex items-center justify-between border-b border-slate-100 bg-white">
+        <div className="flex items-center gap-1.5">
           {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setCategory(cat.id)}
-              className={`px-2.5 py-1 rounded-none text-[10px] font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
                 category === cat.id
-                  ? 'bg-[#585f64] text-white'
-                  : 'text-[#7a8086] hover:bg-[#eeecec] hover:text-[#313334]'
+                  ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
+                  : 'text-slate-400 hover:bg-slate-100 hover:text-slate-950'
               }`}
             >
               {cat.label}
-              <span className={`ml-1 ${category === cat.id ? 'text-white/60' : 'text-[#b8b9ba]'}`}>
-                {cat.count}
-              </span>
             </button>
           ))}
         </div>
@@ -140,63 +114,55 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
           <button
             onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
             title={viewMode === 'grid' ? 'Switch to list' : 'Switch to grid'}
-            className="p-1.5 rounded-none text-[#9e9fa0] hover:bg-[#eeecec] hover:text-[#585f64] transition-colors"
+            className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-950 transition-all"
           >
-            {viewMode === 'grid' ? <ListIcon size={12} /> : <Grid3x3 size={12} />}
-          </button>
-          <button
-            onClick={() => setSort(s => s === 'label' ? 'name' : 'label')}
-            title="Toggle sort"
-            className="p-1.5 rounded-none text-[#9e9fa0] hover:bg-[#eeecec] hover:text-[#585f64] transition-colors"
-          >
-            <ArrowUpDown size={12} />
+             <span className="material-symbols-rounded text-lg">{viewMode === 'grid' ? 'view_list' : 'grid_view'}</span>
           </button>
         </div>
       </div>
 
       {/* Results */}
-      <div className="max-h-[280px] overflow-y-auto p-2 custom-scrollbar">
+      <div className="max-h-[320px] overflow-y-auto p-3 custom-scrollbar bg-slate-50/30">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-10">
-            <div className="w-10 h-10 rounded-none bg-[#f5f3f3] flex items-center justify-center">
-              <Search size={16} className="text-[#c8c6c6]" />
+          <div className="flex flex-col items-center gap-3 py-12">
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+               <span className="material-symbols-rounded text-3xl text-slate-200">search_off</span>
             </div>
-            <p className="text-xs text-[#b8b9ba]">No blocks match "{query}"</p>
+            <p className="text-xs text-slate-400 font-medium">No blocks match "{query}"</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-3 gap-2">
             {filtered.map(block => (
               <button
                 key={block.name}
                 onClick={() => { onInsert(block); onClose() }}
-                title={block.label}
-                className="flex flex-col items-center gap-1.5 p-2.5 rounded-none hover:bg-[#f5f3f3] active:scale-95 transition-all group"
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50 active:scale-95 transition-all group"
               >
-                <div className="w-9 h-9 rounded-none bg-[#f5f3f3] border border-[#eeecec] flex items-center justify-center text-[#7a8086] group-hover:bg-[#1a1b1c] group-hover:text-white group-hover:border-transparent transition-all">
-                  <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={16} />
+                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                   <span className="material-symbols-rounded text-xl">{typeof block.icon === 'string' ? block.icon : 'extension'}</span>
                 </div>
-                <span className="text-[9px] font-semibold text-[#7a8086] group-hover:text-[#313334] truncate w-full text-center leading-tight">
+                <span className="text-[9px] font-bold text-slate-500 group-hover:text-slate-950 truncate w-full text-center leading-tight uppercase tracking-widest">
                   {block.label}
                 </span>
               </button>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-1.5">
             {filtered.map(block => (
               <button
                 key={block.name}
                 onClick={() => { onInsert(block); onClose() }}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-[#f5f3f3] active:scale-[0.99] transition-all group text-left"
+                className="flex items-center gap-4 px-4 py-3 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50 active:scale-[0.98] transition-all group text-left"
               >
-                <div className="w-8 h-8 rounded-none bg-[#f5f3f3] border border-[#eeecec] flex items-center justify-center text-[#7a8086] group-hover:bg-[#1a1b1c] group-hover:text-white group-hover:border-transparent transition-all shrink-0">
-                  <DynamicIcon name={typeof block.icon === 'string' ? block.icon : 'extension'} size={14} />
+                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
+                   <span className="material-symbols-rounded text-lg">{typeof block.icon === 'string' ? block.icon : 'extension'}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-[#313334] truncate">{block.label}</p>
-                  <p className="text-[10px] text-[#b8b9ba] truncate font-mono">[!{block.name}]</p>
+                  <p className="text-xs font-bold text-slate-950 truncate uppercase tracking-widest">{block.label}</p>
+                  <p className="text-[10px] text-slate-400 truncate font-mono font-bold mt-0.5">[!{block.name}]</p>
                 </div>
-                <ChevronRight size={12} className="text-[#dcdad9] group-hover:text-[#585f64] shrink-0 transition-colors" />
+                 <span className="material-symbols-rounded text-slate-200 group-hover:text-slate-400 transition-colors">chevron_right</span>
               </button>
             ))}
           </div>
@@ -205,9 +171,9 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
 
       {/* Footer */}
       {filtered.length > 0 && (
-        <div className="px-4 py-2.5 border-t border-[#f0eeee] bg-[#faf9f9]">
-          <p className="text-[10px] text-[#c8c6c6]">
-            {filtered.length} block{filtered.length !== 1 ? 's' : ''} · Click to insert at cursor
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            {filtered.length} block{filtered.length !== 1 ? 's' : ''} available
           </p>
         </div>
       )}

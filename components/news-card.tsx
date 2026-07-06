@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {Fugaz} from '@/lib/font'
 import { NewsArticle } from '@/lib/db/articles'
-import { Clock, Eye } from 'lucide-react'
 
 interface NewsCardProps {
   article: NewsArticle
@@ -52,16 +51,8 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   if (variant === 'featured') {
     return (
       <Link href={href} className="block h-full">
-        {/*
-         * KEY FIX: The outer div and the image container both use h-full
-         * so they fill whatever height the grid cell provides.
-         * aspect-video is REMOVED — it fought the fixed grid-row height
-         * and caused cards to overflow/overlap each other.
-         * The image container is purely position:relative + fills parent.
-         */}
-        <div className={`group cursor-pointer overflow-hidden h-full flex flex-col rounded-xl ${className ?? ''}`}>
-          {/* Image fills all available space */}
-          <div className="relative w-full flex-1 overflow-hidden bg-gray-200 min-h-[200px]">
+        <div className={`group cursor-pointer overflow-hidden h-full flex flex-col rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${className ?? ''}`}>
+          <div className="relative w-full flex-1 overflow-hidden bg-slate-100 min-h-[200px]">
             <Image
               src={imageSrc}
               alt={article.title}
@@ -69,15 +60,17 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-             
-              <h3 className={Fugaz.className + " text-primary-foreground text-lg  leading-tight line-clamp-3"}>
-{article.title}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+               <span className="inline-block px-2 py-0.5 rounded-lg bg-white/20 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest mb-3 border border-white/10">
+                {article.category}
+              </span>
+              <h3 className={Fugaz.className + " text-white text-2xl font-black leading-tight line-clamp-3 mb-2"}>
+                {article.title}
               </h3>
-            
-              <div className="flex items-center gap-3 mt-2 text-xs text-primary-foreground/70">
-                <span className="font-medium">{article.author}</span>
+              <div className="flex items-center gap-3 text-xs text-white/70 font-bold uppercase tracking-widest">
+                <span>{article.author}</span>
+                <span className="w-1 h-1 rounded-full bg-white/40"></span>
                 <span>{formattedDate}</span>
               </div>
             </div>
@@ -90,8 +83,8 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   if (variant === 'horizontal') {
     return (
       <Link href={href} className="block">
-        <div className={`group flex gap-4 cursor-pointer min-h-[8rem] rounded-lg overflow-hidden ${className ?? ''}`}>
-          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden bg-gray-200 rounded-lg">
+        <div className={`group flex gap-4 cursor-pointer p-3 rounded-2xl border border-slate-100 bg-white hover:border-slate-200 hover:shadow-md transition-all duration-300 ${className ?? ''}`}>
+          <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden bg-slate-100 rounded-xl">
             <Image
               src={imageSrc}
               alt={article.title}
@@ -100,24 +93,19 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-xs  text-blue-600 font-medium tracking-wide">
-                {article.category}
-              </span>
-          
-            </div>
-            <h3 className={Fugaz.className + "  text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-sm"}>
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+              {article.category}
+            </span>
+            <h3 className={Fugaz.className + " text-slate-950 font-bold line-clamp-2 group-hover:text-primary transition-colors text-sm mb-1.5"}>
               {article.title}
             </h3>
-            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{article.description}</p>
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                {
-                  toDigitalNumber(article.views)
-                }
-              </div>
+            <div className="flex items-center gap-4 mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+               <div className="flex items-center gap-1">
+                 <span className="material-symbols-rounded text-base">visibility</span>
+                 {toDigitalNumber(article.views)}
+               </div>
+               <span>{article.readTime} min read</span>
             </div>
           </div>
         </div>
@@ -128,8 +116,8 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   // Default variant
   return (
     <Link href={href} className="block">
-      <div className={`group cursor-pointer rounded-xl overflow-hidden ${className ?? ''}`}>
-        <div className="relative w-full h-48 overflow-hidden bg-gray-200 mb-3 rounded-xl">
+      <div className={`group cursor-pointer rounded-[2rem] border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${className ?? ''}`}>
+        <div className="relative w-full h-56 overflow-hidden bg-slate-100">
           <Image
             src={imageSrc}
             alt={article.title}
@@ -138,27 +126,33 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {article.breaking && (
-            <div className="absolute top-3 left-3 bg-red-600 text-primary-foreground px-3 py-1 rounded text-xs font-bold">
+            <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-red-600/20">
               Breaking
             </div>
           )}
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               {article.category}
             </span>
             {article.trending && (
-              <span className="text-xs font-bold text-red-600">🔥 Trending</span>
+              <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest flex items-center gap-1">
+                <span className="material-symbols-rounded text-sm">trending_up</span>
+                Trending
+              </span>
             )}
           </div>
-          <h3 className={Fugaz.className + " text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-base"}>
+          <h3 className={Fugaz.className + " text-slate-950 text-lg font-black leading-tight mb-3 line-clamp-2 group-hover:text-primary transition-colors"}>
             {article.title}
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
+          <p className="text-sm text-slate-500 line-clamp-2 mb-4 font-medium leading-relaxed">{article.description}</p>
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-4 border-t border-slate-100">
             <span>{formattedDate}</span>
-            <span>{article.readTime} min read</span>
+            <div className="flex items-center gap-1">
+               <span className="material-symbols-rounded text-sm">visibility</span>
+               {toDigitalNumber(article.views)}
+            </div>
           </div>
         </div>
       </div>
