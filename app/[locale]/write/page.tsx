@@ -12,17 +12,7 @@ import { EditorView, Decoration, DecorationSet, ViewUpdate, ViewPlugin } from '@
 import { autocompletion, CompletionContext } from '@codemirror/autocomplete'
 import { RangeSetBuilder } from '@codemirror/state'
 import rehypeRaw from 'rehype-raw'
-import {
-  History, ChevronRight, SearchCheck, Accessibility, Tag, Share2, Settings,
-  HelpCircle, Bold, Italic, Heading1, Heading2, Quote, Link, Image as ImageIcon,
-  CheckCircle2, AlertCircle, Save, Send, X, Check, Copy, List, ListOrdered,
-  Strikethrough, Code, Minus, RotateCcw, RotateCw, Clock, Star, Zap, TrendingUp,
-  Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
-  Youtube, Facebook, Twitter, Instagram, Play, Github, Box, ChevronDown,
-  Heading3, Type, Layout, SquarePlus, Highlighter, Palette, Terminal,
-  Eye, Sparkles, PenTool, Columns2, Search, Filter, SortAsc, AlignLeft,
-  ChevronUp, Loader2
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -161,20 +151,20 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
 // ─── Toolbar Button ───────────────────────────────────────────────────────────
 
 const ToolbarBtn = ({
-  icon: Icon, label, onClick, active, className = ''
+  icon, label, onClick, active, className = ''
 }: {
-  icon: any; label: string; onClick: () => void; active?: boolean; className?: string
+  icon: string; label: string; onClick: () => void; active?: boolean; className?: string
 }) => (
   <button
     title={label}
     onClick={onClick}
-    className={`p-2 rounded-xl transition-all shrink-0 ${
+    className={`p-2 rounded-xl transition-all shrink-0 flex items-center justify-center ${
       active
         ? 'bg-[#585f64] text-white'
         : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
     } ${className}`}
   >
-    <Icon className="w-[15px] h-[15px]" />
+    <span className="material-symbols-rounded text-[18px]">{icon}</span>
   </button>
 )
 
@@ -187,8 +177,8 @@ const SidebarLabel = ({ children }: { children: React.ReactNode }) => (
 const SEOItem = ({ success, text }: { success: boolean; text: string }) => (
   <div className="flex items-start gap-2.5">
     {success
-      ? <CheckCircle2 size={13} className="text-emerald-600 mt-0.5 shrink-0" fill="currentColor" />
-      : <AlertCircle size={13} className="text-[#c0483d] mt-0.5 shrink-0" fill="currentColor" />
+      ? <span className="material-symbols-rounded text-emerald-600 text-[14px] mt-0.5 shrink-0">check_circle</span>
+      : <span className="material-symbols-rounded text-[#c0483d] text-[14px] mt-0.5 shrink-0">error</span>
     }
     <span className="text-xs text-[#313334] leading-snug min-w-0">{text}</span>
   </div>
@@ -249,8 +239,8 @@ const Toggle = ({
 
 const StatCard = ({ label, value }: { label: string; value: string }) => (
   <div className="bg-white rounded-xl p-3.5 border border-[#e4e2e1]">
-    <p className="text-[9px] uppercase tracking-widest text-[#b8b9ba] mb-1">{label}</p>
-    <p className="text-[15px] font-bold text-[#313334] tabular-nums">{value}</p>
+    <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#b8b9ba] mb-1">{label}</p>
+    <p className="text-[15px] font-black text-[#313334] tabular-nums tracking-tight">{value}</p>
   </div>
 )
 
@@ -846,11 +836,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
   const SidebarInner = () => {
     const tabs = [
-      { id: 'metadata' as SidebarTab, icon: <FileText size={16} />, label: 'Metadata' },
-      { id: 'seo' as SidebarTab, icon: <SearchCheck size={16} />, label: 'SEO' },
-      { id: 'accessibility' as SidebarTab, icon: <Accessibility size={16} />, label: 'Accessibility' },
-      { id: 'tags' as SidebarTab, icon: <Tag size={16} />, label: 'Tags' },
-      { id: 'distribution' as SidebarTab, icon: <Share2 size={16} />, label: 'Distribution' },
+      { id: 'metadata' as SidebarTab, icon: 'description', label: 'Metadata' },
+      { id: 'seo' as SidebarTab, icon: 'search_check', label: 'SEO' },
+      { id: 'accessibility' as SidebarTab, icon: 'accessibility', label: 'Accessibility' },
+      { id: 'tags' as SidebarTab, icon: 'sell', label: 'Tags' },
+      { id: 'distribution' as SidebarTab, icon: 'share', label: 'Distribution' },
     ]
 
     return (
@@ -879,8 +869,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                     : 'text-slate-500 hover:bg-gray-50 hover:text-slate-900'
                 }`}
               >
-                <span className={`shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
-                <span className="font-medium">{label}</span>
+                <span className={`material-symbols-rounded shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
+                <span className="font-bold tracking-tight">{label}</span>
                 {tabId === 'seo' && (
                   <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-xl ${
                     seoScore >= 70 ? 'bg-emerald-500 text-white' :
@@ -920,10 +910,10 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           {/* Breadcrumb */}
           <div className="flex items-center gap-3 text-sm text-slate-400 min-w-0 flex-1">
             <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-none">
-              <Highlighter size={16} />
+              <span className="material-symbols-rounded text-lg">edit_note</span>
             </div>
             <span className="hidden md:inline font-bold uppercase tracking-widest text-[10px] text-slate-300">Editor</span>
-            <ChevronRight size={14} className="hidden md:inline shrink-0 text-slate-200" />
+            <span className="material-symbols-rounded hidden md:inline shrink-0 text-slate-200 text-lg">chevron_right</span>
             <span className="text-slate-900 font-bold truncate max-w-[200px]">{title || 'Untitled Story'}</span>
           </div>
 
@@ -953,11 +943,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   }`}
                 >
                   <span className="hidden md:inline capitalize tracking-tight">{m}</span>
-                  <span className="md:hidden">
-                    {m === 'write' ? <PenTool size={14} /> :
-                     m === 'visual' ? <Sparkles size={14} /> :
-                     m === 'preview' ? <Eye size={14} /> :
-                     <Columns2 size={14} />}
+                  <span className="md:hidden material-symbols-rounded text-[18px]">
+                    {m === 'write' ? 'edit' :
+                     m === 'visual' ? 'auto_awesome' :
+                     m === 'preview' ? 'visibility' :
+                     'view_column'}
                   </span>
                 </button>
               ))}
@@ -973,23 +963,23 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 sidebarOpen ? 'bg-slate-900 text-white shadow-none' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <PanelLeft size={18} />
+              <span className="material-symbols-rounded">side_navigation</span>
             </button>
             <button
               title="Article settings"
               onClick={() => setMobileDrawerOpen(true)}
               className="xl:hidden p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
             >
-              <SlidersHorizontal size={18} />
+              <span className="material-symbols-rounded">tune</span>
             </button>
 
             {/* Publish button */}
             <button
               onClick={() => setShowPublishModal(true)}
               disabled={!title.trim() || !content.trim()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all shadow-none disabled:opacity-40 disabled:shadow-none"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold hover:bg-black active:scale-95 transition-all shadow-xl shadow-slate-950/20 disabled:opacity-40 disabled:shadow-none uppercase tracking-widest"
             >
-              <Send size={14} strokeWidth={2.5} />
+              <span className="material-symbols-rounded text-lg">publish</span>
               <span className="hidden sm:inline tracking-tight">Publish</span>
             </button>
           </div>
@@ -1024,34 +1014,34 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             <div className="flex items-center z-20 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
               <div className="flex items-center overflow-x-auto no-scrollbar gap-1 flex-1" style={{ scrollbarWidth: 'none' }}>
                 <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5">
-                  <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
-                  <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
-                  <ToolbarBtn icon={Strikethrough} label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
-                  <ToolbarBtn icon={Code} label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
+                  <ToolbarBtn icon="format_bold" label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
+                  <ToolbarBtn icon="format_italic" label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
+                  <ToolbarBtn icon="format_strikethrough" label="Strikethrough" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} />
+                  <ToolbarBtn icon="code" label="Inline Code" onClick={() => insertMarkdown('`', '`', 'code')} />
                 </div>
 
                 <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
-                  <ToolbarBtn icon={Heading1} label="Heading 1" onClick={() => insertLinePrefix('# ')} />
-                  <ToolbarBtn icon={Heading2} label="Heading 2" onClick={() => insertLinePrefix('## ')} />
-                  <ToolbarBtn icon={Heading3} label="Heading 3" onClick={() => insertLinePrefix('### ')} />
+                  <ToolbarBtn icon="format_h1" label="Heading 1" onClick={() => insertLinePrefix('# ')} />
+                  <ToolbarBtn icon="format_h2" label="Heading 2" onClick={() => insertLinePrefix('## ')} />
+                  <ToolbarBtn icon="format_h3" label="Heading 3" onClick={() => insertLinePrefix('### ')} />
                 </div>
 
                 <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
-                  <ToolbarBtn icon={List} label="Bullet List" onClick={() => insertLinePrefix('- ')} />
-                  <ToolbarBtn icon={ListOrdered} label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
-                  <ToolbarBtn icon={Quote} label="Blockquote" onClick={() => insertLinePrefix('> ')} />
+                  <ToolbarBtn icon="format_list_bulleted" label="Bullet List" onClick={() => insertLinePrefix('- ')} />
+                  <ToolbarBtn icon="format_list_numbered" label="Numbered List" onClick={() => insertLinePrefix('1. ')} />
+                  <ToolbarBtn icon="format_quote" label="Blockquote" onClick={() => insertLinePrefix('> ')} />
                 </div>
 
                 <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
-                  <ToolbarBtn icon={Link} label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
-                  <ToolbarBtn icon={ImageIcon} label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
-                  <ToolbarBtn icon={Minus} label="Divider" onClick={() => insertMarkdown('\n---\n')} />
+                  <ToolbarBtn icon="link" label="Link" onClick={() => insertMarkdown('[', '](url)', 'link text')} />
+                  <ToolbarBtn icon="image" label="Image" onClick={() => insertMarkdown('![', '](url)', 'alt text')} />
+                  <ToolbarBtn icon="horizontal_rule" label="Divider" onClick={() => insertMarkdown('\n---\n')} />
                 </div>
 
                 {/* Mobile undo/redo */}
                 <div className="sm:hidden flex items-center bg-gray-50 rounded-xl p-1 gap-0.5 ml-1">
-                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="p-2 text-slate-400 rounded-xl disabled:opacity-30"><RotateCcw size={14} /></button>
-                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="p-2 text-slate-400 rounded-xl disabled:opacity-30"><RotateCw size={14} /></button>
+                  <button onClick={undo} disabled={historyIndex <= 0} title="Undo" className="p-2 text-slate-400 rounded-xl disabled:opacity-30"><span className="material-symbols-rounded text-lg">undo</span></button>
+                  <button onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo" className="p-2 text-slate-400 rounded-xl disabled:opacity-30"><span className="material-symbols-rounded text-lg">redo</span></button>
                 </div>
               </div>
 
@@ -1065,9 +1055,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                       : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <SquarePlus size={16} />
+                  <span className="material-symbols-rounded text-lg">add_box</span>
                   <span className="hidden sm:inline">Blocks</span>
-                  <ChevronDown size={14} className={`transition-transform duration-300 ${blockSearchOpen ? 'rotate-180' : ''}`} />
+                  <span className="material-symbols-rounded text-lg transition-transform duration-300" style={{ transform: blockSearchOpen ? 'rotate(180deg)' : 'none' }}>expand_more</span>
                 </button>
 
                 {blockSearchOpen && (
@@ -1114,9 +1104,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   {/* Badges */}
                   {(breaking || featured || trending) && (
                     <div className="flex gap-2 flex-wrap">
-                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[10px] font-bold uppercase tracking-wide"><Zap size={8} /> Breaking</span>}
-                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-xl text-[10px] font-bold uppercase tracking-wide"><Star size={8} /> Featured</span>}
-                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-[10px] font-bold uppercase tracking-wide"><TrendingUp size={8} /> Trending</span>}
+                      {breaking && <span className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[10px] font-bold uppercase tracking-wide"><span className="material-symbols-rounded text-[10px]">bolt</span> Breaking</span>}
+                      {featured && <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-xl text-[10px] font-bold uppercase tracking-wide"><span className="material-symbols-rounded text-[10px]">star</span> Featured</span>}
+                      {trending && <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-[10px] font-bold uppercase tracking-wide"><span className="material-symbols-rounded text-[10px]">trending_up</span> Trending</span>}
                     </div>
                   )}
 
@@ -1131,10 +1121,10 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                       onChange={e => { setTitle(e.target.value); markUnsaved() }}
                     />
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-[11px] text-[#b8b9ba]">
-                      {author && <span className="font-semibold text-[#9e9fa0]">{author}</span>}
-                      {category && <span className="uppercase tracking-wider">{category}</span>}
-                      <span className="flex items-center gap-1">
-                        <Clock size={10} />
+                      {author && <span className="font-bold uppercase tracking-widest text-[#9e9fa0]">{author}</span>}
+                      {category && <span className="font-bold uppercase tracking-widest text-slate-400">{category}</span>}
+                      <span className="flex items-center gap-1 font-bold uppercase tracking-widest">
+                        <span className="material-symbols-rounded text-[12px]">schedule</span>
                         ~{estimateReadTime(content)} min read
                       </span>
                       {tags.slice(0, 3).map(t => (
@@ -1197,9 +1187,9 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   )}
                   {(author || category) && (
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-8 text-xs text-[#b8b9ba] pb-6 border-b border-[#f0eeee]">
-                      {author && <span className="font-semibold text-[#9e9fa0]">{author}</span>}
-                      {category && <span className="uppercase tracking-wider">{category}</span>}
-                      <span className="flex items-center gap-1"><Clock size={10} />~{estimateReadTime(content)} min read</span>
+                      {author && <span className="font-bold uppercase tracking-widest text-[#9e9fa0]">{author}</span>}
+                      {category && <span className="font-bold uppercase tracking-widest text-slate-400">{category}</span>}
+                      <span className="flex items-center gap-1 font-bold uppercase tracking-widest"><span className="material-symbols-rounded text-sm">schedule</span>~{estimateReadTime(content)} min read</span>
                     </div>
                   )}
                   <MarkdownPreview content={content} dbBlocks={dbBlocks} />
@@ -1236,13 +1226,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               className="fixed top-0 right-0 bottom-0 z-[70] bg-[#faf9f9] flex flex-col shadow-none xl:hidden overflow-hidden"
               style={{ width: 'min(300px, 90vw)' }}
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#eeecec] bg-white shrink-0">
-                <h2 className="font-['Newsreader'] text-[15px] font-bold text-[#1a1b1c]">Article Settings</h2>
+              <div className="px-5 py-4 border-b border-[#eeecec] bg-white shrink-0 flex items-center justify-between">
+                <h2 className="font-['Newsreader'] text-[18px] font-bold text-[#1a1b1c]">Editorial Hub</h2>
                 <button
                   onClick={() => setMobileDrawerOpen(false)}
                   className="p-1.5 hover:bg-[#f0eeee] rounded-xl transition-colors text-[#9e9fa0] hover:text-[#313334]"
                 >
-                  <X size={15} />
+                  <span className="material-symbols-rounded">close</span>
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
@@ -1263,11 +1253,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
             </div>
 
             <div className="px-8 pt-8 pb-6 text-center">
-              <div className="w-16 h-16 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-none">
-                <Sparkles size={32} />
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-xl shadow-emerald-500/10">
+                <span className="material-symbols-rounded text-4xl">auto_awesome</span>
               </div>
-              <h3 className="font-['Newsreader'] text-3xl font-bold text-slate-900 tracking-tight">Ready to publish?</h3>
-              <p className="text-slate-500 mt-2 text-sm">Fine-tune the final details before going live.</p>
+              <h3 className="font-['Newsreader'] text-3xl font-black text-slate-950 tracking-tight leading-none">Ready to publish?</h3>
+              <p className="text-slate-500 mt-3 text-sm font-medium">Fine-tune the final details before going live.</p>
             </div>
 
             <div className="px-8 pb-8 flex flex-col gap-6">
@@ -1290,26 +1280,26 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               <div className="space-y-3 px-2">
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-xl flex items-center justify-center ${!!title.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
-                      <Check size={12} strokeWidth={3} />
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!!title.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                       <span className="material-symbols-rounded text-sm font-bold">check</span>
                     </div>
-                    <span className="text-sm font-medium text-slate-600">Catchy headline</span>
+                    <span className="text-sm font-bold text-slate-600 uppercase tracking-widest">Catchy headline</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-xl flex items-center justify-center ${!!content.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
-                      <Check size={12} strokeWidth={3} />
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${!!content.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                       <span className="material-symbols-rounded text-sm font-bold">check</span>
                     </div>
-                    <span className="text-sm font-medium text-slate-600">Polished content</span>
+                    <span className="text-sm font-bold text-slate-600 uppercase tracking-widest">Polished content</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-xl flex items-center justify-center ${seoScore >= 50 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
-                      <Check size={12} strokeWidth={3} />
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${seoScore >= 50 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
+                       <span className="material-symbols-rounded text-sm font-bold">check</span>
                     </div>
-                    <span className="text-sm font-medium text-slate-600">Search optimization ({seoScore}%)</span>
+                    <span className="text-sm font-bold text-slate-600 uppercase tracking-widest">Search optimization ({seoScore}%)</span>
                   </div>
                 </div>
               </div>

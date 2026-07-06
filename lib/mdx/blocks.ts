@@ -378,6 +378,50 @@ blockRegistry.register({
   },
 })
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  VERSE BLOCK (Religious/Poetic Text)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'verse',
+  label: 'Religious Verse',
+  icon: 'menu_book',
+  pattern: /\[!verse\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!verse(text="মাতা পিতা গুরু যস্য..." source="মনুসংহিতা" reference="২.১৪৫")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'verse',
+      hName: 'verse',
+      hProperties: {
+        className: 'custom-block verse-block',
+        ...params,
+      },
+    }
+  },
+})
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CHART BLOCK (D3/Recharts Visualization)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'chart',
+  label: 'Chart/Graph',
+  icon: 'bar_chart',
+  pattern: /\[!chart\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!chart(type="bar" title="Population" labels="Jan,Feb,Mar" values="10,20,15")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'chart',
+      hName: 'chart',
+      hProperties: {
+        className: 'custom-block chart-block',
+        ...params,
+      },
+    }
+  },
+})
+
 const legacyBlocks = ['fbpost', 'tweet', 'youtube', 'tiktok', 'instagram', 'reddit', 'vimeo', 'codepen', 'gist']
 
 legacyBlocks.forEach(name => {

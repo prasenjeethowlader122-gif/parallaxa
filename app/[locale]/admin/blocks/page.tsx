@@ -5,13 +5,6 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import CodeMirror from '@uiw/react-codemirror'
 import { html } from '@codemirror/lang-html'
-import {
-  Plus, Trash2, Edit3, Save, X, Copy, Check, ChevronDown,
-  ChevronUp, Info, Puzzle, Code2, Eye, RefreshCw, AlertCircle,
-  Sparkles, BookOpen, Terminal, Share2, Play, Palette,
-  Lightbulb, AlertTriangle, Info as InfoIcon, Quote, BarChart3,
-  Box, Search, Book, StickyNote, Table as TableIcon
-} from 'lucide-react'
 
 interface BlockParam {
   name: string
@@ -34,20 +27,21 @@ interface CustomBlock {
 }
 
 const BUILTIN_BLOCKS = [
-  { name: 'embed', label: 'Social Embed', icon: Share2, description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
-  { name: 'screenshot', label: 'Screenshot', icon: Eye, description: 'সোশ্যাল মিডিয়া পোস্ট বা ওয়েবসাইটের স্ক্রিনশট দেখান', usage: '[!screenshot(url="https://...")]' },
-  { name: 'infobox', label: 'InfoBox', icon: InfoIcon, description: 'গুরুত্বপূর্ণ তথ্য বা সতর্কতা দেখান', usage: '[!infobox(title="Title" content="Message" type="info")]' },
-  { name: 'reference', label: 'Reference', icon: Book, description: 'তথ্যসূত্র বা সাইটেশন যোগ করুন', usage: '[!reference(text="Title" author="Name")]' },
-  { name: 'tika', label: 'Tika (Note)', icon: StickyNote, description: 'টিকা বা নোট যোগ করুন', usage: '[!tika(text="এখানে লিখুন...")]' },
-  { name: 'table', label: 'Styled Table', icon: TableIcon, description: 'সুন্দরভাবে তথ্য সাজিয়ে টেবিল তৈরি করুন', usage: '[!table(headers="Name,Age" rows="John,25|Jane,22")]' },
-  { name: 'run', label: 'Run Code', icon: Play, description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
-  { name: 'style', label: 'Custom CSS', icon: Palette, description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
+  { name: 'embed', label: 'Social Embed', icon: 'share', description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
+  { name: 'screenshot', label: 'Screenshot', icon: 'image', description: 'সোশ্যাল মিডিয়া পোস্ট বা ওয়েবসাইটের স্ক্রিনশট দেখান', usage: '[!screenshot(url="https://...")]' },
+  { name: 'infobox', label: 'InfoBox', icon: 'info', description: 'গুরুত্বপূর্ণ তথ্য বা সতর্কতা দেখান', usage: '[!infobox(title="Title" content="Message" type="info")]' },
+  { name: 'reference', label: 'Reference', icon: 'book', description: 'তথ্যসূত্র বা সাইটেশন যোগ করুন', usage: '[!reference(text="Title" author="Name")]' },
+  { name: 'tika', label: 'Tika (Note)', icon: 'sticky_note_2', description: 'টিকা বা নোট যোগ করুন', usage: '[!tika(text="এখানে লিখুন...")]' },
+  { name: 'table', label: 'Styled Table', icon: 'table_chart', description: 'সুন্দরভাবে তথ্য সাজিয়ে টেবিল তৈরি করুন', usage: '[!table(headers="Name,Age" rows="John,25|Jane,22")]' },
+  { name: 'run', label: 'Run Code', icon: 'play_circle', description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
+  { name: 'style', label: 'Custom CSS', icon: 'palette', description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
+  { name: 'verse', label: 'Religious Verse', icon: 'menu_book', description: 'ধর্মীয় শ্লোক বা আয়াত হাইলাইট করুন', usage: '[!verse(text="..." source="..." reference="...")]' },
+  { name: 'chart', label: 'Chart/Graph', icon: 'bar_chart', description: 'তথ্য দিয়ে চার্ট বা গ্রাফ তৈরি করুন', usage: '[!chart(type="bar" title="..." labels="..." values="...")]' },
 ]
 
 const PRESET_TEMPLATES = [
   {
-    icon: Lightbulb,
-    iconName: 'lightbulb',
+    icon: 'lightbulb',
     name: 'callout',
     label: 'Callout Box',
     description: 'সাধারণ তথ্য বাক্স',
@@ -60,8 +54,7 @@ const PRESET_TEMPLATES = [
 </div>`,
   },
   {
-    icon: AlertTriangle,
-    iconName: 'warning',
+    icon: 'warning',
     name: 'warning',
     label: 'Warning Box',
     description: 'সতর্কতা বাক্স',
@@ -73,8 +66,7 @@ const PRESET_TEMPLATES = [
 </div>`,
   },
   {
-    icon: InfoIcon,
-    iconName: 'info',
+    icon: 'info',
     name: 'fact',
     label: 'Fact Box',
     description: 'তথ্য বাক্স — তথ্য ও উৎস সহ',
@@ -89,8 +81,7 @@ const PRESET_TEMPLATES = [
 </div>`,
   },
   {
-    icon: Quote,
-    iconName: 'quote',
+    icon: 'format_quote',
     name: 'pullquote',
     label: 'Pull Quote',
     description: 'বড় উদ্ধৃতি হাইলাইট',
@@ -104,8 +95,7 @@ const PRESET_TEMPLATES = [
 </blockquote>`,
   },
   {
-    icon: BarChart3,
-    iconName: 'stat',
+    icon: 'bar_chart',
     name: 'stat',
     label: 'Stat Highlight',
     description: 'বড় সংখ্যা/তথ্য হাইলাইট',
@@ -118,47 +108,6 @@ const PRESET_TEMPLATES = [
   <div class="mb-2 text-4xl sm:text-5xl font-black leading-none text-slate-900">{{number}}</div>
   <div class="mb-1 text-sm sm:text-[15px] font-medium text-slate-500">{{label}}</div>
   <div class="text-[11px] text-slate-400">সূত্র: {{source}}</div>
-</div>`,
-  },
-  {
-    icon: InfoIcon,
-    iconName: 'info',
-    name: 'infobox',
-    label: 'Info Box (New)',
-    description: 'নতুন স্টাইলিশ ইনফো বক্স',
-    params: [
-      { name: 'title', label: 'শিরোনাম', placeholder: 'Quick Facts', defaultValue: 'Quick Facts' },
-      { name: 'content', label: 'বিস্তারিত', placeholder: 'এখানে লিখুন…', defaultValue: '' },
-      { name: 'type', label: 'টাইপ (info/warning)', placeholder: 'info', defaultValue: 'info' },
-    ],
-    htmlTemplate: `<div class="my-6 p-5 rounded-2xl border border-blue-100 bg-blue-50 shadow-sm">
-  <div class="flex items-center gap-2 mb-2">
-    <h4 class="text-sm font-bold text-gray-900">{{title}}</h4>
-  </div>
-  <div class="text-sm leading-relaxed text-gray-800">
-    {{content}}
-  </div>
-</div>`,
-  },
-  {
-    icon: Book,
-    iconName: 'book',
-    name: 'reference',
-    label: 'Reference (New)',
-    description: 'নতুন স্টাইলিশ রেফারেন্স',
-    params: [
-      { name: 'text', label: 'শিরোনাম', placeholder: 'Source Title', defaultValue: '' },
-      { name: 'author', label: 'লেখক', placeholder: 'Author Name', defaultValue: '' },
-      { name: 'year', label: 'বছর', placeholder: '2024', defaultValue: '' },
-      { name: 'url', label: 'URL', placeholder: 'https://...', defaultValue: '' },
-    ],
-    htmlTemplate: `<div class="my-4 p-4 bg-gray-50 border border-gray-100 rounded-xl flex items-start gap-3">
-  <div class="text-xs text-gray-600 italic">
-    <span class="font-bold text-gray-900 not-italic">{{author}}</span> ({{year}}).
-    <a href="{{url}}" target="_blank" rel="noopener noreferrer" class="mx-1 text-blue-600 hover:underline">
-      {{text}}
-    </a>
-  </div>
 </div>`,
   },
 ]
@@ -178,7 +127,7 @@ function ParamRow({
     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4 shadow-sm">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">নাম (code)</label>
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">নাম (code)</label>
           <input
             value={param.name}
             onChange={e => onChange(index, 'name', e.target.value.replace(/[^a-z0-9_]/g, ''))}
@@ -187,7 +136,7 @@ function ParamRow({
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">লেবেল</label>
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">লেবেল</label>
           <input
             value={param.label}
             onChange={e => onChange(index, 'label', e.target.value)}
@@ -196,7 +145,7 @@ function ParamRow({
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Placeholder</label>
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">Placeholder</label>
           <input
             value={param.placeholder}
             onChange={e => onChange(index, 'placeholder', e.target.value)}
@@ -205,7 +154,7 @@ function ParamRow({
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Default মান</label>
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">Default মান</label>
           <input
             value={param.defaultValue}
             onChange={e => onChange(index, 'defaultValue', e.target.value)}
@@ -218,9 +167,9 @@ function ParamRow({
         <button
           onClick={() => onRemove(index)}
           aria-label={`Remove parameter ${param.name || index + 1}`}
-          className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-white hover:text-red-500"
+          className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-400 transition hover:bg-white hover:text-red-500"
         >
-          <X size={14} /> Remove
+          <span className="material-symbols-rounded text-sm">delete</span> Remove
         </button>
       </div>
     </div>
@@ -267,7 +216,7 @@ function SyntaxUsage({ name, params }: { name: string; params: BlockParam[] }) {
         aria-label="Copy usage"
         className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
       >
-        {copied ? <Check size={14} /> : <Copy size={14} />}
+        {copied ? <span className="material-symbols-rounded text-sm">check</span> : <span className="material-symbols-rounded text-sm">content_copy</span>}
       </button>
     </div>
   )
@@ -346,7 +295,7 @@ export default function BlockManagerPage() {
       name: preset.name,
       label: preset.label,
       description: preset.description,
-      icon: preset.iconName || 'extension',
+      icon: preset.icon || 'extension',
       params: preset.params.map(p => ({ ...p })),
       htmlTemplate: preset.htmlTemplate,
     })
@@ -425,27 +374,6 @@ export default function BlockManagerPage() {
 
   const isEditing = editingId !== null
 
-  const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
-    const iconMap: Record<string, any> = {
-      share: Share2,
-      terminal: Terminal,
-      palette: Palette,
-      extension: Box,
-      play: Play,
-      info: InfoIcon,
-      warning: AlertTriangle,
-      lightbulb: Lightbulb,
-      quote: Quote,
-      stat: BarChart3,
-      image: Eye,
-      book: Book,
-      sticky_note_2: StickyNote,
-      table_chart: TableIcon,
-    }
-    const Icon = iconMap[name] || Box
-    return <Icon className={className} size={18} />
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       <Header />
@@ -453,8 +381,8 @@ export default function BlockManagerPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-['Newsreader'] text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-              Custom Block Manager
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+              Block Manager
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               নতুন block তৈরি করুন, সম্পাদনা করুন, মুছুন
@@ -464,108 +392,107 @@ export default function BlockManagerPage() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowPresets(p => !p)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
             >
-              <Sparkles size={14} />
-              Preset
+              <span className="material-symbols-rounded text-lg">auto_awesome</span>
+              Presets
             </button>
             <button
               onClick={openNew}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
             >
-              <Plus size={14} />
+              <span className="material-symbols-rounded text-lg">add</span>
               নতুন Block
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
-            <AlertCircle size={16} className="shrink-0" />
+          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+            <span className="material-symbols-rounded text-xl shrink-0">error</span>
             <span className="min-w-0 flex-1">{error}</span>
             <button
               onClick={() => setError(null)}
               className="rounded-lg p-1 text-red-400 transition hover:bg-white hover:text-red-600"
               aria-label="Close error"
             >
-              <X size={14} />
+              <span className="material-symbols-rounded text-sm">close</span>
             </button>
           </div>
         )}
 
         <div className="mb-6 relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-slate-400" />
+             <span className="material-symbols-rounded text-xl text-slate-400">search</span>
           </div>
           <input
             type="text"
             placeholder="ব্লক খুঁজুন (নাম বা লেবেল দিয়ে)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-11 pr-4 py-3 border border-slate-200 rounded-2xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-all shadow-sm"
+            className="block w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-all shadow-sm"
           />
         </div>
 
         {showPresets && (
-          <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">Preset Templates</h2>
+          <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-slate-900">Preset Templates</h2>
               <button
                 onClick={() => setShowPresets(false)}
                 className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
                 aria-label="Close presets"
               >
-                <X size={14} />
+                <span className="material-symbols-rounded text-lg">close</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {PRESET_TEMPLATES.map(p => (
                 <button
                   key={p.name}
                   onClick={() => loadPreset(p)}
-                  className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-center transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
+                  className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 text-center transition hover:-translate-y-1 hover:border-slate-300 hover:bg-slate-50 hover:shadow-lg"
                 >
-                  <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-500 transition group-hover:bg-slate-950 group-hover:text-white">
-                    <p.icon size={20} />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition group-hover:bg-slate-900 group-hover:text-white">
+                    <span className="material-symbols-rounded text-2xl">{p.icon}</span>
                   </div>
-                  <span className="text-xs font-semibold text-slate-900">{p.label}</span>
-                  <span className="text-[10px] leading-tight text-slate-500">{p.description}</span>
+                  <span className="text-xs font-bold text-slate-900">{p.label}</span>
+                  <span className="text-[10px] leading-tight text-slate-500 font-medium">{p.description}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div className={`grid gap-6 ${isEditing ? 'grid-cols-1 lg:grid-cols-5' : 'grid-cols-1'}`}>
+        <div className={`grid gap-8 ${isEditing ? 'grid-cols-1 lg:grid-cols-5' : 'grid-cols-1'}`}>
           <div className={isEditing ? 'lg:col-span-2' : 'col-span-1'}>
-            <div className="mb-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div className="mb-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
               <button
                 onClick={() => setExpandedBuiltin(e => !e)}
                 aria-expanded={expandedBuiltin}
-                className="flex w-full items-center justify-between px-4 py-4 transition hover:bg-slate-50 sm:px-5"
+                className="flex w-full items-center justify-between px-5 py-4 transition hover:bg-slate-50"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                    <BookOpen size={14} />
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <span className="material-symbols-rounded text-xl">book</span>
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-semibold text-slate-900">Built-in Blocks</p>
-                    <p className="text-[10px] text-slate-500">{BUILTIN_BLOCKS.length}টি বিল্ট-ইন ব্লক</p>
+                    <p className="text-sm font-bold text-slate-950">Built-in Blocks</p>
+                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{BUILTIN_BLOCKS.length}টি ডিফল্ট ব্লক</p>
                   </div>
                 </div>
-                {expandedBuiltin ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+                <span className="material-symbols-rounded text-slate-400 transition-transform duration-300" style={{ transform: expandedBuiltin ? 'rotate(180deg)' : 'none' }}>expand_more</span>
               </button>
 
               {expandedBuiltin && (
-                <div className="divide-y divide-slate-100 border-t border-slate-100">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 bg-slate-50/30">
                   {BUILTIN_BLOCKS.map(b => (
-                    <div key={b.name} className="px-4 py-3 sm:px-5">
-                      <div className="mb-1 flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <b.icon size={16} className="text-slate-600" />
-                          <span className="truncate text-sm font-semibold text-slate-900">{b.label}</span>
-                          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">built-in</span>
+                    <div key={b.name} className="px-5 py-4 hover:bg-white transition-colors">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                           <span className="material-symbols-rounded text-lg text-slate-600">{b.icon}</span>
+                          <span className="truncate text-sm font-bold text-slate-900">{b.label}</span>
                         </div>
                         <button
                           onClick={() => {
@@ -573,13 +500,13 @@ export default function BlockManagerPage() {
                             setCopiedSyntax(b.name)
                             setTimeout(() => setCopiedSyntax(null), 1500)
                           }}
-                          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                          className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                           aria-label={`Copy ${b.name} usage`}
                         >
-                          {copiedSyntax === b.name ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                          {copiedSyntax === b.name ? <span className="material-symbols-rounded text-sm text-emerald-500">check</span> : <span className="material-symbols-rounded text-sm">content_copy</span>}
                         </button>
                       </div>
-                      <p className="text-[11px] leading-5 text-slate-500">{b.description}</p>
+                      <p className="text-[11px] leading-5 text-slate-500 font-medium">{b.description}</p>
                     </div>
                   ))}
                 </div>
@@ -587,23 +514,23 @@ export default function BlockManagerPage() {
             </div>
 
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
-                <div className="flex items-center gap-2">
-                  <Puzzle size={14} className="text-slate-500" />
-                  <span className="text-sm font-semibold text-slate-900">আমার Blocks</span>
+              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <div className="flex items-center gap-3">
+                   <span className="material-symbols-rounded text-xl text-slate-500">category</span>
+                  <span className="text-sm font-bold text-slate-950">আমার Blocks</span>
                 </div>
-                {loading && <RefreshCw size={13} className="animate-spin text-slate-400" />}
+                {loading && <span className="material-symbols-rounded text-lg animate-spin text-slate-400">refresh</span>}
               </div>
 
               {!loading && blocks.length === 0 ? (
-                <div className="px-5 py-12 text-center">
-                  <div className="mb-3 flex justify-center">
-                    <Box size={40} className="text-slate-300" />
+                <div className="px-5 py-20 text-center">
+                  <div className="mb-4 flex justify-center">
+                    <span className="material-symbols-rounded text-6xl text-slate-200">package_2</span>
                   </div>
-                  <p className="text-sm text-slate-500">এখনো কোনো custom block নেই</p>
+                  <p className="text-sm text-slate-500 font-medium">এখনো কোনো custom block নেই</p>
                   <button
                     onClick={openNew}
-                    className="mt-4 text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-4"
+                    className="mt-4 text-xs font-bold text-slate-950 underline decoration-slate-300 underline-offset-4"
                   >
                     প্রথম block তৈরি করুন
                   </button>
@@ -616,51 +543,48 @@ export default function BlockManagerPage() {
                   ).map(block => (
                     <div
                       key={block.id}
-                      className={`px-4 py-3.5 sm:px-5 transition ${
+                      className={`px-5 py-4 transition ${
                         editingId === block.id ? 'bg-slate-50 ring-1 ring-inset ring-slate-200' : 'hover:bg-slate-50'
                       }`}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
-                          <DynamicIcon name={block.icon} />
+                      <div className="flex items-start gap-4">
+                        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+                           <span className="material-symbols-rounded text-xl">{block.icon}</span>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-sm font-semibold text-slate-900">{block.label}</span>
-                            <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+                            <span className="text-sm font-bold text-slate-900">{block.label}</span>
+                            <code className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">
                               {block.name}
                             </code>
                           </div>
                           {block.description && (
-                            <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-500">
+                            <p className="mt-1 line-clamp-1 text-[11px] text-slate-500 font-medium">
                               {block.description}
                             </p>
                           )}
-                          <p className="mt-1 text-[10px] text-slate-400">
-                            {block.params.length}টি parameter
+                          <p className="mt-1 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            {block.params.length} parameters
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
                           <button
                             onClick={() => copyUsage(block.name, block.params)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                            aria-label={`Copy usage for ${block.label}`}
+                            className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                           >
-                            {copiedSyntax === block.name ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                            {copiedSyntax === block.name ? <span className="material-symbols-rounded text-sm text-emerald-500">check</span> : <span className="material-symbols-rounded text-sm">content_copy</span>}
                           </button>
                           <button
                             onClick={() => openEdit(block)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                            aria-label={`Edit ${block.label}`}
+                            className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                           >
-                            <Edit3 size={13} />
+                            <span className="material-symbols-rounded text-sm">edit</span>
                           </button>
                           <button
                             onClick={() => deleteBlock(block.id)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
-                            aria-label={`Delete ${block.label}`}
+                            className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                           >
-                            <Trash2 size={13} />
+                            <span className="material-symbols-rounded text-sm">delete</span>
                           </button>
                         </div>
                       </div>
@@ -673,9 +597,9 @@ export default function BlockManagerPage() {
 
           {isEditing && (
             <div className="lg:col-span-3">
-              <div className="sticky top-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
-                  <h2 className="text-sm font-semibold text-slate-900">
+              <div className="sticky top-20 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+                <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 bg-slate-50/50">
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-slate-950">
                     {editingId === 'new' ? 'নতুন Block তৈরি' : 'Block সম্পাদনা'}
                   </h2>
                   <button
@@ -684,79 +608,77 @@ export default function BlockManagerPage() {
                       resetForm()
                       setError(null)
                     }}
-                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
-                    aria-label="Close editor"
+                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                   >
-                    <X size={14} />
+                    <span className="material-symbols-rounded text-xl">close</span>
                   </button>
                 </div>
 
-                <div className="max-h-[calc(100vh-180px)] overflow-y-auto p-4 sm:p-5">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr_1fr]">
+                <div className="max-h-[calc(100vh-220px)] overflow-y-auto p-6 sm:p-8">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-[160px_1fr_1fr]">
                     <div>
-                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Icon</label>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-400">Icon</label>
                       <select
                         value={form.icon}
                         onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none transition focus:ring-2 focus:ring-slate-300"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-slate-900/10 appearance-none cursor-pointer"
                       >
-                        {['share', 'terminal', 'palette', 'extension', 'play', 'info', 'warning', 'lightbulb', 'quote', 'stat', 'image'].map(icon => (
+                        {['share', 'terminal', 'palette', 'extension', 'play_circle', 'info', 'warning', 'lightbulb', 'format_quote', 'bar_chart', 'image', 'book', 'sticky_note_2', 'table_chart', 'menu_book'].map(icon => (
                           <option key={icon} value={icon}>{icon}</option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Block নাম <span className="text-red-500">*</span>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        Block ID <span className="text-red-500">*</span>
                       </label>
                       <input
                         value={form.name}
                         onChange={e => setForm(f => ({ ...f, name: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') }))}
                         placeholder="callout"
                         disabled={editingId !== 'new'}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono outline-none transition focus:ring-2 focus:ring-slate-300 disabled:bg-slate-50 disabled:text-slate-400"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-mono font-bold outline-none transition focus:ring-2 focus:ring-slate-900/10 disabled:bg-slate-50 disabled:text-slate-400"
                       />
-                      <p className="mt-1 text-[10px] text-slate-400">শুধু ছোট হাতের অক্ষর, সংখ্যা, - বা _</p>
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
                         Display লেবেল <span className="text-red-500">*</span>
                       </label>
                       <input
                         value={form.label}
                         onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                         placeholder="Callout Box"
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-slate-300"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold outline-none transition focus:ring-2 focus:ring-slate-900/10"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">বিবরণ</label>
+                  <div className="mt-6">
+                    <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-400">বিবরণ</label>
                     <input
                       value={form.description}
                       onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                       placeholder="এই block কী করে?"
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-slate-300"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-slate-900/10"
                     />
                   </div>
 
-                  <div className="mt-5">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <label className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Parameters <span className="font-normal normal-case text-slate-500">— template-এ {'{{name}}'} দিয়ে ব্যবহার করুন</span>
+                  <div className="mt-8">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        Parameters
                       </label>
                       <button
                         onClick={addParam}
-                        className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                        className="inline-flex items-center gap-1 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-950 bg-slate-100 transition hover:bg-slate-200"
                       >
-                        <Plus size={11} /> যোগ করুন
+                        <span className="material-symbols-rounded text-sm">add</span> যোগ করুন
                       </button>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4">
                       {form.params.map((p, i) => (
                         <ParamRow
                           key={i}
@@ -768,41 +690,41 @@ export default function BlockManagerPage() {
                       ))}
 
                       {form.params.length === 0 && (
-                        <p className="py-2 text-xs italic text-slate-400">
-                          কোনো parameter নেই — static HTML block তৈরি করতে পারেন
-                        </p>
+                        <div className="py-6 border-2 border-dashed border-slate-100 rounded-2xl text-center">
+                           <p className="text-xs italic text-slate-400 font-medium">কোনো parameter নেই — static HTML block তৈরি করতে পারেন</p>
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="mt-5">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <label className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                  <div className="mt-8">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                         HTML Template <span className="text-red-500">*</span>
                       </label>
 
-                      <div className="inline-flex overflow-hidden rounded-xl border border-slate-200 bg-white">
+                      <div className="inline-flex overflow-hidden rounded-xl border border-slate-200 bg-white p-1">
                         <button
                           onClick={() => setPreviewTab('edit')}
-                          className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition ${
-                            previewTab === 'edit' ? 'bg-slate-950 text-white' : 'text-slate-500 hover:bg-slate-50'
+                          className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                            previewTab === 'edit' ? 'bg-slate-950 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
                           }`}
                         >
-                          <Code2 size={10} /> কোড
+                          <span className="material-symbols-rounded text-sm">code</span> কোড
                         </button>
                         <button
                           onClick={() => setPreviewTab('preview')}
-                          className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition ${
-                            previewTab === 'preview' ? 'bg-slate-950 text-white' : 'text-slate-500 hover:bg-slate-50'
+                          className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                            previewTab === 'preview' ? 'bg-slate-950 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
                           }`}
                         >
-                          <Eye size={10} /> Preview
+                          <span className="material-symbols-rounded text-sm">visibility</span> Preview
                         </button>
                       </div>
                     </div>
 
                     {previewTab === 'edit' ? (
-                      <div className="overflow-hidden rounded-2xl border border-slate-200">
+                      <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-inner">
                         <CodeMirror
                           value={form.htmlTemplate}
                           height="320px"
@@ -813,49 +735,38 @@ export default function BlockManagerPage() {
                         />
                       </div>
                     ) : (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
                         <LivePreview template={form.htmlTemplate} params={form.params} />
                       </div>
                     )}
-
-                    <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-5 text-slate-400">
-                      <Info size={10} className="mt-0.5" />
-                      Parameter মানের জন্য {'{{param_name}}'} ব্যবহার করুন। Inline styles বা utility classes ব্যবহার করুন কারণ article CSS আলাদা।
-                    </p>
                   </div>
 
                   {form.name && (
-                    <div className="mt-5">
-                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Article-এ ব্যবহারের syntax
+                    <div className="mt-8">
+                      <label className="mb-3 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        Syntax Usage
                       </label>
                       <SyntaxUsage name={form.name} params={form.params} />
                     </div>
                   )}
 
-                  {error && (
-                    <p className="mt-4 flex items-center gap-2 text-sm text-red-600">
-                      <AlertCircle size={14} /> {error}
-                    </p>
-                  )}
-
-                  <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                     <button
                       onClick={() => {
                         setEditingId(null)
                         resetForm()
                         setError(null)
                       }}
-                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 sm:flex-1"
+                      className="w-full rounded-2xl border border-slate-200 px-6 py-3.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 sm:flex-1 uppercase tracking-widest"
                     >
                       বাতিল
                     </button>
                     <button
                       onClick={save}
                       disabled={saving || !form.name || !form.label || !form.htmlTemplate}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 shadow-xl shadow-slate-950/20 uppercase tracking-widest"
                     >
-                      {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
+                      {saving ? <span className="material-symbols-rounded animate-spin text-lg">refresh</span> : <span className="material-symbols-rounded text-lg">save</span>}
                       {saving ? 'সেভ হচ্ছে…' : 'সেভ করুন'}
                     </button>
                   </div>
@@ -863,31 +774,6 @@ export default function BlockManagerPage() {
               </div>
             </div>
           )}
-        </div>
-
-        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
-            <Info size={14} /> কীভাবে ব্যবহার করবেন
-          </h3>
-          <div className="grid gap-4 text-xs text-slate-600 sm:grid-cols-3">
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-slate-50 p-4">
-              <div className="font-semibold text-slate-900">১. Block তৈরি করুন</div>
-              <p>
-                একটি নাম, লেবেল দিন। Parameters যোগ করুন এবং HTML template লিখুন। <code className="rounded bg-slate-200 px-1">{'{{param}}'}</code> দিয়ে মান বসানো হবে।
-              </p>
-            </div>
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-slate-50 p-4">
-              <div className="font-semibold text-slate-900">২. Article-এ ব্যবহার করুন</div>
-              <p>Write page-এ markdown editor-এ লিখুন:</p>
-              <code className="break-all rounded bg-slate-200 px-2 py-1 text-[10px]">
-                [!blockname(param1="মান")]
-              </code>
-            </div>
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-slate-50 p-4">
-              <div className="font-semibold text-slate-900">৩. Preview দেখুন</div>
-              <p>Article preview বা Published article-এ block render হবে।</p>
-            </div>
-          </div>
         </div>
       </main>
 
