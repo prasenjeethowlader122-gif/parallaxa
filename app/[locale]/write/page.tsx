@@ -869,7 +869,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                     : 'text-slate-500 hover:bg-gray-50 hover:text-slate-900'
                 }`}
               >
-                <span className={`material-symbols-rounded shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
+                <span className={`material-symbols-rounded text-xl shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
                 <span className="font-bold tracking-tight">{label}</span>
                 {tabId === 'seo' && (
                   <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-xl ${
@@ -963,14 +963,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 sidebarOpen ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <span className="material-symbols-rounded">side_navigation</span>
+              <span className="material-symbols-rounded text-xl">side_navigation</span>
             </button>
             <button
               title="Article settings"
               onClick={() => setMobileDrawerOpen(true)}
               className="xl:hidden p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
             >
-              <span className="material-symbols-rounded">tune</span>
+              <span className="material-symbols-rounded text-xl">tune</span>
             </button>
 
             {/* Publish button */}
@@ -1011,7 +1011,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
           {/* Toolbar */}
           {viewMode !== 'visual' && (
-            <div className="flex items-center z-20 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
+            <div className="flex items-center z-[60] px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
               <div className="flex items-center overflow-x-auto no-scrollbar gap-1 flex-1" style={{ scrollbarWidth: 'none' }}>
                 <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5">
                   <ToolbarBtn icon="format_bold" label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
@@ -1232,7 +1232,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   onClick={() => setMobileDrawerOpen(false)}
                   className="p-1.5 hover:bg-[#f0eeee] rounded-xl transition-colors text-[#9e9fa0] hover:text-[#313334]"
                 >
-                  <span className="material-symbols-rounded">close</span>
+                  <span className="material-symbols-rounded text-xl">close</span>
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">

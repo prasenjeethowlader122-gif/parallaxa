@@ -1,5 +1,5 @@
 // app/[locale]/layout.tsx
-import { sansFont, serifFont, monoFont, banglaFont } from '@/lib/font'
+import { sansFont, serifFont, monoFont, banglaFont, logoFont, materialSymbols } from '@/lib/font'
 import { ClientSessionProvider } from '@/components/session-provider'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
@@ -19,12 +19,7 @@ export default async function RootLayout({
   const { locale } = await params
 
   return (
-    <html lang={locale} className={`${sansFont.variable} ${serifFont.variable} ${monoFont.variable} ${banglaFont.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" />
-      </head>
+    <html lang={locale} className={`${sansFont.variable} ${serifFont.variable} ${monoFont.variable} ${banglaFont.variable} ${logoFont.variable} ${materialSymbols.variable}`}>
       <body className={`${locale === 'bn' ? banglaFont.className : sansFont.className} antialiased bg-background text-foreground`}>
         <ClientSessionProvider>
           {children}
