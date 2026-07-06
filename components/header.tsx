@@ -7,9 +7,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
 
-// Static logo from public (simple setup)
-const LOGO_SRC = '/20260705_150355.png'
-
 const NAV_LINKS = [
   { href: '/', label: 'Home', icon: 'home' },
   { href: '/category/World', label: 'World', icon: 'public' },
@@ -185,14 +182,7 @@ export function Header({
           <div className="flex items-center gap-8">
             {/* Left: Logo */}
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none">
-              <Image
-                src={LOGO_SRC}
-                alt="Only Hindu"
-                width={170}
-                height={300}
-                priority
-                className="h-12 w-auto"
-              />
+              <span className="font-logo text-2xl font-bold text-red-600 tracking-tight">Only Hindu</span>
             </Link>
 
             {/* Center-ish: Search */}
@@ -383,14 +373,7 @@ export function Header({
 
           {/* Center: Logo */}
           <Link href="/" className="flex items-center select-none h-full">
-            <Image
-              src={LOGO_SRC}
-              alt="Only Hindu"
-              width={170}
-              height={300}
-              priority
-              className="h-10 w-auto"
-            />
+            <span className="font-logo text-xl font-bold text-red-600 tracking-tight">Only Hindu</span>
           </Link>
 
           {/* Right: search */}

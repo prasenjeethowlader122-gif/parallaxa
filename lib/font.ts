@@ -62,6 +62,35 @@ export const monoFont = localFont({
   variable: '--font-mono'
 })
 
+// Logo Font: Lobster Two
+export const logoFont = localFont({
+  src: [
+    {
+      path: '../public/local/font/LobsterTwo-Regular.ttf',
+      weight: '400',
+      style: 'normal'
+    },
+    {
+      path: '../public/local/font/LobsterTwo-Bold.ttf',
+      weight: '700',
+      style: 'normal'
+    }
+  ],
+  variable: '--font-logo'
+})
+
+// Material Symbols Rounded
+export const materialSymbols = localFont({
+  src: [
+    {
+      path: '../public/local/font/MaterialSymbolsRounded.ttf',
+      weight: '100 700',
+      style: 'normal'
+    }
+  ],
+  variable: '--font-material-symbols'
+})
+
 // Compatibility exports for existing code
 export const spacegrotesk = sansFont
 export const Fugaz = serifFont

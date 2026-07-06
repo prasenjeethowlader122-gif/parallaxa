@@ -10,7 +10,7 @@ export function Footer() {
 
         {/* Left: Branding & Copyright */}
         <div className="flex items-center gap-4">
-          <span className="text-sm font-bold uppercase tracking-tight text-foreground">
+          <span className="font-logo text-xl font-bold text-red-600 tracking-tight">
             Only Hindu
           </span>
           <span className="hidden md:inline h-4 w-px bg-gray-200" />
