@@ -359,7 +359,7 @@ export function Header({
                   priority
                   className="h-14 w-auto"
                 />**/}
-                <h1 className = {`${banglaFontlogo.className}`}>অনলিহিন্দু</h1>
+                <h1 className = {`${banglaFontlogo.className} text-lg font-bold`}>অনলিহিন্দু</h1>
                   
               </div>
             </Link>
@@ -446,10 +446,10 @@ export function Header({
                     key={href}
                     href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex items-center border-b justify-start gap-2 p-3.5  transition-colors ${
+                    className={`relative flex items-center border-b justify-start gap-2 p-3.5  transition-colors w-full ${
                       isActive
-                        ? 'bg-primary border-gray-900'
-                        : '  hover:bg-gray-100'
+                        ? 'border-gray-900 text-blue-600'
+                        : '  hover:bg-gray-100 rounded-lg'
                     }`}
                   >
                     <div
