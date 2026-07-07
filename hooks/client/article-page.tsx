@@ -23,7 +23,7 @@ import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 import {
   Check, Copy, ArrowLeft, CaretRight, SpeakerHigh, BookmarkSimple,
   Printer, ShareNetwork, FacebookLogo, PhosphorLink, Clock, Eye, TwitterLogo, LinkedinLogo
-} from '@phosphor-icons/react/dist/ssr'
+} from '@phosphor-icons/react/ssr'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

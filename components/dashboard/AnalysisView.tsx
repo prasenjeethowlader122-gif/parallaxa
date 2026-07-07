@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {
   ChartBar, ChartLine, ChartPie, Pulse, TrendUp, Users, Eye,
   CaretRight, Calendar, ArrowUpRight, ArrowDownRight, Stack
-} from '@phosphor-icons/react/dist/ssr';
+} from '@phosphor-icons/react/ssr';
 
 interface AnalysisData {
   label: string;

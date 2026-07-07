@@ -6,7 +6,7 @@ import { getPublishedArticles } from '@/lib/db/articles'
 import { NewsCard } from '@/components/news-card'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { UserCircle, Newspaper } from '@phosphor-icons/react/dist/ssr'
+import { UserCircle, Newspaper } from '@phosphor-icons/react/ssr'
 
 export default async function AuthorProfilePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params

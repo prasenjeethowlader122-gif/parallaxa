@@ -8,7 +8,7 @@ import { useState, useEffect, Suspense } from 'react' // add Suspense
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { WarningCircle, CheckCircle, Eye, EyeSlash } from '@phosphor-icons/react/dist/ssr'
+import { WarningCircle, CheckCircle, Eye, EyeSlash } from '@phosphor-icons/react/ssr'
 
 // Extract the part that uses useSearchParams into its own component
 function SignInForm() {

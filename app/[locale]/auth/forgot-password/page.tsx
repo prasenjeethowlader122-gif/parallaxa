@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
-import { WarningCircle, CheckCircle, ArrowLeft } from '@phosphor-icons/react/dist/ssr'
+import { WarningCircle, CheckCircle, ArrowLeft } from '@phosphor-icons/react/ssr'
 import { forgotPasswordAction } from '@/app/actions/auth'
 
 export default function ForgotPasswordPage() {

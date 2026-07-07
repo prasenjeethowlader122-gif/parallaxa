@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, searchArticlesByQuery } from '@/lib/db/articles'
-import { ArrowLeft, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
+import { ArrowLeft, MagnifyingGlass } from '@phosphor-icons/react/ssr'
 
 export function SearchContent() {
   const searchParams = useSearchParams()

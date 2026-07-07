@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { NewsArticle, getBreakingNews } from '@/lib/db/articles'
-import { CaretRight } from '@phosphor-icons/react/dist/ssr'
+import { CaretRight } from '@phosphor-icons/react/ssr'
 
 export function BreakingBanner() {
   const [breakingArticles, setBreakingArticles] = useState < NewsArticle[] > ([])

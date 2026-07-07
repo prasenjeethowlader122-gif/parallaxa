@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { NewsArticle, getTrendingArticles } from '@/lib/db/articles'
-import { Fire } from '@phosphor-icons/react/dist/ssr'
+import { Fire } from '@phosphor-icons/react/ssr'
 
 export function TrendingSection() {
   const [trendingArticles, setTrendingArticles] = useState < NewsArticle[] > ([])

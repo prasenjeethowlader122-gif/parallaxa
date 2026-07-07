@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
 // -------------------
 import { useState, useEffect, useCallback } from 'react'
-import { CircleNotch, ArrowSquareOut, DotsThreeOutline, PencilSimple, Trash, Eye } from '@phosphor-icons/react/dist/ssr'
+import { CircleNotch, ArrowSquareOut, DotsThreeOutline, PencilSimple, Trash, Eye } from '@phosphor-icons/react/ssr'
 
 const ArticlesView = () => {
   const router = useRouter() // For redirection

@@ -3,7 +3,7 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 import { blockRegistry, parseBlockParams } from '@/lib/mdx/block-registry'
 import { customBlockComponents } from './CustomBlockRenderer'
 import React, { useState, useMemo } from 'react'
-import { PencilSimple, Trash, Cube, Gear, X, Info, Check } from '@phosphor-icons/react/dist/ssr'
+import { PencilSimple, Trash, Cube, Gear, X, Info, Check } from '@phosphor-icons/react/ssr'
 
 export const MdxBlockExtension = Node.create({
   name: 'mdxBlock',
