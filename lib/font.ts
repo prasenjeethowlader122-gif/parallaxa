@@ -38,7 +38,7 @@ export const sansFont = localFont({
 export const serifFont = localFont({
   src: [
     {
-      path: '../public/local/font/PlayfairDisplay-VariableFont_wght.ttf',
+      path: '../public/local/font/SpaceGrotesk-VariableFont_wght.ttf',
       style: 'normal'
     }
   ],

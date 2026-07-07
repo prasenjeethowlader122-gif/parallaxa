@@ -340,14 +340,8 @@ export function Header({
       <div className="md:hidden">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
           {/* Left: logo (Menu icon restored) */}
-          <div className="flex items-center gap-3 select-none h-full">
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+          <div className="flex items-center justify-start gap-3 select-none h-full">
+      
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
               <div className="flex flex-col leading-none h-full justify-center">
                 <Image
@@ -377,6 +371,13 @@ export function Header({
             <button className="relative w-9 h-9 flex items-center justify-center text-gray-900 hover:bg-card rounded-lg transition-colors">
               <Bell className="w-6 h-6" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
+            </button>
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -465,7 +466,7 @@ export function Header({
                       )}
                     </div>
                     <span
-                      className={`text-xs font-medium leading-tight ${
+                      className={`text-md font-medium leading-tight ${
                         isActive ? 'text-primary-foreground' : 'text-foreground'
                       }`}
                     >
@@ -479,8 +480,9 @@ export function Header({
                   </Link>
                 )
               })}
+              
               {session && (
-                <>
+                <div className = 'flex items-center gap-2 justify-between'>
                   <Link
                     href={`/${locale}/write`}
                     onClick={() => setIsMenuOpen(false)}
@@ -549,7 +551,7 @@ export function Header({
                       Dashboard
                     </span>
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </div>
