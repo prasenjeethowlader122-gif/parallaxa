@@ -104,13 +104,13 @@ const mdComponents: Components = {
   ...customBlockComponents,
   code: CodeBlock as Components['code'],
   h1: ({ children }) => (
-    <h1 className={`${Fugaz.className} text-2xl sm:text-3xl font-bold text-gray-900 mt-8 mb-3 leading-tight uppercase`}>{children}</h1>
+    <h1 className={` text-2xl sm:text-3xl font-bold text-gray-900 mt-8 mb-3 leading-tight uppercase`}>{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className={`${Fugaz.className} text-xl sm:text-2xl font-semibold text-gray-900 mt-7 mb-2 leading-snug uppercase`}>{children}</h2>
+    <h2 className={` text-xl sm:text-2xl font-semibold text-gray-900 mt-7 mb-2 leading-snug uppercase`}>{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className={`${Fugaz.className} text-lg sm:text-xl font-semibold text-gray-800 mt-5 mb-1 uppercase`}>{children}</h3>
+    <h3 className={` text-lg sm:text-xl font-semibold text-gray-800 mt-5 mb-1 uppercase`}>{children}</h3>
   ),
   p: ({ children }) => (
     <p className="text-gray-800 text-[17px] leading-[1.85] my-4">{children}</p>
@@ -123,7 +123,7 @@ const mdComponents: Components = {
   ),
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-red-600 pl-5 my-6 text-gray-600 italic text-lg font-['Georgia',serif] bg-gray-50 py-3 pr-4 rounded-r-lg">
+    <blockquote className="border-l-4 border-red-600 pl-5 my-6 text-gray-600 italic text-lg  bg-gray-50 py-3 pr-4 rounded-r-lg">
       {children}
     </blockquote>
   ),
@@ -546,7 +546,7 @@ export default function ArticlePage({
               </div>
 
               {/* Headline */}
-              <h1 className={`${Fugaz.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
+              <h1 className={`text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
                 {article.title}
               </h1>
 
