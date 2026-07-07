@@ -6,6 +6,7 @@ import { getPublishedArticles } from '@/lib/db/articles'
 import { NewsCard } from '@/components/news-card'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { UserCircle, Newspaper } from '@phosphor-icons/react/dist/ssr'
 
 export default async function AuthorProfilePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params
@@ -29,7 +30,7 @@ export default async function AuthorProfilePage({ params }: { params: Promise<{ 
         <div className="bg-white border-b border-slate-200 pt-16 pb-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="inline-flex w-32 h-32 rounded-full bg-slate-100 border-4 border-white shadow-xl mb-6 items-center justify-center overflow-hidden">
-               <span className="material-symbols-rounded text-6xl text-slate-400">account_circle</span>
+               <UserCircle size={64} className="text-slate-400" />
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-950 mb-2">{user.name}</h1>
             <p className="text-slate-500 font-medium mb-6 uppercase tracking-[0.2em] text-xs">Verified Author</p>
@@ -65,7 +66,7 @@ export default async function AuthorProfilePage({ params }: { params: Promise<{ 
             </div>
           ) : (
             <div className="text-center py-20 bg-white rounded-3xl border border-slate-200">
-               <span className="material-symbols-rounded text-6xl text-slate-200 mb-4">newspaper</span>
+               <Newspaper size={64} className="text-slate-200 mb-4 mx-auto" />
                <p className="text-slate-500 font-medium">This author hasn't published any stories yet.</p>
             </div>
           )}

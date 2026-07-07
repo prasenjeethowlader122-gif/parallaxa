@@ -21,10 +21,9 @@ import { createCustomBlockPlugin, DBBlockConfig } from '@/lib/mdx/block-registry
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 import {
-  Check, Copy, ArrowLeft, ChevronRight, Volume2, Bookmark, BookmarkCheck,
-  Printer, Share2, Facebook, Link as LinkIcon, Clock, Eye, Twitter, Linkedin
-} from 'lucide-react'
-import { FaFacebook, FaTwitter, FaLinkedinIn } from 'react-icons/fa'
+  Check, Copy, ArrowLeft, CaretRight, SpeakerHigh, BookmarkSimple,
+  Printer, ShareNetwork, FacebookLogo, PhosphorLink, Clock, Eye, TwitterLogo, LinkedinLogo
+} from '@phosphor-icons/react/dist/ssr'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -228,21 +227,21 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
         onClick={onTwitter}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <FaTwitter className="w-4.5 h-4.5 text-sky-500 flex-shrink-0" />
+        <TwitterLogo weight="fill" className="w-4.5 h-4.5 text-sky-500 flex-shrink-0" />
         Share on X / Twitter
       </button>
       <button
         onClick={onFacebook}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <FaFacebook className="w-4.5 h-4.5 text-blue-600 flex-shrink-0" />
+        <FacebookLogo weight="fill" className="w-4.5 h-4.5 text-blue-600 flex-shrink-0" />
         Share on Facebook
       </button>
       <button
         onClick={onLinkedin}
         className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
       >
-        <FaLinkedinIn className="w-4.5 h-4.5 text-blue-700 flex-shrink-0" />
+        <LinkedinLogo weight="fill" className="w-4.5 h-4.5 text-blue-700 flex-shrink-0" />
         Share on LinkedIn
       </button>
       <hr className="my-1 border-gray-100" />
@@ -252,7 +251,7 @@ function ShareDropdown({ article, copied, onCopy, onTwitter, onFacebook, onLinke
       >
         {copied
           ? <Check className="w-4.5 h-4.5 text-green-500 flex-shrink-0" />
-          : <LinkIcon className="w-4.5 h-4.5 flex-shrink-0" />}
+          : <Link className="w-4.5 h-4.5 flex-shrink-0" />}
         {copied ? 'Copied!' : 'Copy link'}
       </button>
     </div>
@@ -455,11 +454,11 @@ export default function ArticlePage({
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-gray-400 min-w-0">
             <Link href="/" className="hover:text-gray-600 transition-colors shrink-0">Home</Link>
-            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+            <CaretRight className="w-3.5 h-3.5 shrink-0" />
             <Link href={`/category/${article.category}`} className="hover:text-gray-600 transition-colors shrink-0 capitalize">
               {article.category}
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+            <CaretRight className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate text-gray-500">{article.title}</span>
           </div>
 
@@ -467,7 +466,7 @@ export default function ArticlePage({
           <div className="flex items-center gap-1.5 shrink-0">
             {/* Listen (decorative) */}
             <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors">
-              <Volume2 className="w-4 h-4" />
+              <SpeakerHigh className="w-4 h-4" />
               Listen
             </button>
 
@@ -480,7 +479,7 @@ export default function ArticlePage({
                   : 'border-gray-200 text-gray-500 hover:bg-gray-50'
               }`}
             >
-              {bookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+              <BookmarkSimple weight={bookmarked ? "fill" : "regular"} className="w-4 h-4" />
               <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
             </button>
 
@@ -499,7 +498,7 @@ export default function ArticlePage({
                 onClick={handleNativeShare}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
               >
-                <Share2 className="w-4 h-4" />
+                <ShareNetwork className="w-4 h-4" />
                 <span className="hidden sm:inline">Share</span>
               </button>
               {shareOpen && (
@@ -630,28 +629,28 @@ export default function ArticlePage({
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on X/Twitter"
                     >
-                      <FaTwitter className="w-4.5 h-4.5" />
+                      <TwitterLogo weight="fill" className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={handleShareFacebook}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on Facebook"
                     >
-                      <FaFacebook className="w-4.5 h-4.5" />
+                      <FacebookLogo weight="fill" className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={handleShareLinkedin}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Share on LinkedIn"
                     >
-                      <FaLinkedinIn className="w-4.5 h-4.5" />
+                      <LinkedinLogo weight="fill" className="w-4.5 h-4.5" />
                     </button>
                     <button
                       onClick={handleCopyLink}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       title="Copy link"
                     >
-                      {copied ? <Check className="w-4.5 h-4.5 text-green-500" /> : <LinkIcon className="w-4.5 h-4.5" />}
+                      {copied ? <Check className="w-4.5 h-4.5 text-green-500" /> : <Link className="w-4.5 h-4.5" />}
                     </button>
                   </div>
                 </div>
@@ -726,7 +725,7 @@ export default function ArticlePage({
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
                   >
                     See all {article.category} stories
-                    <ChevronRight className="w-4.5 h-4.5" />
+                    <CaretRight className="w-4.5 h-4.5" />
                   </Link>
                 </div>
               )}

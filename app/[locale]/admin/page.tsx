@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import { Gear, Cube, Newspaper, User, ArrowRight } from '@phosphor-icons/react/dist/ssr'
 
 export default function AdminDashboardPage() {
   const params = useParams()
@@ -14,28 +15,28 @@ export default function AdminDashboardPage() {
     {
       title: 'System Settings',
       description: 'Configure AI, social media, and site parameters.',
-      icon: 'settings',
+      icon: Gear,
       href: `/${locale}/admin/settings`,
       color: 'bg-blue-500',
     },
     {
       title: 'Block Manager',
       description: 'Create and manage custom MDX content blocks.',
-      icon: 'view_in_ar',
+      icon: Cube,
       href: `/${locale}/admin/blocks`,
       color: 'bg-emerald-500',
     },
     {
       title: 'Article Moderation',
       description: 'Review and manage all submitted articles.',
-      icon: 'article',
+      icon: Newspaper,
       href: `/${locale}/dashboard`,
       color: 'bg-amber-500',
     },
     {
       title: 'User Management',
       description: 'Manage authors, editors, and administrators.',
-      icon: 'person',
+      icon: User,
       href: '#',
       color: 'bg-indigo-500',
       disabled: true,
@@ -62,7 +63,7 @@ export default function AdminDashboardPage() {
               }`}
             >
               <div className={`w-12 h-12 ${module.color} rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg shadow-${module.color.split('-')[1]}-500/20`}>
-                <span className="material-symbols-rounded text-2xl">{module.icon}</span>
+                <module.icon size={24} />
               </div>
               <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">
                 {module.title}
@@ -73,7 +74,7 @@ export default function AdminDashboardPage() {
               {!module.disabled && (
                 <div className="mt-6 flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-900 transition-colors">
                   <span>Manage Module</span>
-                  <span className="material-symbols-rounded text-sm ml-1 transition-transform group-hover:translate-x-1">arrow_forward</span>
+                  <ArrowRight size={16} className="ml-1 transition-transform group-hover:translate-x-1" />
                 </div>
               )}
             </Link>

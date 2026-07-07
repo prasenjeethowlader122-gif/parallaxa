@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
 // -------------------
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2, SquareArrowOutUpRight, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react'
+import { CircleNotch, ArrowSquareOut, DotsThreeOutline, PencilSimple, Trash, Eye } from '@phosphor-icons/react/dist/ssr'
 
 const ArticlesView = () => {
   const router = useRouter() // For redirection
@@ -72,7 +72,7 @@ const ArticlesView = () => {
             {loading ? (
               <TableRow>
                 <TableCell colSpan={3} className="h-24 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                  <CircleNotch className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : articles.map((ar: any, i) => (
@@ -86,7 +86,7 @@ const ArticlesView = () => {
                         {ar.title.length > 20 ? ar.title.slice(0, 20) + '...' : ar.title}
                       </span>
                       <div className=  "flex text-sm font-medium items-center justify-start gap-2">
-                        <SquareArrowOutUpRight className = 'w-4 h-4' onClick = {()=> router.push(`/article/${ar.slug}`)}/>
+                        <ArrowSquareOut className = 'w-4 h-4 cursor-pointer' onClick = {()=> router.push(`/article/${ar.slug}`)}/>
                         <hr className = 'w-3'/>
                         <small>{new Date(ar.date).toLocaleDateString()}</small>
                       </div>
@@ -99,7 +99,7 @@ const ArticlesView = () => {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
                         <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                        <DotsThreeOutline className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[160px]">
@@ -109,7 +109,7 @@ const ArticlesView = () => {
                         onClick={() => router.push(`/write?id=${ar.id}`)}
                         className="cursor-pointer"
                       >
-                        <Pencil className="mr-2 h-4 w-4" />
+                        <PencilSimple className="mr-2 h-4 w-4" />
                         Edit Article
                       </DropdownMenuItem>
                       <DropdownMenuItem className="cursor-pointer">
@@ -118,7 +118,7 @@ const ArticlesView = () => {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

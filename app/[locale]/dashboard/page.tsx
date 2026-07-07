@@ -11,34 +11,35 @@ import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
 import Link from 'next/link';
+import { SquaresFour, Newspaper, ChartBar, Cube, Gear, PencilSimple } from '@phosphor-icons/react/dist/ssr';
 
 const NavLists = [
   {
     name: '#home',
-    icon: 'dashboard',
+    icon: SquaresFour,
     label: 'Overview',
     index: <HomeView initialLatest={[]} initialWorld={[]} initialTech={[]} />
   },
   {
     name: '#articles',
-    icon: 'article',
+    icon: Newspaper,
     label: 'Articles',
     index: <ArticlesView />
   },
   {
     name: '#analysis',
-    icon: 'bar_chart',
+    icon: ChartBar,
     label: 'Analytics',
     index: <AnalysisView />
   },
   {
     name: '/admin/blocks',
-    icon: 'view_in_ar',
+    icon: Cube,
     label: 'Blocks'
   },
   {
     name: '/admin/settings',
-    icon: 'settings',
+    icon: Gear,
     label: 'Settings'
   }
 ];
@@ -67,7 +68,7 @@ export default function Dashboard() {
                   href={`/${locale}/write`}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all"
                 >
-                  <span className="material-symbols-rounded text-lg">edit</span>
+                  <PencilSimple size={18} />
                   Create Article
                 </Link>
               </div>
@@ -90,7 +91,7 @@ export default function Dashboard() {
                         href={`/${locale}${_nav.name}`}
                         className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-950 hover:bg-slate-100 transition-all whitespace-nowrap"
                       >
-                        <span className="material-symbols-rounded text-xl">{_nav.icon}</span>
+                        <_nav.icon size={20} />
                         <span>{_nav.label}</span>
                       </Link>
                     )
@@ -106,7 +107,7 @@ export default function Dashboard() {
                           : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100'
                       } ${!isDesktop ? 'flex-col gap-1 p-4 h-auto justify-center' : ''}`}
                     >
-                      <span className="material-symbols-rounded text-xl">{_nav.icon}</span>
+                      <_nav.icon size={20} />
                       <span>{_nav.label}</span>
                     </button>
                   )

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {Fugaz} from '@/lib/font'
 import { NewsArticle } from '@/lib/db/articles'
+import { Eye, TrendUp } from '@phosphor-icons/react/dist/ssr'
 
 interface NewsCardProps {
   article: NewsArticle
@@ -102,7 +103,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             </h3>
             <div className="flex items-center gap-4 mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                <div className="flex items-center gap-1">
-                 <span className="material-symbols-rounded text-base">visibility</span>
+                 <Eye size={16} />
                  {toDigitalNumber(article.views)}
                </div>
                <span>{article.readTime} min read</span>
@@ -138,7 +139,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             </span>
             {article.trending && (
               <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest flex items-center gap-1">
-                <span className="material-symbols-rounded text-sm">trending_up</span>
+                <TrendUp size={14} weight="bold" />
                 Trending
               </span>
             )}
@@ -150,7 +151,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-4 border-t border-slate-100">
             <span>{formattedDate}</span>
             <div className="flex items-center gap-1">
-               <span className="material-symbols-rounded text-sm">visibility</span>
+               <Eye size={14} />
                {toDigitalNumber(article.views)}
             </div>
           </div>

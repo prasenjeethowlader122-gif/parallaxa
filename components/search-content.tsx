@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, searchArticlesByQuery } from '@/lib/db/articles'
-import { ArrowLeft, Search as SearchIcon } from 'lucide-react'
+import { ArrowLeft, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 
 export function SearchContent() {
   const searchParams = useSearchParams()
@@ -35,7 +35,7 @@ export function SearchContent() {
 
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-4">
-          <SearchIcon className="w-6 h-6 text-foreground" />
+          <MagnifyingGlass className="w-6 h-6 text-foreground" />
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Search Results</h1>
         </div>
         {query && (
@@ -57,7 +57,7 @@ export function SearchContent() {
         </div>
       ) : results.length === 0 ? (
         <div className="text-center py-12">
-          <SearchIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <MagnifyingGlass className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-semibold text-foreground mb-2">No results found</h2>
           <p className="text-gray-600 mb-6">
             We couldn't find any articles matching "{query}"

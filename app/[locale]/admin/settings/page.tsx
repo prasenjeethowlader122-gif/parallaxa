@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import type { SystemSettings } from '@/lib/db/settings'
+import { CircleNotch, WarningCircle, CheckCircle, Cpu, ShareNetwork, FloppyDisk } from '@phosphor-icons/react/dist/ssr'
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SystemSettings | null>(null)
@@ -55,7 +56,7 @@ export default function AdminSettingsPage() {
       <div className="min-h-screen flex flex-col bg-slate-50">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-          <span className="material-symbols-rounded animate-spin text-4xl text-slate-400">refresh</span>
+          <CircleNotch className="animate-spin text-4xl text-slate-400" />
         </main>
         <Footer />
       </div>
@@ -74,14 +75,14 @@ export default function AdminSettingsPage() {
 
         {error && (
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
-            <span className="material-symbols-rounded text-xl shrink-0">error</span>
+            <WarningCircle size={20} className="shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 p-4 text-sm text-green-700 shadow-sm">
-            <span className="material-symbols-rounded text-xl shrink-0">check_circle</span>
+            <CheckCircle size={20} className="shrink-0" />
             <span>{success}</span>
           </div>
         )}
@@ -91,7 +92,7 @@ export default function AdminSettingsPage() {
           <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-                <span className="material-symbols-rounded text-lg">memory</span>
+                <Cpu size={18} />
               </div>
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">AI Pipeline Configuration</h2>
             </div>
@@ -152,7 +153,7 @@ export default function AdminSettingsPage() {
           <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
                <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white">
-                <span className="material-symbols-rounded text-lg">share</span>
+                <ShareNetwork size={18} />
               </div>
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Facebook Post Configuration</h2>
             </div>
@@ -205,7 +206,7 @@ export default function AdminSettingsPage() {
               disabled={saving}
               className="inline-flex items-center justify-center gap-2 px-10 py-3 rounded-xl bg-slate-950 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
             >
-              {saving ? <span className="material-symbols-rounded animate-spin text-lg">refresh</span> : <span className="material-symbols-rounded text-lg">save</span>}
+              {saving ? <CircleNotch className="animate-spin text-lg" /> : <FloppyDisk size={18} />}
               {saving ? 'Saving...' : 'Save Settings'}
             </button>
           </div>

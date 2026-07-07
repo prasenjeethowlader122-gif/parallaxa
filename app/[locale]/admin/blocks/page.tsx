@@ -5,6 +5,12 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import CodeMirror from '@uiw/react-codemirror'
 import { html } from '@codemirror/lang-html'
+import {
+  Trash, Check, Copy, Sparkle, Plus, WarningCircle, X, MagnifyingGlass,
+  Lightbulb, Info, Quotes, ChartBar, Image, Book, Note, Table,
+  PlayCircle, Palette, Notebook, CaretDown, CirclesFour, Package,
+  PencilSimple, Code, Eye, FloppyDisk, CircleNotch, ShareNetwork
+} from '@phosphor-icons/react/dist/ssr'
 
 interface BlockParam {
   name: string
@@ -27,21 +33,21 @@ interface CustomBlock {
 }
 
 const BUILTIN_BLOCKS = [
-  { name: 'embed', label: 'Social Embed', icon: 'share', description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
-  { name: 'screenshot', label: 'Screenshot', icon: 'image', description: 'সোশ্যাল মিডিয়া পোস্ট বা ওয়েবসাইটের স্ক্রিনশট দেখান', usage: '[!screenshot(url="https://...")]' },
-  { name: 'infobox', label: 'InfoBox', icon: 'info', description: 'গুরুত্বপূর্ণ তথ্য বা সতর্কতা দেখান', usage: '[!infobox(title="Title" content="Message" type="info")]' },
-  { name: 'reference', label: 'Reference', icon: 'book', description: 'তথ্যসূত্র বা সাইটেশন যোগ করুন', usage: '[!reference(text="Title" author="Name")]' },
-  { name: 'tika', label: 'Tika (Note)', icon: 'sticky_note_2', description: 'টিকা বা নোট যোগ করুন', usage: '[!tika(text="এখানে লিখুন...")]' },
-  { name: 'table', label: 'Styled Table', icon: 'table_chart', description: 'সুন্দরভাবে তথ্য সাজিয়ে টেবিল তৈরি করুন', usage: '[!table(headers="Name,Age" rows="John,25|Jane,22")]' },
-  { name: 'run', label: 'Run Code', icon: 'play_circle', description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
-  { name: 'style', label: 'Custom CSS', icon: 'palette', description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
-  { name: 'verse', label: 'Religious Verse', icon: 'menu_book', description: 'ধর্মীয় শ্লোক বা আয়াত হাইলাইট করুন', usage: '[!verse(text="..." source="..." reference="...")]' },
-  { name: 'chart', label: 'Chart/Graph', icon: 'bar_chart', description: 'তথ্য দিয়ে চার্ট বা গ্রাফ তৈরি করুন', usage: '[!chart(type="bar" title="..." labels="..." values="...")]' },
+  { name: 'embed', label: 'Social Embed', icon: ShareNetwork, description: 'Facebook, Twitter, YouTube, Instagram, Reddit, Vimeo embed করুন', usage: '[!embed(url="https://...")]' },
+  { name: 'screenshot', label: 'Screenshot', icon: Image, description: 'সোশ্যাল মিডিয়া পোস্ট বা ওয়েবসাইটের স্ক্রিনশট দেখান', usage: '[!screenshot(url="https://...")]' },
+  { name: 'infobox', label: 'InfoBox', icon: Info, description: 'গুরুত্বপূর্ণ তথ্য বা সতর্কতা দেখান', usage: '[!infobox(title="Title" content="Message" type="info")]' },
+  { name: 'reference', label: 'Reference', icon: Book, description: 'তথ্যসূত্র বা সাইটেশন যোগ করুন', usage: '[!reference(text="Title" author="Name")]' },
+  { name: 'tika', label: 'Tika (Note)', icon: Note, description: 'টিকা বা নোট যোগ করুন', usage: '[!tika(text="এখানে লিখুন...")]' },
+  { name: 'table', label: 'Styled Table', icon: Table, description: 'সুন্দরভাবে তথ্য সাজিয়ে টেবিল তৈরি করুন', usage: '[!table(headers="Name,Age" rows="John,25|Jane,22")]' },
+  { name: 'run', label: 'Run Code', icon: PlayCircle, description: 'Custom HTML/JS code চালান', usage: '[!run(code="<b>Hello</b>")]' },
+  { name: 'style', label: 'Custom CSS', icon: Palette, description: 'Article-এ custom CSS যোগ করুন', usage: '[!style(css=".myclass { color: red }")]' },
+  { name: 'verse', label: 'Religious Verse', icon: Notebook, description: 'ধর্মীয় শ্লোক বা আয়াত হাইলাইট করুন', usage: '[!verse(text="..." source="..." reference="...")]' },
+  { name: 'chart', label: 'Chart/Graph', icon: ChartBar, description: 'তথ্য দিয়ে চার্ট বা গ্রাফ তৈরি করুন', usage: '[!chart(type="bar" title="..." labels="..." values="...")]' },
 ]
 
 const PRESET_TEMPLATES = [
   {
-    icon: 'lightbulb',
+    icon: Lightbulb,
     name: 'callout',
     label: 'Callout Box',
     description: 'সাধারণ তথ্য বাক্স',
@@ -54,7 +60,7 @@ const PRESET_TEMPLATES = [
 </div>`,
   },
   {
-    icon: 'warning',
+    icon: WarningCircle,
     name: 'warning',
     label: 'Warning Box',
     description: 'সতর্কতা বাক্স',
@@ -66,7 +72,7 @@ const PRESET_TEMPLATES = [
 </div>`,
   },
   {
-    icon: 'info',
+    icon: Info,
     name: 'fact',
     label: 'Fact Box',
     description: 'তথ্য বাক্স — তথ্য ও উৎস সহ',
@@ -81,7 +87,7 @@ const PRESET_TEMPLATES = [
 </div>`,
   },
   {
-    icon: 'format_quote',
+    icon: Quotes,
     name: 'pullquote',
     label: 'Pull Quote',
     description: 'বড় উদ্ধৃতি হাইলাইট',
@@ -95,7 +101,7 @@ const PRESET_TEMPLATES = [
 </blockquote>`,
   },
   {
-    icon: 'bar_chart',
+    icon: ChartBar,
     name: 'stat',
     label: 'Stat Highlight',
     description: 'বড় সংখ্যা/তথ্য হাইলাইট',
@@ -169,7 +175,7 @@ function ParamRow({
           aria-label={`Remove parameter ${param.name || index + 1}`}
           className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-400 transition hover:bg-white hover:text-red-500"
         >
-          <span className="material-symbols-rounded text-sm">delete</span> Remove
+          <Trash size={16} /> Remove
         </button>
       </div>
     </div>
@@ -216,7 +222,7 @@ function SyntaxUsage({ name, params }: { name: string; params: BlockParam[] }) {
         aria-label="Copy usage"
         className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
       >
-        {copied ? <span className="material-symbols-rounded text-sm">check</span> : <span className="material-symbols-rounded text-sm">content_copy</span>}
+        {copied ? <Check size={16} /> : <Copy size={16} />}
       </button>
     </div>
   )
@@ -238,7 +244,7 @@ export default function BlockManagerPage() {
     name: '',
     label: '',
     description: '',
-    icon: 'extension',
+    icon: 'CirclesFour',
     params: [] as BlockParam[],
     htmlTemplate: '',
   })
@@ -265,7 +271,7 @@ export default function BlockManagerPage() {
       name: '',
       label: '',
       description: '',
-      icon: 'extension',
+      icon: 'CirclesFour',
       params: [],
       htmlTemplate: '',
     })
@@ -394,14 +400,14 @@ export default function BlockManagerPage() {
               onClick={() => setShowPresets(p => !p)}
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
             >
-              <span className="material-symbols-rounded text-lg">auto_awesome</span>
+              <Sparkle size={18} />
               Presets
             </button>
             <button
               onClick={openNew}
               className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
             >
-              <span className="material-symbols-rounded text-lg">add</span>
+              <Plus size={18} />
               নতুন Block
             </button>
           </div>
@@ -409,21 +415,21 @@ export default function BlockManagerPage() {
 
         {error && (
           <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm animate-in fade-in zoom-in-95 duration-200">
-            <span className="material-symbols-rounded text-xl shrink-0">error</span>
+            <WarningCircle size={20} className="shrink-0" />
             <span className="min-w-0 flex-1">{error}</span>
             <button
               onClick={() => setError(null)}
               className="rounded-lg p-1 text-red-400 transition hover:bg-white hover:text-red-600"
               aria-label="Close error"
             >
-              <span className="material-symbols-rounded text-sm">close</span>
+              <X size={16} />
             </button>
           </div>
         )}
 
         <div className="mb-6 relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-             <span className="material-symbols-rounded text-xl text-slate-400">search</span>
+             <MagnifyingGlass size={20} className="text-slate-400" />
           </div>
           <input
             type="text"
@@ -443,7 +449,7 @@ export default function BlockManagerPage() {
                 className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
                 aria-label="Close presets"
               >
-                <span className="material-symbols-rounded text-lg">close</span>
+                <X size={20} />
               </button>
             </div>
 
@@ -455,7 +461,7 @@ export default function BlockManagerPage() {
                   className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 text-center transition hover:-translate-y-1 hover:border-slate-300 hover:bg-slate-50 hover:shadow-lg"
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition group-hover:bg-slate-900 group-hover:text-white">
-                    <span className="material-symbols-rounded text-2xl">{p.icon}</span>
+                    <p.icon size={24} />
                   </div>
                   <span className="text-xs font-bold text-slate-900">{p.label}</span>
                   <span className="text-[10px] leading-tight text-slate-500 font-medium">{p.description}</span>
@@ -475,14 +481,14 @@ export default function BlockManagerPage() {
               >
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                    <span className="material-symbols-rounded text-xl">book</span>
+                    <Book size={20} />
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-bold text-slate-950">Built-in Blocks</p>
                     <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{BUILTIN_BLOCKS.length}টি ডিফল্ট ব্লক</p>
                   </div>
                 </div>
-                <span className="material-symbols-rounded text-slate-400 transition-transform duration-300" style={{ transform: expandedBuiltin ? 'rotate(180deg)' : 'none' }}>expand_more</span>
+                <CaretDown className="text-slate-400 transition-transform duration-300" style={{ transform: expandedBuiltin ? 'rotate(180deg)' : 'none' }} />
               </button>
 
               {expandedBuiltin && (
@@ -491,7 +497,7 @@ export default function BlockManagerPage() {
                     <div key={b.name} className="px-5 py-4 hover:bg-white transition-colors">
                       <div className="mb-2 flex items-center justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-3">
-                           <span className="material-symbols-rounded text-lg text-slate-600">{b.icon}</span>
+                           <b.icon size={20} className="text-slate-600" />
                           <span className="truncate text-sm font-bold text-slate-900">{b.label}</span>
                         </div>
                         <button
@@ -503,7 +509,7 @@ export default function BlockManagerPage() {
                           className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                           aria-label={`Copy ${b.name} usage`}
                         >
-                          {copiedSyntax === b.name ? <span className="material-symbols-rounded text-sm text-emerald-500">check</span> : <span className="material-symbols-rounded text-sm">content_copy</span>}
+                          {copiedSyntax === b.name ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                         </button>
                       </div>
                       <p className="text-[11px] leading-5 text-slate-500 font-medium">{b.description}</p>
@@ -516,16 +522,16 @@ export default function BlockManagerPage() {
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                 <div className="flex items-center gap-3">
-                   <span className="material-symbols-rounded text-xl text-slate-500">category</span>
+                   <CirclesFour size={20} className="text-slate-500" />
                   <span className="text-sm font-bold text-slate-950">আমার Blocks</span>
                 </div>
-                {loading && <span className="material-symbols-rounded text-lg animate-spin text-slate-400">refresh</span>}
+                {loading && <CircleNotch className="text-lg animate-spin text-slate-400" />}
               </div>
 
               {!loading && blocks.length === 0 ? (
                 <div className="px-5 py-20 text-center">
                   <div className="mb-4 flex justify-center">
-                    <span className="material-symbols-rounded text-6xl text-slate-200">package_2</span>
+                    <Package size={64} className="text-slate-200" />
                   </div>
                   <p className="text-sm text-slate-500 font-medium">এখনো কোনো custom block নেই</p>
                   <button
@@ -548,8 +554,29 @@ export default function BlockManagerPage() {
                       }`}
                     >
                       <div className="flex items-start gap-4">
-                        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
-                           <span className="material-symbols-rounded text-xl">{block.icon}</span>
+                        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm text-xl">
+                           {(() => {
+                             const Icon = (p => {
+                               switch(p) {
+                                 case 'share': return ShareNetwork;
+                                 case 'terminal': return Code;
+                                 case 'palette': return Palette;
+                                 case 'play_circle': return PlayCircle;
+                                 case 'info': return Info;
+                                 case 'warning': return WarningCircle;
+                                 case 'lightbulb': return Lightbulb;
+                                 case 'format_quote': return Quotes;
+                                 case 'bar_chart': return ChartBar;
+                                 case 'image': return Image;
+                                 case 'book': return Book;
+                                 case 'sticky_note_2': return Note;
+                                 case 'table_chart': return Table;
+                                 case 'menu_book': return Notebook;
+                                 default: return CirclesFour;
+                               }
+                             })(block.icon);
+                             return <Icon size={20} />;
+                           })()}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
@@ -572,19 +599,19 @@ export default function BlockManagerPage() {
                             onClick={() => copyUsage(block.name, block.params)}
                             className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                           >
-                            {copiedSyntax === block.name ? <span className="material-symbols-rounded text-sm text-emerald-500">check</span> : <span className="material-symbols-rounded text-sm">content_copy</span>}
+                            {copiedSyntax === block.name ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                           </button>
                           <button
                             onClick={() => openEdit(block)}
                             className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                           >
-                            <span className="material-symbols-rounded text-sm">edit</span>
+                            <PencilSimple size={16} />
                           </button>
                           <button
                             onClick={() => deleteBlock(block.id)}
                             className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                           >
-                            <span className="material-symbols-rounded text-sm">delete</span>
+                            <Trash size={16} />
                           </button>
                         </div>
                       </div>
@@ -610,7 +637,7 @@ export default function BlockManagerPage() {
                     }}
                     className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-950"
                   >
-                    <span className="material-symbols-rounded text-xl">close</span>
+                    <X size={20} />
                   </button>
                 </div>
 
@@ -623,8 +650,24 @@ export default function BlockManagerPage() {
                         onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-slate-900/10 appearance-none cursor-pointer"
                       >
-                        {['share', 'terminal', 'palette', 'extension', 'play_circle', 'info', 'warning', 'lightbulb', 'format_quote', 'bar_chart', 'image', 'book', 'sticky_note_2', 'table_chart', 'menu_book'].map(icon => (
-                          <option key={icon} value={icon}>{icon}</option>
+                        {[
+                          { val: 'share', label: 'Share' },
+                          { val: 'terminal', label: 'Code' },
+                          { val: 'palette', label: 'Palette' },
+                          { val: 'extension', label: 'Extension' },
+                          { val: 'play_circle', label: 'Play' },
+                          { val: 'info', label: 'Info' },
+                          { val: 'warning', label: 'Warning' },
+                          { val: 'lightbulb', label: 'Lightbulb' },
+                          { val: 'format_quote', label: 'Quote' },
+                          { val: 'bar_chart', label: 'Chart' },
+                          { val: 'image', label: 'Image' },
+                          { val: 'book', label: 'Book' },
+                          { val: 'sticky_note_2', label: 'Note' },
+                          { val: 'table_chart', label: 'Table' },
+                          { val: 'menu_book', label: 'Notebook' }
+                        ].map(icon => (
+                          <option key={icon.val} value={icon.val}>{icon.label}</option>
                         ))}
                       </select>
                     </div>
@@ -674,7 +717,7 @@ export default function BlockManagerPage() {
                         onClick={addParam}
                         className="inline-flex items-center gap-1 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-950 bg-slate-100 transition hover:bg-slate-200"
                       >
-                        <span className="material-symbols-rounded text-sm">add</span> যোগ করুন
+                        <Plus size={14} /> যোগ করুন
                       </button>
                     </div>
 
@@ -710,7 +753,7 @@ export default function BlockManagerPage() {
                             previewTab === 'edit' ? 'bg-slate-950 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
                           }`}
                         >
-                          <span className="material-symbols-rounded text-sm">code</span> কোড
+                          <Code size={14} /> কোড
                         </button>
                         <button
                           onClick={() => setPreviewTab('preview')}
@@ -718,7 +761,7 @@ export default function BlockManagerPage() {
                             previewTab === 'preview' ? 'bg-slate-950 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
                           }`}
                         >
-                          <span className="material-symbols-rounded text-sm">visibility</span> Preview
+                          <Eye size={14} /> Preview
                         </button>
                       </div>
                     </div>
@@ -766,7 +809,7 @@ export default function BlockManagerPage() {
                       disabled={saving || !form.name || !form.label || !form.htmlTemplate}
                       className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 shadow-xl shadow-slate-950/20 uppercase tracking-widest"
                     >
-                      {saving ? <span className="material-symbols-rounded animate-spin text-lg">refresh</span> : <span className="material-symbols-rounded text-lg">save</span>}
+                      {saving ? <CircleNotch className="animate-spin text-lg" /> : <FloppyDisk size={18} />}
                       {saving ? 'সেভ হচ্ছে…' : 'সেভ করুন'}
                     </button>
                   </div>

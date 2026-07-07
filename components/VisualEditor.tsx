@@ -13,11 +13,11 @@ import TurndownService from 'turndown'
 import { gfm } from 'turndown-plugin-gfm'
 import { marked } from 'marked'
 import {
-  Bold, Italic, Strikethrough, Code, Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon,
-  Youtube, Undo, Redo, Minus, X, ExternalLink, Type, AlignLeft,
-  Terminal, SquarePlus, ChevronDown, Search
-} from 'lucide-react'
+  TextB, TextItalic, TextStrikethrough, Code, TextHOne, TextHTwo, TextHThree,
+  ListBullets, ListNumbers, Quotes, Link, Image as ImageIcon,
+  YoutubeLogo, ArrowCounterClockwise, ArrowClockwise, Minus, X, ArrowSquareOut,
+  TextAlignLeft, TerminalWindow, PlusSquare, CaretDown, MagnifyingGlass
+} from '@phosphor-icons/react/dist/ssr'
 import { BlockSearchPanel } from './mdx/BlockSearchPanel'
 import { blockRegistry } from '@/lib/mdx/block-registry'
 
@@ -129,14 +129,14 @@ const Sep = () => <div className="w-px h-5 bg-gray-100 mx-0.5 shrink-0" />
 const BubbleSep = () => <div className="w-px h-4 bg-white/20 mx-0.5 shrink-0" />
 
 const SLASH_ITEMS = [
-  { label: 'সাধারণ অনুচ্ছেদ', icon: <AlignLeft size={14} />, cmd: (ed: any) => ed.chain().focus().setParagraph().run() },
-  { label: 'শিরোনাম ১', icon: <Heading1 size={14} />, cmd: (ed: any) => ed.chain().focus().toggleHeading({ level: 1 }).run() },
-  { label: 'শিরোনাম ২', icon: <Heading2 size={14} />, cmd: (ed: any) => ed.chain().focus().toggleHeading({ level: 2 }).run() },
-  { label: 'শিরোনাম ৩', icon: <Heading3 size={14} />, cmd: (ed: any) => ed.chain().focus().toggleHeading({ level: 3 }).run() },
-  { label: 'বুলেট লিস্ট', icon: <List size={14} />, cmd: (ed: any) => ed.chain().focus().toggleBulletList().run() },
-  { label: 'নম্বর লিস্ট', icon: <ListOrdered size={14} />, cmd: (ed: any) => ed.chain().focus().toggleOrderedList().run() },
-  { label: 'উদ্ধৃতি', icon: <Quote size={14} />, cmd: (ed: any) => ed.chain().focus().toggleBlockquote().run() },
-  { label: 'কোড ব্লক', icon: <Terminal size={14} />, cmd: (ed: any) => ed.chain().focus().toggleCodeBlock().run() },
+  { label: 'সাধারণ অনুচ্ছেদ', icon: <TextAlignLeft size={14} />, cmd: (ed: any) => ed.chain().focus().setParagraph().run() },
+  { label: 'শিরোনাম ১', icon: <TextHOne size={14} />, cmd: (ed: any) => ed.chain().focus().toggleHeading({ level: 1 }).run() },
+  { label: 'শিরোনাম ২', icon: <TextHTwo size={14} />, cmd: (ed: any) => ed.chain().focus().toggleHeading({ level: 2 }).run() },
+  { label: 'শিরোনাম ৩', icon: <TextHThree size={14} />, cmd: (ed: any) => ed.chain().focus().toggleHeading({ level: 3 }).run() },
+  { label: 'বুলেট লিস্ট', icon: <ListBullets size={14} />, cmd: (ed: any) => ed.chain().focus().toggleBulletList().run() },
+  { label: 'নম্বর লিস্ট', icon: <ListNumbers size={14} />, cmd: (ed: any) => ed.chain().focus().toggleOrderedList().run() },
+  { label: 'উদ্ধৃতি', icon: <Quotes size={14} />, cmd: (ed: any) => ed.chain().focus().toggleBlockquote().run() },
+  { label: 'কোড ব্লক', icon: <TerminalWindow size={14} />, cmd: (ed: any) => ed.chain().focus().toggleCodeBlock().run() },
   { label: 'বিভাজক রেখা', icon: <Minus size={14} />, cmd: (ed: any) => ed.chain().focus().setHorizontalRule().run() },
 ]
 
@@ -308,13 +308,13 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       <div className="sticky top-0 z-20 flex items-center gap-0.5 px-1.5 py-1.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl mb-5 overflow-visible">
         <div className="flex items-center overflow-x-auto no-scrollbar gap-0.5 flex-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
           <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (Ctrl+B)">
-            <Bold size={14} />
+            <TextB size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic (Ctrl+I)">
-            <Italic size={14} />
+            <TextItalic size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
-            <Strikethrough size={14} />
+            <TextStrikethrough size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} title="Inline Code">
             <Code size={14} />
@@ -323,43 +323,43 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
           <Sep />
 
           <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="শিরোনাম ১">
-            <Heading1 size={14} />
+            <TextHOne size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="শিরোনাম ২">
-            <Heading2 size={14} />
+            <TextHTwo size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="শিরোনাম ৩">
-            <Heading3 size={14} />
+            <TextHThree size={14} />
           </ToolBtn>
 
           <Sep />
 
           <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="বুলেট লিস্ট">
-            <List size={14} />
+            <ListBullets size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="নম্বর লিস্ট">
-            <ListOrdered size={14} />
+            <ListNumbers size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="উদ্ধৃতি">
-            <Quote size={14} />
+            <Quotes size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="কোড ব্লক">
-            <Terminal size={14} />
+            <TerminalWindow size={14} />
           </ToolBtn>
 
           <Sep />
 
           <ToolBtn onClick={() => setModal('link')} active={editor.isActive('link')} title="লিংক">
-            <LinkIcon size={14} />
+            <Link size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => setModal('image')} title="ছবি">
             <ImageIcon size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => setModal('youtube')} title="YouTube ভিডিও">
-            <Youtube size={14} />
+            <YoutubeLogo size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => setModal('embed')} title="Social Embed">
-            <ExternalLink size={14} />
+            <ArrowSquareOut size={14} />
           </ToolBtn>
           <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="বিভাজক রেখা">
             <Minus size={14} />
@@ -378,9 +378,9 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
                 : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
-            <SquarePlus size={16} />
+            <PlusSquare size={16} />
             <span className="hidden sm:inline">Blocks</span>
-            <ChevronDown size={14} className={`transition-transform duration-300 ${blockSearchOpen ? 'rotate-180' : ''}`} />
+            <CaretDown size={14} className={`transition-transform duration-300 ${blockSearchOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {blockSearchOpen && (
@@ -393,10 +393,10 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
         </div>
 
         <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo (Ctrl+Z)">
-          <Undo size={14} />
+          <ArrowCounterClockwise size={14} />
         </ToolBtn>
         <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo (Ctrl+Y)">
-          <Redo size={14} />
+          <ArrowClockwise size={14} />
         </ToolBtn>
       </div>
 
@@ -408,13 +408,13 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
       >
         <div className="flex items-center gap-0.5 bg-gray-900 rounded-xl p-1">
           <BubbleBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
-            <Bold size={13} />
+            <TextB size={13} />
           </BubbleBtn>
           <BubbleBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic">
-            <Italic size={13} />
+            <TextItalic size={13} />
           </BubbleBtn>
           <BubbleBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strike">
-            <Strikethrough size={13} />
+            <TextStrikethrough size={13} />
           </BubbleBtn>
           <BubbleBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} title="Code">
             <Code size={13} />
@@ -432,7 +432,7 @@ export default function VisualEditor({ content, onChange }: VisualEditorProps) {
           >H2</button>
           <BubbleSep />
           <BubbleBtn onClick={() => setModal('link')} active={editor.isActive('link')} title="লিংক">
-            <LinkIcon size={13} />
+            <Link size={13} />
           </BubbleBtn>
           {editor.isActive('link') && (
             <BubbleBtn onClick={() => editor.chain().focus().unsetLink().run()} title="লিংক সরান">

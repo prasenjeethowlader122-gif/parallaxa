@@ -79,18 +79,6 @@ export const logoFont = localFont({
   variable: '--font-logo'
 })
 
-// Material Symbols Rounded
-export const materialSymbols = localFont({
-  src: [
-    {
-      path: '../public/local/font/MaterialSymbolsRounded.ttf',
-      weight: '100 700',
-      style: 'normal'
-    }
-  ],
-  variable: '--font-material-symbols'
-})
-
 // Compatibility exports for existing code
 export const spacegrotesk = sansFont
 export const Fugaz = serifFont

@@ -3,6 +3,7 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 import { blockRegistry, parseBlockParams } from '@/lib/mdx/block-registry'
 import { customBlockComponents } from './CustomBlockRenderer'
 import React, { useState, useMemo } from 'react'
+import { PencilSimple, Trash, Cube, Gear, X, Info, Check } from '@phosphor-icons/react/dist/ssr'
 
 export const MdxBlockExtension = Node.create({
   name: 'mdxBlock',
@@ -105,14 +106,14 @@ function MdxBlockView(props: any) {
             className="p-1.5 text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition-all"
             title="Edit Parameters"
           >
-             <span className="material-symbols-rounded text-lg">edit</span>
+             <PencilSimple size={18} />
           </button>
           <button
             onClick={() => deleteNode()}
             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             title="Remove Block"
           >
-             <span className="material-symbols-rounded text-lg">delete</span>
+             <Trash size={18} />
           </button>
         </div>
       </div>
@@ -122,7 +123,7 @@ function MdxBlockView(props: any) {
         {renderedContent || (
           <div className="p-12 border-2 border-dashed border-slate-100 rounded-[2rem] text-slate-400 text-sm font-mono bg-slate-50/50 flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100 shadow-sm">
-               <span className="material-symbols-rounded text-2xl text-slate-300">view_in_ar</span>
+               <Cube size={24} className="text-slate-300" />
             </div>
             <code className="text-[10px] bg-white px-3 py-1 rounded-full border border-slate-100 font-bold">{code}</code>
           </div>
@@ -134,11 +135,11 @@ function MdxBlockView(props: any) {
         <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-md flex flex-col rounded-[2rem] border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
           <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-slate-50/50">
             <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 uppercase tracking-widest">
-               <span className="material-symbols-rounded text-lg">settings</span>
+               <Gear size={18} />
                Edit {blockTitle}
             </h4>
             <button onClick={() => setIsEditing(false)} className="p-2 text-slate-400 hover:text-slate-950 rounded-xl hover:bg-white transition-all">
-               <span className="material-symbols-rounded">close</span>
+               <X size={20} />
             </button>
           </div>
 
@@ -157,7 +158,7 @@ function MdxBlockView(props: any) {
               ))
             ) : (
               <div className="text-center py-10">
-                 <span className="material-symbols-rounded text-4xl text-slate-200 mb-2">info</span>
+                 <Info size={32} className="text-slate-200 mb-2 mx-auto" />
                  <p className="text-xs text-slate-500 font-medium italic">No editable parameters found for this block.</p>
               </div>
             )}
@@ -174,7 +175,7 @@ function MdxBlockView(props: any) {
               onClick={handleSave}
               className="flex-1 px-6 py-3 text-xs font-bold text-white bg-slate-950 rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-950/20 uppercase tracking-widest"
             >
-               <span className="material-symbols-rounded text-lg">check</span>
+               <Check size={18} />
                Save Changes
             </button>
           </div>
