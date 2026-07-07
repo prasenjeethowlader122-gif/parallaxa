@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@phosphor-icons/react'],
   typescript: {
     ignoreBuildErrors: true,
   },
