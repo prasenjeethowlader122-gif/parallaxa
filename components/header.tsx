@@ -489,7 +489,7 @@ export function Header({
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
               Sections
             </p>
-            <div className="grid grid-cols-3 gap-2.5 mb-5">
+            <div className="flex flex-col items-start gap-2.5 mb-5">
               {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
                 const isActive = pathname === localizedHref
@@ -498,7 +498,7 @@ export function Header({
                     key={href}
                     href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
+                    className={`relative flex flex-col gap-1.5 p-3.5  transition-colors ${
                       isActive
                         ? 'bg-primary border-gray-900'
                         : 'bg-card border-border hover:bg-gray-100'
