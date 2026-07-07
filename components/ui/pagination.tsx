@@ -3,7 +3,7 @@ import {
   CaretLeft,
   CaretRight,
   DotsThree,
-} from '@phosphor-icons/react'
+} from '@phosphor-icons/react/ssr'
 
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
