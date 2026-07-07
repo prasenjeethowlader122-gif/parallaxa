@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import type { SystemSettings } from '@/lib/db/settings'
-import { CircleNotch, WarningCircle, CheckCircle, Cpu, ShareNetwork, FloppyDisk } from '@phosphor-icons/react/dist/ssr'
+import { CircleNotch, WarningCircle, CheckCircle, Cpu, ShareNetwork, FloppyDisk } from '@phosphor-icons/react/ssr'
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SystemSettings | null>(null)

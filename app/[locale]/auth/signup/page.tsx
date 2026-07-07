@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { WarningCircle, Eye, EyeSlash, Check } from '@phosphor-icons/react/dist/ssr'
+import { WarningCircle, Eye, EyeSlash, Check } from '@phosphor-icons/react/ssr'
 import { registerAction } from '@/app/actions/auth'
 
 const passwordRules = [

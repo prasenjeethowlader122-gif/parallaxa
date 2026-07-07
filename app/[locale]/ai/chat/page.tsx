@@ -27,7 +27,7 @@ import {
   Plus,
   CircleNotch,
   CaretDown,
-} from '@phosphor-icons/react/dist/ssr'
+} from '@phosphor-icons/react/ssr'
 import {
   useState,
   useRef,

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { Gear, Cube, Newspaper, User, ArrowRight } from '@phosphor-icons/react/dist/ssr'
+import { Gear, Cube, Newspaper, User, ArrowRight } from '@phosphor-icons/react/ssr'
 
 export default function AdminDashboardPage() {
   const params = useParams()

@@ -6,7 +6,7 @@ import {
   SquaresFour, MagnifyingGlassMinus, CaretRight, CirclesFour,
   ShareNetwork, Code, Palette, PlayCircle, Info, WarningCircle,
   Lightbulb, Quotes, ChartBar, Image, Book, Note, Table, Notebook
-} from '@phosphor-icons/react/dist/ssr'
+} from '@phosphor-icons/react/ssr'
 
 export type BlockSortKey = 'name' | 'label' | 'recent'
 export type BlockViewMode = 'grid' | 'list'

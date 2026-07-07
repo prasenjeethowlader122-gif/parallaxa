@@ -1,5 +1,5 @@
 import React from 'react'
-import { Info, Warning, CheckCircle, XCircle, TrendUp, Book, Note } from '@phosphor-icons/react/dist/ssr'
+import { Info, Warning, CheckCircle, XCircle, TrendUp, Book, Note } from '@phosphor-icons/react/ssr'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell

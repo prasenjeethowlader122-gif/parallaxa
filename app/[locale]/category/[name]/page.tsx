@@ -8,7 +8,7 @@ import { Footer } from '@/components/footer'
 import { CategoryFilter } from '@/components/category-filter'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle, getArticlesByCategory, categories } from '@/lib/db/articles'
-import { ArrowLeft } from '@phosphor-icons/react/dist/ssr'
+import { ArrowLeft } from '@phosphor-icons/react/ssr'
 
 export default function CategoryPage() {
   const params = useParams()

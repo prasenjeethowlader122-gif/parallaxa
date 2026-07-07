@@ -20,7 +20,7 @@ import {
   Link, Minus, ArrowsClockwise, ArrowCounterClockwise, Plus, CaretDown,
   Sparkle, Wall, ClockClockwise, Monitor, TextB, TextItalic, Code,
   TextHOne, TextHTwo, TextHThree
-} from '@phosphor-icons/react/dist/ssr'
+} from '@phosphor-icons/react/ssr'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'

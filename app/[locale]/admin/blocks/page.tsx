@@ -10,7 +10,7 @@ import {
   Lightbulb, Info, Quotes, ChartBar, Image, Book, Note, Table,
   PlayCircle, Palette, Notebook, CaretDown, CirclesFour, Package,
   PencilSimple, Code, Eye, FloppyDisk, CircleNotch, ShareNetwork
-} from '@phosphor-icons/react/dist/ssr'
+} from '@phosphor-icons/react/ssr'
 
 interface BlockParam {
   name: string

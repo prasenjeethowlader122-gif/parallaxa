@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {Fugaz} from '@/lib/font'
 import { NewsArticle } from '@/lib/db/articles'
-import { Eye, TrendUp } from '@phosphor-icons/react/dist/ssr'
+import { Eye, TrendUp } from '@phosphor-icons/react/ssr'
 
 interface NewsCardProps {
   article: NewsArticle

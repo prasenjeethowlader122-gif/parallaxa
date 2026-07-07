@@ -17,7 +17,7 @@ import {
   ListBullets, ListNumbers, Quotes, Link, Image as ImageIcon,
   YoutubeLogo, ArrowCounterClockwise, ArrowClockwise, Minus, X, ArrowSquareOut,
   TextAlignLeft, TerminalWindow, PlusSquare, CaretDown, MagnifyingGlass
-} from '@phosphor-icons/react/dist/ssr'
+} from '@phosphor-icons/react/ssr'
 import { BlockSearchPanel } from './mdx/BlockSearchPanel'
 import { blockRegistry } from '@/lib/mdx/block-registry'
 

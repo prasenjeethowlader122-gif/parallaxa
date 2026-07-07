@@ -11,7 +11,7 @@ import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
 import Link from 'next/link';
-import { SquaresFour, Newspaper, ChartBar, Cube, Gear, PencilSimple } from '@phosphor-icons/react/dist/ssr';
+import { SquaresFour, Newspaper, ChartBar, Cube, Gear, PencilSimple } from '@phosphor-icons/react/ssr';
 
 const NavLists = [
   {

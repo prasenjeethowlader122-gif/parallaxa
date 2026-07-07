@@ -1,7 +1,7 @@
 'use client'
 
 import { Header } from '@/components/header'
-import { ArrowUp, Globe, Paperclip, TrendUp, Star, Newspaper, Lightbulb } from '@phosphor-icons/react/dist/ssr'
+import { ArrowUp, Globe, Paperclip, TrendUp, Star, Newspaper, Lightbulb } from '@phosphor-icons/react/ssr'
 import { useState, useRef, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
