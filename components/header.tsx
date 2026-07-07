@@ -132,7 +132,7 @@ export function Header({
 
   return (
     // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
-    <header className={`sticky top-0 z-50 bg-background bg-[#FFB300] ${className ?? ''}`}>
+    <header className={`sticky top-0 z-50 bg-[#FFB300] ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
         <div className="bg-red-600 text-primary-foreground text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
@@ -307,60 +307,7 @@ export function Header({
       </div>
 
       {/* ── DESKTOP NAV ROW ── */}
-      <div className="hidden md:block bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {NAV_LINKS.map(({ href, label, badge }) => {
-              const localizedHref = `/${locale}${href === '/' ? '' : href}`
-              const isActive = pathname === localizedHref
-              return (
-                <Link
-                  key={href}
-                  href={localizedHref}
-                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    isActive
-                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {label}
-                  {badge && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
-                      {badge}
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
 
-            {session && (
-              <>
-                <Link
-                  href={`/${locale}/write`}
-                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    pathname === `/${locale}/write`
-                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <FileEdit className="w-4.5 h-4.5" />
-                  Write
-                </Link>
-                <Link
-                  href={`/${locale}/dashboard`}
-                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    pathname === `/${locale}/dashboard`
-                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </div>
 
       {/* ── TICKER ── */}
       {includeTicker && tickerArticles.length > 0 && (
@@ -498,10 +445,10 @@ export function Header({
                     key={href}
                     href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5  transition-colors ${
+                    className={`relative flex items-center justify-start gap-2 p-3.5  transition-colors ${
                       isActive
                         ? 'bg-primary border-gray-900'
-                        : 'bg-card border-border hover:bg-gray-100'
+                        : '  hover:bg-gray-100'
                     }`}
                   >
                     <div

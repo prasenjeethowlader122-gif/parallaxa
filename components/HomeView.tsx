@@ -3,6 +3,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle } from '@/lib/db/articles'
+import {
+  Home,
+  Globe,
+  Cpu,
+  Briefcase,
+  Trophy,
+  FlaskConical,
+  Activity,
+  MessageSquare,
+  X,
+  Languages,
+  ChevronDown,
+  Search,
+  Bell,
+  FileEdit,
+  Menu,
+  LayoutDashboard,
+} from 'lucide-react'
 
 const FEATURED_COUNT = 6
 
@@ -18,9 +36,9 @@ const HIDDEN_POSITION = { x: 0, scale: 0.5, opacity: 0, z: 0 }
 function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
   const total = articles.length
   const [current, setCurrent] = useState(0)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef < NodeJS.Timeout | null > (null)
   const startXRef = useRef(0)
-
+  
   const getPos = useCallback(
     (cardIdx: number) => {
       const offset = (cardIdx - current + total) % total
@@ -29,18 +47,18 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
     },
     [current, total]
   )
-
+  
   const goTo = useCallback(
     (i: number) => {
       setCurrent((i + total) % total)
     },
     [total]
   )
-
+  
   const stopAuto = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
   }, [])
-
+  
   const startAuto = useCallback(() => {
     stopAuto()
     if (total <= 1) return
@@ -48,14 +66,14 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
       setCurrent((c) => (c + 1) % total)
     }, 3000)
   }, [total, stopAuto])
-
+  
   useEffect(() => {
     startAuto()
     return () => stopAuto()
   }, [startAuto, stopAuto])
-
+  
   if (total === 0) return null
-
+  
   return (
     <div className="md:hidden">
       {/* Progress bar */}
@@ -106,9 +124,9 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
           )
         })}
       </div>
-
-      {/* Nav row */}
-      <div className="flex items-center justify-center gap-5 py-3">
+    
+    { /* Nav row */ }
+    <div className="flex items-center justify-center gap-5 py-3">
         <button
           onClick={() => {
             stopAuto()
@@ -134,8 +152,7 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
         >
           <span className="block w-2 h-2 border-r border-b border-gray-500 -rotate-45 -translate-x-px" />
         </button>
-      </div>
-    </div>
+      </div> </div>
   )
 }
 
@@ -147,8 +164,73 @@ interface HomeClientProps {
 
 export default function HomeClient({ initialLatest, initialWorld, initialTech }: HomeClientProps) {
   const [mostRecent, second, third, fourth] = initialLatest
+  const NAV_LINKS = [
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/category/World', label: 'World', icon: Globe },
+  { href: '/category/Technology', label: 'Technology', icon: Cpu },
+  { href: '/category/Business', label: 'Business', icon: Briefcase },
+  { href: '/category/Sports', label: 'Sports', icon: Trophy },
+  { href: '/category/Science', label: 'Science', icon: FlaskConical },
+  { href: '/category/Health', label: 'Health', icon: Activity },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
+]
 
   return (
+    <div className = 'flex flex-row items-start justify-between gap-2 w-full h-auto'>
+            <div className="hidden md:block bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-6">
+          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+            {NAV_LINKS.map(({ href, label, badge }) => {
+              const localizedHref = `/${locale}${href === '/' ? '' : href}`
+              const isActive = pathname === localizedHref
+              return (
+                <Link
+                  key={href}
+                  href={localizedHref}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {label}
+                  {badge && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+
+            {session && (
+              <>
+                <Link
+                  href={`/${locale}/write`}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    pathname === `/${locale}/write`
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <FileEdit className="w-4.5 h-4.5" />
+                  Write
+                </Link>
+                <Link
+                  href={`/${locale}/dashboard`}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    pathname === `/${locale}/dashboard`
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </div>
     <main className="flex-grow">
       {/* Top Stories */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -236,5 +318,6 @@ export default function HomeClient({ initialLatest, initialWorld, initialTech }:
         </div>
       </section>
     </main>
+    </div>
   )
 }
