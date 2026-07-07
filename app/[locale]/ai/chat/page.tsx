@@ -5,29 +5,29 @@ import {
   Brain,
   Copy,
   Check,
-  Search,
+  MagnifyingGlass,
   Globe,
-  Share2,
-  Sparkles,
+  ShareNetwork,
+  Sparkle,
   ThumbsUp,
   ThumbsDown,
   Paperclip,
-  TrendingUp,
+  TrendUp,
   Star,
   Newspaper,
-  Zap,
+  Lightning,
   BookOpen,
-  AlignLeft,
-  ExternalLink,
+  TextAlignLeft,
+  ArrowSquareOut,
   Hash,
   Lightbulb,
-  CheckCircle2,
-  ChevronRight,
-  RotateCcw,
+  CheckCircle,
+  CaretRight,
+  ArrowCounterClockwise,
   Plus,
-  Loader2,
-  ChevronDown,
-} from 'lucide-react'
+  CircleNotch,
+  CaretDown,
+} from '@phosphor-icons/react/dist/ssr'
 import {
   useState,
   useRef,
@@ -76,19 +76,19 @@ const TOOL_LABEL: Record<string, string> = {
 }
 
 const TOOL_ICONS: Record<string, React.ElementType> = {
-  semantic_search: Search,
+  semantic_search: MagnifyingGlass,
   search_articles: Hash,
-  get_breaking_news: Zap,
-  get_trending_articles: TrendingUp,
+  get_breaking_news: Lightning,
+  get_trending_articles: TrendUp,
   get_featured_articles: Star,
   get_articles_by_category: BookOpen,
-  get_article_by_slug: AlignLeft,
+  get_article_by_slug: TextAlignLeft,
   get_context_for_question: Brain,
-  summarize_article: AlignLeft,
+  summarize_article: TextAlignLeft,
 }
 
 const SUGGESTED_QUERIES = [
-  { text: "What's happening today?", icon: TrendingUp },
+  { text: "What's happening today?", icon: TrendUp },
   { text: 'Featured stories', icon: Star },
   { text: 'Breaking news', icon: Newspaper },
   { text: 'World updates', icon: Globe },
@@ -142,7 +142,7 @@ const mdComponents: Components = {
       className="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-600 font-medium transition-colors inline-flex items-center gap-0.5"
     >
       {children}
-      <ExternalLink className="w-3 h-3 opacity-50 ml-0.5" />
+      <ArrowSquareOut className="w-3 h-3 opacity-50 ml-0.5" />
     </a>
   ),
   blockquote: ({ children }) => (
@@ -171,7 +171,7 @@ const mdComponents: Components = {
 // ─── Tool Step Row (Morphic-style) ───────────────────────────────────────────────
 
 function ToolStepRow({ tool }: { tool: ToolCall }) {
-  const Icon = TOOL_ICONS[tool.name] ?? Search
+  const Icon = TOOL_ICONS[tool.name] ?? MagnifyingGlass
   const label = TOOL_LABEL[tool.name] ?? tool.name
 
   return (
@@ -185,7 +185,7 @@ function ToolStepRow({ tool }: { tool: ToolCall }) {
           <Check className="w-2.5 h-2.5 text-neutral-500" />
         </div>
       ) : (
-        <Loader2 className="w-4 h-4 text-neutral-400 animate-spin flex-shrink-0" />
+        <CircleNotch className="w-4 h-4 text-neutral-400 animate-spin flex-shrink-0" />
       )}
       <span className={tool.done ? 'text-neutral-400 line-through' : 'text-neutral-500'}>
         {label}
@@ -289,7 +289,7 @@ function MessageBlock({ message, onCopy }: { message: Message; onCopy: (text: st
             <ThumbsDown className="w-3.5 h-3.5" />
           </button>
           <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all">
-            <Share2 className="w-3.5 h-3.5" />
+            <ShareNetwork className="w-3.5 h-3.5" />
             <span>Share</span>
           </button>
         </div>
@@ -480,7 +480,7 @@ export default function ExposerAi() {
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 bg-neutral-900 rounded-md flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <Sparkle weight="fill" className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-sm font-semibold text-neutral-800 tracking-tight">Only Hindu</span>
           </div>
@@ -577,7 +577,7 @@ export default function ExposerAi() {
                 }`}
               >
                 {isLoading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <CircleNotch className="w-3.5 h-3.5 animate-spin" />
                 ) : (
                   <ArrowUp className="w-3.5 h-3.5" />
                 )}

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { AlertCircle, Eye, EyeOff, Check } from 'lucide-react'
+import { WarningCircle, Eye, EyeSlash, Check } from '@phosphor-icons/react/dist/ssr'
 import { registerAction } from '@/app/actions/auth'
 
 const passwordRules = [
@@ -63,7 +63,7 @@ export default function SignUpPage() {
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 mb-6">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <WarningCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
               <p className="text-red-800 text-sm">{error}</p>
             </div>
           )}
@@ -119,7 +119,7 @@ export default function SignUpPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-600"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
               </button>
             </div>
 
@@ -131,7 +131,7 @@ export default function SignUpPage() {
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
                       rule.test(password) ? 'bg-green-500' : 'bg-gray-200'
                     }`}>
-                      {rule.test(password) && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+                      {rule.test(password) && <Check size={10} weight="bold" className="text-white" />}
                     </div>
                     <span className={`text-xs transition-colors ${
                       rule.test(password) ? 'text-green-600' : 'text-muted-foreground'

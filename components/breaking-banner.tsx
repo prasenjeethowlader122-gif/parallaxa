@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { NewsArticle, getBreakingNews } from '@/lib/db/articles'
-import { ChevronRight } from 'lucide-react'
+import { CaretRight } from '@phosphor-icons/react/dist/ssr'
 
 export function BreakingBanner() {
   const [breakingArticles, setBreakingArticles] = useState < NewsArticle[] > ([])
@@ -42,7 +42,7 @@ export function BreakingBanner() {
               </h3>
             </div>
             <div className="flex-shrink-0">
-              <ChevronRight className="w-5 h-5" />
+              <CaretRight className="w-5 h-5" />
             </div>
           </div>
         </Link>

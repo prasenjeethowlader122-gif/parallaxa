@@ -6,16 +6,39 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
+import {
+  House,
+  Globe,
+  Cpu,
+  Briefcase,
+  SoccerBall,
+  Flask,
+  FirstAid,
+  ChatCircleDots,
+  X,
+  Envelope,
+  Broadcast,
+  Newspaper,
+  CaretDown,
+  MagnifyingGlass,
+  PencilSimple,
+  SquaresFour,
+  Rss,
+  List,
+  SignIn,
+  SignOut,
+  UserPlus
+} from '@phosphor-icons/react'
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home', icon: 'home' },
-  { href: '/category/World', label: 'World', icon: 'public' },
-  { href: '/category/Technology', label: 'Technology', icon: 'memory' },
-  { href: '/category/Business', label: 'Business', icon: 'work' },
-  { href: '/category/Sports', label: 'Sports', icon: 'sports_soccer' },
-  { href: '/category/Science', label: 'Science', icon: 'science' },
-  { href: '/category/Health', label: 'Health', icon: 'medical_services' },
-  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: 'forum' },
+  { href: '/', label: 'Home', icon: House },
+  { href: '/category/World', label: 'World', icon: Globe },
+  { href: '/category/Technology', label: 'Technology', icon: Cpu },
+  { href: '/category/Business', label: 'Business', icon: Briefcase },
+  { href: '/category/Sports', label: 'Sports', icon: SoccerBall },
+  { href: '/category/Science', label: 'Science', icon: Flask },
+  { href: '/category/Health', label: 'Health', icon: FirstAid },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: ChatCircleDots },
 ]
 
 export function Header({
@@ -124,7 +147,7 @@ export function Header({
             className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity p-1"
             aria-label="Dismiss"
           >
-            <span className="material-symbols-rounded text-sm">close</span>
+            <X size={16} />
           </button>
         </div>
       )}
@@ -136,16 +159,16 @@ export function Header({
             <span className="text-xs text-muted-foreground">{today}</span>
             <div className="flex items-center gap-4">
               {[
-                { label: 'Newsletter', icon: 'mail' },
-                { label: 'Podcast', icon: 'podcast' },
-                { label: 'E-paper', icon: 'newspaper' }
+                { label: 'Newsletter', icon: Envelope },
+                { label: 'Podcast', icon: Broadcast },
+                { label: 'E-paper', icon: Newspaper }
               ].map((item) => (
                 <Link
                   key={item.label}
                   href="#"
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <span className="material-symbols-rounded text-sm">{item.icon}</span>
+                    <item.icon size={16} />
                   {item.label}
                 </Link>
               ))}
@@ -153,9 +176,9 @@ export function Header({
           </div>
           <div className="relative group">
             <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-full px-2.5 py-0.5 hover:bg-background uppercase">
-              <span className="material-symbols-rounded text-sm">language</span>
+              <Globe size={16} />
               {(pathname.split('/')[1] || 'bn').toUpperCase()}
-              <span className="material-symbols-rounded text-xs">expand_more</span>
+              <CaretDown size={12} />
             </button>
             <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded-xl shadow-xl p-1 w-24 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
               {['en', 'es', 'fr', 'de', 'ja'].map((lang) => (
@@ -197,7 +220,7 @@ export function Header({
                 className="flex items-center gap-1.5 px-3 h-10 text-xs text-muted-foreground border-r border-border hover:bg-gray-100 transition-colors"
               >
                 {searchCategory}
-                <span className="material-symbols-rounded text-xs">expand_more</span>
+                <CaretDown size={12} />
               </button>
               {isCatOpen && (
                 <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-[120px]">
@@ -234,7 +257,7 @@ export function Header({
                 className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground hover:bg-gray-700 transition-colors flex-shrink-0"
                 aria-label="Search"
               >
-                <span className="material-symbols-rounded text-lg">search</span>
+                <MagnifyingGlass size={20} />
               </button>
             </form>
           </div>
@@ -278,7 +301,7 @@ export function Header({
       <div className="hidden md:block bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {NAV_LINKS.map(({ href, label, badge, icon }) => {
+            {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
               const localizedHref = `/${locale}${href === '/' ? '' : href}`
               const isActive = pathname === localizedHref
               return (
@@ -291,7 +314,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <span className="material-symbols-rounded text-lg">{icon}</span>
+                    <Icon size={20} />
                   {label}
                   {badge && (
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
@@ -312,7 +335,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <span className="material-symbols-rounded text-lg">edit</span>
+                  <PencilSimple size={20} />
                   Write
                 </Link>
                 <Link
@@ -323,7 +346,7 @@ export function Header({
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <span className="material-symbols-rounded text-lg">dashboard</span>
+                  <SquaresFour size={20} />
                   Dashboard
                 </Link>
               </>
@@ -336,7 +359,7 @@ export function Header({
       {includeTicker && tickerArticles.length > 0 && (
         <div className="bg-card border-b border-border h-8 flex items-center overflow-hidden">
           <div className="flex items-center gap-1.5 px-4 h-full bg-primary text-primary-foreground flex-shrink-0">
-            <span className="material-symbols-rounded text-xs animate-pulse">rss_feed</span>
+            <Rss size={12} className="animate-pulse" />
             <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">
               Breaking
             </span>
@@ -368,7 +391,7 @@ export function Header({
             className="p-2 -ml-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
             aria-label="Open menu"
           >
-            <span className="material-symbols-rounded text-2xl">menu</span>
+            <List size={24} />
           </button>
 
           {/* Center: Logo */}
@@ -385,9 +408,7 @@ export function Header({
             className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
             aria-label="Search"
           >
-            <span className="material-symbols-rounded text-2xl">
-              {isSearchOpen ? 'close' : 'search'}
-            </span>
+            {isSearchOpen ? <X size={24} /> : <MagnifyingGlass size={24} />}
           </button>
         </div>
 
@@ -411,7 +432,7 @@ export function Header({
                 className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground flex-shrink-0"
                 aria-label="Search"
               >
-                <span className="material-symbols-rounded text-xl">search</span>
+                <MagnifyingGlass size={20} />
               </button>
             </form>
           </div>
@@ -427,7 +448,7 @@ export function Header({
               onClick={() => setIsMenuOpen(false)}
               className="p-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
             >
-              <span className="material-symbols-rounded text-2xl">close</span>
+              <X size={24} />
             </button>
           </div>
 
@@ -438,7 +459,7 @@ export function Header({
                 onSubmit={handleSearch}
                 className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-11"
               >
-                <span className="material-symbols-rounded text-xl text-muted-foreground">search</span>
+                <MagnifyingGlass size={20} className="text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -452,10 +473,9 @@ export function Header({
             {/* Sections grid */}
             <div className="px-5 py-5">
               <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
-                Sections
               </p>
               <div className="grid grid-cols-2 gap-3 mb-5">
-                {NAV_LINKS.map(({ href, label, badge, icon }) => {
+                {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
                   const localizedHref = `/${locale}${href === '/' ? '' : href}`
                   const isActive = pathname === localizedHref
                   return (
@@ -469,7 +489,7 @@ export function Header({
                           : 'bg-card border-border hover:bg-gray-100'
                       }`}
                     >
-                      <span className="material-symbols-rounded text-xl">{icon}</span>
+                      <Icon size={20} />
                       <span className="text-sm font-medium">{label}</span>
                       {badge && (
                         <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
@@ -495,7 +515,7 @@ export function Header({
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-gray-100 transition-colors"
                     >
-                      <span className="material-symbols-rounded text-xl">dashboard</span>
+                      <SquaresFour size={20} />
                       <span className="text-sm font-medium">Dashboard</span>
                     </Link>
                     <Link
@@ -503,7 +523,7 @@ export function Header({
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-gray-100 transition-colors"
                     >
-                      <span className="material-symbols-rounded text-xl">edit</span>
+                      <PencilSimple size={20} />
                       <span className="text-sm font-medium">Write</span>
                     </Link>
                     <button
@@ -513,7 +533,7 @@ export function Header({
                       }}
                       className="flex items-center gap-3 p-3 rounded-xl bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors w-full"
                     >
-                      <span className="material-symbols-rounded text-xl">logout</span>
+                      <SignOut size={20} />
                       <span className="text-sm font-medium">Sign out</span>
                     </button>
                   </>
@@ -524,7 +544,7 @@ export function Header({
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:bg-gray-100 transition-colors"
                     >
-                      <span className="material-symbols-rounded text-xl">login</span>
+                      <SignIn size={20} />
                       <span className="text-sm font-medium">Sign in</span>
                     </Link>
                     <Link
@@ -532,7 +552,7 @@ export function Header({
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground hover:bg-gray-800 transition-colors"
                     >
-                      <span className="material-symbols-rounded text-xl">person_add</span>
+                      <UserPlus size={20} />
                       <span className="text-sm font-medium">Get started</span>
                     </Link>
                   </>

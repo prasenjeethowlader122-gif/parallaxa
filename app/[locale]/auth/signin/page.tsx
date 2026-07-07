@@ -8,7 +8,7 @@ import { useState, useEffect, Suspense } from 'react' // add Suspense
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { WarningCircle, CheckCircle, Eye, EyeSlash } from '@phosphor-icons/react/dist/ssr'
 
 // Extract the part that uses useSearchParams into its own component
 function SignInForm() {
@@ -66,13 +66,13 @@ function SignInForm() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 mb-6">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <WarningCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
           <p className="text-red-800 text-sm">{error}</p>
         </div>
       )}
       {success && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3 mb-6">
-          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
           <p className="text-green-800 text-sm">{success}</p>
         </div>
       )}
@@ -112,7 +112,7 @@ function SignInForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-600"
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>

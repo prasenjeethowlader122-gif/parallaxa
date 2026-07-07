@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { NewsArticle, getTrendingArticles } from '@/lib/db/articles'
-import { Flame } from 'lucide-react'
+import { Fire } from '@phosphor-icons/react/dist/ssr'
 
 export function TrendingSection() {
   const [trendingArticles, setTrendingArticles] = useState < NewsArticle[] > ([])
@@ -21,7 +21,7 @@ export function TrendingSection() {
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
       <div className="flex items-center gap-2 mb-6">
-        <Flame className="w-5 h-5 text-red-600" />
+        <Fire className="w-5 h-5 text-red-600" />
         <h2 className="text-lg font-bold text-foreground">Trending Now</h2>
       </div>
 

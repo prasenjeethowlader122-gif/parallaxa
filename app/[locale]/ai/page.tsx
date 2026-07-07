@@ -1,12 +1,12 @@
 'use client'
 
 import { Header } from '@/components/header'
-import { ArrowUp, Globe, Paperclip, TrendingUp, Star, Newspaper, Zap, Lightbulb } from 'lucide-react'
+import { ArrowUp, Globe, Paperclip, TrendUp, Star, Newspaper, Lightbulb } from '@phosphor-icons/react/dist/ssr'
 import { useState, useRef, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 const SUGGESTIONS = [
-  { text: "What's happening today?", icon: TrendingUp },
+  { text: "What's happening today?", icon: TrendUp },
   { text: 'Featured stories', icon: Star },
   { text: 'Breaking news', icon: Newspaper },
   { text: 'Explain a concept', icon: Lightbulb },

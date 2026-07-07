@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
+import { WarningCircle, CheckCircle, ArrowLeft } from '@phosphor-icons/react/dist/ssr'
 import { forgotPasswordAction } from '@/app/actions/auth'
 
 export default function ForgotPasswordPage() {
@@ -46,13 +46,13 @@ export default function ForgotPasswordPage() {
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 mb-6">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <WarningCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
             <p className="text-red-800 text-sm">{error}</p>
           </div>
         )}
         {success && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3 mb-6">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
             <p className="text-green-800 text-sm">{success}</p>
           </div>
         )}
