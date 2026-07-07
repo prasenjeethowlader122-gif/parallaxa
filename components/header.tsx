@@ -344,14 +344,16 @@ export function Header({
       
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
               <div className="flex flex-col leading-none h-full justify-center">
-                <Image
+                {/**<Image
                   src={LOGO_SRC}
                   alt="Only Hindu"
                   width={170}
                   height={300}
                   priority
                   className="h-14 w-auto"
-                />
+                />**/}
+                <h1 className = {`${banglaFontlogo.className}`}>অনলিহিন্দু</h1>
+                  
               </div>
             </Link>
           </div>

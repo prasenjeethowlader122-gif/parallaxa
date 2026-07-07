@@ -4,12 +4,22 @@ import localFont from 'next/font/local'
 export const banglaFont = localFont({
   src: [
     {
-      path: '../public/local/font/SiyamRupali.ttf',
+      path: '../public/local/font/UNBangla-Regular.ttf',
       style: 'normal',
       weight: '400'
     }
   ],
   variable: '--font-bangla'
+})
+export const banglaFontlogo = localFont({
+  src: [
+    {
+      path: '../public/local/font/Tulika Medium.ttf',
+      style: 'normal',
+      weight: '600'
+    }
+  ],
+  variable: '--font-bangla-logo'
 })
 
 // Body Font: Miranda Sans (exported as sansFont)

@@ -1,5 +1,5 @@
 // app/[locale]/layout.tsx
-import { sansFont, serifFont, monoFont, banglaFont } from '@/lib/font'
+import { sansFont, serifFont, monoFont,banglaFontlogo, banglaFont } from '@/lib/font'
 import { ClientSessionProvider } from '@/components/session-provider'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
@@ -19,7 +19,7 @@ export default async function RootLayout({
   const { locale } = await params
 
   return (
-    <html lang={locale} className={`${sansFont.variable} ${serifFont.variable} ${monoFont.variable} ${banglaFont.variable}`}>
+    <html lang={locale} className={`${sansFont.variable} ${serifFont.variable} ${banglaFontlogo.variable} ${monoFont.variable} ${banglaFont.variable}`}>
       <body className={`${locale === 'bn' ? banglaFont.className : serifFont.className} antialiased bg-background text-foreground`}>
         <ClientSessionProvider>
           {children}
