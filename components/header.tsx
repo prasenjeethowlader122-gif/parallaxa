@@ -24,6 +24,7 @@ import {
   Menu,
   LayoutDashboard,
 } from 'lucide-react'
+import { sansFont, serifFont, monoFont,banglaFontlogo, banglaFont } from '@/lib/font'
 
 // যদি তুমি custom font ব্যবহার করো, চাইলে এগুলোও import করতে পারো
 // import { Fugaz, sansFont } from '@/lib/font'
@@ -132,7 +133,7 @@ export function Header({
 
   return (
     // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
-    <header className={`sticky top-0 z-50 bg-[#FFB300] ${className ?? ''}`}>
+    <header className={`sticky top-0 z-50 bg-white ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
         <div className="bg-red-600 text-primary-foreground text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
@@ -341,7 +342,13 @@ export function Header({
         <div className="px-4 h-14 flex items-center justify-between gap-3">
           {/* Left: logo (Menu icon restored) */}
           <div className="flex items-center justify-start gap-3 select-none h-full">
-      
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
               <div className="flex flex-col leading-none h-full justify-center">
                 {/**<Image
@@ -370,17 +377,8 @@ export function Header({
             >
               {isSearchOpen ? <X className="w-6 h-6" /> : <Search className="w-6 h-6" />}
             </button>
-            <button className="relative w-9 h-9 flex items-center justify-center text-gray-900 hover:bg-card rounded-lg transition-colors">
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
-            </button>
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+
+
           </div>
         </div>
 
@@ -448,7 +446,7 @@ export function Header({
                     key={href}
                     href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex items-center justify-start gap-2 p-3.5  transition-colors ${
+                    className={`relative flex items-center border-b justify-start gap-2 p-3.5  transition-colors ${
                       isActive
                         ? 'bg-primary border-gray-900'
                         : '  hover:bg-gray-100'
@@ -456,7 +454,7 @@ export function Header({
                   >
                     <div
                       className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        isActive ? 'bg-background/15' : 'bg-background border border-border'
+                        isActive ? 'bg-background/15' : 'bg-background'
                       }`}
                     >
                       {Icon && (
@@ -522,7 +520,7 @@ export function Header({
                   <Link
                     href={`/${locale}/dashboard`}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
+                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl w-full border transition-colors ${
                       pathname === `/${locale}/dashboard`
                         ? 'bg-primary border-gray-900'
                         : 'bg-card border-border hover:bg-gray-100'
