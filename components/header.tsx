@@ -132,7 +132,7 @@ export function Header({
 
   return (
     // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
-    <header className={`sticky top-0 z-50 bg-background border-b border-border ${className ?? ''}`}>
+    <header className={`sticky top-0 z-50 bg-background bg-[#FFB300] ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
         <div className="bg-red-600 text-primary-foreground text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
@@ -186,7 +186,7 @@ export function Header({
                     parts[1] = lang
                     router.push(parts.join('/') || `/${lang}`)
                   }}
-                  className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-600 hover:bg-card rounded-lg transition-colors uppercase"
+                  className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-900 hover:bg-card rounded-lg transition-colors uppercase"
                 >
                   {lang}
                 </button>
@@ -390,13 +390,13 @@ export function Header({
       )}
 
       {/* ── MOBILE TOP BAR ── */}
-      <div className="md:hidden bg-background">
+      <div className="md:hidden">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
           {/* Left: logo (Menu icon restored) */}
           <div className="flex items-center gap-3 select-none h-full">
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 text-gray-600 hover:bg-card rounded-lg transition-colors"
+              className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6" />
@@ -409,7 +409,7 @@ export function Header({
                   width={170}
                   height={300}
                   priority
-                  className="h-12 w-auto"
+                  className="h-14 w-auto"
                 />
               </div>
             </Link>
@@ -422,12 +422,12 @@ export function Header({
                 setIsSearchOpen(!isSearchOpen)
                 setIsMenuOpen(false)
               }}
-              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:bg-card rounded-lg transition-colors"
               aria-label="Search"
             >
               {isSearchOpen ? <X className="w-6 h-6" /> : <Search className="w-6 h-6" />}
             </button>
-            <button className="relative w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-card rounded-lg transition-colors">
+            <button className="relative w-9 h-9 flex items-center justify-center text-gray-900 hover:bg-card rounded-lg transition-colors">
               <Bell className="w-6 h-6" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
             </button>
@@ -512,7 +512,7 @@ export function Header({
                       {Icon && (
                         <Icon
                           className={`w-4.5 h-4.5 ${
-                            isActive ? 'text-primary-foreground' : 'text-gray-600'
+                            isActive ? 'text-primary-foreground' : 'text-gray-900'
                           }`}
                         />
                       )}
@@ -554,7 +554,7 @@ export function Header({
                         className={`w-4.5 h-4.5 ${
                           pathname === `/${locale}/write`
                             ? 'text-primary-foreground'
-                            : 'text-gray-600'
+                            : 'text-gray-900'
                         }`}
                       />
                     </div>
@@ -588,7 +588,7 @@ export function Header({
                         className={`w-4.5 h-4.5 ${
                           pathname === `/${locale}/dashboard`
                             ? 'text-primary-foreground'
-                            : 'text-gray-600'
+                            : 'text-gray-900'
                         }`}
                       />
                     </div>
