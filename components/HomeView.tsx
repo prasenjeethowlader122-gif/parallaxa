@@ -1,4 +1,8 @@
 'use client'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter, usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { NewsCard } from '@/components/news-card'
@@ -165,16 +169,19 @@ interface HomeClientProps {
 export default function HomeClient({ initialLatest, initialWorld, initialTech }: HomeClientProps) {
   const [mostRecent, second, third, fourth] = initialLatest
   const NAV_LINKS = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/category/World', label: 'World', icon: Globe },
-  { href: '/category/Technology', label: 'Technology', icon: Cpu },
-  { href: '/category/Business', label: 'Business', icon: Briefcase },
-  { href: '/category/Sports', label: 'Sports', icon: Trophy },
-  { href: '/category/Science', label: 'Science', icon: FlaskConical },
-  { href: '/category/Health', label: 'Health', icon: Activity },
-  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
-]
-
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/category/World', label: 'World', icon: Globe },
+    { href: '/category/Technology', label: 'Technology', icon: Cpu },
+    { href: '/category/Business', label: 'Business', icon: Briefcase },
+    { href: '/category/Sports', label: 'Sports', icon: Trophy },
+    { href: '/category/Science', label: 'Science', icon: FlaskConical },
+    { href: '/category/Health', label: 'Health', icon: Activity },
+    { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
+  ]
+  const pathname = usePathname()
+  const { data: session } = useSession()
+  const locale = pathname.split('/')[1] || 'bn'
+  
   return (
     <div className = 'flex flex-row items-start justify-between gap-2 w-full h-auto'>
             <div className="hidden md:block bg-background border-b border-border">
