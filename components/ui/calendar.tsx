@@ -5,7 +5,7 @@ import {
   CaretDown,
   CaretLeft,
   CaretRight,
-} from '@phosphor-icons/react'
+} from '@phosphor-icons/react/ssr'
 import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker'
 
 import { cn } from '@/lib/utils'

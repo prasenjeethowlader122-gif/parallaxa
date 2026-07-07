@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import * as MenubarPrimitive from '@radix-ui/react-menubar'
-import { Check, CaretRight, Circle } from '@phosphor-icons/react'
+import { Check, CaretRight, Circle } from '@phosphor-icons/react/ssr'
 
 import { cn } from '@/lib/utils'
 

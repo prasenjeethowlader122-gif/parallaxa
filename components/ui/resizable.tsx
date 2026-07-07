@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { DotsSixVertical } from '@phosphor-icons/react'
+import { DotsSixVertical } from '@phosphor-icons/react/ssr'
 import * as ResizablePrimitive from 'react-resizable-panels'
 
 import { cn } from '@/lib/utils'
