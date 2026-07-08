@@ -1,6 +1,6 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { Info, AlertTriangle, CheckCircle2, XCircle, TrendingUp, Book, StickyNote } from 'lucide-react'
+import { Info, Warning, CheckCircle, XCircle, TrendUp, Book, Note } from '@phosphor-icons/react/ssr'
 
 const MermaidRenderer = dynamic(() => import('./MermaidRenderer'), { ssr: false })
 
@@ -104,7 +104,7 @@ export const customBlockComponents = {
       <div className="my-6 p-5 bg-white border border-gray-100 rounded-none shadow-none">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <TrendingUp size={16} className="text-emerald-500" />
+            <TrendUp size={16} className="text-emerald-500" />
             {props.title}
           </h4>
           <span className="text-xs font-bold text-gray-500 tabular-nums">
@@ -123,8 +123,8 @@ export const customBlockComponents = {
   callout: (props: any) => {
     const icons: Record<string, any> = {
       info: <Info size={18} className="text-blue-500" />,
-      warning: <AlertTriangle size={18} className="text-amber-500" />,
-      success: <CheckCircle2 size={18} className="text-emerald-500" />,
+      warning: <Warning size={18} className="text-amber-500" />,
+      success: <CheckCircle size={18} className="text-emerald-500" />,
       error: <XCircle size={18} className="text-red-500" />,
     }
     const bgColors: Record<string, string> = {
@@ -181,7 +181,7 @@ export const customBlockComponents = {
   infobox: (props: any) => {
     const icons: Record<string, any> = {
       info: <Info size={18} className="text-blue-500" />,
-      warning: <AlertTriangle size={18} className="text-amber-500" />,
+      warning: <Warning size={18} className="text-amber-500" />,
     }
     const bgColors: Record<string, string> = {
       info: 'bg-blue-50 border-blue-100',
@@ -216,7 +216,7 @@ export const customBlockComponents = {
   ),
   tika: (props: any) => (
     <div className="my-4 p-4 bg-yellow-50/50 border-l-4 border-yellow-400 rounded-none flex items-start gap-3">
-      <StickyNote size={16} className="text-yellow-600 mt-1 shrink-0" />
+      <Note size={16} className="text-yellow-600 mt-1 shrink-0" />
       <div className="text-sm text-yellow-900">
         <span className="font-bold block mb-1 text-[10px] uppercase tracking-wider text-yellow-600">টিকা</span>
         {props.text}

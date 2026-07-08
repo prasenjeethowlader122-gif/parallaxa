@@ -2,7 +2,7 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { getAuthorById, getAuthorStats, getArticlesByAuthor } from '@/lib/db/author';
-import { User, FileText, Eye, Calendar } from '@phosphor-icons/react/dist/ssr';
+import { User, FileText, Eye, Calendar } from '@phosphor-icons/react/ssr';
 import { NewsCard } from '@/components/news-card';
 import { notFound } from 'next/navigation';
 
