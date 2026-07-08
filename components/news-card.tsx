@@ -46,6 +46,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   })
   
   const href = `/article/${article.slug || article.id}`
+  const authorHref = `/author/${article.author_id || 'unknown'}`
   
   const imageSrc = article.image || '/images/placeholder.jpg'
   
@@ -77,7 +78,9 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               </h3>
             
               <div className="flex items-center gap-3 mt-2 text-xs text-primary-foreground/70">
-                <span className="font-medium">{article.author}</span>
+                <Link href={authorHref} className="font-medium hover:text-white transition-colors">
+                  {article.author}
+                </Link>
                 <span>{formattedDate}</span>
               </div>
             </div>
