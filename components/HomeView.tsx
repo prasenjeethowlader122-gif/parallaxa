@@ -280,7 +280,7 @@ export default function HomeClient({ initialLatest, initialWorld, initialTech }:
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b">
                 <h2 className="text-2xl font-bold text-foreground">World</h2>
                 <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
               </div>
