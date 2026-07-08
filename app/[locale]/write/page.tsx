@@ -80,9 +80,9 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
 const mdComponents: Components = {
   ...customBlockComponents,
   code: CodeBlock as Components['code'],
-  h1: ({ children }) => <h1 className="font-['Newsreader'] text-3xl font-bold text-[#1a1b1c] mt-8 mb-4 leading-tight">{children}</h1>,
-  h2: ({ children }) => <h2 className="font-['Newsreader'] text-2xl font-semibold text-[#1a1b1c] mt-6 mb-3 leading-snug">{children}</h2>,
-  h3: ({ children }) => <h3 className="font-['Newsreader'] text-xl font-semibold text-[#313334] mt-5 mb-2">{children}</h3>,
+  h1: ({ children }) => <h1 className="text-3xl font-bold text-[#1a1b1c] mt-8 mb-4 leading-tight">{children}</h1>,
+  h2: ({ children }) => <h2 className=" text-2xl font-semibold text-[#1a1b1c] mt-6 mb-3 leading-snug">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-xl font-semibold text-[#313334] mt-5 mb-2">{children}</h3>,
   p: ({ children }) => <p className="text-[#313334] text-[1.05rem] leading-[1.85] my-3">{children}</p>,
   ul: ({ children }) => <ul className="list-disc pl-6 my-4 flex flex-col gap-2 text-[1.05rem] text-[#313334]">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal pl-6 my-4 flex flex-col gap-2 text-[1.05rem] text-[#313334]">{children}</ol>,
@@ -111,7 +111,7 @@ const mdComponents: Components = {
         );
       }
     }
-    return <blockquote className="border-l-[3px] border-[#585f64] pl-5 my-5 text-[#5e5f61] italic text-lg font-['Newsreader']">{children}</blockquote>;
+    return <blockquote className="border-l-[3px] border-[#585f64] pl-5 my-5 text-[#5e5f61] italic text-lg ">{children}</blockquote>;
   },
   table: ({ children }) => (
     <div className="overflow-x-auto my-5 rounded-xl border border-[#e4e2e1]">
@@ -422,7 +422,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       padding: '1px 5px',
       borderRadius: '4px',
       border: '1px solid #fde68a',
-      fontFamily: 'monospace',
+      fontFamily: 'var(--font-slabo), Georgia, serif',
       fontSize: '0.9em',
     }
   })

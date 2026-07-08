@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+
+
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
 import {
   Home,
@@ -410,211 +412,174 @@ export function Header({
       </div>
 
       {/* ── MOBILE MENU ── */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute left-0 right-0 top-full z-50 bg-background flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] shadow-xl">
-          {/* Search */}
-          <div className="px-5 pt-5 pb-4 border-b border-border">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
-              Quick search
-            </p>
-            <form
-              onSubmit={handleSearch}
-              className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 h-10"
-            >
-              <Search className="w-4.5 h-4.5 text-muted-foreground flex-shrink-0" />
+      {
+        <div className="md:hidden relative bg-stone-50 flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] border-b border-stone-300">
+          {/* Masthead strip */}
+          <div className="flex items-baseline justify-between px-5 pt-4 pb-3">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-500">
+              Contents
+            </span>
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400">
+              {today}
+            </span>
+          </div>
+          <div className="h-px bg-stone-900 mx-5" />
+
+          {/* Search — classifieds style, bottom-border only */}
+          <div className="px-5 pt-5 pb-6">
+            <form onSubmit={handleSearch} className="flex items-end gap-2 border-b border-stone-400 pb-2">
+              <Search className="w-4 h-4 text-stone-400 flex-shrink-0 mb-0.5" />
               <input
                 type="text"
                 placeholder="Search stories, topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 text-sm outline-none bg-transparent text-foreground placeholder-gray-400"
+                className="flex-1 text-sm outline-none bg-transparent text-stone-900 placeholder-stone-400 font-sans"
               />
             </form>
           </div>
 
-          {/* Sections grid */}
-          <div className="px-5 pt-5">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+          {/* Sections — table of contents, not cards */}
+          <div className="px-5">
+            <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-1">
               Sections
             </p>
-            <div className="flex flex-col items-start gap-2.5 mb-5">
-              {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
+            <nav className="flex flex-col">
+              {NAV_LINKS.map(({ href, label, badge, icon: Icon }, idx) => {
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
                 const isActive = pathname === localizedHref
                 return (
-                  <Link
+                  <a
                     key={href}
                     href={localizedHref}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex items-center border-b justify-start gap-2 p-3.5  transition-colors w-full ${
-                      isActive
-                        ? 'border-gray-900 text-blue-600'
-                        : '  hover:bg-gray-100 rounded-lg'
-                    }`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setIsMenuOpen(false)
+                    }}
+                    className="group relative flex items-center gap-3 py-3.5 border-b border-stone-200"
                   >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        isActive ? 'bg-background/15' : 'bg-background'
-                      }`}
-                    >
-                      {Icon && (
-                        <Icon
-                          className={`w-4.5 h-4.5 ${
-                            isActive ? 'text-primary-foreground' : 'text-gray-900'
-                          }`}
-                        />
-                      )}
-                    </div>
+                    {/* signature: red spine marker that reveals on active/hover */}
                     <span
-                      className={`text-md font-medium leading-tight ${
-                        isActive ? 'text-primary-foreground' : 'text-foreground'
+                      className={`absolute -left-5 top-0 bottom-0 w-1 bg-red-700 transition-transform duration-200 origin-left ${
+                        isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                      }`}
+                    />
+                    <span className="font-mono text-xs text-stone-400 w-6">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    {Icon && <Icon className="w-4 h-4 text-stone-500 flex-shrink-0" />}
+                    <span
+                      className={`flex-1 font-serif text-[17px] leading-tight ${
+                        isActive ? 'text-red-700' : 'text-stone-900'
                       }`}
                     >
                       {label}
                     </span>
                     {badge && (
-                      <span className="absolute top-2 right-2 text-[8px] font-medium uppercase tracking-wide bg-red-50 text-red-600 rounded px-1 py-0.5">
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-red-700 border border-red-700 px-1.5 py-0.5">
                         {badge}
                       </span>
                     )}
-                  </Link>
+                  </a>
                 )
               })}
-              
-              {session && (
-                <div className = 'flex items-center gap-2 justify-between'>
-                  <Link
-                    href={`/${locale}/write`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl border transition-colors ${
-                      pathname === `/${locale}/write`
-                        ? 'bg-primary border-gray-900'
-                        : 'bg-card border-border hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        pathname === `/${locale}/write`
-                          ? 'bg-background/15'
-                          : 'bg-background border border-border'
-                      }`}
-                    >
-                      <FileEdit
-                        className={`w-4.5 h-4.5 ${
-                          pathname === `/${locale}/write`
-                            ? 'text-primary-foreground'
-                            : 'text-gray-900'
-                        }`}
-                      />
-                    </div>
-                    <span
-                      className={`text-xs font-medium leading-tight ${
-                        pathname === `/${locale}/write`
-                          ? 'text-primary-foreground'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      Write
-                    </span>
-                  </Link>
-                  <Link
-                    href={`/${locale}/dashboard`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex flex-col gap-1.5 p-3.5 rounded-xl w-full border transition-colors ${
-                      pathname === `/${locale}/dashboard`
-                        ? 'bg-primary border-gray-900'
-                        : 'bg-card border-border hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        pathname === `/${locale}/dashboard`
-                          ? 'bg-background/15'
-                          : 'bg-background border border-border'
-                      }`}
-                    >
-                      <LayoutDashboard
-                        className={`w-4.5 h-4.5 ${
-                          pathname === `/${locale}/dashboard`
-                            ? 'text-primary-foreground'
-                            : 'text-gray-900'
-                        }`}
-                      />
-                    </div>
-                    <span
-                      className={`text-xs font-medium leading-tight ${
-                        pathname === `/${locale}/dashboard`
-                          ? 'text-primary-foreground'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      Dashboard
-                    </span>
-                  </Link>
-                </div>
-              )}
-            </div>
+            </nav>
+
+            {session && (
+              <div className="grid grid-cols-2 gap-px bg-stone-200 mt-3 mb-2 border-t border-stone-300">
+                <a
+                  href={`/${locale}/write`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                  }}
+                  className="bg-stone-50 flex flex-col gap-2 p-4 hover:bg-stone-100 transition-colors"
+                >
+                  <FileEdit className="w-4 h-4 text-stone-700" />
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-stone-700">
+                    Write
+                  </span>
+                </a>
+                <a
+                  href={`/${locale}/dashboard`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                  }}
+                  className="bg-stone-50 flex flex-col gap-2 p-4 hover:bg-stone-100 transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4 text-stone-700" />
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-stone-700">
+                    Dashboard
+                  </span>
+                </a>
+              </div>
+            )}
           </div>
 
-          {/* Trending */}
-          {trendingArticles.length > 0 && (
-            <div className="px-5 border-t border-border">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mt-4 mb-3">
+          {/* Trending — genuinely ranked, so numbering earns its place */}
+          {TRENDING.length > 0 && (
+            <div className="px-5 pt-5 border-t border-stone-300 mt-4">
+              <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-3">
                 Trending now
               </p>
-              <div className="flex flex-col gap-3 mb-6">
-                {trendingArticles.slice(0, 3).map((article, idx) => (
-                  <Link
+              <div className="flex flex-col">
+                {TRENDING.map((article, idx) => (
+                  <a
                     key={article.id}
                     href={`/article/${article.slug}`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex gap-3 group"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setIsMenuOpen(false)
+                    }}
+                    className="group flex gap-3 py-3 border-b border-stone-200 last:border-b-0"
                   >
-                    <span className="text-xl font-bold text-gray-200 group-hover:text-red-600 transition-colors">
-                      0{idx + 1}
+                    <span className="font-mono text-xs text-stone-400 mt-1 w-8 flex-shrink-0">
+                      N&deg;{String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="text-sm font-medium text-foreground line-clamp-2 leading-snug">
+                    <p className="font-serif text-[15px] text-stone-800 leading-snug group-hover:text-red-700 transition-colors">
                       {article.title}
                     </p>
-                  </Link>
+                  </a>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Auth — pinned to bottom */}
-          <div className="mt-auto px-5 pb-8 pt-4 border-t border-border flex gap-2.5">
-            {session?.user ? (
+          {/* Auth — pinned, subscribe-strip style */}
+          <div className="mt-auto px-5 py-5 border-t border-stone-300 flex gap-2.5">
+            {session ? (
               <button
                 onClick={() => {
                   handleSignOut()
                   setIsMenuOpen(false)
                 }}
-                className="flex-1 h-11 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-card transition-colors"
+                className="flex-1 h-11 text-sm font-medium text-stone-700 border border-stone-300 hover:bg-stone-100 transition-colors"
               >
                 Sign out
               </button>
             ) : (
               <>
-                <Link
+                <a
                   href="/auth/signin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-foreground border border-gray-300 rounded-xl hover:bg-card transition-colors"
+                  onClick={(e) => e.preventDefault()}
+                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-stone-900 border border-stone-300 hover:bg-stone-100 transition-colors"
                 >
                   Sign in
-                </Link>
-                <Link
+                </a>
+                <a
                   href="/auth/signup"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-primary-foreground bg-primary rounded-xl hover:bg-gray-700 transition-colors"
+                  onClick={(e) => e.preventDefault()}
+                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-stone-50 bg-red-700 hover:bg-red-800 transition-colors"
                 >
                   Get started
-                </Link>
+                </a>
               </>
             )}
           </div>
         </div>
-      )}
+      }
     </header>
   )
 }
+
