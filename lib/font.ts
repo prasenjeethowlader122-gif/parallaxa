@@ -14,7 +14,7 @@ export const banglaFont = localFont({
 export const banglaFontlogo = localFont({
   src: [
     {
-      path: '../public/local/font/Tulika Medium.ttf',
+      path: '../public/local/font/Ekush-Regular.ttf',
       style: 'normal',
       weight: '600'
     }
