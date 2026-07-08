@@ -1,0 +1,227 @@
+
+> my-project@0.1.0 dev /app
+> next dev
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 564ms
+It looks like you're trying to use TypeScript but do not have the required package(s) installed.
+Installing dependencies
+
+If you are not trying to use TypeScript, please remove the tsconfig.json file from your package root (and any TypeScript files in your app and pages directories).
+
+
+Installing devDependencies (pnpm):
+- typescript
+
+Progress: resolved 0, reused 1, downloaded 0, added 0
+ WARN  deprecated recharts@2.15.0: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
+Progress: resolved 106, reused 106, downloaded 0, added 0
+Progress: resolved 277, reused 210, downloaded 0, added 0
+Progress: resolved 724, reused 625, downloaded 0, added 0
+ WARN  6 deprecated subdependencies found: glob@10.5.0, glob@7.2.3, inflight@1.0.6, node-domexception@1.0.0, rimraf@2.7.1, serialize-error-cjs@0.1.4
+Progress: resolved 1181, reused 1088, downloaded 0, added 0
+Already up to date
+Progress: resolved 1181, reused 1088, downloaded 0, added 0, done
+
+Done in 5.5s using pnpm v10.30.3
+
+
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/1423_@auth_core_0jqfdjb._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/1423_@auth_core_0jqfdjb._.js:5344:262)
+○ Compiling /[locale]/auth/signin ...
+ GET /bn/auth/signin?callbackUrl=%2Fbn%2Fdashboard 200 in 4.9s (next.js: 4.5s, proxy.ts: 6ms, application-code: 453ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/bn/auth/s..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html
+                            lang="en"
+-                           className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa__v..."
+                          >
+                            <body
+-                             className="banglafont_c46bf9ac-module__EzdSkW__className antialiased bg-background text-..."
+                            >
+                  ...
+
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerScrollAndFocusHandlerOld focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
+      <ErrorBoundary errorComponent={function GlobalError} errorStyles={{...}} errorScripts={[...]}>
+        <ErrorBoundaryHandler pathname="/bn/auth/s..." errorComponent={function GlobalError} errorStyles={{...}} ...>
+          <LoadingBoundary name="/" loading={[...]}>
+            <Suspense name="/" fallback={<Fragment>}>
+              <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
+                <HTTPAccessFallbackErrorBoundary pathname="/bn/auth/s..." notFound={{...}} forbidden={undefined} ...>
+                  <RedirectBoundary>
+                    <RedirectErrorBoundary router={{...}}>
+                      <InnerLayoutRouter url="/bn/auth/s..." tree={[...]} params={{locale:"bn"}} ...>
+                        <SegmentViewNode type="layout" pagePath="[locale]/l...">
+                          <SegmentTrieNode>
+                          <link>
+                          <script>
+                          <script>
+                          <RootLayout>
+                            <html
++                             lang="bn"
+-                             lang="en"
+                              className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa_..."
+                            >
+                      ...
+      ...
+
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/1423_@auth_core_1ffa9dw._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/1423_@auth_core_1ffa9dw._.js:5344:264)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async AppRouteRouteModule.do (/app/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_@opentelemetry+api@1.9.1_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40131)
+ GET /api/auth/session 500 in 2.1s (next.js: 2.1s, application-code: 30ms)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/1423_@auth_core_1ffa9dw._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/1423_@auth_core_1ffa9dw._.js:5344:264)
+    at async AppRouteRouteModule.do (/app/node_modules/.pnpm/next@16.2.10_@babel+core@7.29.7_@opentelemetry+api@1.9.1_react-dom@19.2.7_react@19.2.7__react@19.2.7/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40131)
+ GET /api/auth/session 500 in 77ms (next.js: 60ms, application-code: 17ms)
+[browser] ClientFetchError: There was a problem with the server configuration. Check the server logs for more information.. Read more at https://errors.authjs.dev#autherror
+[browser] ClientFetchError: There was a problem with the server configuration. Check the server logs for more information.. Read more at https://errors.authjs.dev#autherror
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/bn/author/1" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html
+                            lang="en"
+-                           className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa__v..."
+                          >
+                            <body
+-                             className="banglafont_c46bf9ac-module__EzdSkW__className antialiased bg-background text-..."
+                            >
+                  ...
+
+⨯ Error [NeonDbError]: column "image" does not exist
+    at async getAuthorById (lib/db/author.ts:5:18)
+    at async AuthorPage (app/[locale]/author/[id]/page.tsx:11:18)
+  3 |
+  4 | export async function getAuthorById(id: string) {
+> 5 |   const author = await sql`
+    |                  ^
+  6 |     SELECT id, name, image, bio, role, created_at
+  7 |     FROM users
+  8 |     WHERE id = ${id} {
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3716',
+  routine: 'errorMissingColumn',
+  sourceError: undefined,
+  digest: '684975507'
+}
+ GET /bn/author/1 200 in 4.4s (next.js: 3.3s, proxy.ts: 7ms, application-code: 1098ms)
+[browser] In HTML, <html> cannot be a child of <body>.
+This will cause a hydration error.
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:"...", ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/bn/author/1" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html lang="en">
+>                           <body>
+                              ...
+                                <ErrorBoundary errorComponent={function GlobalError} errorStyles={{...}} ...>
+                                  <ErrorBoundaryHandler pathname="/bn/author/1" errorComponent={function GlobalError} ...>
+                                    <SegmentViewNode>
+                                    <script>
+                                    <script>
+                                    <GlobalError error={Error} reset={function} unstable_retry={function}>
+>                                     <html>
+                  ...
+
+[browser] <body> cannot contain a nested <html>.
+See this log for the ancestor stack trace.
+[browser] You are mounting a new html component when a previous one has not first unmounted. It is an error to render more than one html component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <html> and if you need to mount a new one, ensure any previous ones have unmounted first.
+[browser] You are mounting a new body component when a previous one has not first unmounted. It is an error to render more than one body component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <body> and if you need to mount a new one, ensure any previous ones have unmounted first.

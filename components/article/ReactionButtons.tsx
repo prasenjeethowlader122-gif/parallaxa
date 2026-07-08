@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown } from '@phosphor-icons/react';
+import { ThumbsUp, ThumbsDown } from '@phosphor-icons/react/ssr';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 
