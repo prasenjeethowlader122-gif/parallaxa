@@ -134,7 +134,7 @@ export function Header({
   })
 
   return (
-    // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
+    // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
     <header className={`sticky top-0 z-50 bg-white ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
@@ -345,11 +345,14 @@ export function Header({
           {/* Left: logo (Menu icon restored) */}
           <div className="flex items-center justify-start gap-3 select-none h-full">
             <button
-              onClick={() => setIsMenuOpen(true)}
+              onClick={() => {
+                setIsMenuOpen((prev) => !prev)
+                setIsSearchOpen(false)
+              }}
               className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
-              aria-label="Open menu"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              <Menu className="w-6 h-6" />
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
               <div className="flex flex-col leading-none h-full justify-center">
@@ -412,7 +415,7 @@ export function Header({
       </div>
 
       {/* ── MOBILE MENU ── */}
-      {
+      {isMenuOpen && (
         <div className="md:hidden relative bg-stone-50 flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] border-b border-stone-300">
           {/* Masthead strip */}
           <div className="flex items-baseline justify-between px-5 pt-4 pb-3">
@@ -449,13 +452,10 @@ export function Header({
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
                 const isActive = pathname === localizedHref
                 return (
-                  <a
+                  <Link
                     key={href}
                     href={localizedHref}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setIsMenuOpen(false)
-                    }}
+                    onClick={() => setIsMenuOpen(false)}
                     className="group relative flex items-center gap-3 py-3.5 border-b border-stone-200"
                   >
                     {/* signature: red spine marker that reveals on active/hover */}
@@ -480,58 +480,49 @@ export function Header({
                         {badge}
                       </span>
                     )}
-                  </a>
+                  </Link>
                 )
               })}
             </nav>
 
             {session && (
               <div className="grid grid-cols-2 gap-px bg-stone-200 mt-3 mb-2 border-t border-stone-300">
-                <a
+                <Link
                   href={`/${locale}/write`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setIsMenuOpen(false)
-                  }}
+                  onClick={() => setIsMenuOpen(false)}
                   className="bg-stone-50 flex flex-col gap-2 p-4 hover:bg-stone-100 transition-colors"
                 >
                   <FileEdit className="w-4 h-4 text-stone-700" />
                   <span className="font-mono text-[11px] uppercase tracking-wider text-stone-700">
                     Write
                   </span>
-                </a>
-                <a
+                </Link>
+                <Link
                   href={`/${locale}/dashboard`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setIsMenuOpen(false)
-                  }}
+                  onClick={() => setIsMenuOpen(false)}
                   className="bg-stone-50 flex flex-col gap-2 p-4 hover:bg-stone-100 transition-colors"
                 >
                   <LayoutDashboard className="w-4 h-4 text-stone-700" />
                   <span className="font-mono text-[11px] uppercase tracking-wider text-stone-700">
                     Dashboard
                   </span>
-                </a>
+                </Link>
               </div>
             )}
           </div>
 
           {/* Trending — genuinely ranked, so numbering earns its place */}
-          {TRENDING.length > 0 && (
+          {trendingArticles.length > 0 && (
             <div className="px-5 pt-5 border-t border-stone-300 mt-4">
               <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-3">
                 Trending now
               </p>
               <div className="flex flex-col">
-                {TRENDING.map((article, idx) => (
-                  <a
+                {trendingArticles.map((article, idx) => (
+                  <Link
                     key={article.id}
                     href={`/article/${article.slug}`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setIsMenuOpen(false)
-                    }}
+                    onClick={() => setIsMenuOpen(false)}
                     className="group flex gap-3 py-3 border-b border-stone-200 last:border-b-0"
                   >
                     <span className="font-mono text-xs text-stone-400 mt-1 w-8 flex-shrink-0">
@@ -540,7 +531,7 @@ export function Header({
                     <p className="font-serif text-[15px] text-stone-800 leading-snug group-hover:text-red-700 transition-colors">
                       {article.title}
                     </p>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -560,26 +551,25 @@ export function Header({
               </button>
             ) : (
               <>
-                <a
+                <Link
                   href="/auth/signin"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={() => setIsMenuOpen(false)}
                   className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-stone-900 border border-stone-300 hover:bg-stone-100 transition-colors"
                 >
                   Sign in
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/auth/signup"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={() => setIsMenuOpen(false)}
                   className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-stone-50 bg-red-700 hover:bg-red-800 transition-colors"
                 >
                   Get started
-                </a>
+                </Link>
               </>
             )}
           </div>
         </div>
-      }
+      )}
     </header>
   )
 }
-
