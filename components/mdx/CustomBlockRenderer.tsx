@@ -1,5 +1,8 @@
 import React from 'react'
+import dynamic from 'next/dynamic'
 import { Info, AlertTriangle, CheckCircle2, XCircle, TrendingUp, Book, StickyNote } from 'lucide-react'
+
+const MermaidRenderer = dynamic(() => import('./MermaidRenderer'), { ssr: false })
 
 interface CustomBlockProps {
   className: string
@@ -278,5 +281,8 @@ export const customBlockComponents = {
   ),
   gist: (props: any) => (
     <CustomBlockRenderer className="custom-block gist-embed" dataUrl={props.dataUrl} htmlContent={props.htmlContent} />
+  ),
+  mermaid: (props: any) => (
+    <MermaidRenderer code={props.code} />
   ),
 }

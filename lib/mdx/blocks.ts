@@ -355,6 +355,29 @@ blockRegistry.register({
     }
   },
 })
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  MERMAID BLOCK
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'mermaid',
+  label: 'Diagram (Mermaid)',
+  icon: 'schema',
+  pattern: /\[!mermaid\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!mermaid(code="graph TD\\n  A[Start] --> B{Is it?}\\n  B -- Yes --> C[OK]\\n  B -- No --> D[End]")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'mermaid',
+      hName: 'mermaid',
+      hProperties: {
+        className: 'custom-block mermaid-block',
+        ...params,
+      },
+    }
+  },
+})
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  DIAGRAM BLOCK (D3, advanced + fully accessible)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

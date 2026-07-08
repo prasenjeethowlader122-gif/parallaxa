@@ -20,6 +20,8 @@ import { NewsArticle } from '@/lib/db/articles'
 import { createCustomBlockPlugin, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
+import ReactionButtons from '@/components/article/ReactionButtons'
+import CommentsSection from '@/components/article/CommentsSection'
 import {
   Check, Copy, ArrowLeft, ChevronRight, Volume2, Bookmark, BookmarkCheck,
   Printer, Share2, Facebook, Link as LinkIcon, Clock, Eye, Twitter, Linkedin
@@ -576,7 +578,7 @@ export default function ArticlePage({
                   {/* Author Name */}
                   <div>
                     <Link 
-                      href={`/${authorSlug}`} 
+                      href={`/author/${article.author_id}`}
                       className="text-md text-gray-900 hover:text-red-600 transition-colors"
                     >
                       by {article.author}
@@ -619,6 +621,19 @@ export default function ArticlePage({
               <article className="py-6 overflow-hidden break-words [&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:text-5xl [&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:mr-3 [&>p:first-of-type]:first-letter:mt-2">
                 <ArticleMarkdown content={article.content} dbBlocks={dbBlocks} />
               </article>
+
+              {/* ── Engagement (Likes/Dislikes) ── */}
+              <div className="no-print py-8 border-y border-gray-100 mb-8">
+                <div className="flex flex-col gap-4">
+                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">What do you think?</p>
+                  <ReactionButtons articleId={article.id} />
+                </div>
+              </div>
+
+              {/* ── Comments Section ── */}
+              <div className="no-print mb-16" id="comments">
+                <CommentsSection articleId={article.id} />
+              </div>
 
               {/* ── Bottom share bar ── */}
               <div className="no-print pt-6 pb-4 border-t border-gray-100">
