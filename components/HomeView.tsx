@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { NewsCard } from '@/components/news-card'
 import { NewsArticle } from '@/lib/db/articles'
-
-const FEATURED_COUNT = 6
+import type { HomeSection } from '@/lib/db/home-sections'
 
 const POSITIONS = [
   { x: 0, scale: 1, opacity: 1, z: 30 },
@@ -139,102 +138,111 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
   )
 }
 
-interface HomeClientProps {
-  initialLatest: NewsArticle[]
-  initialWorld: NewsArticle[]
-  initialTech: NewsArticle[]
+interface HomeSectionWithData extends HomeSection {
+  articles: NewsArticle[]
 }
 
-export default function HomeClient({ initialLatest, initialWorld, initialTech }: HomeClientProps) {
-  const [mostRecent, second, third, fourth] = initialLatest
+interface HomeClientProps {
+  sections: HomeSectionWithData[]
+  // Kept for backward compatibility if needed temporarily
+  initialLatest?: NewsArticle[]
+  initialWorld?: NewsArticle[]
+  initialTech?: NewsArticle[]
+}
 
+export default function HomeClient({ sections = [] }: HomeClientProps) {
   return (
     <main className="flex-grow">
-      {/* Top Stories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-foreground">Top Stories</h2>
-          <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
-        </div>
-
-        <CoverFlowSlider articles={initialLatest} />
-
-        <div
-          className="hidden md:grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
-          style={{ gridTemplateRows: 'repeat(2, minmax(260px, auto))' }}
-        >
-          {mostRecent && (
-            <div className="col-span-1 md:col-span-2 lg:col-span-7 lg:row-span-2 md:h-[260px] lg:h-auto">
-              <NewsCard article={mostRecent} variant="featured" className="h-full" />
-            </div>
-          )}
-          {second && (
-            <div className="col-span-1 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:h-auto">
-              <NewsCard article={second} variant="featured" className="h-full" />
-            </div>
-          )}
-          {third && (
-            <div className="col-span-1 lg:col-span-2 lg:col-start-8 lg:row-start-2 lg:h-auto">
-              <NewsCard article={third} variant="featured" className="h-full" />
-            </div>
-          )}
-          {fourth && (
-            <div className="col-span-1 lg:col-span-3 lg:col-start-10 lg:row-start-2 lg:h-auto">
-              <NewsCard article={fourth} variant="featured" className="h-full" />
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* World News */}
-      <section className="py-12 pt-4 -mt-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
-                <h2 className="text-2xl font-bold text-foreground">World</h2>
-                <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+      {sections.map((section) => {
+        if (section.type === 'featured') {
+          const [mostRecent, second, third, fourth] = section.articles
+          return (
+            <section key={section.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-foreground">{section.title}</h2>
               </div>
 
-              <div className="space-y-6">
-                {initialWorld.map((article) => (
-                  <NewsCard
-                    key={article.id ?? 'null'}
-                    article={article}
-                    variant="horizontal"
-                    className="my-2"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+              <CoverFlowSlider articles={section.articles} />
 
-      {/* Technology News */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
-                <h2 className="text-2xl font-bold text-foreground">Tech</h2>
-                <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+              <div
+                className="hidden md:grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
+                style={{ gridTemplateRows: 'repeat(2, minmax(260px, auto))' }}
+              >
+                {mostRecent && (
+                  <div className="col-span-1 md:col-span-2 lg:col-span-7 lg:row-span-2 md:h-[260px] lg:h-auto">
+                    <NewsCard article={mostRecent} variant="featured" className="h-full" />
+                  </div>
+                )}
+                {second && (
+                  <div className="col-span-1 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:h-auto">
+                    <NewsCard article={second} variant="featured" className="h-full" />
+                  </div>
+                )}
+                {third && (
+                  <div className="col-span-1 lg:col-span-2 lg:col-start-8 lg:row-start-2 lg:h-auto">
+                    <NewsCard article={third} variant="featured" className="h-full" />
+                  </div>
+                )}
+                {fourth && (
+                  <div className="col-span-1 lg:col-span-3 lg:col-start-10 lg:row-start-2 lg:h-auto">
+                    <NewsCard article={fourth} variant="featured" className="h-full" />
+                  </div>
+                )}
               </div>
+            </section>
+          )
+        }
 
-              <div className="space-y-6">
-                {initialTech.map((article) => (
-                  <NewsCard
-                    key={article.id ?? 'null'}
-                    article={article}
-                    variant="horizontal"
-                    className="my-2"
-                  />
-                ))}
+        if (section.type === 'horizontal') {
+          return (
+            <section key={section.id} className="py-12 pt-4 -mt-4">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
+                      <h2 className="text-2xl font-bold text-foreground">{section.title}</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                      {section.articles.map((article) => (
+                        <NewsCard
+                          key={article.id ?? 'null'}
+                          article={article}
+                          variant="horizontal"
+                          className="my-2"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            </section>
+          )
+        }
+
+        if (section.type === 'grid') {
+            return (
+                <section key={section.id} className="py-12">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-accent">
+                        <h2 className="text-2xl font-bold text-foreground">{section.title}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {section.articles.map((article) => (
+                        <NewsCard
+                            key={article.id ?? 'null'}
+                            article={article}
+                            variant="featured"
+                        />
+                        ))}
+                    </div>
+                  </div>
+                </section>
+            )
+        }
+
+        return null
+      })}
     </main>
   )
 }

@@ -4,6 +4,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
 } from 'recharts'
+import dynamic from 'next/dynamic'
+
+const Mermaid = dynamic(() => import('./Mermaid'), { ssr: false })
 
 interface CustomBlockProps {
   className: string
@@ -338,6 +341,13 @@ export const customBlockComponents = {
             )}
           </ResponsiveContainer>
         </div>
+      </div>
+    )
+  },
+  diagram: (props: any) => {
+    return (
+      <div className="my-8 p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+        <Mermaid code={props.code} />
       </div>
     )
   },

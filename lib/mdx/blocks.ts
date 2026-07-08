@@ -422,6 +422,28 @@ blockRegistry.register({
   },
 })
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  DIAGRAM BLOCK (Mermaid.js)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+blockRegistry.register({
+  name: 'diagram',
+  label: 'Diagram',
+  icon: 'share_network',
+  pattern: /\[!diagram\s*\(([\s\S]*?)\)\s*\]/,
+  template: '[!diagram(code="graph TD; A-->B;")]',
+  handler: (match) => {
+    const params = parseBlockParams(match[1] || '')
+    return {
+      type: 'diagram',
+      hName: 'diagram',
+      hProperties: {
+        className: 'custom-block diagram-block',
+        ...params,
+      },
+    }
+  },
+})
+
 const legacyBlocks = ['fbpost', 'tweet', 'youtube', 'tiktok', 'instagram', 'reddit', 'vimeo', 'codepen', 'gist']
 
 legacyBlocks.forEach(name => {

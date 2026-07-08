@@ -34,6 +34,7 @@ export const DynamicIcon = ({ name, size = 20, className = "" }: { name: string,
       case 'sticky_note_2': return Note;
       case 'table_chart': return Table;
       case 'menu_book': return Notebook;
+      case 'share_network': return ShareNetwork;
       default: return CirclesFour;
     }
   })(name);
@@ -52,7 +53,7 @@ export function BlockSearchPanel({ blocks, onInsert, onClose }: BlockSearchPanel
   }, [])
 
   const socialNames = ['youtube', 'facebook', 'twitter', 'instagram', 'github', 'tiktok', 'reddit', 'vimeo', 'gist', 'tweet', 'fbpost']
-  const utilityNames = ['embed', 'run', 'style', 'screenshot', 'goal', 'callout', 'button', 'badge', 'infobox', 'reference', 'tika', 'table', 'verse', 'chart']
+  const utilityNames = ['embed', 'run', 'style', 'screenshot', 'goal', 'callout', 'button', 'badge', 'infobox', 'reference', 'tika', 'table', 'verse', 'chart', 'diagram']
 
   const categorize = (name: string) => {
     if (socialNames.includes(name)) return 'social'
