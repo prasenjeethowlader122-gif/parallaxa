@@ -7,18 +7,25 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
-import HomeView from '@/components/HomeView';
+import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
+import HomeSectionManager from '@/components/dashboard/HomeSectionManager';
 import Link from 'next/link';
-import { SquaresFour, Newspaper, ChartBar, Cube, Gear, PencilSimple } from '@phosphor-icons/react/ssr';
+import { SquaresFour, Newspaper, ChartBar, Cube, Gear, PencilSimple, House } from '@phosphor-icons/react/ssr';
 
 const NavLists = [
   {
     name: '#home',
     icon: SquaresFour,
     label: 'Overview',
-    index: <HomeView initialLatest={[]} initialWorld={[]} initialTech={[]} />
+    index: <DashboardOverview />
+  },
+  {
+    name: '#home-manager',
+    icon: House,
+    label: 'Home Manager',
+    index: <HomeSectionManager />
   },
   {
     name: '#articles',
