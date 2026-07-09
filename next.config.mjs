@@ -6,7 +6,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  transpilePackages: ['@phosphor-icons/react', 'mermaid'],
 }
 
 export default nextConfig

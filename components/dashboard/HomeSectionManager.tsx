@@ -13,7 +13,7 @@ import {
   SquaresFour,
   List,
   MonitorPlay
-} from '@phosphor-icons/react/ssr';
+} from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
 interface HomeSection {

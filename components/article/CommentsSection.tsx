@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { PaperPlaneTilt, Trash, UserCircle } from '@phosphor-icons/react/ssr';
+import { PaperPlaneTilt, Trash, UserCircle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
 interface Comment {
