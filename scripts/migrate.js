@@ -14,7 +14,7 @@ async function migrate() {
   console.log('Running migrations...');
 
   try {
-    await sql(`
+    await sql`
       CREATE TABLE IF NOT EXISTS home_sections (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
@@ -26,9 +26,9 @@ async function migrate() {
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
 
-    await sql(`
+    await sql`
       CREATE TABLE IF NOT EXISTS reactions (
         id SERIAL PRIMARY KEY,
         article_id INTEGER NOT NULL,
@@ -37,9 +37,9 @@ async function migrate() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(article_id, user_id)
       );
-    `);
+    `;
 
-    await sql(`
+    await sql`
       CREATE TABLE IF NOT EXISTS comments (
         id SERIAL PRIMARY KEY,
         article_id INTEGER NOT NULL,
@@ -49,7 +49,7 @@ async function migrate() {
         content TEXT NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
 
     console.log('Migrations completed successfully.');
   } catch (error) {

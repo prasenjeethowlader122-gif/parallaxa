@@ -447,17 +447,17 @@ export async function searchArticlesByVector(
 ): Promise < NewsArticle[] > {
   try {
     const vectorLiteral = `[${queryVector.join(',')}]`
-    const rows = await sql(
-        `SELECT *, (embedding <=> $1::vector) AS distance
+    const rows = await sql.query(
+      `SELECT *, (embedding <=> $1::vector) AS distance
        FROM   articles
        WHERE  status    = $2
          AND  embedding IS NOT NULL
          AND  (embedding <=> $1::vector) < $3
        ORDER  BY distance ASC
        LIMIT  $4`,
-        [vectorLiteral, status, threshold, limit],
-      ) as Record < string,
-      unknown > []
+      [vectorLiteral, status, threshold, limit],
+    ) as Record < string,
+    unknown > []
     
     return filterRows(rows)
   } catch (e) {
