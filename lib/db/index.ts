@@ -1,11 +1,39 @@
 import { neon } from '@neondatabase/serverless';
 
-const databaseUrl =
-  'postgresql://neondb_owner:npg_1jz6VtkgOwCX@ep-cool-haze-am1hclpg-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
-if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
-  console.warn('DATABASE_URL is not defined');
+let client: any = null;
+
+function getClient() {
+  if (!client) {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('DATABASE_URL is not defined in production');
+      }
+      // Return a dummy client that will fail if actually used,
+      // but allows the Proxy to be created and build to proceed.
+      client = neon('');
+    } else {
+      client = neon(databaseUrl);
+    }
+  }
+  return client;
 }
 
-const sql = neon(databaseUrl);
-
-export { sql };
+// Lazy-initialized sql client using a Proxy
+// This handles both tagged template literals: sql`SELECT...`
+// and the .query() method: sql.query(...)
+export const sql = new Proxy(() => {}, {
+  apply(target, thisArg, argArray) {
+    const c = getClient();
+    return c(...argArray);
+  },
+  get(target, prop, receiver) {
+    const c = getClient();
+    if (prop === 'query') {
+      // Specifically bind query to support conventional function calls
+      return (...args: any[]) => c.query(...args);
+    }
+    const value = Reflect.get(c, prop, receiver);
+    return typeof value === 'function' ? value.bind(c) : value;
+  },
+}) as any;
