@@ -16,7 +16,7 @@ import {
   ListChecks,
   Gear,
   User
-} from '@phosphor-icons/react';
+} from '@phosphor-icons/react/ssr';
 import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
