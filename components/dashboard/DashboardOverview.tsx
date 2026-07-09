@@ -9,7 +9,7 @@ import {
   TrendUp,
   Clock,
   ArrowRight
-} from '@phosphor-icons/react/ssr';
+} from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
