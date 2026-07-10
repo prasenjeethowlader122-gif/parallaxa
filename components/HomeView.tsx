@@ -1,10 +1,30 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter, usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 
-import { getHomeSections } from '@/lib/db/sections';
-import { getLatestArticles, getArticlesByCategory } from '@/lib/db/home';
-import { NewsCard } from '@/components/news-card';
-import type { NewsArticle } from '@/lib/types'; // adjust path to wherever NewsArticle is actually defined
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { NewsCard } from '@/components/news-card'
+import { NewsArticle } from '@/lib/db/articles'
+import {
+  Home,
+  Globe,
+  Cpu,
+  Briefcase,
+  Trophy,
+  FlaskConical,
+  Activity,
+  MessageSquare,
+  X,
+  Languages,
+  ChevronDown,
+  Search,
+  Bell,
+  FileEdit,
+  Menu,
+  LayoutDashboard,
+} from 'lucide-react'
 
 const FEATURED_COUNT = 6
 
@@ -140,68 +160,171 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
   )
 }
 
-export default async function HomeView() {
-  const sections = await getHomeSections();
-  const latest = await getLatestArticles(10);
-  console.log('sections:', sections.length, 'latest:', latest.length);
-  
-  // If no sections configured, show default latest news
-  if (sections.length === 0) {
-    return (
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold mb-8">Latest News</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {latest.map(article => (
-            <NewsCard key={article.id} article={article} />
-          ))}
-        </div>
-      </section>
-    );
-  }
-  
-  // Resolve all section data up front — mapping with an async callback
-  // directly in JSX returns an array of unresolved Promises, which React
-  // cannot render.
-  const resolvedSections = await Promise.all(
-    sections.map(async (section) => {
-      let articles: NewsArticle[] = [];
-      if (section.type === 'latest') {
-        articles = await getLatestArticles(section.limit_count);
-      } else if (section.type === 'category' && section.category_id) {
-        articles = await getArticlesByCategory(section.category_id, section.limit_count);
-      } else {
-        articles = await getLatestArticles(section.limit_count);
-      }
-      return { section, articles };
-    })
-  );
+interface HomeClientProps {
+  initialLatest: NewsArticle[]
+  initialWorld: NewsArticle[]
+  initialTech: NewsArticle[]
+}
+
+export default function HomeClient({ initialLatest, initialWorld, initialTech }: HomeClientProps) {
+  const [mostRecent, second, third, fourth] = initialLatest
+  const NAV_LINKS = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/category/World', label: 'World', icon: Globe },
+    { href: '/category/Technology', label: 'Technology', icon: Cpu },
+    { href: '/category/Business', label: 'Business', icon: Briefcase },
+    { href: '/category/Sports', label: 'Sports', icon: Trophy },
+    { href: '/category/Science', label: 'Science', icon: FlaskConical },
+    { href: '/category/Health', label: 'Health', icon: Activity },
+    { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
+  ]
+  const pathname = usePathname()
+  const { data: session } = useSession()
+  const locale = pathname.split('/')[1] || 'bn'
   
   return (
-    <div className="space-y-16 py-12">
-      <CoverFlowSlider articles={latest} />
-      {resolvedSections.map(({ section, articles }) => {
-        if (articles.length === 0) return null;
+    <div className = 'flex flex-row items-start justify-between gap-2 w-full h-auto'>
+            <div className="hidden md:block bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-6">
+          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+            {NAV_LINKS.map(({ href, label, badge }) => {
+              const localizedHref = `/${locale}${href === '/' ? '' : href}`
+              const isActive = pathname === localizedHref
+              return (
+                <Link
+                  key={href}
+                  href={localizedHref}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {label}
+                  {badge && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
 
-        return (
-          <section key={section.id} className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-              <h2 className="text-2xl font-bold text-slate-900">{section.title}</h2>
-              <button className="text-sm font-bold text-blue-600 hover:underline">View All</button>
-            </div>
+            {session && (
+              <>
+                <Link
+                  href={`/${locale}/write`}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    pathname === `/${locale}/write`
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <FileEdit className="w-4.5 h-4.5" />
+                  Write
+                </Link>
+                <Link
+                  href={`/${locale}/dashboard`}
+                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    pathname === `/${locale}/dashboard`
+                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </div>
+    <main className="flex-grow">
+      {/* Top Stories */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-foreground">Top Stories</h2>
+          <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+        </div>
 
-            <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
-              {articles.map((article: NewsArticle) => (
-                <NewsCard
-                  key={article.id}
-                  article={article}
-                  variant={section.layout === 'list' ? 'horizontal' : 'default'}
-                  className={section.layout === 'slider' ? 'w-80 shrink-0' : ''}
-                />
-              ))}
+        <CoverFlowSlider articles={initialLatest} />
+
+        <div
+          className="hidden md:grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-12"
+          style={{ gridTemplateRows: 'repeat(2, minmax(260px, auto))' }}
+        >
+          {mostRecent && (
+            <div className="col-span-1 md:col-span-2 lg:col-span-7 lg:row-span-2 md:h-[260px] lg:h-auto">
+              <NewsCard article={mostRecent} variant="featured" className="h-full" />
             </div>
-          </section>
-        );
-      })}
+          )}
+          {second && (
+            <div className="col-span-1 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:h-auto">
+              <NewsCard article={second} variant="featured" className="h-full" />
+            </div>
+          )}
+          {third && (
+            <div className="col-span-1 lg:col-span-2 lg:col-start-8 lg:row-start-2 lg:h-auto">
+              <NewsCard article={third} variant="featured" className="h-full" />
+            </div>
+          )}
+          {fourth && (
+            <div className="col-span-1 lg:col-span-3 lg:col-start-10 lg:row-start-2 lg:h-auto">
+              <NewsCard article={fourth} variant="featured" className="h-full" />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* World News */}
+      <section className="py-12 pt-4 -mt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b">
+                <h2 className="text-2xl font-bold text-foreground">World</h2>
+                <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+              </div>
+
+              <div className="space-y-6">
+                {initialWorld.map((article) => (
+                  <NewsCard
+                    key={article.id ?? 'null'}
+                    article={article}
+                    variant="horizontal"
+                    className="my-2"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Technology News */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-accent">
+                <h2 className="text-2xl font-bold text-foreground">Tech</h2>
+                <span className="md:hidden text-sm text-blue-600 cursor-pointer">See all</span>
+              </div>
+
+              <div className="space-y-6">
+                {initialTech.map((article) => (
+                  <NewsCard
+                    key={article.id ?? 'null'}
+                    article={article}
+                    variant="horizontal"
+                    className="my-2"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
     </div>
-  );
+  )
 }
