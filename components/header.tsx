@@ -364,7 +364,7 @@ export function Header({
                   priority
                   className="h-14 w-auto"
                 />**/}
-                <h1 className = {`${banglaFontlogo.className} text-2xl font-[900]`}>অনলি্হিন্দু™</h1>
+                <h1 className = {`${banglaFont.className} text-2xl font-[900]`}>অনলি্হিন্দু™</h1>
                   
               </div>
             </Link>
