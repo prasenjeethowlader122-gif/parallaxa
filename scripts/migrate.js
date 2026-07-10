@@ -4,7 +4,7 @@
 const { neon } = require('@neondatabase/serverless');
 
 async function migrate() {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = 'postgresql://neondb_owner:npg_1jz6VtkgOwCX@ep-cool-haze-am1hclpg-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
   if (!databaseUrl) {
     console.warn('DATABASE_URL is not defined, skipping migrations.');
     return;
