@@ -136,13 +136,15 @@ function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
         >
           <span className="block w-2 h-2 border-r border-b border-gray-500 -rotate-45 -translate-x-px" />
         </button>
-      </div> </div>
+      </div> <
+    /div>
   )
 }
 
 export default async function HomeView() {
   const sections = await getHomeSections();
   const latest = await getLatestArticles(10);
+  console.log('sections:', sections.length, 'latest:', latest.length);
   
   // If no sections configured, show default latest news
   if (sections.length === 0) {
