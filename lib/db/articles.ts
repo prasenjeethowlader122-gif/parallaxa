@@ -49,7 +49,7 @@ export type UpdateArticleInput = Partial < CreateArticleInput >
   
   // ── Helpers ───────────────────────────────────────────────────────────────────
   
-  function mapRow(row: Record < string, unknown > ): NewsArticle | null {
+  export function mapRow(row: Record < string, unknown > ): NewsArticle | null {
     if (!row?.id) { console.error('mapRow: invalid row', JSON.stringify(row)); return null }
     return {
       id: row.id as string,
