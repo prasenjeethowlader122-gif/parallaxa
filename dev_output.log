@@ -1,0 +1,190 @@
+
+> my-project@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 572ms
+
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/node_modules_@auth_core_1wpnri1._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/node_modules_@auth_core_1wpnri1._.js:5344:202)
+○ Compiling /[locale]/auth/signin ...
+ GET /bn/auth/signin?callbackUrl=%2Fbn%2Fwrite 200 in 5.0s (next.js: 4.7s, proxy.ts: 7ms, application-code: 372ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/bn/auth/s..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html
+                            lang="en"
+-                           className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa__v..."
+                          >
+                            <body
+-                             className="banglafont_c46bf9ac-module__EzdSkW__className antialiased bg-background text-..."
+                            >
+                  ...
+
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerScrollAndFocusHandlerOld focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
+      <ErrorBoundary errorComponent={function GlobalError} errorStyles={{...}} errorScripts={[...]}>
+        <ErrorBoundaryHandler pathname="/bn/auth/s..." errorComponent={function GlobalError} errorStyles={{...}} ...>
+          <LoadingBoundary name="/" loading={[...]}>
+            <Suspense name="/" fallback={<Fragment>}>
+              <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
+                <HTTPAccessFallbackErrorBoundary pathname="/bn/auth/s..." notFound={{...}} forbidden={undefined} ...>
+                  <RedirectBoundary>
+                    <RedirectErrorBoundary router={{...}}>
+                      <InnerLayoutRouter url="/bn/auth/s..." tree={[...]} params={{locale:"bn"}} ...>
+                        <SegmentViewNode type="layout" pagePath="[locale]/l...">
+                          <SegmentTrieNode>
+                          <link>
+                          <script>
+                          <script>
+                          <RootLayout>
+                            <html
++                             lang="bn"
+-                             lang="en"
+                              className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa_..."
+                            >
+                      ...
+      ...
+
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:5344:204)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async AppRouteRouteModule.do (/app/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40131)
+ GET /api/auth/session 500 in 2.3s (next.js: 2.3s, application-code: 30ms)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:5344:204)
+    at async AppRouteRouteModule.do (/app/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40131)
+ GET /api/auth/session 500 in 38ms (next.js: 28ms, application-code: 10ms)
+[browser] ClientFetchError: There was a problem with the server configuration. Check the server logs for more information.. Read more at https://errors.authjs.dev#autherror
+[browser] ClientFetchError: There was a problem with the server configuration. Check the server logs for more information.. Read more at https://errors.authjs.dev#autherror
+ GET /bn 200 in 3.6s (next.js: 3.1s, proxy.ts: 7ms, application-code: 509ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/bn" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html
+                            lang="en"
+-                           className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa__v..."
+                          >
+                            <body
+-                             className="banglafont_c46bf9ac-module__EzdSkW__className antialiased bg-background text-..."
+                            >
+                  ...
+
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerScrollAndFocusHandlerOld focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
+      <ErrorBoundary errorComponent={function GlobalError} errorStyles={{...}} errorScripts={[...]}>
+        <ErrorBoundaryHandler pathname="/bn" errorComponent={function GlobalError} errorStyles={{...}} ...>
+          <LoadingBoundary name="/" loading={[...]}>
+            <Suspense name="/" fallback={<Fragment>}>
+              <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
+                <HTTPAccessFallbackErrorBoundary pathname="/bn" notFound={{...}} forbidden={undefined} ...>
+                  <RedirectBoundary>
+                    <RedirectErrorBoundary router={{...}}>
+                      <InnerLayoutRouter url="/bn" tree={[...]} params={{locale:"bn"}} cacheNode={{rsc:{...}, ...}} ...>
+                        <SegmentViewNode type="layout" pagePath="[locale]/l...">
+                          <SegmentTrieNode>
+                          <link>
+                          <script>
+                          <script>
+                          <RootLayout>
+                            <html
++                             lang="bn"
+-                             lang="en"
+                              className="sansfont_73c76f14-module__a3oNSq__variable seriffont_2033d85e-module__r46toa_..."
+                            >
+                      ...
+      ...
+
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:5344:204)
+    at async AppRouteRouteModule.do (/app/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40131)
+ GET /api/auth/session 500 in 61ms (next.js: 51ms, application-code: 10ms)
+[browser] ClientFetchError: There was a problem with the server configuration. Check the server logs for more information.. Read more at https://errors.authjs.dev#autherror
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:513:16)
+    at Auth (/app/.next/dev/server/chunks/node_modules_@auth_core_0gltlle._.js:5344:204)
+    at async AppRouteRouteModule.do (/app/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40131)
+ GET /api/auth/session 500 in 11ms (next.js: 4ms, application-code: 7ms)
+[browser] ClientFetchError: There was a problem with the server configuration. Check the server logs for more information.. Read more at https://errors.authjs.dev#autherror
