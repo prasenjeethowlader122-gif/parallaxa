@@ -11,7 +11,7 @@ import {
 
 export async function GET() {
   const session = await auth();
-  if (!session || session.user?.role !== 'admin') {
+  if (!session ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user?.role !== 'admin') {
+  if (!session ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user?.role !== 'admin') {
+  if (!session ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user?.role !== 'admin') {
+  if (!session ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
