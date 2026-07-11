@@ -33,8 +33,24 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     fetch('/api/admin/stats')
-      .then(res => res.json())
-      .then(setData);
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch stats');
+        return res.json();
+      })
+      .then(data => {
+        if (data && !data.error && data.stats && Array.isArray(data.recentArticles)) {
+          setData(data);
+        } else {
+          throw new Error(data?.error || 'Invalid data structure');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setData({
+          stats: { articles: 0, views: 0, users: 0 },
+          recentArticles: []
+        });
+      });
   }, []);
 
   if (!data) return <div className="animate-pulse space-y-4">
