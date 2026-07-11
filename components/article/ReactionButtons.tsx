@@ -15,9 +15,31 @@ export default function ReactionButtons({ articleId }: ReactionButtonsProps) {
   const [data, setData] = useState({ likes: 0, dislikes: 0, userReaction: null as string | null });
 
   useEffect(() => {
+    let active = true;
     fetch(`/api/articles/reactions?articleId=${articleId}`)
-      .then(res => res.json())
-      .then(setData);
+      .then(res => res.ok ? res.json() : { likes: 0, dislikes: 0, userReaction: null })
+      .then(data => {
+        if (active) {
+          if (data && typeof data === 'object') {
+            setData({
+              likes: typeof data.likes === 'number' ? data.likes : 0,
+              dislikes: typeof data.dislikes === 'number' ? data.dislikes : 0,
+              userReaction: data.userReaction || null
+            });
+          } else {
+            setData({ likes: 0, dislikes: 0, userReaction: null });
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load reactions:', err);
+        if (active) {
+          setData({ likes: 0, dislikes: 0, userReaction: null });
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, [articleId]);
 
   const handleReaction = async (type: 'like' | 'dislike') => {

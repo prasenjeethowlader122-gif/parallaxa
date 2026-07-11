@@ -26,9 +26,27 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    let active = true;
     fetch(`/api/articles/comments?articleId=${articleId}`)
-      .then(res => res.json())
-      .then(setComments);
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (active) {
+          if (Array.isArray(data)) {
+            setComments(data);
+          } else {
+            setComments([]);
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load comments:', err);
+        if (active) {
+          setComments([]);
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, [articleId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,7 +94,7 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
 
   return (
     <div className="space-y-8">
-      <h3 className="text-2xl font-bold">Comments ({comments.length})</h3>
+      <h3 className="text-2xl font-bold">Comments ({Array.isArray(comments) ? comments.length : 0})</h3>
 
       {session ? (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -113,7 +131,7 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
       )}
 
       <div className="space-y-6">
-        {comments.map((comment) => (
+        {(Array.isArray(comments) ? comments : []).map((comment) => (
           <div key={comment.id} className="flex gap-4 group">
             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
               {comment.user_image ? (
