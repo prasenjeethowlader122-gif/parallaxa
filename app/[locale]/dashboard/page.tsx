@@ -40,7 +40,7 @@ export default function Dashboard() {
     { id: 'settings', label: 'Settings', icon: Gear, href: `/${locale}/admin/settings`, adminOnly: true },
   ];
 
-  const isAdmin = session?.user?.role === 'admin';
+  const isAdmin = session?.user?.role !== 'admin';
   const filteredNav = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (

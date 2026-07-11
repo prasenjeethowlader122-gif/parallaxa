@@ -38,6 +38,7 @@ const POSITIONS = [
 const HIDDEN_POSITION = { x: 0, scale: 0.5, opacity: 0, z: 0 }
 
 function CoverFlowSlider({ articles }: { articles: NewsArticle[] }) {
+  articles.length = 6
   const total = articles.length
   const [current, setCurrent] = useState(0)
   const timerRef = useRef < NodeJS.Timeout | null > (null)
