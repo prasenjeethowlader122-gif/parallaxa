@@ -1,7 +1,6 @@
-
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -17,7 +16,6 @@ import {
   Gear,
   User
 } from '@phosphor-icons/react';
-import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
@@ -40,8 +38,14 @@ export default function Dashboard() {
     { id: 'settings', label: 'Settings', icon: Gear, href: `/${locale}/admin/settings`, adminOnly: true },
   ];
 
-  const isAdmin = true ;//session?.user?.role === 'admin';
+  const isAdmin = session?.user?.role === 'admin';
   const filteredNav = navItems.filter(item => !item.adminOnly || isAdmin);
+
+  useEffect(() => {
+    if (session && session.user?.role !== 'admin' && (currentActiveTab === 'overview' || currentActiveTab === 'home-manager')) {
+      setCurrentActiveTab('articles');
+    }
+  }, [session, currentActiveTab]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">

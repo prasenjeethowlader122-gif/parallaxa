@@ -3,9 +3,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import {
-  BarChart, LineChart, PieChart, Activity, TrendingUp, Users, Eye,
-  ChevronRight, Calendar, ArrowUpRight, ArrowDownRight, Layers
-} from 'lucide-react';
+  ChartBar, ChartLine, ChartPie, Pulse, TrendUp, Users, Eye,
+  CaretRight, Calendar, ArrowUpRight, ArrowDownRight, Stack
+} from '@phosphor-icons/react';
 
 interface AnalysisData {
   label: string;
@@ -219,7 +219,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
         {[
           { label: 'Total Views', value: '1.2M', trend: '+12.5%', icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Avg. Read Time', value: '4m 32s', trend: '+0.8%', icon: Calendar, color: 'text-purple-600', bg: 'bg-purple-50' },
-          { label: 'Engagement Rate', value: '24.8%', trend: '-2.4%', icon: Activity, color: 'text-green-600', bg: 'bg-green-50' },
+          { label: 'Engagement Rate', value: '24.8%', trend: '-2.4%', icon: Pulse, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'Active Readers', value: '18.4K', trend: '+15.2%', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
@@ -242,7 +242,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
         <div className="p-6 sm:p-8 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Layers className="text-red-600" size={24} />
+              <Stack className="text-red-600" size={24} />
               Platform Intelligence
             </h3>
             <p className="text-sm text-gray-500 mt-1">Advanced analytics and data visualization.</p>
@@ -250,9 +250,9 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
 
           <div className="flex bg-gray-50 p-1 rounded-xl shrink-0 overflow-x-auto no-scrollbar">
             {[
-              { id: 'overview', label: 'Overview', icon: BarChart },
-              { id: 'trends', label: 'Trends', icon: LineChart },
-              { id: 'distribution', label: 'Share', icon: PieChart },
+              { id: 'overview', label: 'Overview', icon: ChartBar },
+              { id: 'trends', label: 'Trends', icon: ChartLine },
+              { id: 'distribution', label: 'Share', icon: ChartPie },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -292,7 +292,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
                 </div>
                 <p className="text-xl font-bold text-gray-900">{d.value.toLocaleString()}</p>
                 <div className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-green-600 bg-green-50 w-fit px-1.5 py-0.5 rounded-full">
-                  <TrendingUp size={10} />
+                  <TrendUp size={10} />
                   +{(Math.random() * 20).toFixed(1)}%
                 </div>
               </div>
@@ -302,11 +302,11 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
 
         <div className="bg-gray-50/50 px-8 py-4 flex items-center justify-between">
           <p className="text-xs text-gray-400 font-medium flex items-center gap-2">
-            <TrendingUp size={14} className="text-green-500" />
+            <TrendUp size={14} className="text-green-500" />
             Last updated: {lastUpdated}
           </p>
           <button className="text-xs font-bold text-gray-900 flex items-center gap-1 hover:gap-2 transition-all">
-            Full Report <ChevronRight size={14} />
+            Full Report <CaretRight size={14} />
           </button>
         </div>
       </div>
