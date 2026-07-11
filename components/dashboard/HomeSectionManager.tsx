@@ -49,10 +49,17 @@ export default function HomeSectionManager() {
   const fetchSections = async () => {
     try {
       const res = await fetch('/api/admin/home-sections');
+      if (!res.ok) throw new Error('Failed to fetch sections');
       const data = await res.json();
-      setSections(data);
+      if (data && Array.isArray(data)) {
+        setSections(data);
+      } else {
+        setSections([]);
+      }
     } catch (error) {
+      console.error(error);
       toast.error('Failed to load sections');
+      setSections([]);
     } finally {
       setIsLoading(false);
     }

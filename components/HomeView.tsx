@@ -166,7 +166,11 @@ interface HomeClientProps {
   initialTech: NewsArticle[]
 }
 
-export default function HomeClient({ initialLatest, initialWorld, initialTech }: HomeClientProps) {
+export default function HomeClient({
+  initialLatest = [],
+  initialWorld = [],
+  initialTech = []
+}: HomeClientProps) {
   const [mostRecent, second, third, fourth] = initialLatest
   const NAV_LINKS = [
     { href: '/', label: 'Home', icon: Home },

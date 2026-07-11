@@ -16,9 +16,9 @@ export async function GET() {
 
     // Recent activity
     const recentArticles = await sql`
-      SELECT id, title, views, created_at
+      SELECT id, title, views, date AS created_at
       FROM articles
-      ORDER BY created_at DESC
+      ORDER BY date DESC
       LIMIT 5
     `;
 
