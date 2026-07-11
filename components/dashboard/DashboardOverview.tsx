@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -28,24 +27,56 @@ interface RecentArticle {
 
 export default function DashboardOverview() {
   const [data, setData] = useState<{stats: Stats, recentArticles: RecentArticle[]} | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const params = useParams();
   const locale = params?.locale || 'bn';
 
   useEffect(() => {
     fetch('/api/admin/stats')
-      .then(res => res.json())
-      .then(setData);
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        return res.json();
+      })
+      .then(setData)
+      .catch(err => {
+        console.error(err);
+        setError(err.message);
+      });
   }, []);
 
-  if (!data) return <div className="animate-pulse space-y-4">
-    <div className="h-32 bg-slate-100 rounded-2xl"></div>
-    <div className="h-64 bg-slate-100 rounded-2xl"></div>
-  </div>;
+  if (error) {
+    return (
+      <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 flex flex-col items-center justify-center gap-2">
+        <p className="font-bold">Error loading stats</p>
+        <p className="text-sm">You might not have admin permissions to view stats.</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-32 bg-slate-100 rounded-2xl"></div>
+        <div className="h-64 bg-slate-100 rounded-2xl"></div>
+      </div>
+    );
+  }
+
+  if (!data.stats) {
+    return (
+      <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 flex flex-col items-center justify-center gap-2">
+        <p className="font-bold">Access Denied</p>
+        <p className="text-sm">You do not have permission to view dashboard statistics.</p>
+      </div>
+    );
+  }
 
   const statCards = [
-    { label: 'Total Articles', value: data.stats.articles, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Total Views', value: data.stats.views, icon: Eye, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Total Users', value: data.stats.users, icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { label: 'Total Articles', value: data.stats.articles || 0, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Total Views', value: data.stats.views || 0, icon: Eye, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: 'Total Users', value: data.stats.users || 0, icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
   ];
 
   return (
@@ -76,7 +107,7 @@ export default function DashboardOverview() {
             </Link>
           </div>
           <div className="divide-y divide-slate-50">
-            {data.recentArticles.map((article) => (
+            {(data.recentArticles || []).map((article) => (
               <div key={article.id} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
                 <div className="flex-1 min-w-0 pr-4">
                   <p className="font-medium text-slate-900 truncate">{article.title}</p>
