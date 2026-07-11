@@ -16,6 +16,16 @@ import {
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
+const CATEGORIES = [
+  { id: 1, name: 'Business' },
+  { id: 2, name: 'Technology' },
+  { id: 3, name: 'Sports' },
+  { id: 4, name: 'Entertainment' },
+  { id: 5, name: 'Science' },
+  { id: 6, name: 'Health' },
+  { id: 7, name: 'World' },
+];
+
 interface HomeSection {
   id: number;
   title: string;
@@ -198,7 +208,11 @@ export default function HomeSectionManager() {
             <div className="flex-1">
               <div className="font-semibold text-lg text-slate-900">{section.title}</div>
               <div className="text-sm text-slate-500 flex gap-4 mt-1">
-                <span className="capitalize">{section.type}</span>
+                <span className="capitalize">
+                  {section.type === 'category' && section.category_id
+                    ? `Category: ${CATEGORIES.find(c => c.id === section.category_id)?.name || 'Unknown'}`
+                    : section.type}
+                </span>
                 <span className="capitalize">{section.layout} layout</span>
                 <span>{section.limit_count} articles</span>
                 <span className={section.is_active ? 'text-green-600' : 'text-red-600'}>
@@ -267,6 +281,21 @@ export default function HomeSectionManager() {
                   </select>
                 </div>
               </div>
+              {newSection.type === 'category' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-slate-700">Category</label>
+                  <select
+                    value={newSection.category_id || ''}
+                    onChange={e => setNewSection({...newSection, category_id: parseInt(e.target.value) || null})}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+                  >
+                    <option value="">Select Category</option>
+                    {CATEGORIES.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-slate-700">Limit</label>
@@ -349,6 +378,21 @@ export default function HomeSectionManager() {
                   </select>
                 </div>
               </div>
+              {editSectionData.type === 'category' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-slate-700">Category</label>
+                  <select
+                    value={editSectionData.category_id || ''}
+                    onChange={e => setEditSectionData({...editSectionData, category_id: parseInt(e.target.value) || null})}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+                  >
+                    <option value="">Select Category</option>
+                    {CATEGORIES.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-slate-700">Limit</label>

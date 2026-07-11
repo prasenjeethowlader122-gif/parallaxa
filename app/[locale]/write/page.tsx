@@ -30,13 +30,12 @@ import Markdown, { Components } from 'react-markdown'
 import { createCustomBlockPlugin, blockRegistry, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
-import VisualEditor from '@/components/VisualEditor'
 import { BlockSearchPanel, DynamicIcon } from '@/components/mdx/BlockSearchPanel'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type SidebarTab = 'metadata' | 'seo' | 'accessibility' | 'tags' | 'distribution'
-type ViewMode = 'write' | 'preview' | 'split' | 'visual'
+type ViewMode = 'write' | 'preview' | 'split'
 type Visibility = 'public' | 'private' | 'unlisted'
 type ArticleStatus = 'draft' | 'published' | 'scheduled'
 
@@ -273,6 +272,21 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('write')
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    setIsDesktop(window.innerWidth >= 1024);
+    const handleResize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (!desktop && viewMode === 'split') {
+        setViewMode('write');
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode]);
+
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved')
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -941,7 +955,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
             {/* View mode switcher */}
             <div className="flex items-center bg-slate-100 rounded-xl p-1 ml-2 shadow-none">
-              {(['write', 'visual', 'split', 'preview'] as ViewMode[]).map(m => (
+              {((['write', 'split', 'preview'] as ViewMode[]).filter(m => isDesktop || m !== 'split')).map(m => (
                 <button
                   key={m}
                   onClick={() => setViewMode(m)}
@@ -955,7 +969,6 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   <span className="hidden md:inline capitalize tracking-tight">{m}</span>
                   <span className="md:hidden">
                     {m === 'write' ? <PenTool size={14} /> :
-                     m === 'visual' ? <Sparkles size={14} /> :
                      m === 'preview' ? <Eye size={14} /> :
                      <Columns2 size={14} />}
                   </span>
@@ -1020,9 +1033,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-slate-50/30">
 
           {/* Toolbar */}
-          {viewMode !== 'visual' && (
-            <div className="flex items-center z-20 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
-              <div className="flex items-center overflow-x-auto no-scrollbar gap-1 flex-1" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-center z-20 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100 overflow-visible shrink-0 gap-1">
+            <div className="flex items-center overflow-x-auto no-scrollbar gap-1 flex-1" style={{ scrollbarWidth: 'none' }}>
                 <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-0.5">
                   <ToolbarBtn icon={Bold} label="Bold" onClick={() => insertMarkdown('**', '**', 'bold text')} />
                   <ToolbarBtn icon={Italic} label="Italic" onClick={() => insertMarkdown('*', '*', 'italic text')} />
@@ -1086,13 +1098,12 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 </span>
               </div>
             </div>
-          )}
 
           {/* Editor / Preview panels */}
           <div className="flex-1 overflow-hidden flex min-w-0">
 
-            {/* Write / Visual panel */}
-            {(viewMode === 'write' || viewMode === 'split' || viewMode === 'visual') && (
+            {/* Write panel */}
+            {(viewMode === 'write' || viewMode === 'split') && (
               <div className={`${viewMode === 'split' ? 'w-1/2 border-r border-[#eeecec]' : 'w-full'} overflow-y-auto min-w-0`}>
                 <div className="mx-auto px-5 sm:px-10 py-10 sm:py-14 flex flex-col gap-6 w-full max-w-3xl">
 
@@ -1144,34 +1155,30 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                   </div>
 
                   {/* Editor */}
-                  {viewMode === 'visual' ? (
-                    <VisualEditor content={content} onChange={handleContentChange} />
-                  ) : (
-                    <CodeMirror
-                      ref={editorRef}
-                      value={content}
-                      onChange={handleContentChange}
-                      extensions={[
-                        markdown({ base: markdownLanguage, codeLanguages: languages }),
-                        EditorView.lineWrapping,
-                        markdownTheme,
-                        customBlockHighlight,
-                        autocompletion({ override: [customBlockCompletions] })
-                      ]}
-                      basicSetup={{
-                        lineNumbers: false,
-                        foldGutter: false,
-                        dropCursor: false,
-                        allowMultipleSelections: false,
-                        indentOnInput: false,
-                        highlightActiveLine: true,
-                        highlightSelectionMatches: false,
-                        completionKeymap: true
-                      }}
-                      className={`${slabo.className} w-full min-h-[400px] outline-none`}
-                      placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
-                    />
-                  )}
+                  <CodeMirror
+                    ref={editorRef}
+                    value={content}
+                    onChange={handleContentChange}
+                    extensions={[
+                      markdown({ base: markdownLanguage, codeLanguages: languages }),
+                      EditorView.lineWrapping,
+                      markdownTheme,
+                      customBlockHighlight,
+                      autocompletion({ override: [customBlockCompletions] })
+                    ]}
+                    basicSetup={{
+                      lineNumbers: false,
+                      foldGutter: false,
+                      dropCursor: false,
+                      allowMultipleSelections: false,
+                      indentOnInput: false,
+                      highlightActiveLine: true,
+                      highlightSelectionMatches: false,
+                      completionKeymap: true
+                    }}
+                    className={`${slabo.className} w-full min-h-[400px] outline-none`}
+                    placeholder={`Start writing… Markdown is supported.\n\n# Use headings\n**Bold**, *italic*, \`code\`\n- Lists work too\n> Blockquotes for impact`}
+                  />
                 </div>
               </div>
             )}
