@@ -42,9 +42,34 @@ export default function HomeSectionManager() {
     is_active: true
   });
 
+  const [editSectionData, setEditSectionData] = useState<Omit<HomeSection, 'id' | 'order_index'>>({
+    title: '',
+    type: 'latest',
+    category_id: null,
+    layout: 'grid',
+    limit_count: 10,
+    is_active: true
+  });
+
   useEffect(() => {
     fetchSections();
   }, []);
+
+  useEffect(() => {
+    if (editingId !== null) {
+      const sec = sections.find(s => s.id === editingId);
+      if (sec) {
+        setEditSectionData({
+          title: sec.title,
+          type: sec.type,
+          category_id: sec.category_id || null,
+          layout: sec.layout,
+          limit_count: sec.limit_count,
+          is_active: sec.is_active
+        });
+      }
+    }
+  }, [editingId, sections]);
 
   const fetchSections = async () => {
     try {
@@ -202,7 +227,7 @@ export default function HomeSectionManager() {
 
       {isAdding && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4 border border-slate-200 shadow-none">
             <h3 className="text-xl font-bold text-slate-900">Add New Section</h3>
             <div className="space-y-4">
               <div>
@@ -273,6 +298,88 @@ export default function HomeSectionManager() {
               </button>
               <button
                 onClick={() => setIsAdding(false)}
+                className="flex-1 bg-slate-100 text-slate-900 py-2 rounded-xl hover:bg-slate-200 transition-colors font-bold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingId !== null && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4 border border-slate-200 shadow-none">
+            <h3 className="text-xl font-bold text-slate-900">Edit Section</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-slate-700">Title</label>
+                <input
+                  type="text"
+                  value={editSectionData.title}
+                  onChange={e => setEditSectionData({...editSectionData, title: e.target.value})}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
+                  placeholder="Latest News"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-slate-700">Type</label>
+                  <select
+                    value={editSectionData.type}
+                    onChange={e => setEditSectionData({...editSectionData, type: e.target.value})}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="category">Category</option>
+                    <option value="featured">Featured</option>
+                    <option value="trending">Trending</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-slate-700">Layout</label>
+                  <select
+                    value={editSectionData.layout}
+                    onChange={e => setEditSectionData({...editSectionData, layout: e.target.value})}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
+                  >
+                    <option value="grid">Grid</option>
+                    <option value="list">List</option>
+                    <option value="slider">Slider</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-slate-700">Limit</label>
+                  <input
+                    type="number"
+                    value={editSectionData.limit_count}
+                    onChange={e => setEditSectionData({...editSectionData, limit_count: parseInt(e.target.value) || 0})}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-6">
+                  <input
+                    type="checkbox"
+                    checked={editSectionData.is_active}
+                    onChange={e => setEditSectionData({...editSectionData, is_active: e.target.checked})}
+                    id="edit_is_active"
+                    className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                  />
+                  <label htmlFor="edit_is_active" className="text-sm font-medium text-slate-700">Active</label>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-4 pt-4">
+              <button
+                onClick={() => handleUpdate(editingId, editSectionData)}
+                className="flex-1 bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition-colors font-bold"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditingId(null)}
                 className="flex-1 bg-slate-100 text-slate-900 py-2 rounded-xl hover:bg-slate-200 transition-colors font-bold"
               >
                 Cancel
