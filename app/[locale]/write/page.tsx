@@ -26,6 +26,8 @@ import {
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import rehypeMermaid from 'rehype-mermaid'
+
 import Markdown, { Components } from 'react-markdown'
 import { createCustomBlockPlugin, blockRegistry, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
@@ -149,7 +151,7 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw, rehypeKatex]}
+        rehypePlugins={[rehypeRaw,rehypeMermaid, rehypeKatex]}
         components={mdComponents}
       >
         {content}

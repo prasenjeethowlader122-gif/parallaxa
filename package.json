@@ -93,6 +93,7 @@
     "recharts": "2.15.0",
     "rehype-katex": "latest",
     "rehype-raw": "latest",
+    "rehype-mermaid": "latest",
     "remark-gfm": "latest",
     "remark-math": "latest",
     "sharp": "latest",

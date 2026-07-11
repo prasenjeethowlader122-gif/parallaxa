@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, ComponentPropsWithoutRef } from 'react'
+import rehypeMermaid from 'rehype-mermaid'
 import { toDigitalNumber } from '@/components/news-card'
 import PinwheelLoader from '@/components/logo';
 import Markdown, { Components } from 'react-markdown'
@@ -183,7 +184,7 @@ function ArticleMarkdown({ content, dbBlocks }: { content: string; dbBlocks: DBB
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-      rehypePlugins={[rehypeRaw, rehypeKatex]}
+      rehypePlugins={[rehypeRaw, rehypeKatex,rehypeMermaid]}
       components={mdComponents}
     >
       {content}
