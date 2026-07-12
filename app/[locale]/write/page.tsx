@@ -150,7 +150,7 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw,rehypeMermaid, rehypeKatex]}
+        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'pre-mermaid' }] as any, rehypeKatex]}
         components={mdComponents}
       >
         {content}
@@ -275,6 +275,20 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const [content, setContent] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('write')
   const [isDesktop, setIsDesktop] = useState(false);
+
+  // Render mermaid diagrams on the client side in Editor preview
+  useEffect(() => {
+    if (typeof window !== 'undefined' && content) {
+      import('mermaid')
+        .then((m) => {
+          m.default.initialize({ startOnLoad: true, theme: 'default' });
+          setTimeout(() => {
+            m.default.run().catch((err) => console.error('Mermaid rendering error:', err));
+          }, 100);
+        })
+        .catch((err) => console.error('Failed to dynamically load mermaid:', err));
+    }
+  }, [content]);
 
   useEffect(() => {
     setIsDesktop(window.innerWidth >= 1024);

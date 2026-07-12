@@ -184,7 +184,7 @@ function ArticleMarkdown({ content, dbBlocks }: { content: string; dbBlocks: DBB
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-      rehypePlugins={[rehypeRaw, rehypeKatex,rehypeMermaid]}
+      rehypePlugins={[rehypeRaw, rehypeKatex, [rehypeMermaid, { strategy: 'pre-mermaid' }] as any]}
       components={mdComponents}
     >
       {content}
@@ -318,6 +318,20 @@ export default function ArticlePage({
   const shareRef = useRef < HTMLDivElement > (null)
   const mainRef = useRef < HTMLDivElement > (null)
   const progress = useReadingProgress(mainRef)
+
+  // Render mermaid diagrams on the client side
+  useEffect(() => {
+    if (typeof window !== 'undefined' && article?.content) {
+      import('mermaid')
+        .then((m) => {
+          m.default.initialize({ startOnLoad: true, theme: 'default' });
+          setTimeout(() => {
+            m.default.run().catch((err) => console.error('Mermaid rendering error:', err));
+          }, 100);
+        })
+        .catch((err) => console.error('Failed to dynamically load mermaid:', err));
+    }
+  }, [article?.content]);
   
   // Update state if initial props change
   useEffect(() => {

@@ -48,31 +48,33 @@ export default function Dashboard() {
       <Header />
       
       <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full p-4 md:p-8 gap-8">
-        <header className="flex justify-between items-center">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-slate-500 mt-1">Manage your content and track performance</p>
           </div>
           {session?.user && (
-            <div className="flex items-center gap-3 bg-white p-2 pr-4 rounded-2xl border border-slate-100">
-              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden">
-                {session.user.image ? (
-                  <img src={session.user.image} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <User size={20} className="text-slate-400" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-bold leading-tight">{session.user.name}</p>
-                <p className="text-xs text-slate-500 capitalize">{session.user.role}</p>
+            <div className="flex items-center gap-3 bg-white p-2 pr-4 rounded-2xl border border-slate-100 self-stretch sm:self-auto justify-between sm:justify-start">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden">
+                  {session.user.image ? (
+                    <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={20} className="text-slate-400" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-bold leading-tight">{session.user.name}</p>
+                  <p className="text-xs text-slate-500 capitalize">{session.user.role}</p>
+                </div>
               </div>
             </div>
           )}
         </header>
 
-        <div className={`flex flex-1 ${isDesktop ? 'flex-row' : 'flex-col'} gap-8`}>
+        <div className="flex flex-col lg:flex-row flex-1 gap-8">
           {/* Sidebar */}
-          <nav className={`flex ${isDesktop ? 'w-64 flex-col' : 'w-full flex-row overflow-x-auto no-scrollbar'} gap-2`}>
+          <nav className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-col lg:w-64 gap-3 shrink-0">
             {filteredNav.map((item) => {
               const isActive = currentActiveTab === item.id;
               const Icon = item.icon;
@@ -82,10 +84,10 @@ export default function Dashboard() {
                   <Link
                     key={item.id}
                     href={item.href}
-                    className="flex items-center gap-3 p-3 px-4 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap"
+                    className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 sm:gap-3 p-4 sm:p-3 sm:px-4 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-white bg-white lg:bg-transparent border border-slate-100 lg:border-0 transition-all text-center sm:text-left"
                   >
-                    <Icon size={20} />
-                    <span className="font-medium">{item.label}</span>
+                    <Icon size={24} className="shrink-0" />
+                    <span className="text-xs sm:text-sm font-semibold tracking-tight">{item.label}</span>
                   </Link>
                 );
               }
@@ -94,14 +96,14 @@ export default function Dashboard() {
                 <button
                   key={item.id}
                   onClick={() => setCurrentActiveTab(item.id)}
-                  className={`flex items-center gap-3 p-3 px-4 rounded-xl transition-all whitespace-nowrap ${
+                  className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 sm:gap-3 p-4 sm:p-3 sm:px-4 rounded-xl transition-all text-center sm:text-left ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-white'
+                      ? 'bg-slate-900 text-white shadow-md'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-white bg-white lg:bg-transparent border border-slate-100 lg:border-0'
                   }`}
                 >
-                  <Icon size={20} weight={isActive ? 'fill' : 'regular'} />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon size={24} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
+                  <span className="text-xs sm:text-sm font-semibold tracking-tight">{item.label}</span>
                 </button>
               );
             })}

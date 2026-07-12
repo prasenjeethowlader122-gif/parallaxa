@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 
 interface ReactionButtonsProps {
-  articleId: number;
+  articleId: string;
 }
 
 export default function ReactionButtons({ articleId }: ReactionButtonsProps) {
