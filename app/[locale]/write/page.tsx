@@ -150,7 +150,7 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'pre-mermaid' }] as any, rehypeKatex]}
+        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'pre-mermaid',theme: 'handdrawn' }] as any, rehypeKatex]}
         components={mdComponents}
       >
         {content}
