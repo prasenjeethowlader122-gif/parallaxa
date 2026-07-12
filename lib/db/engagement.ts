@@ -1,7 +1,7 @@
 
 import { sql } from '@/lib/db';
 
-export async function addReaction(articleId: number, userId: string, type: 'like' | 'dislike') {
+export async function addReaction(articleId: string, userId: string, type: 'like' | 'dislike') {
   try {
     return await sql`
       INSERT INTO reactions (article_id, user_id, type)
@@ -16,7 +16,7 @@ export async function addReaction(articleId: number, userId: string, type: 'like
   }
 }
 
-export async function getArticleReactions(articleId: number) {
+export async function getArticleReactions(articleId: string) {
   try {
     const counts = await sql`
       SELECT type, COUNT(*) as count
@@ -37,7 +37,7 @@ export async function getArticleReactions(articleId: number) {
   }
 }
 
-export async function getUserReaction(articleId: number, userId: string) {
+export async function getUserReaction(articleId: string, userId: string) {
   try {
     const reaction = await sql`
       SELECT type FROM reactions
@@ -50,7 +50,7 @@ export async function getUserReaction(articleId: number, userId: string) {
   }
 }
 
-export async function addComment(articleId: number, userId: string, userName: string, userImage: string, content: string) {
+export async function addComment(articleId: string, userId: string, userName: string, userImage: string, content: string) {
   try {
     return await sql`
       INSERT INTO comments (article_id, user_id, user_name, user_image, content)
@@ -63,7 +63,7 @@ export async function addComment(articleId: number, userId: string, userName: st
   }
 }
 
-export async function getComments(articleId: number) {
+export async function getComments(articleId: string) {
   try {
     const comments = await sql`
       SELECT * FROM comments

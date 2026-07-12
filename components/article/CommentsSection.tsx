@@ -16,7 +16,7 @@ interface Comment {
 }
 
 interface CommentsSectionProps {
-  articleId: number;
+  articleId: string;
 }
 
 export default function CommentsSection({ articleId }: CommentsSectionProps) {

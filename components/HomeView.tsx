@@ -179,12 +179,13 @@ export default function HomeClient({ sections = [] }: HomeClientProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const locale = pathname.split('/')[1] || 'bn'
+  const hasArticles = sections && sections.some(s => s.articles && s.articles.length > 0)
   
   return (
     <div className="flex flex-col items-start justify-between gap-2 w-full h-auto">
-      <div className="hidden md:block bg-background border-b border-border w-full">
-        <div className="max-w-7xl mx-auto px-6">
-          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="bg-background border-b border-border w-full">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
             {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
               const localizedHref = `/${locale}${href === '/' ? '' : href}`
               const isActive = pathname === localizedHref
@@ -239,6 +240,22 @@ export default function HomeClient({ sections = [] }: HomeClientProps) {
       </div>
 
       <main className="flex-grow w-full">
+        {!hasArticles && (
+          <div className="w-full max-w-4xl mx-auto px-4 py-20 text-center flex flex-col items-center justify-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+              <Sparkle size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800">কোনো প্রকাশিত নিবন্ধ পাওয়া যায়নি</h2>
+            <p className="text-slate-500 max-w-md">নিবন্ধ দেখতে অনুগ্রহ করে প্রথমে ড্যাশবোর্ড থেকে বা "Write" পেজে গিয়ে নতুন নিবন্ধ তৈরি করুন এবং সেটি পাবলিশ করুন।</p>
+            <Link
+              href={`/${locale}/write`}
+              className="mt-2 bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-colors"
+            >
+              নতুন নিবন্ধ লিখুন
+            </Link>
+          </div>
+        )}
+
         {sections.map((section, idx) => {
           if (!section.articles || section.articles.length === 0) return null
 

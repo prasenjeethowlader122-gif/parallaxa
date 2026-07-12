@@ -6,7 +6,6 @@ import {
   Plus,
   Trash,
   ArrowsDownUp,
-  GripVertical,
   Gear,
   Check,
   X,
@@ -119,6 +118,9 @@ export default function HomeSectionManager() {
           is_active: true
         });
         fetchSections();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to add section');
       }
     } catch (error) {
       toast.error('Failed to add section');
@@ -136,6 +138,9 @@ export default function HomeSectionManager() {
         toast.success('Section updated');
         setEditingId(null);
         fetchSections();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to update section');
       }
     } catch (error) {
       toast.error('Failed to update section');
@@ -151,6 +156,9 @@ export default function HomeSectionManager() {
       if (res.ok) {
         toast.success('Section deleted');
         fetchSections();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to delete section');
       }
     } catch (error) {
       toast.error('Failed to delete section');
@@ -175,6 +183,9 @@ export default function HomeSectionManager() {
       });
       if (res.ok) {
         setSections(newSections);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to reorder');
       }
     } catch (error) {
       toast.error('Failed to reorder');

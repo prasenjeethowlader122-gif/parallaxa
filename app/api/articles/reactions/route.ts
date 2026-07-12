@@ -6,9 +6,9 @@ import { addReaction, getArticleReactions, getUserReaction } from '@/lib/db/enga
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const articleId = parseInt(searchParams.get('articleId') || '');
+    const articleId = searchParams.get('articleId') || '';
 
-    if (isNaN(articleId)) {
+    if (!articleId) {
       return NextResponse.json({ error: 'Invalid articleId' }, { status: 400 });
     }
 

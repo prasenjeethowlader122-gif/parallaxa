@@ -33,7 +33,7 @@ export async function getArticlesByCategory(categoryId: number, limit: number = 
     const rows = await sql`
       SELECT *
       FROM articles
-      WHERE category = ${categoryName} AND status = 'published'
+      WHERE LOWER(category) = LOWER(${categoryName}) AND status = 'published'
       ORDER BY date DESC
       LIMIT ${limit}
     `;

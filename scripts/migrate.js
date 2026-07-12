@@ -31,7 +31,7 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS reactions (
         id SERIAL PRIMARY KEY,
-        article_id INTEGER NOT NULL,
+        article_id TEXT NOT NULL,
         user_id TEXT NOT NULL,
         type TEXT NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -42,7 +42,7 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS comments (
         id SERIAL PRIMARY KEY,
-        article_id INTEGER NOT NULL,
+        article_id TEXT NOT NULL,
         user_id TEXT NOT NULL,
         user_name TEXT,
         user_image TEXT,
@@ -50,6 +50,20 @@ async function migrate() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Convert article_id in reactions to TEXT if it's currently INTEGER
+    try {
+      await sql`ALTER TABLE reactions ALTER COLUMN article_id TYPE TEXT;`;
+    } catch (e) {
+      console.log('Alter reactions table article_id type skipped or already done.');
+    }
+
+    // Convert article_id in comments to TEXT if it's currently INTEGER
+    try {
+      await sql`ALTER TABLE comments ALTER COLUMN article_id TYPE TEXT;`;
+    } catch (e) {
+      console.log('Alter comments table article_id type skipped or already done.');
+    }
 
     console.log('Migrations completed successfully.');
   } catch (error) {

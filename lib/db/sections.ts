@@ -28,20 +28,22 @@ export async function getAllHomeSections() {
 }
 
 export async function createHomeSection(section: Omit<HomeSection, 'id'>) {
+  const category_id = section.category_id !== undefined ? section.category_id : null;
   return await sql`
     INSERT INTO home_sections (title, type, category_id, layout, limit_count, order_index, is_active)
-    VALUES (${section.title}, ${section.type}, ${section.category_id}, ${section.layout}, ${section.limit_count}, ${section.order_index}, ${section.is_active})
+    VALUES (${section.title}, ${section.type}, ${category_id}, ${section.layout}, ${section.limit_count}, ${section.order_index}, ${section.is_active})
     RETURNING *
   `;
 }
 
 export async function updateHomeSection(id: number, section: Partial<HomeSection>) {
+  const category_id = section.category_id !== undefined ? section.category_id : null;
   return await sql`
     UPDATE home_sections
     SET
       title = COALESCE(${section.title}, title),
       type = COALESCE(${section.type}, type),
-      category_id = ${section.category_id},
+      category_id = ${category_id},
       layout = COALESCE(${section.layout}, layout),
       limit_count = COALESCE(${section.limit_count}, limit_count),
       order_index = COALESCE(${section.order_index}, order_index),
