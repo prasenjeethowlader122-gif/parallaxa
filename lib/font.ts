@@ -4,9 +4,9 @@ import localFont from 'next/font/local'
 export const banglaFont = localFont({
   src: [
     {
-      path: '../public/local/font/UNBangla-Regular.ttf',
+      path: '../public/local/font/Tulika Medium.ttf',
       style: 'normal',
-      weight: '400'
+      weight: '600'
     }
   ],
   variable: '--font-bangla'
@@ -14,9 +14,9 @@ export const banglaFont = localFont({
 export const banglaFontlogo = localFont({
   src: [
     {
-      path: '../public/local/font/Ekush-Regular.ttf',
+      path: '../public/local/font/UNBangla-Regular.ttf',
       style: 'normal',
-      weight: '600'
+      weight: '400'
     }
   ],
   variable: '--font-bangla-logo'
