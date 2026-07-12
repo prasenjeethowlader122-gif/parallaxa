@@ -183,61 +183,7 @@ export default function HomeClient({ sections = [] }: HomeClientProps) {
   
   return (
     <div className="flex flex-col items-start justify-between gap-2 w-full h-auto">
-      <div className="bg-background border-b border-border w-full">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
-            {NAV_LINKS.map(({ href, label, badge, icon: Icon }) => {
-              const localizedHref = `/${locale}${href === '/' ? '' : href}`
-              const isActive = pathname === localizedHref
-              return (
-                <Link
-                  key={href}
-                  href={localizedHref}
-                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    isActive
-                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {label}
-                  {badge && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide bg-red-50 text-red-600">
-                      {badge}
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
-
-            {session && (
-              <>
-                <Link
-                  href={`/${locale}/write`}
-                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    pathname === `/${locale}/write`
-                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <NotePencil size={18} />
-                  Write
-                </Link>
-                <Link
-                  href={`/${locale}/dashboard`}
-                  className={`relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                    pathname === `/${locale}/dashboard`
-                      ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-red-600 after:rounded-full'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </div>
+      
 
       <main className="flex-grow w-full">
         {!hasArticles && (

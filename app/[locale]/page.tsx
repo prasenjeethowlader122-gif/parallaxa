@@ -7,11 +7,12 @@ import { getFeaturedArticles, getTrendingArticles } from '@/lib/db/articles';
 
 export default async function HomePage() {
   let dbSections: any[] = [];
+  /**
   try {
     dbSections = await getHomeSections();
   } catch (err) {
     console.error('Failed to get home sections:', err);
-  }
+  }**/
 
   // Fallback to defaults if no active sections configured
   if (!dbSections || dbSections.length === 0) {
