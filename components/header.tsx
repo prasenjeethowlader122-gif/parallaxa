@@ -456,7 +456,7 @@ export function Header({
                     key={href}
                     href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className="group relative flex items-center gap-3 py-3.5 border-b border-stone-200"
+                    className="group relative flex items-center gap-3 py-3.5 border-b"
                   >
                     {/* signature: red spine marker that reveals on active/hover */}
                     <span
@@ -464,12 +464,12 @@ export function Header({
                         isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                       }`}
                     />
-                    <span className="font-mono text-xs text-stone-400 w-6">
+                    <span className="text-xs text-stone-400 w-6">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     {Icon && <Icon className="w-4 h-4 text-stone-500 flex-shrink-0" />}
                     <span
-                      className={`flex-1 font-serif text-[17px] leading-tight ${
+                      className={`flex-1 text-[17px] leading-tight ${
                         isActive ? 'text-red-700' : 'text-stone-900'
                       }`}
                     >
