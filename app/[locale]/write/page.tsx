@@ -204,7 +204,11 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw, [rehypeMermaid], rehypeKatex]}
+        rehypePlugins={[rehypeRaw, [rehypeMermaid , {strategy: 'inline-svg', // or 'img-svg' / 'img-png'
+          mermaidConfig: {
+            look: 'handDrawn',
+            theme: 'neutral',
+          }}], rehypeKatex]}
         components={mdComponents}
       >
         {content}
@@ -276,7 +280,7 @@ const InputField = React.memo(function InputField({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
-          className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 resize-none focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
+          className="w-full text-xs text-black bg-gray-50 border-2 border-gray-100 rounded-xl px-3 py-2 resize-none focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
         />
       ) : (
         <input
@@ -284,7 +288,7 @@ const InputField = React.memo(function InputField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
+          className="w-full text-xs text-black bg-gray-50 border-2 border-gray-100 rounded-full px-4 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
         />
       )}
       {hint && <p className="text-[10px] text-[#b8b9ba]">{hint}</p>}
@@ -386,7 +390,7 @@ function estimateReadTime(text: string): number {
 
 const SIDEBAR_TABS: { id: SidebarTab; label: string; icon: any }[] = [
   { id: 'metadata', label: 'Metadata', icon: Settings },
-  { id: 'seo', label: 'SEO', icon: SearchCheck },
+  { id: 'seo', label: 'Search Engine Optimize', icon: SearchCheck },
   { id: 'accessibility', label: 'Accessibility', icon: Accessibility },
   { id: 'tags', label: 'Tags & Badges', icon: Tag },
   { id: 'distribution', label: 'Distribution', icon: Share2 },
