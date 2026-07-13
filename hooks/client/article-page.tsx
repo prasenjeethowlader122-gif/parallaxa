@@ -184,8 +184,7 @@ function ArticleMarkdown({ content, dbBlocks }: { content: string; dbBlocks: DBB
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-      rehypePlugins={[rehypeRaw, rehypeKatex, [rehypeMermaid, {strategy: 'img-png'
-        }] as any]}
+      rehypePlugins={[rehypeRaw, rehypeKatex, [rehypeMermaid]]}
       components={mdComponents}
     >
       {content}
