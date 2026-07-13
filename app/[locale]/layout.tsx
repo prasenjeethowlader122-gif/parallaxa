@@ -20,7 +20,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className={`${sansFont.variable} ${serifFont.variable} ${banglaFontlogo.variable} ${monoFont.variable} ${banglaFont.variable}`}>
-      <body className={`${locale === 'bn' ? banglaFont.className : serifFont.className} antialiased bg-background text-foreground`}>
+      <body className={`antialiased bg-background text-foreground`}>
         <ClientSessionProvider>
           {children}
           <Analytics />
