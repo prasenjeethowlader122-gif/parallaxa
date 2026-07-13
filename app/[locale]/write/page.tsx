@@ -9,6 +9,7 @@ import React, {
   useRef,
   useCallback,
   useEffect,
+  useMemo,
   ComponentPropsWithoutRef,
 } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,7 +21,6 @@ import { autocompletion, CompletionContext } from '@codemirror/autocomplete'
 import { RangeSetBuilder } from '@codemirror/state'
 import rehypeRaw from 'rehype-raw'
 import {
-  History,
   ChevronRight,
   SearchCheck,
   Accessibility,
@@ -37,7 +37,6 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   AlertCircle,
-  Save,
   Send,
   X,
   Check,
@@ -53,9 +52,6 @@ import {
   Star,
   Zap,
   TrendingUp,
-  Hash,
-  FileText,
-  RefreshCw,
   PanelLeft,
   SlidersHorizontal,
   Info,
@@ -63,26 +59,19 @@ import {
   Facebook,
   Twitter,
   Instagram,
-  Play,
   Github,
   Box,
   ChevronDown,
   Heading3,
-  Type,
   Layout,
   SquarePlus,
   Highlighter,
-  Palette,
   Terminal,
   Eye,
   Sparkles,
   PenTool,
   Columns2,
   Search,
-  Filter,
-  SortAsc,
-  AlignLeft,
-  ChevronUp,
   Loader2,
 } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
@@ -93,7 +82,7 @@ import Markdown, { Components } from 'react-markdown'
 import { createCustomBlockPlugin, blockRegistry, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
-import { BlockSearchPanel, DynamicIcon } from '@/components/mdx/BlockSearchPanel'
+import { BlockSearchPanel } from '@/components/mdx/BlockSearchPanel'
 
 type SidebarTab = 'metadata' | 'seo' | 'accessibility' | 'tags' | 'distribution'
 type ViewMode = 'write' | 'preview' | 'split'
@@ -303,6 +292,32 @@ const InputField = React.memo(function InputField({
   )
 })
 
+const SelectField = ({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) => (
+  <div className="flex flex-col gap-1.5">
+    <SidebarLabel>{label}</SidebarLabel>
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full appearance-none text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 pr-8 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none transition-all cursor-pointer"
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9e9fa0] pointer-events-none" />
+    </div>
+  </div>
+)
+
 const Toggle = ({
   label,
   checked,
@@ -344,6 +359,23 @@ const StatCard = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
+const Section = ({ title, icon: Icon, children, hint }: { title: string; icon?: any; children: React.ReactNode; hint?: string }) => (
+  <div className="flex flex-col gap-4 bg-[#faf9f9] rounded-xl border border-[#eeecec] p-5">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {Icon && <Icon size={13} className="text-[#9e9fa0]" />}
+        <h4 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#585f64]">{title}</h4>
+      </div>
+      {hint && (
+        <span title={hint} className="text-[#c8c6c6] hover:text-[#9e9fa0] transition-colors cursor-help">
+          <HelpCircle size={13} />
+        </span>
+      )}
+    </div>
+    {children}
+  </div>
+)
+
 function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
@@ -351,6 +383,14 @@ function countWords(text: string): number {
 function estimateReadTime(text: string): number {
   return Math.max(1, Math.ceil(countWords(text) / 200))
 }
+
+const SIDEBAR_TABS: { id: SidebarTab; label: string; icon: any }[] = [
+  { id: 'metadata', label: 'Metadata', icon: Settings },
+  { id: 'seo', label: 'SEO', icon: SearchCheck },
+  { id: 'accessibility', label: 'Accessibility', icon: Accessibility },
+  { id: 'tags', label: 'Tags & Badges', icon: Tag },
+  { id: 'distribution', label: 'Distribution', icon: Share2 },
+]
 
 const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }) => {
   const resolvedParams = React.use(searchParams)
@@ -403,7 +443,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const { data: session } = useSession()
 
   useEffect(() => {
-    if (session?.user?.name) setAuthor(session.user.name)
+    if (session?.user?.name && !author) setAuthor(session.user.name)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.name])
 
   useEffect(() => {
@@ -412,6 +453,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
       .then(data => Array.isArray(data) ? setDbBlocks(data) : null)
       .catch(() => null)
   }, [])
+
+  // Combine statically-registered blocks with user/DB-defined blocks so both
+  // the "Blocks" panel and the in-editor autocomplete stay in sync.
+  const allBlocks = useMemo(
+    () => [...blockRegistry.getAllBlocks(), ...dbBlocks] as DBBlockConfig[],
+    [dbBlocks]
+  )
 
   const markUnsaved = useCallback(() => {
     setSaveStatus('unsaved')
@@ -443,13 +491,30 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           const data = await res.json()
           setContent(data.content || '')
           setTitle(data.title || '')
-          setBreaking(data.breaking || false)
-          setCssClass(data.cssClass || '')
-          setNoIndex(data.noIndex || false)
-          setOgImage(data.ogImage || '')
-          setCoverImage(data.image || '')
+          if (data.author) setAuthor(data.author)
           setCategory(data.category || '')
+          setCoverImage(data.image || '')
           setTags(data.tags || [])
+          setFeatured(!!data.featured)
+          setBreaking(!!data.breaking)
+          setTrending(!!data.trending)
+          setVisibility(data.visibility || 'public')
+          setStatus(data.status || 'draft')
+          setScheduledAt(data.scheduledAt ? new Date(data.scheduledAt).toISOString().slice(0, 16) : '')
+          setSeoTitle(data.seoTitle || '')
+          setMetaDescription(data.metaDescription || data.description || '')
+          setFocusKeyword(data.focusKeyword || '')
+          setCanonicalUrl(data.canonicalUrl || '')
+          setOgImage(data.ogImage || '')
+          setTwitterCard(data.twitterCard || 'summary_large_image')
+          setNoIndex(!!data.noIndex)
+          setAllowComments(data.allowComments ?? true)
+          setShowInRss(data.showInRss ?? true)
+          setAmpEnabled(!!data.ampEnabled)
+          setCssClass(data.cssClass || '')
+          setRedirectUrl(data.redirectUrl || '')
+          setHistory([data.content || ''])
+          setHistoryIndex(0)
           setLastSaved(new Date())
         }
       } catch (error) {
@@ -481,6 +546,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     const mq = window.matchMedia('(min-width: 1280px)')
     const handler = (e: MediaQueryListEvent) => {
       if (e.matches) setMobileDrawerOpen(false)
+      else setSidebarOpen(false)
     }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
@@ -495,6 +561,14 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  useEffect(() => {
+    if (sidebarOpen || mobileDrawerOpen) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = prev }
+    }
+  }, [sidebarOpen, mobileDrawerOpen])
 
   const markdownTheme = EditorView.theme({
     '&': {
@@ -554,17 +628,17 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     }
   }, { decorations: v => v.decorations })
 
-  const customBlockCompletions = (context: CompletionContext) => {
+  const customBlockCompletions = useCallback((context: CompletionContext) => {
     const word = context.matchBefore(/\[!/)
     if (!word) return null
     if (word.from === word.to && !context.explicit) return null
-    const options = blockRegistry.getAllBlocks().map(block => ({
+    const options = allBlocks.map(block => ({
       label: block.template || `[!${block.name}()]`,
       type: 'function',
       apply: block.template || `[!${block.name}()]`,
     }))
     return { from: word.from, options }
-  }
+  }, [allBlocks])
 
   const pushHistory = useCallback((val: string) => {
     setHistory(prev => [...prev.slice(0, historyIndex + 1), val].slice(-100))
@@ -667,12 +741,13 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     { success: content.length > 0, text: 'Article has content' },
     { success: !!coverImage, text: 'Cover image provided' },
     { success: allowComments, text: 'Comments enabled' },
-    { success: true, text: 'AMP compatibility configured' },
+    { success: ampEnabled, text: 'AMP compatibility configured' },
   ]
 
   const handlePublish = async () => {
     setPublishing(true)
     try {
+      const isFuture = !!scheduledAt && new Date(scheduledAt).getTime() > Date.now()
       const payload = {
         title,
         description: metaDescription || '',
@@ -684,6 +759,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         breaking,
         trending,
         tags,
+        author,
         seoTitle,
         metaDescription,
         focusKeyword,
@@ -697,8 +773,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         redirectUrl,
         cssClass,
         visibility,
-        scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
-        status: 'published',
+        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        status: isFuture ? 'scheduled' : 'published',
       }
       const res = await fetch(id ? `/api/articles/${id}` : '/api/articles', {
         method: id ? 'PATCH' : 'POST',
@@ -714,7 +790,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
           body: JSON.stringify({ articleId: j.id }),
         })
       }
-      setStatus('published')
+      setStatus(isFuture ? 'scheduled' : 'published')
       setShowPublishModal(false)
       setSaveStatus('saved')
       setLastSaved(new Date())
@@ -737,20 +813,216 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     return 'Saved'
   }
 
-  const renderSidebarPanel = () => {
-    switch (activeTab) {
-      case 'metadata':
-        return (
-          <div className="flex flex-col gap-5">
-            <InputField label="Category" value={category} onChange={(v) => { setCategory(v); markUnsaved() }} placeholder="e.g. Technology" />
-            <InputField label="Author" value={author} onChange={(v) => { setAuthor(v); markUnsaved() }} />
-            <InputField label="Cover Image URL" value={coverImage} onChange={(v) => { setCoverImage(v); markUnsaved() }} placeholder="https://…" />
-          </div>
-        )
-      default:
-        return null
-    }
-  }
+  // Full-width settings panel. Used both as the desktop overlay (sidebarOpen)
+  // and the mobile drawer (mobileDrawerOpen); `wide` switches between a
+  // multi-column desktop layout and a single-column mobile layout.
+  const SidebarInner = ({ wide, onClose }: { wide?: boolean; onClose: () => void }) => (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Tab bar */}
+      <div className={`flex items-center gap-1.5 px-5 sm:px-8 py-4 border-b border-[#eeecec] shrink-0 overflow-x-auto no-scrollbar ${wide ? '' : ''}`} style={{ scrollbarWidth: 'none' }}>
+        {SIDEBAR_TABS.map(t => {
+          const Icon = t.icon
+          const active = activeTab === t.id
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
+                active ? 'bg-slate-900 text-white' : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
+              }`}
+            >
+              <Icon size={13} />
+              <span>{t.label}</span>
+            </button>
+          )
+        })}
+        <div className="flex-1" />
+        {wide && (
+          <button
+            onClick={onClose}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#9e9fa0] hover:bg-[#f0eeee] hover:text-[#313334] transition-colors shrink-0"
+          >
+            <X size={13} />
+            Close
+          </button>
+        )}
+      </div>
+
+      {/* Panel content */}
+      <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-6">
+        <div className={`grid gap-5 ${wide ? 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 max-w-6xl mx-auto' : 'grid-cols-1'}`}>
+
+          {activeTab === 'metadata' && (
+            <>
+              <Section title="Article info" icon={Settings}>
+                <InputField label="Category" value={category} onChange={(v) => { setCategory(v); markUnsaved() }} placeholder="e.g. Technology" />
+                <InputField label="Author" value={author} onChange={(v) => { setAuthor(v); markUnsaved() }} />
+                <InputField label="Cover Image URL" value={coverImage} onChange={(v) => { setCoverImage(v); markUnsaved() }} placeholder="https://…" />
+              </Section>
+              <Section title="Advanced" icon={Terminal} hint="Extra hooks for styling or migrated URLs">
+                <InputField label="Custom CSS class" value={cssClass} onChange={(v) => { setCssClass(v); markUnsaved() }} placeholder="e.g. long-form" />
+                <InputField label="Redirect URL" value={redirectUrl} onChange={(v) => { setRedirectUrl(v); markUnsaved() }} placeholder="https://old-url…" />
+              </Section>
+              <Section title="At a glance">
+                <div className="grid grid-cols-2 gap-3">
+                  <StatCard label="Words" value={countWords(content).toLocaleString()} />
+                  <StatCard label="Read time" value={`${estimateReadTime(content)} min`} />
+                </div>
+              </Section>
+            </>
+          )}
+
+          {activeTab === 'seo' && (
+            <>
+              <Section title="Search appearance" icon={SearchCheck}>
+                <InputField label="SEO title" value={seoTitle} onChange={(v) => { setSeoTitle(v); markUnsaved() }} placeholder={title || 'Falls back to article title'} />
+                <InputField label="Meta description" value={metaDescription} onChange={(v) => { setMetaDescription(v); markUnsaved() }} multiline placeholder="120–160 characters" hint={`${metaDescription.length}/160`} />
+                <InputField label="Focus keyword" value={focusKeyword} onChange={(v) => { setFocusKeyword(v); markUnsaved() }} placeholder="e.g. climate policy" />
+                <InputField label="Canonical URL" value={canonicalUrl} onChange={(v) => { setCanonicalUrl(v); markUnsaved() }} placeholder="https://…" />
+              </Section>
+              <Section title="Social preview" icon={Share2}>
+                <InputField label="OG image URL" value={ogImage} onChange={(v) => { setOgImage(v); markUnsaved() }} placeholder="Falls back to cover image" />
+                <SelectField
+                  label="Twitter card type"
+                  value={twitterCard}
+                  onChange={(v) => { setTwitterCard(v); markUnsaved() }}
+                  options={[
+                    { value: 'summary_large_image', label: 'Large image' },
+                    { value: 'summary', label: 'Summary' },
+                  ]}
+                />
+                <Toggle label="Hide from search engines" description="Adds a noindex tag" checked={noIndex} onChange={(v) => { setNoIndex(v); markUnsaved() }} />
+              </Section>
+              <Section title="SEO checklist" hint="Rough guidance, not a hard requirement">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-bold text-[#9e9fa0] uppercase tracking-wider">Score</span>
+                  <span className={`text-lg font-bold tabular-nums ${seoScore >= 70 ? 'text-emerald-600' : seoScore >= 40 ? 'text-amber-600' : 'text-[#c0483d]'}`}>{seoScore}%</span>
+                </div>
+                <div className="flex flex-col gap-2.5">
+                  {seoChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
+                </div>
+              </Section>
+            </>
+          )}
+
+          {activeTab === 'accessibility' && (
+            <>
+              <Section title="Accessibility checklist" icon={Accessibility}>
+                <div className="flex flex-col gap-2.5">
+                  {a11yChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
+                </div>
+              </Section>
+              <Section title="Formats" icon={Layout}>
+                <Toggle label="AMP version" description="Publish a lightweight, accelerated version" checked={ampEnabled} onChange={(v) => { setAmpEnabled(v); markUnsaved() }} />
+              </Section>
+            </>
+          )}
+
+          {activeTab === 'tags' && (
+            <>
+              <Section title="Tags" icon={Tag}>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c8c6c6]" />
+                    <input
+                      type="text"
+                      value={tagInput}
+                      onChange={e => setTagInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
+                      placeholder="Add a tag…"
+                      className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl pl-8 pr-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addTag}
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-black transition-colors shrink-0"
+                  >
+                    Add
+                  </button>
+                </div>
+                {tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map(t => (
+                      <span key={t} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-[#e4e2e1] rounded-xl text-xs font-semibold text-[#585f64]">
+                        #{t}
+                        <button onClick={() => removeTag(t)} className="text-[#c8c6c6] hover:text-[#c0483d] transition-colors">
+                          <X size={11} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-[#b8b9ba]">No tags yet.</p>
+                )}
+              </Section>
+              <Section title="Badges" icon={Star} hint="Highlight this article in listings">
+                <Toggle label="Featured" description="Show in featured rail" checked={featured} onChange={(v) => { setFeatured(v); markUnsaved() }} />
+                <Toggle label="Breaking" description="Mark as breaking news" checked={breaking} onChange={(v) => { setBreaking(v); markUnsaved() }} />
+                <Toggle label="Trending" description="Mark as trending" checked={trending} onChange={(v) => { setTrending(v); markUnsaved() }} />
+              </Section>
+            </>
+          )}
+
+          {activeTab === 'distribution' && (
+            <>
+              <Section title="Visibility" icon={Share2}>
+                <SelectField
+                  label="Who can see this"
+                  value={visibility}
+                  onChange={(v) => { setVisibility(v as Visibility); markUnsaved() }}
+                  options={[
+                    { value: 'public', label: 'Public' },
+                    { value: 'unlisted', label: 'Unlisted (link only)' },
+                    { value: 'private', label: 'Private' },
+                  ]}
+                />
+                <SelectField
+                  label="Status"
+                  value={status}
+                  onChange={(v) => { setStatus(v as ArticleStatus); markUnsaved() }}
+                  options={[
+                    { value: 'draft', label: 'Draft' },
+                    { value: 'scheduled', label: 'Scheduled' },
+                    { value: 'published', label: 'Published' },
+                  ]}
+                />
+                {status === 'scheduled' && (
+                  <div className="flex flex-col gap-1.5">
+                    <SidebarLabel>Publish at</SidebarLabel>
+                    <input
+                      type="datetime-local"
+                      value={scheduledAt}
+                      onChange={(e) => { setScheduledAt(e.target.value); markUnsaved() }}
+                      className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                )}
+              </Section>
+              <Section title="Engagement" icon={Settings}>
+                <Toggle label="Allow comments" checked={allowComments} onChange={(v) => { setAllowComments(v); markUnsaved() }} />
+                <Toggle label="Include in RSS feed" checked={showInRss} onChange={(v) => { setShowInRss(v); markUnsaved() }} />
+              </Section>
+              <Section title="Share to" hint="Cross-post once published">
+                <div className="flex flex-wrap gap-2">
+                  {[Twitter, Facebook, Instagram, Youtube, Github, Box].map((Icon, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      title="Coming soon"
+                      className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-[#e4e2e1] text-[#7a8086] hover:text-[#313334] hover:border-[#585f64] transition-colors"
+                    >
+                      <Icon size={15} />
+                    </button>
+                  ))}
+                </div>
+              </Section>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-white text-[#1a1b1c]">
@@ -838,25 +1110,33 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         </div>
       </header>
 
-      {/* Main layout */}
-      <div className="flex overflow-hidden" style={{ height: 'calc(100dvh - 113px)' }}>
-
-        {/* Sidebar */}
-        <AnimatePresence mode="wait">
-          {sidebarOpen && (
-            <motion.aside
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 268, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="hidden xl:flex h-full shrink-0 bg-[#faf9f9] flex-col overflow-hidden border-r border-[#eeecec]"
+      {/* Full-width settings panel (desktop) */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="hidden xl:block fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[2px]"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="hidden xl:flex fixed left-0 right-0 top-[65px] bottom-0 z-50 bg-white flex-col shadow-2xl"
             >
-              <div className="w-[268px]">
-                <SidebarInner />
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+              <SidebarInner wide onClose={() => setSidebarOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main layout */}
+      <div className="flex overflow-hidden" style={{ height: 'calc(100dvh - 65px)' }}>
 
         {/* Editor area */}
         <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-slate-50/30">
@@ -1065,12 +1345,11 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               onClick={() => setMobileDrawerOpen(false)}
             />
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 z-[70] bg-[#faf9f9] flex flex-col shadow-none xl:hidden overflow-hidden"
-              style={{ width: 'min(300px, 90vw)' }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+              className="fixed inset-x-0 bottom-0 top-16 z-[70] bg-white flex flex-col shadow-2xl xl:hidden overflow-hidden rounded-t-2xl"
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-[#eeecec] bg-white shrink-0">
                 <h2 className="font-['Newsreader'] text-[15px] font-bold text-[#1a1b1c]">Article Settings</h2>
@@ -1082,7 +1361,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
-                <SidebarInner />
+                <SidebarInner onClose={() => setMobileDrawerOpen(false)} />
               </div>
             </motion.div>
           </>
