@@ -94,7 +94,7 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
 
   return (
     <div className="space-y-8">
-      <h3 className="text-2xl font-bold">Comments ({Array.isArray(comments) ? comments.length : 0})</h3>
+      <h3 className="text-xl font-medium">Comments ({Array.isArray(comments) ? comments.length : 0})</h3>
 
       {session ? (
         <form onSubmit={handleSubmit} className="space-y-4">

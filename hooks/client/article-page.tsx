@@ -640,7 +640,7 @@ export default function ArticlePage({
               {/* ── Engagement (Likes/Dislikes) ── */}
               <div className="no-print py-8 border-y border-gray-100 mb-8">
                 <div className="flex flex-col gap-4">
-                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">What do you think?</p>
+                  <p className="text-sm text-gray-400 uppercase tracking-widest">What do you think?</p>
                   <ReactionButtons articleId={article.id} />
                 </div>
               </div>
@@ -653,7 +653,7 @@ export default function ArticlePage({
               {/* ── Bottom share bar ── */}
               <div className="no-print pt-6 pb-4 border-t border-gray-100">
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-semibold text-gray-900 tracking-widest whitespace-nowrap">Share this article</span>
+                  <span className="text-sm font-medium text-gray-900 tracking-widest whitespace-nowrap">Share it</span>
                   <div className="flex items-center gap-2 border border-gray-200 rounded-full p-1">
                     <button
                       onClick={handleShareTwitter}
