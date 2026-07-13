@@ -1,10 +1,17 @@
 "use client";
+
 import { slabo } from '@/lib/font'
 import { useSession } from 'next-auth/react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import React, { useState, useRef, useCallback, useEffect, ComponentPropsWithoutRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  ComponentPropsWithoutRef,
+} from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
@@ -13,35 +20,85 @@ import { autocompletion, CompletionContext } from '@codemirror/autocomplete'
 import { RangeSetBuilder } from '@codemirror/state'
 import rehypeRaw from 'rehype-raw'
 import {
-  History, ChevronRight, SearchCheck, Accessibility, Tag, Share2, Settings,
-  HelpCircle, Bold, Italic, Heading1, Heading2, Quote, Link, Image as ImageIcon,
-  CheckCircle2, AlertCircle, Save, Send, X, Check, Copy, List, ListOrdered,
-  Strikethrough, Code, Minus, RotateCcw, RotateCw, Clock, Star, Zap, TrendingUp,
-  Hash, FileText, RefreshCw, PanelLeft, SlidersHorizontal, Info,
-  Youtube, Facebook, Twitter, Instagram, Play, Github, Box, ChevronDown,
-  Heading3, Type, Layout, SquarePlus, Highlighter, Palette, Terminal,
-  Eye, Sparkles, PenTool, Columns2, Search, Filter, SortAsc, AlignLeft,
-  ChevronUp, Loader2
-} from 'lucide-react';
+  History,
+  ChevronRight,
+  SearchCheck,
+  Accessibility,
+  Tag,
+  Share2,
+  Settings,
+  HelpCircle,
+  Bold,
+  Italic,
+  Heading1,
+  Heading2,
+  Quote,
+  Link,
+  Image as ImageIcon,
+  CheckCircle2,
+  AlertCircle,
+  Save,
+  Send,
+  X,
+  Check,
+  Copy,
+  List,
+  ListOrdered,
+  Strikethrough,
+  Code,
+  Minus,
+  RotateCcw,
+  RotateCw,
+  Clock,
+  Star,
+  Zap,
+  TrendingUp,
+  Hash,
+  FileText,
+  RefreshCw,
+  PanelLeft,
+  SlidersHorizontal,
+  Info,
+  Youtube,
+  Facebook,
+  Twitter,
+  Instagram,
+  Play,
+  Github,
+  Box,
+  ChevronDown,
+  Heading3,
+  Type,
+  Layout,
+  SquarePlus,
+  Highlighter,
+  Palette,
+  Terminal,
+  Eye,
+  Sparkles,
+  PenTool,
+  Columns2,
+  Search,
+  Filter,
+  SortAsc,
+  AlignLeft,
+  ChevronUp,
+  Loader2,
+} from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeMermaid from 'rehype-mermaid'
-
 import Markdown, { Components } from 'react-markdown'
 import { createCustomBlockPlugin, blockRegistry, DBBlockConfig } from '@/lib/mdx/block-registry'
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 import { BlockSearchPanel, DynamicIcon } from '@/components/mdx/BlockSearchPanel'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type SidebarTab = 'metadata' | 'seo' | 'accessibility' | 'tags' | 'distribution'
 type ViewMode = 'write' | 'preview' | 'split'
 type Visibility = 'public' | 'private' | 'unlisted'
 type ArticleStatus = 'draft' | 'published' | 'scheduled'
-
-// ─── CodeBlock ────────────────────────────────────────────────────────────────
 
 function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
   const [copied, setCopied] = useState(false)
@@ -62,7 +119,12 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#222] border-b border-[#333]">
         <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{lang}</span>
         <button
-          onClick={() => { navigator.clipboard.writeText(code.trim()); setCopied(true); setTimeout(() => setCopied(false), 1800) }}
+          type="button"
+          onClick={() => {
+            navigator.clipboard.writeText(code.trim())
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1800)
+          }}
           className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-white transition-colors"
         >
           {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
@@ -76,27 +138,25 @@ function CodeBlock({ children, className }: ComponentPropsWithoutRef<'code'>) {
   )
 }
 
-// ─── Markdown Components ──────────────────────────────────────────────────────
-
 const mdComponents: Components = {
   ...customBlockComponents,
   code: CodeBlock as Components['code'],
   h1: ({ children }) => <h1 className="text-3xl font-bold text-[#1a1b1c] mt-8 mb-4 leading-tight">{children}</h1>,
-  h2: ({ children }) => <h2 className=" text-2xl font-semibold text-[#1a1b1c] mt-6 mb-3 leading-snug">{children}</h2>,
+  h2: ({ children }) => <h2 className="text-2xl font-semibold text-[#1a1b1c] mt-6 mb-3 leading-snug">{children}</h2>,
   h3: ({ children }) => <h3 className="text-xl font-semibold text-[#313334] mt-5 mb-2">{children}</h3>,
   p: ({ children }) => <p className="text-[#313334] text-[1.05rem] leading-[1.85] my-3">{children}</p>,
   ul: ({ children }) => <ul className="list-disc pl-6 my-4 flex flex-col gap-2 text-[1.05rem] text-[#313334]">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal pl-6 my-4 flex flex-col gap-2 text-[1.05rem] text-[#313334]">{children}</ol>,
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   blockquote: ({ children }) => {
-    const childrenArray = React.Children.toArray(children);
-    const firstChild = childrenArray[0];
+    const childrenArray = React.Children.toArray(children)
+    const firstChild = childrenArray[0]
     if (React.isValidElement(firstChild) && (firstChild as any).type === 'p') {
-      const pChildren = React.Children.toArray((firstChild as any).props.children);
-      const firstPChild = pChildren[0];
+      const pChildren = React.Children.toArray((firstChild as any).props.children)
+      const firstPChild = pChildren[0]
       if (typeof firstPChild === 'string' && firstPChild.trim().startsWith('[!NOTE]')) {
-        const cleanFirstChild = firstPChild.trim().replace('[!NOTE]', '').trim();
-        const remainingPChildren = pChildren.slice(1);
+        const cleanFirstChild = firstPChild.trim().replace('[!NOTE]', '').trim()
+        const remainingPChildren = pChildren.slice(1)
         return (
           <div className="my-6 p-5 bg-blue-50/60 border border-blue-100 rounded-xl flex gap-4 items-start">
             <div className="shrink-0 w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
@@ -109,10 +169,10 @@ const mdComponents: Components = {
               </div>
             </div>
           </div>
-        );
+        )
       }
     }
-    return <blockquote className="border-l-[3px] border-[#585f64] pl-5 my-5 text-[#5e5f61] italic text-lg ">{children}</blockquote>;
+    return <blockquote className="border-l-[3px] border-[#585f64] pl-5 my-5 text-[#5e5f61] italic text-lg">{children}</blockquote>
   },
   table: ({ children }) => (
     <div className="overflow-x-auto my-5 rounded-xl border border-[#e4e2e1]">
@@ -128,8 +188,12 @@ const mdComponents: Components = {
   strong: ({ children }) => <strong className="font-bold text-[#1a1b1c]">{children}</strong>,
   em: ({ children }) => <em className="italic text-[#5e5f61]">{children}</em>,
   a: ({ href, children }) => (
-    <a href={href} target="_blank" rel="noopener noreferrer"
-      className="text-[#585f64] underline underline-offset-2 decoration-[#dcdad9] hover:text-[#313334] hover:decoration-[#585f64] transition-colors">
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[#585f64] underline underline-offset-2 decoration-[#dcdad9] hover:text-[#313334] hover:decoration-[#585f64] transition-colors"
+    >
       {children}
     </a>
   ),
@@ -146,11 +210,12 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
       </div>
     )
   }
+
   return (
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'pre-mermaid',look: 'handDrawn' }] as any, rehypeKatex]}
+        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'pre-mermaid', look: 'handDrawn' }] as any, rehypeKatex]}
         components={mdComponents}
       >
         {content}
@@ -159,27 +224,30 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
   )
 }
 
-// ─── Toolbar Button ───────────────────────────────────────────────────────────
-
 const ToolbarBtn = ({
-  icon: Icon, label, onClick, active, className = ''
+  icon: Icon,
+  label,
+  onClick,
+  active,
+  className = '',
 }: {
-  icon: any; label: string; onClick: () => void; active?: boolean; className?: string
+  icon: any
+  label: string
+  onClick: () => void
+  active?: boolean
+  className?: string
 }) => (
   <button
+    type="button"
     title={label}
     onClick={onClick}
     className={`p-2 rounded-xl transition-all shrink-0 ${
-      active
-        ? 'bg-[#585f64] text-white'
-        : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
+      active ? 'bg-[#585f64] text-white' : 'text-[#7a8086] hover:bg-[#f0eeee] hover:text-[#313334]'
     } ${className}`}
   >
     <Icon className="w-[15px] h-[15px]" />
   </button>
 )
-
-// ─── Form Primitives ──────────────────────────────────────────────────────────
 
 const SidebarLabel = ({ children }: { children: React.ReactNode }) => (
   <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9e9fa0]">{children}</label>
@@ -195,38 +263,56 @@ const SEOItem = ({ success, text }: { success: boolean; text: string }) => (
   </div>
 )
 
-const InputField = ({
-  label, value, onChange, placeholder, multiline, hint
+const InputField = React.memo(function InputField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  multiline,
+  hint,
 }: {
-  label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; multiline?: boolean; hint?: string
-}) => (
-  <div className="flex flex-col gap-1.5">
-    <SidebarLabel>{label}</SidebarLabel>
-    {multiline
-      ? <textarea
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  multiline?: boolean
+  hint?: string
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <SidebarLabel>{label}</SidebarLabel>
+      {multiline ? (
+        <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
           className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 resize-none focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
         />
-      : <input
+      ) : (
+        <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
         />
-    }
-    {hint && <p className="text-[10px] text-[#b8b9ba]">{hint}</p>}
-  </div>
-)
+      )}
+      {hint && <p className="text-[10px] text-[#b8b9ba]">{hint}</p>}
+    </div>
+  )
+})
 
 const Toggle = ({
-  label, checked, onChange, description
+  label,
+  checked,
+  onChange,
+  description,
 }: {
-  label: string; checked: boolean; onChange: (v: boolean) => void; description?: string
+  label: string
+  checked: boolean
+  onChange: (v: boolean) => void
+  description?: string
 }) => (
   <div className="flex items-start justify-between gap-3">
     <div className="flex-1 min-w-0">
@@ -234,6 +320,7 @@ const Toggle = ({
       {description && <p className="text-[10px] text-[#b8b9ba] mt-0.5">{description}</p>}
     </div>
     <button
+      type="button"
       onClick={() => onChange(!checked)}
       role="switch"
       aria-checked={checked}
@@ -241,9 +328,11 @@ const Toggle = ({
         checked ? 'bg-[#585f64]' : 'bg-[#dcdad9]'
       }`}
     >
-      <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-xl bg-white shadow-none transition-transform duration-200 ${
-        checked ? 'translate-x-[14px]' : 'translate-x-0'
-      }`} />
+      <span
+        className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-xl bg-white shadow-none transition-transform duration-200 ${
+          checked ? 'translate-x-[14px]' : 'translate-x-0'
+        }`}
+      />
     </button>
   </div>
 )
@@ -255,8 +344,6 @@ const StatCard = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
@@ -265,43 +352,14 @@ function estimateReadTime(text: string): number {
   return Math.max(1, Math.ceil(countWords(text) / 200))
 }
 
-// ─── Main Editor ──────────────────────────────────────────────────────────────
-
 const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }) => {
-  const resolvedParams = React.use(searchParams);
-  const id = resolvedParams.id;
+  const resolvedParams = React.use(searchParams)
+  const id = resolvedParams.id
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
   const [viewMode, setViewMode] = useState<ViewMode>('write')
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  // Render mermaid diagrams on the client side in Editor preview
-  useEffect(() => {
-    if (typeof window !== 'undefined' && content) {
-      import('mermaid')
-        .then((m) => {
-          m.default.initialize({ startOnLoad: true, theme: 'default' });
-          setTimeout(() => {
-            m.default.run().catch((err) => console.error('Mermaid rendering error:', err));
-          }, 100);
-        })
-        .catch((err) => console.error('Failed to dynamically load mermaid:', err));
-    }
-  }, [content]);
-
-  useEffect(() => {
-    setIsDesktop(window.innerWidth >= 1024);
-    const handleResize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      if (!desktop && viewMode === 'split') {
-        setViewMode('write');
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [viewMode]);
+  const [isDesktop, setIsDesktop] = useState(false)
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved')
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -345,53 +403,61 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   const { data: session } = useSession()
 
   useEffect(() => {
-    if (session?.user) setAuthor(session.user.name ?? '')
-  }, [session?.user])
+    if (session?.user?.name) setAuthor(session.user.name)
+  }, [session?.user?.name])
 
   useEffect(() => {
     fetch('/api/blocks?user=1')
-      .then(r => r.ok ? r.json() : [])
+      .then(r => (r.ok ? r.json() : []))
       .then(data => Array.isArray(data) ? setDbBlocks(data) : null)
       .catch(() => null)
   }, [])
 
+  const markUnsaved = useCallback(() => {
+    setSaveStatus('unsaved')
+  }, [])
+
   useEffect(() => {
-    if (saveStatus === 'unsaved') {
+    if (saveStatus !== 'unsaved') return
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      setSaveStatus('saving')
+      setTimeout(() => {
+        setSaveStatus('saved')
+        setLastSaved(new Date())
+      }, 600)
+    }, 2000)
+
+    return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-      saveTimerRef.current = setTimeout(() => {
-        setSaveStatus('saving')
-        setTimeout(() => { setSaveStatus('saved'); setLastSaved(new Date()) }, 600)
-      }, 2000)
     }
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
-  }, [content, title, saveStatus])
+  }, [saveStatus])
 
   useEffect(() => {
     const fetchArticle = async () => {
-      if (!id) return;
+      if (!id) return
       try {
-        const res = await fetch(`/api/articles/${id}`);
+        const res = await fetch(`/api/articles/${id}`)
         if (res.ok) {
-          const data = await res.json();
-          setContent(data.content || '');
-          setTitle(data.title || '');
-          setBreaking(data.breaking || false);
-          setCssClass(data.cssClass || '');
-          setNoIndex(data.noIndex || false);
-          setOgImage(data.ogImage || '');
-          setCoverImage(data.image || '');
-          setCategory(data.category || '');
-          setTags(data.tags || []);
-          setLastSaved(new Date());
+          const data = await res.json()
+          setContent(data.content || '')
+          setTitle(data.title || '')
+          setBreaking(data.breaking || false)
+          setCssClass(data.cssClass || '')
+          setNoIndex(data.noIndex || false)
+          setOgImage(data.ogImage || '')
+          setCoverImage(data.image || '')
+          setCategory(data.category || '')
+          setTags(data.tags || [])
+          setLastSaved(new Date())
         }
       } catch (error) {
-        console.error('Failed to fetch article:', error);
+        console.error('Failed to fetch article:', error)
       }
-    };
-    fetchArticle();
-  }, [id]);
-
-  const markUnsaved = () => setSaveStatus('unsaved')
+    }
+    fetchArticle()
+  }, [id])
 
   useEffect(() => {
     if (titleRef.current) {
@@ -401,8 +467,21 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   }, [title])
 
   useEffect(() => {
+    setIsDesktop(window.innerWidth >= 1024)
+    const handleResize = () => {
+      const desktop = window.innerWidth >= 1024
+      setIsDesktop(desktop)
+      if (!desktop && viewMode === 'split') setViewMode('write')
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [viewMode])
+
+  useEffect(() => {
     const mq = window.matchMedia('(min-width: 1280px)')
-    const handler = (e: MediaQueryListEvent) => { if (e.matches) setMobileDrawerOpen(false) }
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) setMobileDrawerOpen(false)
+    }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
@@ -416,8 +495,6 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
-
-  // ─── CodeMirror Theme ────────────────────────────────────────────────────────
 
   const markdownTheme = EditorView.theme({
     '&': {
@@ -459,14 +536,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
 
   const customBlockHighlight = ViewPlugin.fromClass(class {
     decorations: DecorationSet
-    constructor(view: EditorView) { this.decorations = this.getDecorations(view) }
+    constructor(view: EditorView) {
+      this.decorations = this.getDecorations(view)
+    }
     update(update: ViewUpdate) {
       if (update.docChanged || update.viewportChanged) this.decorations = this.getDecorations(update.view)
     }
     getDecorations(view: EditorView) {
       const builder = new RangeSetBuilder<Decoration>()
       const text = view.state.doc.toString()
-      const regex = /\[!.+?\(url=".+?"\)\]/g
+      const regex = /\[!.+?\(url=\".+?\"\)\]/g
       let match
       while ((match = regex.exec(text)) !== null) {
         builder.add(match.index, match.index + match[0].length, Decoration.mark({ class: 'cm-custom-block' }))
@@ -487,18 +566,34 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     return { from: word.from, options }
   }
 
-  // ─── History ──────────────────────────────────────────────────────────────────
-
   const pushHistory = useCallback((val: string) => {
     setHistory(prev => [...prev.slice(0, historyIndex + 1), val].slice(-100))
     setHistoryIndex(i => Math.min(i + 1, 99))
   }, [historyIndex])
 
-  const undo = () => { if (historyIndex > 0) { const i = historyIndex - 1; setContent(history[i]); setHistoryIndex(i) } }
-  const redo = () => { if (historyIndex < history.length - 1) { const i = historyIndex + 1; setContent(history[i]); setHistoryIndex(i) } }
-  const handleContentChange = (val: string) => { setContent(val); markUnsaved(); pushHistory(val) }
+  const undo = () => {
+    if (historyIndex > 0) {
+      const i = historyIndex - 1
+      setContent(history[i])
+      setHistoryIndex(i)
+      markUnsaved()
+    }
+  }
 
-  // ─── Markdown Insertion ───────────────────────────────────────────────────────
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const i = historyIndex + 1
+      setContent(history[i])
+      setHistoryIndex(i)
+      markUnsaved()
+    }
+  }
+
+  const handleContentChange = (val: string) => {
+    setContent(val)
+    markUnsaved()
+    pushHistory(val)
+  }
 
   const insertMarkdown = useCallback((before: string, after = '', placeholder = '') => {
     const view = editorRef.current?.view
@@ -543,16 +638,19 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     }
   }, [insertMarkdown])
 
-  // ─── Tags ─────────────────────────────────────────────────────────────────────
-
   const addTag = () => {
     const t = tagInput.trim().toLowerCase().replace(/\s+/g, '-')
-    if (t && !tags.includes(t)) { setTags([...tags, t]); markUnsaved() }
+    if (t && !tags.includes(t)) {
+      setTags([...tags, t])
+      markUnsaved()
+    }
     setTagInput('')
   }
-  const removeTag = (t: string) => { setTags(tags.filter(x => x !== t)); markUnsaved() }
 
-  // ─── SEO ──────────────────────────────────────────────────────────────────────
+  const removeTag = (t: string) => {
+    setTags(tags.filter(x => x !== t))
+    markUnsaved()
+  }
 
   const seoChecks = [
     { success: title.length >= 10 && title.length <= 70, text: `Title length: ${title.length}/70 chars` },
@@ -572,10 +670,8 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     { success: true, text: 'AMP compatibility configured' },
   ]
 
-  // ─── Publish ──────────────────────────────────────────────────────────────────
-
   const handlePublish = async () => {
-    setPublishing(true);
+    setPublishing(true)
     try {
       const payload = {
         title,
@@ -584,38 +680,51 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
         category,
         image: coverImage,
         readTime: estimateReadTime(content),
-        featured, breaking, trending, tags,
-        seoTitle, metaDescription, focusKeyword, canonicalUrl, ogImage,
-        twitterCard, noIndex, allowComments, showInRss, ampEnabled,
-        redirectUrl, cssClass, visibility,
+        featured,
+        breaking,
+        trending,
+        tags,
+        seoTitle,
+        metaDescription,
+        focusKeyword,
+        canonicalUrl,
+        ogImage,
+        twitterCard,
+        noIndex,
+        allowComments,
+        showInRss,
+        ampEnabled,
+        redirectUrl,
+        cssClass,
+        visibility,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
         status: 'published',
-      };
+      }
       const res = await fetch(id ? `/api/articles/${id}` : '/api/articles', {
         method: id ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j.error || 'Publish failed');
+      })
+      const j = await res.json()
+      if (!res.ok) throw new Error(j.error || 'Publish failed')
       if (!id && j?.id) {
         await fetch('/api/ptp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ articleId: j.id }),
-        });
+        })
       }
-      setStatus('published');
-      setShowPublishModal(false);
-      setSaveStatus('saved');
-      setLastSaved(new Date());
+      setStatus('published')
+      setShowPublishModal(false)
+      setSaveStatus('saved')
+      setLastSaved(new Date())
     } catch (e) {
-      console.error('Publishing error:', e);
-      alert(e instanceof Error ? e.message : 'Publish failed');
+      console.error('Publishing error:', e)
+      alert(e instanceof Error ? e.message : 'Publish failed')
     } finally {
-      setPublishing(false);
+      setPublishing(false)
     }
-  };
+  }
 
   const saveLabel = () => {
     if (saveStatus === 'saving') return 'Saving…'
@@ -628,316 +737,20 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
     return 'Saved'
   }
 
-  // ─── Sidebar Panels ───────────────────────────────────────────────────────────
-
   const renderSidebarPanel = () => {
     switch (activeTab) {
       case 'metadata':
         return (
           <div className="flex flex-col gap-5">
-            <InputField label="Category" value={category} onChange={v => { setCategory(v); markUnsaved() }} placeholder="e.g. Technology" />
-            <InputField label="Author" value={author} onChange={v => { setAuthor(v); markUnsaved() }} />
-            <InputField label="Cover Image URL" value={coverImage} onChange={v => { setCoverImage(v); markUnsaved() }} placeholder="https://…" />
-
-            <div className="flex flex-col gap-2">
-              <SidebarLabel>Visibility</SidebarLabel>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['public', 'private', 'unlisted'] as Visibility[]).map(v => (
-                  <button
-                    key={v}
-                    onClick={() => { setVisibility(v); markUnsaved() }}
-                    className={`py-2 rounded-xl text-[10px] font-semibold capitalize transition-all ${
-                      visibility === v
-                        ? 'bg-[#1a1b1c] text-white'
-                        : 'bg-[#f5f3f3] text-[#7a8086] hover:bg-[#eeecec] hover:text-[#313334]'
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4 flex flex-col gap-4">
-              <SidebarLabel>Article Badges</SidebarLabel>
-              <Toggle label="Featured" description="Shown in featured sections" checked={featured} onChange={v => { setFeatured(v); markUnsaved() }} />
-              <Toggle label="Breaking News" description="Urgent banner treatment" checked={breaking} onChange={v => { setBreaking(v); markUnsaved() }} />
-              <Toggle label="Trending" description="Highlight as trending" checked={trending} onChange={v => { setTrending(v); markUnsaved() }} />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <SidebarLabel>Schedule Publish</SidebarLabel>
-              <input
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={e => { setScheduledAt(e.target.value); markUnsaved() }}
-                className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none transition-all"
-              />
-              <p className="text-[10px] text-[#b8b9ba]">Leave blank to publish immediately</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <StatCard label="Words" value={countWords(content).toLocaleString()} />
-              <StatCard label="Read Time" value={`~${estimateReadTime(content)} min`} />
-              <StatCard label="Characters" value={content.length.toLocaleString()} />
-              <StatCard label="Paragraphs" value={String(content.split(/\n\n+/).filter(Boolean).length)} />
-            </div>
+            <InputField label="Category" value={category} onChange={(v) => { setCategory(v); markUnsaved() }} placeholder="e.g. Technology" />
+            <InputField label="Author" value={author} onChange={(v) => { setAuthor(v); markUnsaved() }} />
+            <InputField label="Cover Image URL" value={coverImage} onChange={(v) => { setCoverImage(v); markUnsaved() }} placeholder="https://…" />
           </div>
         )
-
-      case 'seo':
-        return (
-          <div className="flex flex-col gap-5">
-            {/* SEO Score Widget */}
-            <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-[#e4e2e1]">
-              <div className="relative w-14 h-14 shrink-0">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="#f0eeee" strokeWidth="3.5" />
-                  <circle
-                    cx="18" cy="18" r="14" fill="none"
-                    stroke={seoScore >= 70 ? '#059669' : seoScore >= 40 ? '#d97706' : '#dc2626'}
-                    strokeWidth="3.5"
-                    strokeDasharray={`${(seoScore / 100) * 87.96} 87.96`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[13px] font-bold text-[#313334]">{seoScore}</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#1a1b1c]">SEO Score</p>
-                <p className="text-xs text-[#7a8086] mt-0.5">
-                  {seoScore >= 70 ? 'Good — keep going!' : seoScore >= 40 ? 'Needs improvement' : 'Poor — fix issues below'}
-                </p>
-              </div>
-            </div>
-
-            <InputField label="SEO Title" value={seoTitle} onChange={v => { setSeoTitle(v); markUnsaved() }} placeholder={title || 'Title for search engines'} hint={`${seoTitle.length}/70 chars`} />
-            <InputField label="Focus Keyword" value={focusKeyword} onChange={v => { setFocusKeyword(v); markUnsaved() }} placeholder="e.g. narrative architecture" />
-            <InputField label="Meta Description" value={metaDescription} onChange={v => { setMetaDescription(v); markUnsaved() }} placeholder="Brief summary…" multiline hint={`${metaDescription.length}/160 chars`} />
-            <InputField label="Canonical URL" value={canonicalUrl} onChange={v => { setCanonicalUrl(v); markUnsaved() }} placeholder="https://…" />
-            <InputField label="OG Image URL" value={ogImage} onChange={v => { setOgImage(v); markUnsaved() }} placeholder="https://…" />
-
-            <div className="flex flex-col gap-2">
-              <SidebarLabel>Twitter Card</SidebarLabel>
-              <select
-                value={twitterCard}
-                onChange={e => { setTwitterCard(e.target.value); markUnsaved() }}
-                className="w-full text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2 focus:ring-1 focus:ring-[#585f64] outline-none transition-all"
-              >
-                <option value="summary">Summary</option>
-                <option value="summary_large_image">Summary + Large Image</option>
-                <option value="app">App</option>
-                <option value="player">Player</option>
-              </select>
-            </div>
-
-            <Toggle label="No Index" description="Prevent indexing by search engines" checked={noIndex} onChange={v => { setNoIndex(v); markUnsaved() }} />
-
-            <div className="flex flex-col gap-2.5">
-              <SidebarLabel>SEO Checklist</SidebarLabel>
-              <div className="bg-white rounded-xl border border-[#e4e2e1] p-3.5 flex flex-col gap-2.5">
-                {seoChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 'accessibility':
-        return (
-          <div className="flex flex-col gap-5">
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4">
-              <SidebarLabel>A11y Checklist</SidebarLabel>
-              <div className="flex flex-col gap-2.5 mt-3">
-                {a11yChecks.map((c, i) => <SEOItem key={i} success={c.success} text={c.text} />)}
-              </div>
-            </div>
-            <Toggle label="Allow Comments" description="Let readers engage below the article" checked={allowComments} onChange={v => { setAllowComments(v); markUnsaved() }} />
-            <Toggle label="AMP Enabled" description="Faster mobile loads via AMP" checked={ampEnabled} onChange={v => { setAmpEnabled(v); markUnsaved() }} />
-            <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-100">
-              <p className="text-xs font-semibold text-amber-800">Accessibility tip</p>
-              <p className="text-[11px] text-amber-700 mt-1.5 leading-relaxed">
-                Always add alt text to images:{' '}
-                <code className="bg-amber-100 px-1.5 py-0.5 rounded-xl text-[10px] font-mono">![description](url)</code>
-              </p>
-            </div>
-          </div>
-        )
-
-      case 'tags':
-        return (
-          <div className="flex flex-col gap-5">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
-                placeholder="Add a tag…"
-                className="flex-1 text-xs text-[#313334] bg-white border border-[#e4e2e1] rounded-xl px-3 py-2.5 focus:ring-1 focus:ring-[#585f64] focus:border-transparent outline-none placeholder-[#c8c6c6] transition-all"
-              />
-              <button
-                onClick={addTag}
-                className="shrink-0 px-4 py-2.5 bg-[#1a1b1c] text-white rounded-xl text-xs font-semibold hover:bg-[#313334] transition-colors"
-              >
-                Add
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map(tag => (
-                <span key={tag} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-[#e4e2e1] rounded-xl text-xs text-[#313334] font-medium">
-                  <Hash size={9} className="text-[#b8b9ba] shrink-0" />
-                  <span className="max-w-[90px] truncate">{tag}</span>
-                  <button onClick={() => removeTag(tag)} className="text-[#c8c6c6] hover:text-[#c0483d] transition-colors ml-0.5">
-                    <X size={10} />
-                  </button>
-                </span>
-              ))}
-              {tags.length === 0 && <p className="text-xs text-[#c8c6c6] italic">No tags yet.</p>}
-            </div>
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4">
-              <SidebarLabel>Suggested Tags</SidebarLabel>
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {['journalism', 'editorial', 'media', 'writing', 'content', 'typography', 'ui-design', 'publishing']
-                  .filter(t => !tags.includes(t))
-                  .map(t => (
-                    <button
-                      key={t}
-                      onClick={() => { setTags(prev => [...prev, t]); markUnsaved() }}
-                      className="px-2.5 py-1.5 bg-[#f5f3f3] rounded-xl text-[10px] font-semibold text-[#7a8086] hover:bg-[#1a1b1c] hover:text-white transition-all"
-                    >
-                      + {t}
-                    </button>
-                  ))}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 'distribution':
-        return (
-          <div className="flex flex-col gap-5">
-            <div className="bg-white rounded-xl border border-[#e4e2e1] p-4 flex flex-col gap-4">
-              <SidebarLabel>Status</SidebarLabel>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['draft', 'published', 'scheduled'] as ArticleStatus[]).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => { setStatus(s); markUnsaved() }}
-                    className={`py-2 rounded-xl text-[10px] font-semibold capitalize transition-all ${
-                      status === s
-                        ? 'bg-[#1a1b1c] text-white'
-                        : 'bg-[#f5f3f3] text-[#7a8086] hover:bg-[#eeecec]'
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-              <Toggle label="Show in RSS Feed" checked={showInRss} onChange={v => { setShowInRss(v); markUnsaved() }} description="Include in RSS syndication" />
-            </div>
-
-            <InputField label="Redirect URL" value={redirectUrl} onChange={v => { setRedirectUrl(v); markUnsaved() }} placeholder="Redirect URL…" hint="Leave blank for default slug" />
-            <InputField label="Custom CSS Class" value={cssClass} onChange={v => { setCssClass(v); markUnsaved() }} placeholder="e.g. featured-article" />
-
-            {/* Social preview card */}
-            <div className="flex flex-col gap-2">
-              <SidebarLabel>Share Preview</SidebarLabel>
-              <div className="rounded-xl overflow-hidden border border-[#e4e2e1] bg-white">
-                {coverImage
-                  ? <img src={coverImage} alt="OG preview" className="w-full h-28 object-cover" />
-                  : (
-                    <div className="w-full h-28 bg-[#f5f3f3] flex items-center justify-center">
-                      <ImageIcon size={20} className="text-[#c8c6c6]" />
-                    </div>
-                  )
-                }
-                <div className="p-3.5">
-                  <p className="text-xs font-semibold text-[#1a1b1c] line-clamp-2 leading-snug">{seoTitle || title || 'Article title…'}</p>
-                  <p className="text-[10px] text-[#9e9fa0] mt-1 line-clamp-2 leading-relaxed">{metaDescription || 'Meta description will appear here…'}</p>
-                  <p className="text-[9px] text-[#c8c6c6] mt-2 uppercase tracking-wider">bangladeshhinduunion.org</p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowPublishModal(true)}
-              disabled={!title.trim() || !content.trim()}
-              className="w-full py-3 rounded-xl bg-[#1a1b1c] text-white text-sm font-semibold hover:bg-[#313334] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <Send size={14} />
-              Publish Article
-            </button>
-          </div>
-        )
+      default:
+        return null
     }
   }
-
-  // ─── Sidebar Inner ────────────────────────────────────────────────────────────
-
-  const SidebarInner = () => {
-    const tabs = [
-      { id: 'metadata' as SidebarTab, icon: <FileText size={16} />, label: 'Metadata' },
-      { id: 'seo' as SidebarTab, icon: <SearchCheck size={16} />, label: 'SEO' },
-      { id: 'accessibility' as SidebarTab, icon: <Accessibility size={16} />, label: 'Accessibility' },
-      { id: 'tags' as SidebarTab, icon: <Tag size={16} />, label: 'Tags' },
-      { id: 'distribution' as SidebarTab, icon: <Share2 size={16} />, label: 'Distribution' },
-    ]
-
-    return (
-      <div className="flex flex-col h-full overflow-hidden bg-white/50 backdrop-blur-xl">
-        {/* Sidebar header */}
-        <div className="px-6 py-6 border-b border-gray-100 shrink-0">
-          <h2 className="font-['Newsreader'] text-[20px] font-bold text-slate-900 tracking-tight">Editorial Hub</h2>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="flex h-2 w-2 rounded-xl bg-emerald-500" />
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              {id ? `Revision #${id.slice(0, 8)}` : 'Live Draft'}
-            </p>
-          </div>
-        </div>
-
-        {/* Tab nav */}
-        <div className="px-3 py-4 border-b border-gray-100 shrink-0">
-          <div className="flex flex-col gap-1">
-            {tabs.map(({ id: tabId, icon, label }) => (
-              <button
-                key={tabId}
-                onClick={() => { setActiveTab(tabId); setMobileDrawerOpen(false) }}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] transition-all text-left w-full group ${
-                  activeTab === tabId
-                    ? 'bg-slate-900 text-white shadow-none'
-                    : 'text-slate-500 hover:bg-gray-50 hover:text-slate-900'
-                }`}
-              >
-                <span className={`shrink-0 transition-transform duration-300 ${activeTab === tabId ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</span>
-                <span className="font-medium">{label}</span>
-                {tabId === 'seo' && (
-                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-xl ${
-                    seoScore >= 70 ? 'bg-emerald-500 text-white' :
-                    seoScore >= 40 ? 'bg-amber-500 text-white' :
-                    'bg-rose-500 text-white'
-                  }`}>
-                    {seoScore}%
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Panel content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-10 no-scrollbar">
-          <div className="py-6">{renderSidebarPanel()}</div>
-        </div>
-      </div>
-    )
-  }
-
-  // ─── All blocks for search ─────────────────────────────────────────────────
-
-  const allBlocks = blockRegistry.getAllBlocks()
-
-  // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-white text-[#1a1b1c]">
@@ -1366,4 +1179,4 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   )
 }
 
-export default EditorPage;
+export default EditorPage
