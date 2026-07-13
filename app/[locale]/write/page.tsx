@@ -204,7 +204,11 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'pre-mermaid', look: 'handDrawn' }] as any, rehypeKatex]}
+        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'inline-svg', // or 'img-svg' / 'img-png'
+          mermaidConfig: {
+            look: 'handDrawn',
+            theme: 'neutral',
+          },}] as any, rehypeKatex]}
         components={mdComponents}
       >
         {content}
@@ -816,7 +820,16 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
   // Full-width settings panel. Used both as the desktop overlay (sidebarOpen)
   // and the mobile drawer (mobileDrawerOpen); `wide` switches between a
   // multi-column desktop layout and a single-column mobile layout.
-  const SidebarInner = ({ wide, onClose }: { wide?: boolean; onClose: () => void }) => (
+  //
+  // IMPORTANT: this is a plain function that RETURNS jsx — it is called
+  // directly as `{renderSidebarPanel({...})}`, never rendered as `<X />`.
+  // If it were written as a component (`const X = (props) => <div/>`) and
+  // rendered as `<X />`, React would treat every re-render as a brand new
+  // component type (since the function reference is recreated on each
+  // render of EditorPage) and would unmount/remount the whole subtree —
+  // which is exactly what was dropping focus and dismissing the mobile
+  // keyboard on every keystroke.
+  const renderSidebarPanel = ({ wide, onClose }: { wide?: boolean; onClose: () => void }) => (
     <div className="flex flex-col h-full min-h-0">
       {/* Tab bar */}
       <div className={`flex items-center gap-1.5 px-5 sm:px-8 py-4 border-b border-[#eeecec] shrink-0 overflow-x-auto no-scrollbar ${wide ? '' : ''}`} style={{ scrollbarWidth: 'none' }}>
@@ -1129,7 +1142,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="hidden xl:flex fixed left-0 right-0 top-[65px] bottom-0 z-50 bg-white flex-col shadow-2xl"
             >
-              <SidebarInner wide onClose={() => setSidebarOpen(false)} />
+              {renderSidebarPanel({ wide: true, onClose: () => setSidebarOpen(false) })}
             </motion.div>
           </>
         )}
@@ -1361,7 +1374,7 @@ const EditorPage = ({ searchParams }: { searchParams: Promise<{ id?: string }> }
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
-                <SidebarInner onClose={() => setMobileDrawerOpen(false)} />
+                {renderSidebarPanel({ onClose: () => setMobileDrawerOpen(false) })}
               </div>
             </motion.div>
           </>
