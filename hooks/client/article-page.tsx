@@ -184,11 +184,8 @@ function ArticleMarkdown({ content, dbBlocks }: { content: string; dbBlocks: DBB
   return (
     <Markdown
       remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-      rehypePlugins={[rehypeRaw, rehypeKatex, [rehypeMermaid, {strategy: 'inline-svg', // or 'img-svg' / 'img-png'
-          mermaidConfig: {
-            look: 'handDrawn',
-            theme: 'neutral',
-          },}] as any]}
+      rehypePlugins={[rehypeRaw, rehypeKatex, [rehypeMermaid, {strategy: 'img-png'
+        }] as any]}
       components={mdComponents}
     >
       {content}

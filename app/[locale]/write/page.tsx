@@ -204,11 +204,7 @@ function MarkdownPreview({ content, dbBlocks }: { content: string; dbBlocks: DBB
     <div className="min-w-0 overflow-hidden w-full">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath, [createCustomBlockPlugin, dbBlocks] as any]}
-        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'inline-svg', // or 'img-svg' / 'img-png'
-          mermaidConfig: {
-            look: 'handDrawn',
-            theme: 'neutral',
-          },}] as any, rehypeKatex]}
+        rehypePlugins={[rehypeRaw, [rehypeMermaid, { strategy: 'img-png'}] as any, rehypeKatex]}
         components={mdComponents}
       >
         {content}
