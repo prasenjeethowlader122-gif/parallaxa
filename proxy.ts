@@ -1,4 +1,4 @@
-// middleware.ts
+// proxy.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 
@@ -16,7 +16,7 @@ const COUNTRY_TO_LOCALE: Record<string, string> = {
 }
 
 // Routes that require authentication (matched against pathname WITHOUT locale prefix)
-const PROTECTED_SEGMENTS = ['/dashboard', '/write']
+const PROTECTED_SEGMENTS = ['/dashboard', '/write', '/admin']
 
 function resolveLocale(req: NextRequest): string {
   const cookieLocale = req.cookies.get('NEXT_LOCALE')?.value
@@ -63,6 +63,16 @@ export async function proxy(req: NextRequest) {
       signinUrl.pathname = '/auth/signin'
       signinUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(signinUrl)
+    }
+
+    // Role-based authorization for admin paths
+    const bare = stripLocale(pathname)
+    if (bare === '/admin' || bare.startsWith('/admin/')) {
+      if ((session.user as any)?.role !== 'admin') {
+        const dashboardUrl = req.nextUrl.clone()
+        dashboardUrl.pathname = `/${resolveLocale(req)}/dashboard`
+        return NextResponse.redirect(dashboardUrl)
+      }
     }
   }
 

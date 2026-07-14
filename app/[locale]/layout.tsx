@@ -2,6 +2,7 @@
 import { sansFont, serifFont, monoFont,banglaFontlogo, banglaFont } from '@/lib/font'
 import { ClientSessionProvider } from '@/components/session-provider'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from '@/components/ui/sonner'
 import type { Metadata } from 'next'
 import '../globals.css'
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default async function RootLayout({
       <body className={`antialiased bg-background text-foreground`}>
         <ClientSessionProvider>
           {children}
+          <Toaster />
           <Analytics />
         </ClientSessionProvider>
       </body>
