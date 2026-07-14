@@ -213,7 +213,35 @@ export async function getUniqueArticleDates(): Promise < string[] > {
     return []
   }
 }
-
+/**
+ * Returns all published articles grouped by category.
+ * Output shape: { "world": ["id1", "id2", ...], "technology": [...] }
+ */
+export async function getAllCategory(): Promise < Record < string, string[] >> {
+  try {
+    const rows = await sql`
+      SELECT id, category
+      FROM articles
+      WHERE status = 'published'
+      ORDER BY category ASC
+    `
+    
+    const grouped: Record < string, string[] > = {}
+    
+    for (const row of rows as Record < string, unknown > []) {
+      const category = ((row.category as string) ?? '').trim().toLowerCase()
+      if (!category || !row.id) continue
+      
+      if (!grouped[category]) grouped[category] = []
+      grouped[category].push(row.id as string)
+    }
+    
+    return grouped
+  } catch (e) {
+    console.error('getAllCategory:', e)
+    return {}
+  }
+}
 /**
  * Returns published, indexable articles for a specific date.
  * Validates input before querying — rejects anything that isn't a real date.
