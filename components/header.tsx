@@ -45,6 +45,17 @@ const NAV_LINKS = [
   { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
 ]
 
+const ICON_MAP: Record<string, any> = {
+  Home,
+  Globe,
+  Cpu,
+  Briefcase,
+  Trophy,
+  FlaskConical,
+  Activity,
+  MessageSquare
+}
+
 export function Header({
   includeTicker = false,
   className,
@@ -59,6 +70,7 @@ export function Header({
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [navLinks, setNavLinks] = useState<any[]>(NAV_LINKS)
   const [isAnnVisible, setIsAnnVisible] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [desktopQuery, setDesktopQuery] = useState('')
@@ -69,6 +81,32 @@ export function Header({
   const catRef = useRef<HTMLDivElement>(null)
 
   const SEARCH_CATEGORIES = ['All', 'World', 'Technology', 'Business', 'Sports']
+
+  useEffect(() => {
+    async function loadMobileMenu() {
+      try {
+        const res = await fetch('/api/public-settings')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.mobile_menu_links) {
+            const parsed = JSON.parse(data.mobile_menu_links)
+            if (Array.isArray(parsed)) {
+              const mapped = parsed.map(link => ({
+                href: link.href,
+                label: link.label,
+                badge: link.badge || undefined,
+                icon: ICON_MAP[link.iconName] || Home
+              }))
+              setNavLinks(mapped)
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load mobile settings:', err)
+      }
+    }
+    loadMobileMenu()
+  }, [])
 
   // Close category dropdown on outside click
   useEffect(() => {
@@ -448,7 +486,7 @@ export function Header({
               Sections
             </p>
             <nav className="flex flex-col">
-              {NAV_LINKS.map(({ href, label, badge, icon: Icon }, idx) => {
+              {navLinks.map(({ href, label, badge, icon: Icon }, idx) => {
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
                 const isActive = pathname === localizedHref
                 return (

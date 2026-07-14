@@ -36,7 +36,6 @@ export default function Dashboard() {
     { id: 'articles', label: 'Articles', icon: FileText, component: <ArticlesView /> },
     { id: 'analysis', label: 'Analysis', icon: ChartBar, component: <AnalysisView /> },
     { id: 'home-manager', label: 'Home Manager', icon: ListChecks, component: <HomeSectionManager /> },
-    { id: 'blocks', label: 'Blocks', icon: SquaresFour, href: `/${locale}/admin/blocks` },
     { id: 'settings', label: 'Settings', icon: Gear, href: `/${locale}/admin/settings`, adminOnly: true },
   ];
 
