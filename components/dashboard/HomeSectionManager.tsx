@@ -1,11 +1,11 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
   Plus,
   Trash,
-  ArrowsDownUp,
+  CaretUp,
+  CaretDown,
   Gear,
   Check,
   X,
@@ -42,24 +42,20 @@ export default function HomeSectionManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [isAddLoading , setAddLoading] = useState(false)
-  const [newSection, setNewSection] = useState<Omit<HomeSection, 'id' | 'order_index'>>({
-    title: '',
-    type: 'latest',
-    category_id: null,
-    layout: 'grid',
-    limit_count: 10,
-    is_active: true
-  });
+  const [isAddLoading, setAddLoading] = useState(false);
+  const [isSaveLoading, setSaveLoading] = useState(false);
 
-  const [editSectionData, setEditSectionData] = useState<Omit<HomeSection, 'id' | 'order_index'>>({
+  const emptySection: Omit<HomeSection, 'id' | 'order_index'> = {
     title: '',
     type: 'latest',
     category_id: null,
     layout: 'grid',
     limit_count: 10,
     is_active: true
-  });
+  };
+
+  const [newSection, setNewSection] = useState<Omit<HomeSection, 'id' | 'order_index'>>(emptySection);
+  const [editSectionData, setEditSectionData] = useState<Omit<HomeSection, 'id' | 'order_index'>>(emptySection);
 
   useEffect(() => {
     fetchCategories();
@@ -115,29 +111,46 @@ export default function HomeSectionManager() {
     }
   };
 
+  // Shared client-side validation used by both add and edit flows.
+  const validateSection = (data: Omit<HomeSection, 'id' | 'order_index'>) => {
+    if (!data.title || !data.title.trim()) {
+      return 'Title is required';
+    }
+    if (data.type === 'category' && !data.category_id) {
+      return 'Please select a category';
+    }
+    if (!Number.isFinite(data.limit_count) || data.limit_count <= 0) {
+      return 'Limit must be a valid positive number';
+    }
+    return null;
+  };
+
   const handleAdd = async () => {
-    setAddLoading(true)
+    const validationError = validateSection(newSection);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    setAddLoading(true);
     try {
       const res = await fetch('/api/admin/home-sections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...newSection, order_index: sections.length })
       });
-      if (res.ok) {
+
+      // Always parse the body and check for an `error` field —
+      // res.ok alone isn't enough to confirm the section was actually created.
+      const result = await res.json().catch(() => ({}));
+
+      if (res.ok && !result?.error) {
         toast.success('Section added');
         setIsAdding(false);
-        setNewSection({
-          title: '',
-          type: 'latest',
-          category_id: null,
-          layout: 'grid',
-          limit_count: 10,
-          is_active: true
-        });
+        setNewSection(emptySection);
         await fetchSections();
       } else {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err.error || 'Failed to add section');
+        toast.error(result?.error || 'Failed to add section');
       }
     } catch (error) {
       console.error(error);
@@ -147,23 +160,35 @@ export default function HomeSectionManager() {
     }
   };
 
-  const handleUpdate = async (id: number, data: Partial<HomeSection>) => {
+  const handleUpdate = async (id: number, data: Omit<HomeSection, 'id' | 'order_index'>) => {
+    const validationError = validateSection(data);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    setSaveLoading(true);
     try {
       const res = await fetch('/api/admin/home-sections', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...data })
       });
-      if (res.ok) {
+
+      const result = await res.json().catch(() => ({}));
+
+      if (res.ok && !result?.error) {
         toast.success('Section updated');
         setEditingId(null);
-        fetchSections();
+        await fetchSections();
       } else {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err.error || 'Failed to update section');
+        toast.error(result?.error || 'Failed to update section');
       }
     } catch (error) {
+      console.error(error);
       toast.error('Failed to update section');
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -173,12 +198,12 @@ export default function HomeSectionManager() {
       const res = await fetch(`/api/admin/home-sections?id=${id}`, {
         method: 'DELETE'
       });
-      if (res.ok) {
+      const result = await res.json().catch(() => ({}));
+      if (res.ok && !result?.error) {
         toast.success('Section deleted');
-        fetchSections();
+        await fetchSections();
       } else {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err.error || 'Failed to delete section');
+        toast.error(result?.error || 'Failed to delete section');
       }
     } catch (error) {
       toast.error('Failed to delete section');
@@ -195,19 +220,23 @@ export default function HomeSectionManager() {
       return;
     }
 
+    // Optimistically update the UI, then persist — roll back on failure.
+    const previousSections = sections;
+    setSections(newSections);
+
     try {
       const res = await fetch('/api/admin/home-sections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'reorder', ids: newSections.map(s => s.id) })
       });
-      if (res.ok) {
-        setSections(newSections);
-      } else {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err.error || 'Failed to reorder');
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || result?.error) {
+        setSections(previousSections);
+        toast.error(result?.error || 'Failed to reorder');
       }
     } catch (error) {
+      setSections(previousSections);
       toast.error('Failed to reorder');
     }
   };
@@ -231,8 +260,19 @@ export default function HomeSectionManager() {
         {sections.map((section, index) => (
           <div key={section.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
             <div className="flex flex-col gap-1">
-              <button onClick={() => handleReorder('up', index)} className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-900">
-                <ArrowsDownUp size={16} />
+              <button
+                onClick={() => handleReorder('up', index)}
+                disabled={index === 0}
+                className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <CaretUp size={16} />
+              </button>
+              <button
+                onClick={() => handleReorder('down', index)}
+                disabled={index === sections.length - 1}
+                className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <CaretDown size={16} />
               </button>
             </div>
 
@@ -280,7 +320,7 @@ export default function HomeSectionManager() {
                 <input
                   type="text"
                   value={newSection.title}
-                  onChange={e => setNewSection({...newSection, title: e.target.value})}
+                  onChange={e => setNewSection({ ...newSection, title: e.target.value })}
                   className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   placeholder="Latest News"
                 />
@@ -290,7 +330,7 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Type</label>
                   <select
                     value={newSection.type}
-                    onChange={e => setNewSection({...newSection, type: e.target.value})}
+                    onChange={e => setNewSection({ ...newSection, type: e.target.value })}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   >
                     <option value="latest">Latest</option>
@@ -303,7 +343,7 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Layout</label>
                   <select
                     value={newSection.layout}
-                    onChange={e => setNewSection({...newSection, layout: e.target.value})}
+                    onChange={e => setNewSection({ ...newSection, layout: e.target.value })}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   >
                     <option value="grid">Grid</option>
@@ -317,7 +357,7 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Category</label>
                   <select
                     value={newSection.category_id || ''}
-                    onChange={e => setNewSection({...newSection, category_id: parseInt(e.target.value) || null})}
+                    onChange={e => setNewSection({ ...newSection, category_id: parseInt(e.target.value) || null })}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm"
                   >
                     <option value="">Select Category</option>
@@ -332,8 +372,12 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Limit</label>
                   <input
                     type="number"
+                    min={1}
                     value={newSection.limit_count}
-                    onChange={e => setNewSection({...newSection, limit_count: parseInt(e.target.value)})}
+                    onChange={e => {
+                      const val = parseInt(e.target.value, 10);
+                      setNewSection({ ...newSection, limit_count: isNaN(val) ? 0 : val });
+                    }}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   />
                 </div>
@@ -341,7 +385,7 @@ export default function HomeSectionManager() {
                   <input
                     type="checkbox"
                     checked={newSection.is_active}
-                    onChange={e => setNewSection({...newSection, is_active: e.target.checked})}
+                    onChange={e => setNewSection({ ...newSection, is_active: e.target.checked })}
                     id="is_active"
                     className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                   />
@@ -352,12 +396,16 @@ export default function HomeSectionManager() {
             <div className="flex gap-4 pt-4">
               <button
                 onClick={handleAdd}
-                className="flex-1 bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition-colors font-bold"
+                disabled={isAddLoading}
+                className="flex-1 bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition-colors font-bold disabled:opacity-50"
               >
                 {isAddLoading ? 'Adding...' : 'Add'}
               </button>
               <button
-                onClick={() => setIsAdding(false)}
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewSection(emptySection);
+                }}
                 className="flex-1 bg-slate-100 text-slate-900 py-2 rounded-xl hover:bg-slate-200 transition-colors font-bold"
               >
                 Cancel
@@ -377,7 +425,7 @@ export default function HomeSectionManager() {
                 <input
                   type="text"
                   value={editSectionData.title}
-                  onChange={e => setEditSectionData({...editSectionData, title: e.target.value})}
+                  onChange={e => setEditSectionData({ ...editSectionData, title: e.target.value })}
                   className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   placeholder="Latest News"
                 />
@@ -387,7 +435,7 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Type</label>
                   <select
                     value={editSectionData.type}
-                    onChange={e => setEditSectionData({...editSectionData, type: e.target.value})}
+                    onChange={e => setEditSectionData({ ...editSectionData, type: e.target.value })}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   >
                     <option value="latest">Latest</option>
@@ -400,7 +448,7 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Layout</label>
                   <select
                     value={editSectionData.layout}
-                    onChange={e => setEditSectionData({...editSectionData, layout: e.target.value})}
+                    onChange={e => setEditSectionData({ ...editSectionData, layout: e.target.value })}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   >
                     <option value="grid">Grid</option>
@@ -414,7 +462,7 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Category</label>
                   <select
                     value={editSectionData.category_id || ''}
-                    onChange={e => setEditSectionData({...editSectionData, category_id: parseInt(e.target.value) || null})}
+                    onChange={e => setEditSectionData({ ...editSectionData, category_id: parseInt(e.target.value) || null })}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm"
                   >
                     <option value="">Select Category</option>
@@ -429,8 +477,12 @@ export default function HomeSectionManager() {
                   <label className="block text-sm font-medium mb-1 text-slate-700">Limit</label>
                   <input
                     type="number"
+                    min={1}
                     value={editSectionData.limit_count}
-                    onChange={e => setEditSectionData({...editSectionData, limit_count: parseInt(e.target.value) || 0})}
+                    onChange={e => {
+                      const val = parseInt(e.target.value, 10);
+                      setEditSectionData({ ...editSectionData, limit_count: isNaN(val) ? 0 : val });
+                    }}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                   />
                 </div>
@@ -438,7 +490,7 @@ export default function HomeSectionManager() {
                   <input
                     type="checkbox"
                     checked={editSectionData.is_active}
-                    onChange={e => setEditSectionData({...editSectionData, is_active: e.target.checked})}
+                    onChange={e => setEditSectionData({ ...editSectionData, is_active: e.target.checked })}
                     id="edit_is_active"
                     className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                   />
@@ -449,9 +501,10 @@ export default function HomeSectionManager() {
             <div className="flex gap-4 pt-4">
               <button
                 onClick={() => handleUpdate(editingId, editSectionData)}
-                className="flex-1 bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition-colors font-bold"
+                disabled={isSaveLoading}
+                className="flex-1 bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition-colors font-bold disabled:opacity-50"
               >
-                Save
+                {isSaveLoading ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => setEditingId(null)}

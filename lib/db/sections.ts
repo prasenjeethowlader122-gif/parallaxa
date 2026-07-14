@@ -1,4 +1,4 @@
-
+// sections.ts
 import { sql } from './index';
 
 export interface HomeSection {
@@ -37,57 +37,43 @@ export async function getAllHomeSections() {
   }
 }
 
+// NOTE: no try/catch here on purpose. Previously this swallowed every DB
+// error and returned `[]`, which made the API route respond with 200 OK
+// and `undefined` even when the insert failed (e.g. NaN limit_count,
+// missing category_id, constraint violations). Callers (the API route)
+// are responsible for catching this and returning a proper error status.
 export async function createHomeSection(section: Omit<HomeSection, 'id'>) {
-  try {
-    const category_id = section.category_id !== undefined ? section.category_id : null;
-    return await sql`
-      INSERT INTO home_sections (title, type, category_id, layout, limit_count, order_index, is_active)
-      VALUES (${section.title}, ${section.type}, ${category_id}, ${section.layout}, ${section.limit_count}, ${section.order_index}, ${section.is_active})
-      RETURNING *
-    `;
-  } catch (e) {
-    console.error('createHomeSection failed:', e);
-    return [];
-  }
+  const category_id = section.category_id !== undefined ? section.category_id : null;
+  return await sql`
+    INSERT INTO home_sections (title, type, category_id, layout, limit_count, order_index, is_active)
+    VALUES (${section.title}, ${section.type}, ${category_id}, ${section.layout}, ${section.limit_count}, ${section.order_index}, ${section.is_active})
+    RETURNING *
+  `;
 }
 
 export async function updateHomeSection(id: number, section: Partial<HomeSection>) {
-  try {
-    const category_id = section.category_id !== undefined ? section.category_id : null;
-    return await sql`
-      UPDATE home_sections
-      SET
-        title = COALESCE(${section.title}, title),
-        type = COALESCE(${section.type}, type),
-        category_id = ${category_id},
-        layout = COALESCE(${section.layout}, layout),
-        limit_count = COALESCE(${section.limit_count}, limit_count),
-        order_index = COALESCE(${section.order_index}, order_index),
-        is_active = COALESCE(${section.is_active}, is_active)
-      WHERE id = ${id}
-      RETURNING *
-    `;
-  } catch (e) {
-    console.error('updateHomeSection failed:', e);
-    return [];
-  }
+  const category_id = section.category_id !== undefined ? section.category_id : null;
+  return await sql`
+    UPDATE home_sections
+    SET
+      title = COALESCE(${section.title}, title),
+      type = COALESCE(${section.type}, type),
+      category_id = ${category_id},
+      layout = COALESCE(${section.layout}, layout),
+      limit_count = COALESCE(${section.limit_count}, limit_count),
+      order_index = COALESCE(${section.order_index}, order_index),
+      is_active = COALESCE(${section.is_active}, is_active)
+    WHERE id = ${id}
+    RETURNING *
+  `;
 }
 
 export async function deleteHomeSection(id: number) {
-  try {
-    return await sql`DELETE FROM home_sections WHERE id = ${id}`;
-  } catch (e) {
-    console.error('deleteHomeSection failed:', e);
-    return null;
-  }
+  return await sql`DELETE FROM home_sections WHERE id = ${id}`;
 }
 
 export async function reorderHomeSections(ids: number[]) {
-  try {
-    for (let i = 0; i < ids.length; i++) {
-      await sql`UPDATE home_sections SET order_index = ${i} WHERE id = ${ids[i]}`;
-    }
-  } catch (e) {
-    console.error('reorderHomeSections failed:', e);
+  for (let i = 0; i < ids.length; i++) {
+    await sql`UPDATE home_sections SET order_index = ${i} WHERE id = ${ids[i]}`;
   }
 }

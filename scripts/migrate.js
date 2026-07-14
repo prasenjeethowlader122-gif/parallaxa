@@ -1,4 +1,3 @@
-
 'use strict';
 
 const { neon } = require('@neondatabase/serverless');
@@ -9,10 +8,10 @@ async function migrate() {
     console.warn('DATABASE_URL is not defined, skipping migrations.');
     return;
   }
-
+  
   const sql = neon(databaseUrl);
   console.log('Running migrations...');
-
+  
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS home_sections (
@@ -27,7 +26,12 @@ async function migrate() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-
+    await sql`
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )`
     await sql`
       CREATE TABLE IF NOT EXISTS reactions (
         id SERIAL PRIMARY KEY,
@@ -38,7 +42,7 @@ async function migrate() {
         UNIQUE(article_id, user_id)
       );
     `;
-
+    
     await sql`
       CREATE TABLE IF NOT EXISTS comments (
         id SERIAL PRIMARY KEY,
@@ -50,21 +54,21 @@ async function migrate() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-
+    
     // Convert article_id in reactions to TEXT if it's currently INTEGER
     try {
       await sql`ALTER TABLE reactions ALTER COLUMN article_id TYPE TEXT;`;
     } catch (e) {
       console.log('Alter reactions table article_id type skipped or already done.');
     }
-
+    
     // Convert article_id in comments to TEXT if it's currently INTEGER
     try {
       await sql`ALTER TABLE comments ALTER COLUMN article_id TYPE TEXT;`;
     } catch (e) {
       console.log('Alter comments table article_id type skipped or already done.');
     }
-
+    
     console.log('Migrations completed successfully.');
   } catch (error) {
     console.error('Migration failed:', error);
