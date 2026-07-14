@@ -235,97 +235,22 @@ export default function AdminSettingsPage() {
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Settings className="w-5 h-5 text-emerald-600" />
-                <h2 className="text-sm font-semibold">Mobile Header Menu Configuration</h2>
+                <h2 className="text-sm font-semibold">Header & Mobile Navigation Menu</h2>
               </div>
-              <button
-                onClick={handleAddLink}
-                className="px-4 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-none"
-              >
-                Add Link
-              </button>
             </div>
-            <div className="p-6 space-y-4">
-              {menuLinks.map((link, idx) => (
-                <div key={idx} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-4">
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <button
-                      onClick={() => handleMoveLink(idx, 'up')}
-                      disabled={idx === 0}
-                      className="p-1 hover:bg-slate-200 rounded disabled:opacity-30"
-                    >
-                      <ChevronRight className="w-4 h-4 -rotate-90" />
-                    </button>
-                    <button
-                      onClick={() => handleMoveLink(idx, 'down')}
-                      disabled={idx === menuLinks.length - 1}
-                      className="p-1 hover:bg-slate-200 rounded disabled:opacity-30"
-                    >
-                      <ChevronRight className="w-4 h-4 rotate-90" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 flex-1 w-full">
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Label</label>
-                      <input
-                        value={link.label || ''}
-                        onChange={e => handleUpdateLink(idx, 'label', e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                        placeholder="e.g. World"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Href / Path</label>
-                      <input
-                        value={link.href || ''}
-                        onChange={e => handleUpdateLink(idx, 'href', e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
-                        placeholder="e.g. /category/World"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Icon</label>
-                      <select
-                        value={link.iconName || 'Home'}
-                        onChange={e => handleUpdateLink(idx, 'iconName', e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                      >
-                        <option value="Home">Home</option>
-                        <option value="Globe">Globe</option>
-                        <option value="Cpu">Cpu</option>
-                        <option value="Briefcase">Briefcase</option>
-                        <option value="Trophy">Trophy</option>
-                        <option value="FlaskConical">FlaskConical</option>
-                        <option value="Activity">Activity</option>
-                        <option value="MessageSquare">MessageSquare</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Badge (Optional)</label>
-                      <input
-                        value={link.badge || ''}
-                        onChange={e => handleUpdateLink(idx, 'badge', e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-semibold text-red-600"
-                        placeholder="e.g. New"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleRemoveLink(idx)}
-                    className="p-2 hover:bg-red-50 text-red-600 rounded-xl transition-all shrink-0 self-stretch md:self-center flex items-center justify-center text-xs font-semibold"
-                    title="Remove Link"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-
-              {menuLinks.length === 0 && (
-                <div className="text-center py-8 text-slate-400 text-xs italic">
-                  No links added yet. Click "Add Link" to get started.
-                </div>
-              )}
+            <div className="p-6 text-center space-y-4">
+              <p className="text-sm text-slate-500 max-w-lg mx-auto">
+                Header menu links and custom icons (such as image or SVG links) are managed inside their own dedicated system now.
+              </p>
+              <div>
+                <a
+                  href={`/${locale}/admin/menu`}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all"
+                >
+                  Manage Header Menu Links
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </section>
 
