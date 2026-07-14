@@ -83,6 +83,15 @@ import { createCustomBlockPlugin, blockRegistry, DBBlockConfig } from '@/lib/mdx
 import '@/lib/mdx/blocks'
 import { customBlockComponents } from '@/components/mdx/CustomBlockRenderer'
 import { BlockSearchPanel } from '@/components/mdx/BlockSearchPanel'
+import { Children, isValidElement } from "react";
+import FramedQuote from "@/components/mdx/FramedCornersQuote";
+
+function getText(node) {
+  if (typeof node === "string") return node;
+  if (Array.isArray(node)) return node.map(getText).join("");
+  if (isValidElement(node)) return getText(node.props.children);
+  return "";
+}
 
 type SidebarTab = 'metadata' | 'seo' | 'accessibility' | 'tags' | 'distribution'
 type ViewMode = 'write' | 'preview' | 'split'
@@ -138,31 +147,17 @@ const mdComponents: Components = {
   ol: ({ children }) => <ol className="list-decimal pl-6 my-4 flex flex-col gap-2 text-[1.05rem] text-[#313334]">{children}</ol>,
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   blockquote: ({ children }) => {
-    const childrenArray = React.Children.toArray(children)
-    const firstChild = childrenArray[0]
-    if (React.isValidElement(firstChild) && (firstChild as any).type === 'p') {
-      const pChildren = React.Children.toArray((firstChild as any).props.children)
-      const firstPChild = pChildren[0]
-      if (typeof firstPChild === 'string' && firstPChild.trim().startsWith('[!NOTE]')) {
-        const cleanFirstChild = firstPChild.trim().replace('[!NOTE]', '').trim()
-        const remainingPChildren = pChildren.slice(1)
-        return (
-          <div className="my-6 p-5 bg-blue-50/60 border border-blue-100 rounded-xl flex gap-4 items-start">
-            <div className="shrink-0 w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
-              <Info size={16} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-blue-500/80 mb-1.5">Note</p>
-              <div className="text-blue-900/80 text-sm leading-relaxed">
-                {cleanFirstChild}{remainingPChildren}{childrenArray.slice(1)}
-              </div>
-            </div>
-          </div>
-        )
-      }
-    }
-    return <blockquote className="border-l-[3px] border-[#585f64] pl-5 my-5 text-[#5e5f61] italic text-lg">{children}</blockquote>
-  },
+    const items = Children.toArray(children).filter(isValidElement);
+    const last = items[items.length - 1];
+    const lastText = last ? getText(last).trim() : "";
+
+    const hasAuthor = lastText.startsWith("—") || lastText.startsWith("-");
+    const author = hasAuthor ? lastText.replace(/^[—-]\s*/, "") : undefined;
+    const quoteChildren = hasAuthor ? items.slice(0, -1) : items;
+
+    return <FramedQuote author={author}>{quoteChildren}</FramedQuote>;
+  
+    },
   table: ({ children }) => (
     <div className="overflow-x-auto my-5 rounded-xl border border-[#e4e2e1]">
       <table className="min-w-full text-sm">{children}</table>

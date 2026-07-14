@@ -28,6 +28,15 @@ import {
   Printer, Share2, Facebook, Link as LinkIcon, Clock, Eye, Twitter, Linkedin
 } from 'lucide-react'
 import { FaFacebook, FaTwitter, FaLinkedinIn } from 'react-icons/fa'
+import { Children, isValidElement } from "react";
+import FramedQuote from "@/components/mdx/FramedCornersQuote";
+
+function getText(node) {
+  if (typeof node === "string") return node;
+  if (Array.isArray(node)) return node.map(getText).join("");
+  if (isValidElement(node)) return getText(node.props.children);
+  return "";
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -125,11 +134,18 @@ const mdComponents: Components = {
     <ol className="list-decimal pl-6 my-4 flex flex-col gap-2 text-[17px] text-gray-800">{children}</ol>
   ),
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-  blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-red-600 pl-5 my-6 text-gray-600 italic text-lg  bg-gray-50 py-3 pr-4 rounded-r-lg">
-      {children}
-    </blockquote>
-  ),
+  blockquote: ({ children }) => {
+    const items = Children.toArray(children).filter(isValidElement);
+    const last = items[items.length - 1];
+    const lastText = last ? getText(last).trim() : "";
+
+    const hasAuthor = lastText.startsWith("—") || lastText.startsWith("-");
+    const author = hasAuthor ? lastText.replace(/^[—-]\s*/, "") : undefined;
+    const quoteChildren = hasAuthor ? items.slice(0, -1) : items;
+
+    return <FramedQuote author={author}>{quoteChildren}</FramedQuote>;
+  
+  },
   table: ({ children }) => (
     <div className="overflow-x-auto my-6 rounded-xl border border-gray-200 max-w-full">
       <table className="min-w-full text-sm">{children}</table>
