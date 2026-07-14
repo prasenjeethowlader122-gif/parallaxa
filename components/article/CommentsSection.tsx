@@ -26,6 +26,7 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!articleId) return;
     let active = true;
     fetch(`/api/articles/comments?articleId=${articleId}`)
       .then(res => res.ok ? res.json() : [])
@@ -67,12 +68,20 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
 
       if (res.ok) {
         const newComment = await res.json();
-        setComments([newComment, ...comments]);
-        setContent('');
-        toast.success('Comment added');
+        if (newComment && newComment.id) {
+          setComments(prev => [newComment, ...prev]);
+          setContent('');
+          toast.success('Comment added');
+        } else {
+          toast.error('Failed to save comment properly');
+        }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to add comment');
       }
     } catch (error) {
-      toast.error('Failed to add comment');
+      console.error(error);
+      toast.error('Failed to add comment due to a network error');
     } finally {
       setIsSubmitting(false);
     }
@@ -86,8 +95,12 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
       if (res.ok) {
         setComments(comments.filter(c => c.id !== id));
         toast.success('Comment deleted');
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || 'Failed to delete comment');
       }
     } catch (error) {
+      console.error(error);
       toast.error('Failed to delete comment');
     }
   };

@@ -126,7 +126,6 @@ export default function HomeSectionManager() {
       if (res.ok) {
         toast.success('Section added');
         setIsAdding(false);
-        setAddLoading(false)
         setNewSection({
           title: '',
           type: 'latest',
@@ -135,13 +134,16 @@ export default function HomeSectionManager() {
           limit_count: 10,
           is_active: true
         });
-        fetchSections();
+        await fetchSections();
       } else {
         const err = await res.json().catch(() => ({}));
         toast.error(err.error || 'Failed to add section');
       }
     } catch (error) {
+      console.error(error);
       toast.error('Failed to add section');
+    } finally {
+      setAddLoading(false);
     }
   };
 

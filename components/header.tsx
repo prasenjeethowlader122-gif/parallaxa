@@ -56,6 +56,14 @@ const ICON_MAP: Record<string, any> = {
   MessageSquare
 }
 
+function sanitizeSvg(svg: string): string {
+  if (!svg) return '';
+  return svg
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+\s*=\s*(['"])(.*?)\1/gi, '')
+    .replace(/javascript\s*:/gi, '');
+}
+
 export function Header({
   includeTicker = false,
   className,
@@ -95,7 +103,9 @@ export function Header({
                 href: link.href,
                 label: link.label,
                 badge: link.badge || undefined,
-                icon: ICON_MAP[link.iconName] || Home
+                icon: ICON_MAP[link.iconName] || Home,
+                iconName: link.iconName || 'Home',
+                iconUrl: link.iconUrl || undefined
               }))
               setNavLinks(mapped)
             }
@@ -348,7 +358,50 @@ export function Header({
       </div>
 
       {/* ── DESKTOP NAV ROW ── */}
-
+      <div className="hidden md:block border-b border-border bg-white">
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
+          <nav className="flex items-center gap-1">
+            {navLinks.map(({ href, label, badge, icon: Icon, iconUrl }) => {
+              const localizedHref = `/${locale}${href === '/' ? '' : href}`
+              const isActive = pathname === localizedHref
+              return (
+                <Link
+                  key={href}
+                  href={localizedHref}
+                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                    isActive
+                      ? 'bg-slate-100 text-slate-900'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  {iconUrl ? (
+                    iconUrl.trim().startsWith('<svg') ? (
+                      <span
+                        className="w-4 h-4 flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:object-contain"
+                        dangerouslySetInnerHTML={{ __html: sanitizeSvg(iconUrl) }}
+                      />
+                    ) : (
+                      <img
+                        src={iconUrl}
+                        alt=""
+                        className="w-4 h-4 object-contain shrink-0"
+                      />
+                    )
+                  ) : Icon ? (
+                    <Icon className="w-4 h-4 shrink-0 text-slate-500" />
+                  ) : null}
+                  <span>{label}</span>
+                  {badge && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+      </div>
 
       {/* ── TICKER ── */}
       {includeTicker && tickerArticles.length > 0 && (
@@ -486,7 +539,7 @@ export function Header({
               Sections
             </p>
             <nav className="flex flex-col">
-              {navLinks.map(({ href, label, badge, icon: Icon }, idx) => {
+              {navLinks.map(({ href, label, badge, icon: Icon, iconUrl }, idx) => {
                 const localizedHref = `/${locale}${href === '/' ? '' : href}`
                 const isActive = pathname === localizedHref
                 return (
@@ -505,7 +558,22 @@ export function Header({
                     <span className="text-xs text-stone-400 w-6">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    {Icon && <Icon className="w-4 h-4 text-stone-500 flex-shrink-0" />}
+                    {iconUrl ? (
+                      iconUrl.trim().startsWith('<svg') ? (
+                        <span
+                          className="w-4 h-4 flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:object-contain"
+                          dangerouslySetInnerHTML={{ __html: sanitizeSvg(iconUrl) }}
+                        />
+                      ) : (
+                        <img
+                          src={iconUrl}
+                          alt=""
+                          className="w-4 h-4 object-contain shrink-0"
+                        />
+                      )
+                    ) : Icon ? (
+                      <Icon className="w-4 h-4 text-stone-500 flex-shrink-0" />
+                    ) : null}
                     <span
                       className={`flex-1 text-[17px] leading-tight ${
                         isActive ? 'text-red-700' : 'text-stone-900'

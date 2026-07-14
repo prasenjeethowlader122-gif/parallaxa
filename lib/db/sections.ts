@@ -13,52 +13,81 @@ export interface HomeSection {
 }
 
 export async function getHomeSections() {
-  return await sql`
-    SELECT * FROM home_sections
-    WHERE is_active = true
-    ORDER BY order_index ASC
-  ` as HomeSection[];
+  try {
+    return await sql`
+      SELECT * FROM home_sections
+      WHERE is_active = true
+      ORDER BY order_index ASC
+    ` as HomeSection[];
+  } catch (e) {
+    console.error('getHomeSections failed:', e);
+    return [];
+  }
 }
 
 export async function getAllHomeSections() {
-  return await sql`
-    SELECT * FROM home_sections
-    ORDER BY order_index ASC
-  ` as HomeSection[];
+  try {
+    return await sql`
+      SELECT * FROM home_sections
+      ORDER BY order_index ASC
+    ` as HomeSection[];
+  } catch (e) {
+    console.error('getAllHomeSections failed:', e);
+    return [];
+  }
 }
 
 export async function createHomeSection(section: Omit<HomeSection, 'id'>) {
-  const category_id = section.category_id !== undefined ? section.category_id : null;
-  return await sql`
-    INSERT INTO home_sections (title, type, category_id, layout, limit_count, order_index, is_active)
-    VALUES (${section.title}, ${section.type}, ${category_id}, ${section.layout}, ${section.limit_count}, ${section.order_index}, ${section.is_active})
-    RETURNING *
-  `;
+  try {
+    const category_id = section.category_id !== undefined ? section.category_id : null;
+    return await sql`
+      INSERT INTO home_sections (title, type, category_id, layout, limit_count, order_index, is_active)
+      VALUES (${section.title}, ${section.type}, ${category_id}, ${section.layout}, ${section.limit_count}, ${section.order_index}, ${section.is_active})
+      RETURNING *
+    `;
+  } catch (e) {
+    console.error('createHomeSection failed:', e);
+    return [];
+  }
 }
 
 export async function updateHomeSection(id: number, section: Partial<HomeSection>) {
-  const category_id = section.category_id !== undefined ? section.category_id : null;
-  return await sql`
-    UPDATE home_sections
-    SET
-      title = COALESCE(${section.title}, title),
-      type = COALESCE(${section.type}, type),
-      category_id = ${category_id},
-      layout = COALESCE(${section.layout}, layout),
-      limit_count = COALESCE(${section.limit_count}, limit_count),
-      order_index = COALESCE(${section.order_index}, order_index),
-      is_active = COALESCE(${section.is_active}, is_active)
-    WHERE id = ${id}
-    RETURNING *
-  `;
+  try {
+    const category_id = section.category_id !== undefined ? section.category_id : null;
+    return await sql`
+      UPDATE home_sections
+      SET
+        title = COALESCE(${section.title}, title),
+        type = COALESCE(${section.type}, type),
+        category_id = ${category_id},
+        layout = COALESCE(${section.layout}, layout),
+        limit_count = COALESCE(${section.limit_count}, limit_count),
+        order_index = COALESCE(${section.order_index}, order_index),
+        is_active = COALESCE(${section.is_active}, is_active)
+      WHERE id = ${id}
+      RETURNING *
+    `;
+  } catch (e) {
+    console.error('updateHomeSection failed:', e);
+    return [];
+  }
 }
 
 export async function deleteHomeSection(id: number) {
-  return await sql`DELETE FROM home_sections WHERE id = ${id}`;
+  try {
+    return await sql`DELETE FROM home_sections WHERE id = ${id}`;
+  } catch (e) {
+    console.error('deleteHomeSection failed:', e);
+    return null;
+  }
 }
 
 export async function reorderHomeSections(ids: number[]) {
-  for (let i = 0; i < ids.length; i++) {
-    await sql`UPDATE home_sections SET order_index = ${i} WHERE id = ${ids[i]}`;
+  try {
+    for (let i = 0; i < ids.length; i++) {
+      await sql`UPDATE home_sections SET order_index = ${i} WHERE id = ${ids[i]}`;
+    }
+  } catch (e) {
+    console.error('reorderHomeSections failed:', e);
   }
 }

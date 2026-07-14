@@ -15,7 +15,8 @@ import {
   SquaresFour,
   ListChecks,
   Gear,
-  User
+  User,
+  List
 } from '@phosphor-icons/react';
 import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
@@ -36,6 +37,7 @@ export default function Dashboard() {
     { id: 'articles', label: 'Articles', icon: FileText, component: <ArticlesView /> },
     { id: 'analysis', label: 'Analysis', icon: ChartBar, component: <AnalysisView /> },
     { id: 'home-manager', label: 'Home Manager', icon: ListChecks, component: <HomeSectionManager /> },
+    { id: 'menu-manager', label: 'Menu Manager', icon: List, href: `/${locale}/admin/menu`, adminOnly: true },
     { id: 'settings', label: 'Settings', icon: Gear, href: `/${locale}/admin/settings`, adminOnly: true },
   ];
 
