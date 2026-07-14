@@ -9,6 +9,7 @@ export interface SystemSettings {
   fb_access_token: string
   fb_page_id: string
   fb_thumbnail_template: string
+  mobile_menu_links: string
 }
 
 const DEFAULT_SETTINGS: SystemSettings = {
@@ -23,6 +24,16 @@ Respond with ONLY a valid JSON object — no markdown fences, no preamble:
   fb_access_token: '',
   fb_page_id: '',
   fb_thumbnail_template: 'default',
+  mobile_menu_links: JSON.stringify([
+    { href: '/', label: 'Home', iconName: 'Home' },
+    { href: '/category/World', label: 'World', iconName: 'Globe' },
+    { href: '/category/Technology', label: 'Technology', iconName: 'Cpu' },
+    { href: '/category/Business', label: 'Business', iconName: 'Briefcase' },
+    { href: '/category/Sports', label: 'Sports', iconName: 'Trophy' },
+    { href: '/category/Science', label: 'Science', iconName: 'FlaskConical' },
+    { href: '/category/Health', label: 'Health', iconName: 'Activity' },
+    { href: '/category/Opinion', label: 'Opinion', badge: 'New', iconName: 'MessageSquare' },
+  ])
 }
 
 export async function ensureSettingsTable() {

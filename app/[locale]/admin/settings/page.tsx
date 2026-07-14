@@ -12,6 +12,7 @@ import type { SystemSettings } from '@/lib/db/settings'
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SystemSettings | null>(null)
+  const [menuLinks, setMenuLinks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +25,13 @@ export default function AdminSettingsPage() {
         if (!res.ok) throw new Error('Failed to fetch settings')
         const data = await res.json()
         setSettings(data)
+        if (data.mobile_menu_links) {
+          try {
+            setMenuLinks(JSON.parse(data.mobile_menu_links))
+          } catch (e) {
+            console.error('Failed to parse mobile menu links:', e)
+          }
+        }
       } catch (err) {
         setError('Error loading settings')
         console.error(err)
@@ -34,18 +42,47 @@ export default function AdminSettingsPage() {
     fetchSettings()
   }, [])
 
+  const handleAddLink = () => {
+    setMenuLinks([...menuLinks, { href: '/', label: 'New Link', iconName: 'Home', badge: '' }])
+  }
+
+  const handleRemoveLink = (index: number) => {
+    setMenuLinks(menuLinks.filter((_, i) => i !== index))
+  }
+
+  const handleUpdateLink = (index: number, field: string, value: string) => {
+    const updated = [...menuLinks]
+    updated[index] = { ...updated[index], [field]: value }
+    setMenuLinks(updated)
+  }
+
+  const handleMoveLink = (index: number, direction: 'up' | 'down') => {
+    const updated = [...menuLinks]
+    if (direction === 'up' && index > 0) {
+      [updated[index], updated[index - 1]] = [updated[index - 1], updated[index]]
+    } else if (direction === 'down' && index < updated.length - 1) {
+      [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]]
+    }
+    setMenuLinks(updated)
+  }
+
   const handleSave = async () => {
     if (!settings) return
     setSaving(true)
     setError(null)
     setSuccess(null)
     try {
+      const payload = {
+        ...settings,
+        mobile_menu_links: JSON.stringify(menuLinks)
+      }
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error('Failed to save settings')
+      setSettings(payload)
       setSuccess('Settings saved successfully')
     } catch (err) {
       setError('Error saving settings')
@@ -190,6 +227,105 @@ export default function AdminSettingsPage() {
                   </select>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Mobile Menu Settings Section */}
+          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-sm font-semibold">Mobile Header Menu Configuration</h2>
+              </div>
+              <button
+                onClick={handleAddLink}
+                className="px-4 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-none"
+              >
+                Add Link
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {menuLinks.map((link, idx) => (
+                <div key={idx} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-4">
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <button
+                      onClick={() => handleMoveLink(idx, 'up')}
+                      disabled={idx === 0}
+                      className="p-1 hover:bg-slate-200 rounded disabled:opacity-30"
+                    >
+                      <ChevronRight className="w-4 h-4 -rotate-90" />
+                    </button>
+                    <button
+                      onClick={() => handleMoveLink(idx, 'down')}
+                      disabled={idx === menuLinks.length - 1}
+                      className="p-1 hover:bg-slate-200 rounded disabled:opacity-30"
+                    >
+                      <ChevronRight className="w-4 h-4 rotate-90" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 flex-1 w-full">
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Label</label>
+                      <input
+                        value={link.label || ''}
+                        onChange={e => handleUpdateLink(idx, 'label', e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                        placeholder="e.g. World"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Href / Path</label>
+                      <input
+                        value={link.href || ''}
+                        onChange={e => handleUpdateLink(idx, 'href', e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-mono"
+                        placeholder="e.g. /category/World"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Icon</label>
+                      <select
+                        value={link.iconName || 'Home'}
+                        onChange={e => handleUpdateLink(idx, 'iconName', e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                      >
+                        <option value="Home">Home</option>
+                        <option value="Globe">Globe</option>
+                        <option value="Cpu">Cpu</option>
+                        <option value="Briefcase">Briefcase</option>
+                        <option value="Trophy">Trophy</option>
+                        <option value="FlaskConical">FlaskConical</option>
+                        <option value="Activity">Activity</option>
+                        <option value="MessageSquare">MessageSquare</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Badge (Optional)</label>
+                      <input
+                        value={link.badge || ''}
+                        onChange={e => handleUpdateLink(idx, 'badge', e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/10 transition-all font-semibold text-red-600"
+                        placeholder="e.g. New"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleRemoveLink(idx)}
+                    className="p-2 hover:bg-red-50 text-red-600 rounded-xl transition-all shrink-0 self-stretch md:self-center flex items-center justify-center text-xs font-semibold"
+                    title="Remove Link"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+
+              {menuLinks.length === 0 && (
+                <div className="text-center py-8 text-slate-400 text-xs italic">
+                  No links added yet. Click "Add Link" to get started.
+                </div>
+              )}
             </div>
           </section>
 

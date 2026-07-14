@@ -15,7 +15,7 @@ import {
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { id: 1, name: 'Business' },
   { id: 2, name: 'Technology' },
   { id: 3, name: 'Sports' },
@@ -38,6 +38,7 @@ interface HomeSection {
 
 export default function HomeSectionManager() {
   const [sections, setSections] = useState<HomeSection[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>(DEFAULT_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -61,8 +62,23 @@ export default function HomeSectionManager() {
   });
 
   useEffect(() => {
+    fetchCategories();
     fetchSections();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data)) {
+          setCategories(data);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   useEffect(() => {
     if (editingId !== null) {
@@ -223,7 +239,7 @@ export default function HomeSectionManager() {
               <div className="text-sm text-slate-500 flex gap-4 mt-1">
                 <span className="capitalize">
                   {section.type === 'category' && section.category_id
-                    ? `Category: ${CATEGORIES.find(c => c.id === section.category_id)?.name || 'Unknown'}`
+                    ? `Category: ${categories.find(c => c.id === section.category_id)?.name || 'Unknown'}`
                     : section.type}
                 </span>
                 <span className="capitalize">{section.layout} layout</span>
@@ -303,7 +319,7 @@ export default function HomeSectionManager() {
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm"
                   >
                     <option value="">Select Category</option>
-                    {CATEGORIES.map(c => (
+                    {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -400,7 +416,7 @@ export default function HomeSectionManager() {
                     className="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm"
                   >
                     <option value="">Select Category</option>
-                    {CATEGORIES.map(c => (
+                    {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>

@@ -10,7 +10,6 @@ export default async function HomePage() {
   
   try {
     dbSections = await getHomeSections();
-    alert(JSON.stringify(dbSections))
   } catch (err) {
     console.error('Failed to get home sections:', err);
   }
