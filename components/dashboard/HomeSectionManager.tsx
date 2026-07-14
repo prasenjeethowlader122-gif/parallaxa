@@ -41,7 +41,7 @@ export default function HomeSectionManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-
+  const [isAddLoading , setAddLoading] = useState(false)
   const [newSection, setNewSection] = useState<Omit<HomeSection, 'id' | 'order_index'>>({
     title: '',
     type: 'latest',
@@ -100,6 +100,7 @@ export default function HomeSectionManager() {
   };
 
   const handleAdd = async () => {
+    setAddLoading(true)
     try {
       const res = await fetch('/api/admin/home-sections', {
         method: 'POST',
@@ -109,6 +110,7 @@ export default function HomeSectionManager() {
       if (res.ok) {
         toast.success('Section added');
         setIsAdding(false);
+        setAddLoading(false)
         setNewSection({
           title: '',
           type: 'latest',
@@ -334,7 +336,7 @@ export default function HomeSectionManager() {
                 onClick={handleAdd}
                 className="flex-1 bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition-colors font-bold"
               >
-                Add
+                {isAddLoading ? 'Adding...' : 'Add'}
               </button>
               <button
                 onClick={() => setIsAdding(false)}
