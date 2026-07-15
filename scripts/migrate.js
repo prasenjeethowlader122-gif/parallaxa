@@ -68,6 +68,18 @@ async function migrate() {
     } catch (e) {
       console.log('Alter comments table article_id type skipped or already done.');
     }
+
+    // Backfill any missing columns in home_sections
+    try {
+      await sql`ALTER TABLE home_sections ADD COLUMN IF NOT EXISTS category_id INTEGER;`;
+      await sql`ALTER TABLE home_sections ADD COLUMN IF NOT EXISTS layout TEXT DEFAULT 'grid';`;
+      await sql`ALTER TABLE home_sections ADD COLUMN IF NOT EXISTS limit_count INTEGER DEFAULT 10;`;
+      await sql`ALTER TABLE home_sections ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;`;
+      await sql`ALTER TABLE home_sections ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;`;
+      console.log('Home sections table columns checked/backfilled.');
+    } catch (e) {
+      console.error('Alter home_sections table skipped or failed:', e);
+    }
     
     console.log('Migrations completed successfully.');
   } catch (error) {
