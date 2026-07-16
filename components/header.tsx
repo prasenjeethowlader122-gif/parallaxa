@@ -1,59 +1,51 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 
-
 import { NewsArticle, getBreakingNews, getTrendingArticles } from '@/lib/db/articles'
 import {
-  Home,
+  House,
   Globe,
   Cpu,
   Briefcase,
   Trophy,
-  FlaskConical,
-  Activity,
-  MessageSquare,
+  Flask,
+  Pulse,
+  ChatTeardropText,
   X,
-  Languages,
-  ChevronDown,
-  Search,
+  Translate,
+  CaretDown,
+  MagnifyingGlass,
   Bell,
-  FileEdit,
-  Menu,
-  LayoutDashboard,
-} from 'lucide-react'
-import { sansFont, serifFont, monoFont,banglaFontlogo, banglaFont } from '@/lib/font'
-
-// যদি তুমি custom font ব্যবহার করো, চাইলে এগুলোও import করতে পারো
-// import { Fugaz, sansFont } from '@/lib/font'
-
-// Static logo from public (simple setup)
-const LOGO_SRC = '/20260705_150355.png'
+  NotePencil,
+  List,
+  Stack,
+} from '@phosphor-icons/react'
+import { sansFont, serifFont, monoFont, banglaFontlogo, banglaFont } from '@/lib/font'
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home', icon: Home },
+  { href: '/', label: 'Home', icon: House },
   { href: '/category/World', label: 'World', icon: Globe },
   { href: '/category/Technology', label: 'Technology', icon: Cpu },
   { href: '/category/Business', label: 'Business', icon: Briefcase },
   { href: '/category/Sports', label: 'Sports', icon: Trophy },
-  { href: '/category/Science', label: 'Science', icon: FlaskConical },
-  { href: '/category/Health', label: 'Health', icon: Activity },
-  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: MessageSquare },
+  { href: '/category/Science', label: 'Science', icon: Flask },
+  { href: '/category/Health', label: 'Health', icon: Pulse },
+  { href: '/category/Opinion', label: 'Opinion', badge: 'New', icon: ChatTeardropText },
 ]
 
 const ICON_MAP: Record<string, any> = {
-  Home,
+  Home: House,
   Globe,
   Cpu,
   Briefcase,
   Trophy,
-  FlaskConical,
-  Activity,
-  MessageSquare
+  FlaskConical: Flask,
+  Activity: Pulse,
+  MessageSquare: ChatTeardropText
 }
 
 function sanitizeSvg(svg: string): string {
@@ -103,7 +95,7 @@ export function Header({
                 href: link.href,
                 label: link.label,
                 badge: link.badge || undefined,
-                icon: ICON_MAP[link.iconName] || Home,
+                icon: ICON_MAP[link.iconName] || House,
                 iconName: link.iconName || 'Home',
                 iconUrl: link.iconUrl || undefined
               }))
@@ -171,7 +163,7 @@ export function Header({
   }
 
   const handleSignOut = async () => {
-    await signOut({ redirect: true, redirectUrl: '/' })
+    await signOut({ redirect: true, redirectTo: '/' })
   }
 
   const today = new Date().toLocaleDateString('en-US', {
@@ -182,12 +174,11 @@ export function Header({
   })
 
   return (
-    // backdrop-blur-md সরিয়ে দেওয়া হয়েছে যাতে sticky header ও mobile menu ঠিকমতো কাজ করে
-    <header className={`sticky top-0 z-50 bg-white ${className ?? ''}`}>
+    <header className={`sticky top-0 z-50 bg-white border-b border-slate-200/50 ${className ?? ''}`}>
       {/* ── ANNOUNCEMENT BAR ── */}
       {isAnnVisible && (
-        <div className="bg-red-600 text-primary-foreground text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
-          <span className="inline-block w-1.5 h-1.5 bg-background rounded-full animate-pulse flex-shrink-0" />
+        <div className="bg-red-600 text-white text-xs font-medium tracking-wide flex items-center justify-center gap-2 px-4 py-1.5 relative">
+          <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse flex-shrink-0" />
           <span>Breaking: Fed holds interest rates steady for third consecutive meeting —</span>
           <Link
             href="/category/Business"
@@ -206,16 +197,16 @@ export function Header({
       )}
 
       {/* ── UTILITY ROW (desktop only) ── */}
-      <div className="hidden md:block bg-card border-b border-border">
+      <div className="hidden md:block bg-slate-50 border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto px-6 h-8 flex items-center justify-between">
           <div className="flex items-center gap-5">
-            <span className="text-xs text-muted-foreground">{today}</span>
+            <span className="text-xs text-slate-500">{today}</span>
             <div className="flex items-center gap-4">
               {['Newsletter', 'Podcast', 'E-paper'].map((item) => (
                 <Link
                   key={item}
                   href="#"
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
                 >
                   {item}
                 </Link>
@@ -223,12 +214,12 @@ export function Header({
             </div>
           </div>
           <div className="relative group">
-            <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-full px-2.5 py-0.5 hover:bg-background uppercase">
-              <Languages className="w-3.5 h-3.5" />
+            <button className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors border border-slate-200 rounded-full px-2.5 py-0.5 hover:bg-white uppercase font-medium">
+              <Translate className="w-3.5 h-3.5" />
               {(pathname.split('/')[1] || 'bn').toUpperCase()}
-              <ChevronDown className="w-3 h-3" />
+              <CaretDown className="w-3 h-3" />
             </button>
-            <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded-xl shadow-xl p-1 w-24 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+            <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-xl p-1 w-24 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
               {['en', 'es', 'fr', 'de', 'ja'].map((lang) => (
                 <button
                   key={lang}
@@ -237,7 +228,7 @@ export function Header({
                     parts[1] = lang
                     router.push(parts.join('/') || `/${lang}`)
                   }}
-                  className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-900 hover:bg-card rounded-lg transition-colors uppercase"
+                  className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors uppercase"
                 >
                   {lang}
                 </button>
@@ -248,38 +239,33 @@ export function Header({
       </div>
 
       {/* ── BRAND ROW (desktop) ── */}
-      <div className="hidden md:block bg-background border-b border-border">
+      <div className="hidden md:block bg-white border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-          {/* Logo */}
+          {/* Text Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
             <div className="flex flex-col leading-none h-full justify-center">
-              <Image
-                src={LOGO_SRC}
-                alt="Only Hindu"
-                width={170}
-                height={300}
-                priority
-                className="h-14 w-auto"
-              />
+              <h1 className={`${banglaFontlogo.className} text-2xl md:text-3xl font-[900] text-slate-900`}>
+                অনলি্হিন্দু™
+              </h1>
             </div>
           </Link>
 
           {/* Search */}
           <form
             onSubmit={handleDesktopSearch}
-            className="flex-1 max-w-md flex items-center border border-border rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all"
+            className="flex-1 max-w-md flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 focus-within:bg-white focus-within:border-slate-400 transition-all"
           >
             <div className="relative flex-shrink-0" ref={catRef}>
               <button
                 type="button"
                 onClick={() => setIsCatOpen(!isCatOpen)}
-                className="flex items-center gap-1.5 px-3 h-10 text-xs text-muted-foreground border-r border-border hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-1.5 px-3 h-10 text-xs text-slate-500 border-r border-slate-200 hover:bg-slate-100 transition-colors"
               >
                 {searchCategory}
-                <ChevronDown className="w-3.5 h-3.5" />
+                <CaretDown className="w-3.5 h-3.5" />
               </button>
               {isCatOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-[120px]">
+                <div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg overflow-hidden z-50 min-w-[120px]">
                   {SEARCH_CATEGORIES.map((cat) => (
                     <button
                       key={cat}
@@ -290,8 +276,8 @@ export function Header({
                       }}
                       className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                         searchCategory === cat
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-gray-700 hover:bg-card'
+                          ? 'bg-slate-900 text-white font-bold'
+                          : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       {cat}
@@ -306,21 +292,21 @@ export function Header({
               placeholder="Search stories, topics, people…"
               value={desktopQuery}
               onChange={(e) => setDesktopQuery(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent text-foreground placeholder-gray-400 min-w-0"
+              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent text-slate-900 placeholder-slate-400 min-w-0"
             />
             <button
               type="submit"
-              className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground hover:bg-gray-700 transition-colors flex-shrink-0"
+              className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 transition-colors flex-shrink-0"
               aria-label="Search"
             >
-              <Search className="w-5 h-5" />
+              <MagnifyingGlass className="w-5 h-5" />
             </button>
           </form>
 
           {/* Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              className="relative w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-card hover:text-foreground transition-colors"
+              className="relative w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5" />
@@ -330,7 +316,7 @@ export function Header({
             {session?.user ? (
               <div className="flex items-center gap-2">
                 <Link href="/dashboard">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold hover:ring-2 hover:ring-gray-300 transition-all">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold hover:ring-2 hover:ring-slate-300 transition-all uppercase">
                     {session.user.name?.charAt(0).toUpperCase() ??
                       session.user.email?.charAt(0).toUpperCase() ??
                       'U'}
@@ -341,13 +327,13 @@ export function Header({
               <div className="flex items-center gap-2">
                 <Link
                   href="/auth/signin"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-foreground transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-950 transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors"
                 >
                   Get started
                 </Link>
@@ -358,7 +344,7 @@ export function Header({
       </div>
 
       {/* ── DESKTOP NAV ROW ── */}
-      <div className="hidden md:block border-b border-border bg-white">
+      <div className="hidden md:block bg-white">
         <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
           <nav className="flex items-center gap-1">
             {navLinks.map(({ href, label, badge, icon: Icon, iconUrl }) => {
@@ -405,10 +391,10 @@ export function Header({
 
       {/* ── TICKER ── */}
       {includeTicker && tickerArticles.length > 0 && (
-        <div className="bg-card border-b border-border h-8 flex items-center overflow-hidden">
-          <div className="flex items-center gap-1.5 px-4 h-full bg-primary text-primary-foreground flex-shrink-0">
-            <span className="inline-block w-1.5 h-1.5 bg-background rounded-full animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap">
+        <div className="bg-slate-50 border-t border-b border-slate-200/50 h-8 flex items-center overflow-hidden">
+          <div className="flex items-center gap-1.5 px-4 h-full bg-slate-900 text-white flex-shrink-0">
+            <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
               Breaking
             </span>
           </div>
@@ -417,9 +403,9 @@ export function Header({
               {[...tickerArticles, ...tickerArticles].map((article, i) => (
                 <span
                   key={i}
-                  className="text-[11px] text-muted-foreground px-7 border-r border-border last:border-r-0"
+                  className="text-[11px] text-slate-500 px-7 border-r border-slate-200 last:border-r-0"
                 >
-                  <span className="font-semibold text-gray-800">
+                  <span className="font-semibold text-slate-800">
                     {article.category ?? 'Breaking'}:
                   </span>{' '}
                   {article.title}
@@ -433,72 +419,61 @@ export function Header({
       {/* ── MOBILE TOP BAR ── */}
       <div className="md:hidden">
         <div className="px-4 h-14 flex items-center justify-between gap-3">
-          {/* Left: logo (Menu icon restored) */}
+          {/* Left: logo */}
           <div className="flex items-center justify-start gap-3 select-none h-full">
             <button
               onClick={() => {
                 setIsMenuOpen((prev) => !prev)
                 setIsSearchOpen(false)
               }}
-              className="p-2 -ml-2 text-gray-900 hover:bg-card rounded-lg transition-colors"
+              className="p-2 -ml-2 text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? <X className="w-6 h-6" /> : <List className="w-6 h-6" />}
             </button>
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
               <div className="flex flex-col leading-none h-full justify-center">
-                {/**<Image
-                  src={LOGO_SRC}
-                  alt="Only Hindu"
-                  width={170}
-                  height={300}
-                  priority
-                  className="h-14 w-auto"
-                />**/}
-                <h1 className = {`${banglaFontlogo.className} text-2xl font-[900]`}>অনলি্হিন্দু™</h1>
-                  
+                <h1 className={`${banglaFontlogo.className} text-2xl font-[900]`}>অনলি্হিন্দু™</h1>
               </div>
             </Link>
           </div>
 
-          {/* Right: search + bell */}
+          {/* Right: search */}
           <div className="flex items-center gap-1">
             <button
               onClick={() => {
                 setIsSearchOpen(!isSearchOpen)
                 setIsMenuOpen(false)
               }}
-              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:bg-card rounded-lg transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
               aria-label="Search"
             >
-              {isSearchOpen ? <X className="w-6 h-6" /> : <Search className="w-6 h-6" />}
+              {isSearchOpen ? <X className="w-6 h-6" /> : <MagnifyingGlass className="w-6 h-6" />}
             </button>
-
-
           </div>
         </div>
 
         {/* Mobile search bar */}
         {isSearchOpen && (
-          <div className="px-4 pb-3 border-t border-border pt-2">
+          <div className="px-4 pb-3 border-t border-slate-200/50 pt-2">
             <form
               onSubmit={handleSearch}
-              className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-card focus-within:bg-background focus-within:border-gray-400 transition-all"
+              className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 focus-within:bg-white focus-within:border-slate-400 transition-all"
             >
               <input
                 type="text"
                 placeholder="Search stories, topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2.5 text-sm outline-none bg-transparent text-foreground placeholder-gray-400"
+                className="flex-1 px-4 py-2.5 text-sm outline-none bg-transparent text-slate-900 placeholder-slate-400"
                 autoFocus
               />
               <button
                 type="submit"
-                className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground flex-shrink-0"
+                className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white flex-shrink-0"
                 aria-label="Search"
               >
-                <Search className="w-5 h-5" />
+                <MagnifyingGlass className="w-5 h-5" />
               </button>
             </form>
           </div>
@@ -507,35 +482,34 @@ export function Header({
 
       {/* ── MOBILE MENU ── */}
       {isMenuOpen && (
-        <div className="md:hidden relative bg-stone-50 flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] border-b border-stone-300">
-          {/* Masthead strip */}
+        <div className="md:hidden relative bg-slate-50 flex flex-col overflow-y-auto max-h-[calc(100svh-3.5rem)] border-b border-slate-200">
           <div className="flex items-baseline justify-between px-5 pt-4 pb-3">
-            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-500">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-slate-500">
               Contents
             </span>
-            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-slate-400">
               {today}
             </span>
           </div>
-          <div className="h-px bg-stone-900 mx-5" />
+          <div className="h-px bg-slate-900 mx-5" />
 
-          {/* Search — classifieds style, bottom-border only */}
+          {/* Search */}
           <div className="px-5 pt-5 pb-6">
-            <form onSubmit={handleSearch} className="flex items-end gap-2 border-b border-stone-400 pb-2">
-              <Search className="w-4 h-4 text-stone-400 flex-shrink-0 mb-0.5" />
+            <form onSubmit={handleSearch} className="flex items-end gap-2 border-b border-slate-400 pb-2">
+              <MagnifyingGlass className="w-4 h-4 text-slate-400 flex-shrink-0 mb-0.5" />
               <input
                 type="text"
                 placeholder="Search stories, topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 text-sm outline-none bg-transparent text-stone-900 placeholder-stone-400 font-sans"
+                className="flex-1 text-sm outline-none bg-transparent text-slate-900 placeholder-slate-400 font-sans"
               />
             </form>
           </div>
 
-          {/* Sections — table of contents, not cards */}
+          {/* Sections */}
           <div className="px-5">
-            <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-1">
+            <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-slate-400 mb-1">
               Sections
             </p>
             <nav className="flex flex-col">
@@ -547,15 +521,14 @@ export function Header({
                     key={href}
                     href={localizedHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className="group relative flex items-center gap-3 py-3.5 border-b"
+                    className="group relative flex items-center gap-3 py-3.5 border-b border-slate-200"
                   >
-                    {/* signature: red spine marker that reveals on active/hover */}
                     <span
                       className={`absolute -left-5 top-0 bottom-0 w-1 bg-red-700 transition-transform duration-200 origin-left ${
                         isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                       }`}
                     />
-                    <span className="text-xs text-stone-400 w-6">
+                    <span className="text-xs text-slate-400 w-6">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     {iconUrl ? (
@@ -572,11 +545,11 @@ export function Header({
                         />
                       )
                     ) : Icon ? (
-                      <Icon className="w-4 h-4 text-stone-500 flex-shrink-0" />
+                      <Icon className="w-4 h-4 text-slate-500 flex-shrink-0" />
                     ) : null}
                     <span
                       className={`flex-1 text-[17px] leading-tight ${
-                        isActive ? 'text-red-700' : 'text-stone-900'
+                        isActive ? 'text-red-700' : 'text-slate-900'
                       }`}
                     >
                       {label}
@@ -592,24 +565,24 @@ export function Header({
             </nav>
 
             {session && (
-              <div className="grid grid-cols-2 gap-px bg-stone-200 mt-3 mb-2 border-t border-stone-300">
+              <div className="grid grid-cols-2 gap-px bg-slate-200 mt-3 mb-2 border-t border-slate-300">
                 <Link
                   href={`/${locale}/write`}
                   onClick={() => setIsMenuOpen(false)}
-                  className="bg-stone-50 flex flex-col gap-2 p-4 hover:bg-stone-100 transition-colors"
+                  className="bg-white flex flex-col gap-2 p-4 hover:bg-slate-50 transition-colors"
                 >
-                  <FileEdit className="w-4 h-4 text-stone-700" />
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-stone-700">
+                  <NotePencil className="w-4 h-4 text-slate-700" />
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-slate-700">
                     Write
                   </span>
                 </Link>
                 <Link
                   href={`/${locale}/dashboard`}
                   onClick={() => setIsMenuOpen(false)}
-                  className="bg-stone-50 flex flex-col gap-2 p-4 hover:bg-stone-100 transition-colors"
+                  className="bg-white flex flex-col gap-2 p-4 hover:bg-slate-50 transition-colors"
                 >
-                  <LayoutDashboard className="w-4 h-4 text-stone-700" />
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-stone-700">
+                  <Stack className="w-4 h-4 text-slate-700" />
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-slate-700">
                     Dashboard
                   </span>
                 </Link>
@@ -617,10 +590,10 @@ export function Header({
             )}
           </div>
 
-          {/* Trending — genuinely ranked, so numbering earns its place */}
+          {/* Trending */}
           {trendingArticles.length > 0 && (
-            <div className="px-5 pt-5 border-t border-stone-300 mt-4">
-              <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-3">
+            <div className="px-5 pt-5 border-t border-slate-200 mt-4">
+              <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-slate-400 mb-3">
                 Trending now
               </p>
               <div className="flex flex-col">
@@ -629,12 +602,12 @@ export function Header({
                     key={article.id}
                     href={`/article/${article.slug}`}
                     onClick={() => setIsMenuOpen(false)}
-                    className="group flex gap-3 py-3 border-b border-stone-200 last:border-b-0"
+                    className="group flex gap-3 py-3 border-b border-slate-200 last:border-b-0"
                   >
-                    <span className="font-mono text-xs text-stone-400 mt-1 w-8 flex-shrink-0">
+                    <span className="font-mono text-xs text-slate-400 mt-1 w-8 flex-shrink-0">
                       N&deg;{String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="font-serif text-[15px] text-stone-800 leading-snug group-hover:text-red-700 transition-colors">
+                    <p className="font-serif text-[15px] text-slate-800 leading-snug group-hover:text-red-700 transition-colors">
                       {article.title}
                     </p>
                   </Link>
@@ -643,15 +616,15 @@ export function Header({
             </div>
           )}
 
-          {/* Auth — pinned, subscribe-strip style */}
-          <div className="mt-auto px-5 py-5 border-t border-stone-300 flex gap-2.5">
+          {/* Auth */}
+          <div className="mt-auto px-5 py-5 border-t border-slate-200 flex gap-2.5">
             {session ? (
               <button
                 onClick={() => {
                   handleSignOut()
                   setIsMenuOpen(false)
                 }}
-                className="flex-1 h-11 text-sm font-medium text-stone-700 border border-stone-300 hover:bg-stone-100 transition-colors"
+                className="flex-1 h-11 text-sm font-semibold text-slate-700 border border-stone-300 hover:bg-slate-100 transition-colors"
               >
                 Sign out
               </button>
@@ -660,14 +633,14 @@ export function Header({
                 <Link
                   href="/auth/signin"
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-stone-900 border border-stone-300 hover:bg-stone-100 transition-colors"
+                  className="flex-1 h-11 flex items-center justify-center text-sm font-semibold text-slate-900 border border-slate-300 hover:bg-slate-100 transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/auth/signup"
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center text-sm font-medium text-stone-50 bg-red-700 hover:bg-red-800 transition-colors"
+                  className="flex-1 h-11 flex items-center justify-center text-sm font-semibold text-white bg-red-700 hover:bg-red-800 transition-colors"
                 >
                   Get started
                 </Link>

@@ -1,15 +1,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import {Fugaz} from '@/lib/font'
+import { Fugaz, banglaFont } from '@/lib/font'
 import { NewsArticle } from '@/lib/db/articles'
-import { Clock, Eye } from 'lucide-react'
+import { Clock, Eye, Calendar, User, BookOpen } from '@phosphor-icons/react/ssr'
 
 interface NewsCardProps {
   article: NewsArticle
-  variant ? : 'default' | 'featured' | 'horizontal'
-  className ? : string
+  variant?: 'default' | 'featured' | 'horizontal'
+  className?: string
 }
-export const toDigitalNumber = (numbers: number, suffix ? : string, locale: "en" | "sa" = "en"): string => {
+
+export const toDigitalNumber = (numbers: number, suffix?: string, locale: "en" | "sa" = "en"): string => {
   if (numbers > 0) {
     if (locale === "sa") {
       if (numbers >= 10000000) {
@@ -36,6 +37,7 @@ export const toDigitalNumber = (numbers: number, suffix ? : string, locale: "en"
   }
   return String(numbers);
 };
+
 export function NewsCard({ article, variant = 'default', className }: NewsCardProps) {
   if (!article || !article.id) return null
   
@@ -52,119 +54,139 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
   
   if (variant === 'featured') {
     return (
-      <Link href={href} className="block h-full">
-        {/*
-         * KEY FIX: The outer div and the image container both use h-full
-         * so they fill whatever height the grid cell provides.
-         * aspect-video is REMOVED — it fought the fixed grid-row height
-         * and caused cards to overflow/overlap each other.
-         * The image container is purely position:relative + fills parent.
-         */}
-        <div className={`group cursor-pointer overflow-hidden h-full flex flex-col rounded-xl ${className ?? ''}`}>
-          {/* Image fills all available space */}
-          <div className="relative w-full flex-1 overflow-hidden bg-gray-200 min-h-[200px]">
-            <Image
-              src={imageSrc}
-              alt={article.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-             
-              <h3 className={Fugaz.className + " text-primary-foreground text-lg  leading-tight line-clamp-3"}>
-{article.title}
-              </h3>
+      <div className={`group relative cursor-pointer overflow-hidden h-full flex flex-col rounded-2xl border border-slate-200/50 bg-white hover:border-slate-300 transition-all ${className ?? ''}`}>
+        <Link href={href} className="absolute inset-0 z-10" />
+        {/* Image container */}
+        <div className="relative w-full flex-1 overflow-hidden bg-slate-100 min-h-[220px]">
+          <Image
+            src={imageSrc}
+            alt={article.title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+            className="object-cover group-hover:scale-102 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
+
+          <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
+            {article.category && (
+              <span className="inline-block bg-white/20 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md mb-2">
+                {article.category}
+              </span>
+            )}
             
-              <div className="flex items-center gap-3 mt-2 text-xs text-primary-foreground/70">
-                <Link href={authorHref} className="font-medium hover:text-white transition-colors">
-                  {article.author}
-                </Link>
-                <span>{formattedDate}</span>
-              </div>
+            <h3 className={`${Fugaz.className} text-white text-lg md:text-xl font-bold leading-snug line-clamp-3 mb-3`}>
+              {article.title}
+            </h3>
+
+            <div className="flex items-center gap-3 text-xs text-slate-200">
+              <span className="flex items-center gap-1 font-medium hover:underline relative z-30">
+                <User size={13} />
+                <Link href={authorHref}>{article.author}</Link>
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar size={13} />
+                {formattedDate}
+              </span>
             </div>
           </div>
         </div>
-      </Link>
+      </div>
     )
   }
   
   if (variant === 'horizontal') {
     return (
-      <Link href={href} className="block">
-        <div className={`group flex gap-4 cursor-pointer min-h-[8rem] rounded-lg overflow-hidden ${className ?? ''}`}>
-          <div className="relative w-32 sm:w-40 h-32 flex-shrink-0 overflow-hidden bg-gray-200 rounded-lg">
-            <Image
-              src={imageSrc}
-              alt={article.title}
-              fill
-              sizes="(max-width: 640px) 128px, 160px"
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-xs  text-blue-600 font-medium tracking-wide">
+      <div className={`group flex gap-4 cursor-pointer rounded-2xl border border-slate-200/50 p-3 bg-white hover:border-slate-300 transition-all ${className ?? ''}`}>
+        <div className="relative w-28 sm:w-36 h-28 flex-shrink-0 overflow-hidden bg-slate-100 rounded-xl">
+          <Link href={href} className="absolute inset-0 z-10" />
+          <Image
+            src={imageSrc}
+            alt={article.title}
+            fill
+            sizes="(max-width: 640px) 112px, 144px"
+            className="object-cover group-hover:scale-102 transition-transform duration-500"
+          />
+        </div>
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
                 {article.category}
               </span>
-          
+              {article.breaking && (
+                <span className="text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1 rounded">BREAKING</span>
+              )}
             </div>
-            <h3 className={Fugaz.className + "  text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-sm"}>
-              {article.title}
+            <h3 className={`${Fugaz.className} text-slate-900 line-clamp-2 group-hover:text-red-600 transition-colors text-sm font-bold leading-snug`}>
+              <Link href={href}>{article.title}</Link>
             </h3>
-            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{article.description}</p>
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                {
-                  toDigitalNumber(article.views)
-                }
-              </div>
+            <p className="text-xs text-slate-500 line-clamp-2 mt-1">{article.description}</p>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
+            <span className="flex items-center gap-1 font-medium hover:underline truncate">
+              <Link href={authorHref}>{article.author}</Link>
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1">
+                <Eye size={12} />
+                {toDigitalNumber(article.views)}
+              </span>
             </div>
           </div>
         </div>
-      </Link>
+      </div>
     )
   }
   
-  // Default variant
+  // Default variant (card grid item)
   return (
-    <Link href={href} className="block">
-      <div className={`group cursor-pointer rounded-xl overflow-hidden ${className ?? ''}`}>
-        <div className="relative w-full h-48 overflow-hidden bg-gray-200 mb-3 rounded-xl">
+    <div className={`group cursor-pointer rounded-2xl border border-slate-200/50 p-4 bg-white hover:border-slate-300 transition-all flex flex-col h-full justify-between ${className ?? ''}`}>
+      <div>
+        <div className="relative w-full h-44 overflow-hidden bg-slate-100 mb-3.5 rounded-xl">
+          <Link href={href} className="absolute inset-0 z-10" />
           <Image
             src={imageSrc}
             alt={article.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-102 transition-transform duration-500"
           />
-          {article.breaking && (
-            <div className="absolute top-3 left-3 bg-red-600 text-primary-foreground px-3 py-1 rounded text-xs font-bold">
-              Breaking
-            </div>
-          )}
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
-              {article.category}
-            </span>
+          <div className="absolute top-3 left-3 flex gap-2">
+            {article.breaking && (
+              <span className="bg-red-600 text-white px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">
+                Breaking
+              </span>
+            )}
             {article.trending && (
-              <span className="text-xs font-bold text-red-600">🔥 Trending</span>
+              <span className="bg-orange-500 text-white px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">
+                🔥 Trending
+              </span>
             )}
           </div>
-          <h3 className={Fugaz.className + " text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-base"}>
-            {article.title}
+        </div>
+
+        <div className="space-y-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+            {article.category}
+          </span>
+          <h3 className={`${Fugaz.className} text-slate-900 line-clamp-2 group-hover:text-red-600 transition-colors text-base font-bold leading-snug`}>
+            <Link href={href}>{article.title}</Link>
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
-            <span>{formattedDate}</span>
-            <span>{article.readTime} min read</span>
-          </div>
+          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{article.description}</p>
         </div>
       </div>
-    </Link>
+
+      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-3 mt-4 border-t border-slate-100">
+        <span className="flex items-center gap-1 font-medium hover:underline truncate">
+          <User size={12} />
+          <Link href={authorHref}>{article.author}</Link>
+        </span>
+        <span className="flex items-center gap-1 shrink-0">
+          <BookOpen size={12} />
+          {article.readTime || 3} min read
+        </span>
+      </div>
+    </div>
   )
 }
