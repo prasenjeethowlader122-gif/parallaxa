@@ -50,21 +50,17 @@ export const serifFont = localFont({
     {
       path: '../public/local/font/bbc/BBCReithSerif_A_Rg.ttf',
       style: 'normal',
-      weight:400
+      weight: '400'
     },
     {
-      
       path: '../public/local/font/bbc/BBCReithSerif_A_Md.ttf',
       style: 'normal',
-      weight:600
-    
+      weight: '600'
     },
     {
-      
       path: '../public/local/font/bbc/BBCReithSerif_A_Bd.ttf',
       style: 'normal',
-      weight:700
-    
+      weight: '700'
     }
   ],
   variable: '--font-serif'
