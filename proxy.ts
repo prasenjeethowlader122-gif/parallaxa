@@ -57,7 +57,7 @@ export async function proxy(req: NextRequest) {
   if (bareLower === '/admin' || bareLower === '/admin/') {
     const dashboardUrl = req.nextUrl.clone()
     dashboardUrl.pathname = `/${resolveLocale(req)}/dashboard`
-    return NextResponse.redirect(dashboardUrl)
+    //return NextResponse.redirect(dashboardUrl)
   }
 
   // 1. Skip static assets, API routes, AI routes (no locale, no auth check needed)
