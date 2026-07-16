@@ -4,7 +4,7 @@ import localFont from 'next/font/local'
 export const banglaFont = localFont({
   src: [
     {
-      path: '../public/local/font/Ekush-Regular.ttf',
+      path: '../public/local/font/TiroBangla-Regular.ttf',
       style: 'normal',
       weight: '400'
     }
@@ -26,17 +26,17 @@ export const banglaFontlogo = localFont({
 export const sansFont = localFont({
   src: [
     {
-      path: '../public/local/font/MirandaSans-Regular.ttf',
+      path: '../public/local/font/bbc/BBCReithSans_A_Rg.ttf',
       style: 'normal',
       weight: '400'
     },
     {
-      path: '../public/local/font/MirandaSans-Medium.ttf',
+      path: '../public/local/font/bbc/BBCReithSans_A_Md.ttf',
       style: 'normal',
       weight: '600'
     },
     {
-      path: '../public/local/font/MirandaSans-Bold.ttf',
+      path: '../public/local/font/bbc/BBCReithSans_A_Bd.ttf',
       style: 'normal',
       weight: '700'
     }
@@ -48,8 +48,23 @@ export const sansFont = localFont({
 export const serifFont = localFont({
   src: [
     {
-      path: '../public/local/font/Unbounded-VariableFont_wght.ttf',
-      style: 'normal'
+      path: '../public/local/font/bbc/BBCReithSerif_A_Bd.ttf',
+      style: 'normal',
+      weight:700
+    },
+    {
+      
+      path: '../public/local/font/bbc/BBCReithSerif_A_Rg.ttf',
+      style: 'normal',
+      weight:400
+    
+    },
+    {
+      
+      path: '../public/local/font/bbc/BBCReithSerif_A_Md.ttf',
+      style: 'normal',
+      weight:700
+    
     }
   ],
   variable: '--font-serif'

@@ -13,7 +13,8 @@ import 'katex/dist/katex.min.css'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { slabo, Fugaz } from '@/lib/font'
+import { sansFont, serifFont, slabo ,banglaFontlogo, banglaFont } from '@/lib/font'
+
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { NewsCard } from '@/components/news-card'
@@ -304,7 +305,7 @@ function RelatedItem({ article }: { article: NewsArticle }) {
         <p className="text-[10px] font-semibold uppercase tracking-wider text-red-600 mb-1">
           {article.category}
         </p>
-        <h4 className={`${Fugaz.className} text-[13px] font-medium leading-snug text-gray-900 group-hover:underline line-clamp-3`}>
+        <h4 className={`${serifFont.className} text-[13px] font-medium leading-snug text-gray-900 group-hover:underline line-clamp-3`}>
           {article.title}
         </h4>
         <p className="text-[11px] text-gray-400 mt-1">{formatRelativeTime(article.date)}</p>
@@ -588,7 +589,7 @@ export default function ArticlePage({
               </div>
 
               {/* Headline */}
-              <h1 className={`text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
+              <h1 className={`${serifFont.className} ${banglaFont.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
                 {article.title}
               </h1>
 
@@ -717,7 +718,7 @@ export default function ArticlePage({
               {/* ── Related articles (grid) ── */}
               {relatedArticles.length > 0 && (
                 <section className="no-print mt-16 pt-8 border-t border-gray-100">
-                  <h2 className={`${Fugaz.className} text-lg font-bold tracking-widest text-gray-900 mb-6`}>
+                  <h2 className={`${serifFont.className} text-lg font-bold tracking-widest text-gray-900 mb-6`}>
                     More in {article.category}
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
