@@ -49,7 +49,7 @@ function isProtected(pathname: string): boolean {
   )
 }
 
-export const proxy = auth(async function proxy(req) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // 1. Skip static assets, API routes, AI routes (no locale, no auth check needed)
@@ -57,7 +57,7 @@ export const proxy = auth(async function proxy(req) {
 
   // 2. Auth guard — runs before locale redirect so the redirect URL is clean
   if (isProtected(pathname)) {
-    const session = req.auth
+    const session = await auth()
     if (!session?.user) {
       const signinUrl = req.nextUrl.clone()
       signinUrl.pathname = '/auth/signin'
@@ -90,7 +90,7 @@ export const proxy = auth(async function proxy(req) {
   const locale = resolveLocale(req)
   req.nextUrl.pathname = `/${locale}${pathname}`
   return NextResponse.redirect(req.nextUrl)
-})
+}
 
 export const config = {
   matcher: [
