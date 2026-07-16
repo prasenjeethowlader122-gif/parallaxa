@@ -253,14 +253,7 @@ export function Header({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none h-full">
             <div className="flex flex-col leading-none h-full justify-center">
-              <Image
-                src={LOGO_SRC}
-                alt="Only Hindu"
-                width={170}
-                height={300}
-                priority
-                className="h-14 w-auto"
-              />
+              <h1 className={`${banglaFontlogo.className} text-3xl font-[900] text-slate-950`}>অনলি্হিন্দু™</h1>
             </div>
           </Link>
 
@@ -359,7 +352,7 @@ export function Header({
 
       {/* ── DESKTOP NAV ROW ── */}
       <div className="hidden md:block border-b border-border bg-white">
-        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-start">
           <nav className="flex items-center gap-1">
             {navLinks.map(({ href, label, badge, icon: Icon, iconUrl }) => {
               const localizedHref = `/${locale}${href === '/' ? '' : href}`

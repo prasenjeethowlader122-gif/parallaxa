@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState } from 'react';
@@ -12,13 +11,12 @@ import {
   House,
   FileText,
   ChartBar,
-  SquaresFour,
   ListChecks,
   Gear,
   User,
-  List
+  List,
+  CaretRight
 } from '@phosphor-icons/react';
-import HomeView from '@/components/HomeView';
 import ArticlesView from '@/components/ArticlesView';
 import AnalysisView from '@/components/dashboard/AnalysisView';
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
@@ -45,37 +43,53 @@ export default function Dashboard() {
   const filteredNav = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 flex flex-col font-sans">
       <Header />
       
-      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full p-4 md:p-8 gap-8">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 py-8 md:px-8 md:py-12 gap-8">
+
+        {/* Workspace Welcomer & Header */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-slate-200/60">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-slate-500 mt-1">Manage your content and track performance</p>
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+              Workspace
+            </span>
+            <h1 className="text-3xl font-extrabold tracking-tight mt-2 text-slate-950">
+              Control Panel
+            </h1>
+            <p className="text-slate-500 mt-1.5 text-sm">
+              Manage custom portal contents, review live engagement metrics, and track system health.
+            </p>
           </div>
+
           {session?.user && (
-            <div className="flex items-center gap-3 bg-white p-2 pr-4 rounded-2xl border border-slate-100 self-stretch sm:self-auto justify-between sm:justify-start">
+            <div className="flex items-center gap-4 bg-white p-3 pr-5 rounded-2xl border border-slate-200/80 self-stretch md:self-auto justify-between md:justify-start">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden">
+                <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-slate-200/50">
                   {session.user.image ? (
                     <img src={session.user.image} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={20} className="text-slate-400" />
+                    <User size={22} className="text-slate-400" />
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-bold leading-tight">{session.user.name}</p>
-                  <p className="text-xs text-slate-500 capitalize">{session.user.role}</p>
+                  <p className="text-sm font-extrabold text-slate-950 leading-tight">
+                    {session.user.name}
+                  </p>
+                  <p className="text-xs text-slate-500 font-semibold capitalize mt-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                    {session.user.role || 'Member'}
+                  </p>
                 </div>
               </div>
             </div>
           )}
         </header>
 
-        <div className="flex flex-col lg:flex-row flex-1 gap-8">
-          {/* Sidebar */}
-          <nav className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-col lg:w-64 gap-3 shrink-0">
+        <div className="flex flex-col lg:flex-row flex-1 gap-8 items-start">
+
+          {/* Navigation Sidebar / Panel */}
+          <nav className="w-full grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-col lg:w-64 gap-3 shrink-0">
             {filteredNav.map((item) => {
               const isActive = currentActiveTab === item.id;
               const Icon = item.icon;
@@ -85,10 +99,11 @@ export default function Dashboard() {
                   <Link
                     key={item.id}
                     href={item.href}
-                    className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 sm:gap-3 p-4 sm:p-3 sm:px-4 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-white bg-white lg:bg-transparent border border-slate-100 lg:border-0 transition-all text-center sm:text-left"
+                    className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 sm:gap-3 p-4 sm:p-3 sm:px-4 rounded-xl text-slate-600 hover:text-slate-955 hover:bg-slate-100 bg-white border border-slate-200/60 lg:border transition-all text-center sm:text-left"
                   >
-                    <Icon size={24} className="shrink-0" />
-                    <span className="text-xs sm:text-sm font-semibold tracking-tight">{item.label}</span>
+                    <Icon size={20} className="shrink-0 text-slate-500" />
+                    <span className="text-xs sm:text-sm font-bold tracking-tight">{item.label}</span>
+                    <CaretRight size={14} className="ml-auto hidden sm:block text-slate-400" />
                   </Link>
                 );
               }
@@ -97,23 +112,25 @@ export default function Dashboard() {
                 <button
                   key={item.id}
                   onClick={() => setCurrentActiveTab(item.id)}
-                  className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 sm:gap-3 p-4 sm:p-3 sm:px-4 rounded-xl transition-all text-center sm:text-left ${
+                  className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 sm:gap-3 p-4 sm:p-3 sm:px-4 rounded-xl transition-all text-center sm:text-left border ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-md'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-white bg-white lg:bg-transparent border border-slate-100 lg:border-0'
+                      ? 'bg-slate-950 text-white border-slate-950'
+                      : 'text-slate-600 hover:text-slate-955 hover:bg-slate-100 bg-white border-slate-200/60'
                   }`}
                 >
-                  <Icon size={24} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
-                  <span className="text-xs sm:text-sm font-semibold tracking-tight">{item.label}</span>
+                  <Icon size={20} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold tracking-tight">{item.label}</span>
+                  {!isActive && <CaretRight size={14} className="ml-auto hidden sm:block text-slate-400" />}
                 </button>
               );
             })}
           </nav>
 
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
+          {/* Main Workspace Content Area */}
+          <div className="flex-1 w-full min-w-0 bg-white border border-slate-200/60 rounded-3xl p-6 md:p-8">
             {filteredNav.find(item => item.id === currentActiveTab)?.component}
           </div>
+
         </div>
       </main>
       
