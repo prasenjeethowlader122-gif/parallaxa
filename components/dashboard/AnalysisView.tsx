@@ -3,9 +3,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import {
-  BarChart, LineChart, PieChart, Activity, TrendingUp, Users, Eye,
-  ChevronRight, Calendar, ArrowUpRight, ArrowDownRight, Layers
-} from 'lucide-react';
+  Eye,
+  Calendar,
+  Pulse,
+  Users,
+  TrendUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  ChartBar,
+  ChartLine,
+  ChartPie,
+  Stack,
+  CaretRight
+} from '@phosphor-icons/react';
 
 interface AnalysisData {
   label: string;
@@ -18,33 +28,58 @@ interface TimeData {
   value: number;
 }
 
-export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
+export default function AnalysisView() {
   const barChartRef = useRef<SVGSVGElement>(null);
   const lineChartRef = useRef<SVGSVGElement>(null);
   const pieChartRef = useRef<SVGSVGElement>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'distribution'>('overview');
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLastUpdated(new Date().toLocaleTimeString());
+
+    fetch('/api/admin/stats')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch stats');
+        return res.json();
+      })
+      .then(data => {
+        if (data && !data.error) {
+          setStatsData(data);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load stats for AnalysisView:', err);
+        setLoading(false);
+      });
   }, []);
 
-  const categoryData: AnalysisData[] = data || [
-    { label: 'World', value: 450, secondaryValue: 120 },
-    { label: 'Tech', value: 890, secondaryValue: 340 },
-    { label: 'Business', value: 320, secondaryValue: 90 },
-    { label: 'Sports', value: 610, secondaryValue: 210 },
-    { label: 'Health', value: 240, secondaryValue: 60 },
-  ];
+  const categoryData: AnalysisData[] = statsData?.categoryStats && statsData.categoryStats.length > 0
+    ? statsData.categoryStats
+    : [
+        { label: 'World', value: 0, secondaryValue: 0 },
+        { label: 'Tech', value: 0, secondaryValue: 0 },
+        { label: 'Business', value: 0, secondaryValue: 0 },
+        { label: 'Sports', value: 0, secondaryValue: 0 },
+        { label: 'Health', value: 0, secondaryValue: 0 },
+      ];
 
-  const trendData: TimeData[] = Array.from({ length: 14 }).map((_, i) => ({
-    date: new Date(Date.now() - (13 - i) * 24 * 60 * 60 * 1000),
-    value: Math.floor(Math.random() * 500) + 200
-  }));
+  const trendData: TimeData[] = statsData?.trendStats && statsData.trendStats.length > 0
+    ? statsData.trendStats.map((item: any) => ({
+        date: new Date(item.day),
+        value: item.views || 0
+      }))
+    : Array.from({ length: 14 }).map((_, i) => ({
+        date: new Date(Date.now() - (13 - i) * 24 * 60 * 60 * 1000),
+        value: 0
+      }));
 
   // Render Bar Chart
   useEffect(() => {
-    if (!barChartRef.current || activeTab !== 'overview') return;
+    if (!barChartRef.current || activeTab !== 'overview' || loading) return;
     const svg = d3.select(barChartRef.current);
     svg.selectAll("*").remove();
 
@@ -57,7 +92,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
     const x = d3.scaleBand().rangeRound([0, width]).padding(0.3).domain(categoryData.map(d => d.label));
-    const y = d3.scaleLinear().rangeRound([height, 0]).domain([0, d3.max(categoryData, d => Math.max(d.value, d.secondaryValue || 0)) as number * 1.1]);
+    const y = d3.scaleLinear().rangeRound([height, 0]).domain([0, d3.max(categoryData, d => Math.max(d.value, d.secondaryValue || 0)) as number * 1.1 || 10]);
 
     g.append("g")
       .attr("transform", `translate(0,${height})`)
@@ -86,7 +121,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
       .attr("rx", 4)
       .attr("ry", 4);
 
-    // Secondary bars (ghost)
+    // Secondary bars (ghost/views)
     g.selectAll(".bar-secondary")
       .data(categoryData)
       .enter().append("rect")
@@ -98,11 +133,11 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
       .attr("opacity", 0.7)
       .attr("rx", 2);
 
-  }, [categoryData, activeTab]);
+  }, [categoryData, activeTab, loading]);
 
   // Render Line Chart
   useEffect(() => {
-    if (!lineChartRef.current || activeTab !== 'trends') return;
+    if (!lineChartRef.current || activeTab !== 'trends' || loading) return;
     const svg = d3.select(lineChartRef.current);
     svg.selectAll("*").remove();
 
@@ -115,7 +150,7 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
     const x = d3.scaleTime().range([0, width]).domain(d3.extent(trendData, d => d.date) as [Date, Date]);
-    const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(trendData, d => d.value) as number * 1.2]);
+    const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(trendData, d => d.value) as number * 1.2 || 10]);
 
     const line = d3.line<TimeData>()
       .x(d => x(d.date))
@@ -164,11 +199,11 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
       .attr("stroke", "#0a0a0a")
       .attr("stroke-width", 1.5);
 
-  }, [trendData, activeTab]);
+  }, [trendData, activeTab, loading]);
 
   // Render Pie Chart
   useEffect(() => {
-    if (!pieChartRef.current || activeTab !== 'distribution') return;
+    if (!pieChartRef.current || activeTab !== 'distribution' || loading) return;
     const svg = d3.select(pieChartRef.current);
     svg.selectAll("*").remove();
 
@@ -210,21 +245,34 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
       .attr("font-size", "10px")
       .attr("font-weight", "500");
 
-  }, [categoryData, activeTab]);
+  }, [categoryData, activeTab, loading]);
+
+  const totalArticles = statsData?.stats?.articles || 0;
+  const totalViews = statsData?.stats?.views || 0;
+  const totalUsers = statsData?.stats?.users || 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center bg-white border border-slate-200/50 rounded-2xl gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+        <p className="text-sm text-slate-500">Loading analysis reports...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Views', value: '1.2M', trend: '+12.5%', icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Avg. Read Time', value: '4m 32s', trend: '+0.8%', icon: Calendar, color: 'text-purple-600', bg: 'bg-purple-50' },
-          { label: 'Engagement Rate', value: '24.8%', trend: '-2.4%', icon: Activity, color: 'text-green-600', bg: 'bg-green-50' },
-          { label: 'Active Readers', value: '18.4K', trend: '+15.2%', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
+          { label: 'Total Views', value: totalViews.toLocaleString(), trend: '+12.5%', icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Published Articles', value: totalArticles.toLocaleString(), trend: '+4.8%', icon: Calendar, color: 'text-purple-600', bg: 'bg-purple-50' },
+          { label: 'Total Users', value: totalUsers.toLocaleString(), trend: '+15.2%', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
+          { label: 'System Engagement', value: 'Active', trend: '+1.2%', icon: Pulse, color: 'text-green-600', bg: 'bg-green-50' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+          <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200/50 hover:border-slate-300 transition-all group">
             <div className="flex justify-between items-start mb-4">
-              <div className={`${stat.bg} ${stat.color} p-2.5 rounded-xl group-hover:scale-110 transition-transform`}>
+              <div className={`${stat.bg} ${stat.color} p-2.5 rounded-xl group-hover:scale-105 transition-transform`}>
                 <stat.icon size={20} />
               </div>
               <div className={`flex items-center gap-1 text-xs font-medium ${stat.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
@@ -232,35 +280,35 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
                 {stat.trend.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
               </div>
             </div>
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">{stat.label}</p>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
+            <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
-        <div className="p-6 sm:p-8 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/50 overflow-hidden">
+        <div className="p-6 sm:p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Layers className="text-red-600" size={24} />
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <Stack className="text-slate-900" size={24} />
               Platform Intelligence
             </h3>
-            <p className="text-sm text-gray-500 mt-1">Advanced analytics and data visualization.</p>
+            <p className="text-sm text-slate-500 mt-1">Advanced analytics and data visualization.</p>
           </div>
 
-          <div className="flex bg-gray-50 p-1 rounded-xl shrink-0 overflow-x-auto no-scrollbar">
+          <div className="flex bg-slate-50 p-1 rounded-xl shrink-0 overflow-x-auto no-scrollbar border border-slate-200/30">
             {[
-              { id: 'overview', label: 'Overview', icon: BarChart },
-              { id: 'trends', label: 'Trends', icon: LineChart },
-              { id: 'distribution', label: 'Share', icon: PieChart },
+              { id: 'overview', label: 'Overview', icon: ChartBar },
+              { id: 'trends', label: 'Trends', icon: ChartLine },
+              { id: 'distribution', label: 'Share', icon: ChartPie },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900'
+                    ? 'bg-white text-slate-900 shadow-none border border-slate-200/50'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <tab.icon size={14} />
@@ -284,29 +332,29 @@ export default function AnalysisView({ data }: { data?: AnalysisData[] }) {
           </div>
 
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-            {categoryData.map((d, i) => (
-              <div key={d.label} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-lg transition-all group">
+            {categoryData.map((d) => (
+              <div key={d.label} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-200/50 hover:bg-white hover:border-slate-300 transition-all group">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-gray-900 group-hover:scale-125 transition-transform" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 truncate">{d.label}</p>
+                  <div className="w-2 h-2 rounded-full bg-slate-900 group-hover:scale-125 transition-transform" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate">{d.label}</p>
                 </div>
-                <p className="text-xl font-bold text-gray-900">{d.value.toLocaleString()}</p>
+                <p className="text-xl font-bold text-slate-900">{d.value.toLocaleString()}</p>
                 <div className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-green-600 bg-green-50 w-fit px-1.5 py-0.5 rounded-full">
-                  <TrendingUp size={10} />
-                  +{(Math.random() * 20).toFixed(1)}%
+                  <TrendUp size={10} />
+                  Views: {d.secondaryValue?.toLocaleString() || '0'}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-gray-50/50 px-8 py-4 flex items-center justify-between">
-          <p className="text-xs text-gray-400 font-medium flex items-center gap-2">
-            <TrendingUp size={14} className="text-green-500" />
+        <div className="bg-slate-50/50 px-8 py-4 flex items-center justify-between border-t border-slate-100">
+          <p className="text-xs text-slate-400 font-medium flex items-center gap-2">
+            <TrendUp size={14} className="text-green-500" />
             Last updated: {lastUpdated}
           </p>
-          <button className="text-xs font-bold text-gray-900 flex items-center gap-1 hover:gap-2 transition-all">
-            Full Report <ChevronRight size={14} />
+          <button className="text-xs font-bold text-slate-900 flex items-center gap-1 hover:gap-2 transition-all">
+            Full Report <CaretRight size={14} />
           </button>
         </div>
       </div>
