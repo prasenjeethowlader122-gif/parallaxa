@@ -40,6 +40,12 @@ function getText(node) {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+function hasFirstImage(content: string): boolean {
+  if (!content) return false
+  const trimmed = content.trim()
+  return trimmed.startsWith('![') || trimmed.startsWith('<img') || trimmed.startsWith('<figure')
+}
+
 function estimateReadTime(text: string): number {
   const words = text.trim().split(/\s+/).length
   return Math.max(1, Math.ceil(words / 200))
@@ -161,16 +167,19 @@ const mdComponents: Components = {
   hr: () => <hr className="my-8 border-gray-200" />,
   strong: ({ children }) => <strong className="font-bold text-gray-900">{children}</strong>,
   em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
-  a: ({ href, children }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-red-600 underline underline-offset-2 hover:text-red-700 transition-colors"
-    >
-      {children}
-    </a>
-  ),
+  a: ({ href, children }) => {
+    const isHash = href?.startsWith('#')
+    return (
+      <a
+        href={href}
+        target={isHash ? undefined : "_blank"}
+        rel={isHash ? undefined : "noopener noreferrer"}
+        className="text-red-600 underline underline-offset-2 hover:text-red-700 transition-colors"
+      >
+        {children}
+      </a>
+    )
+  },
   img: ({ node, className: imgClass = "", ...props }) => {
     const { alt, src } = props
     const match = alt?.match(/^(.+)\\s{caption:(.+?)}$/)
@@ -631,22 +640,24 @@ export default function ArticlePage({
               </div>
 
               {/* ── Hero image ── */}
-              <div className="mb-8">
-                <div className="relative w-full aspect-video overflow-hidden bg-gray-100 rounded-lg">
-                  <Image
-                    src={article.image || 'https://placehold.co/1200x675/efeff1/6b7280?text=No+Image'}
-                    alt={article.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+              {!hasFirstImage(article.content) && (
+                <div className="mb-8">
+                  <div className="relative w-full aspect-video overflow-hidden bg-gray-100 rounded-lg">
+                    <Image
+                      src={article.image || 'https://placehold.co/1200x675/efeff1/6b7280?text=No+Image'}
+                      alt={article.title}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                  {article.imageCaption && (
+                    <p className="text-xs text-gray-400 mt-3 leading-relaxed italic">
+                      {article.imageCaption}
+                    </p>
+                  )}
                 </div>
-                {article.imageCaption && (
-                  <p className="text-xs text-gray-400 mt-3 leading-relaxed italic">
-                    {article.imageCaption}
-                  </p>
-                )}
-              </div>
+              )}
 
               {/* ── Article body ── */}
               <article className="py-6 overflow-hidden break-words [&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:text-5xl [&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:mr-3 [&>p:first-of-type]:first-letter:mt-2">

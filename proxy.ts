@@ -52,6 +52,14 @@ function isProtected(pathname: string): boolean {
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  // Redirect /admin or /admin/ to dashboard (case-insensitive, with/without locale prefix)
+  const bareLower = stripLocale(pathname).toLowerCase()
+  if (bareLower === '/admin' || bareLower === '/admin/') {
+    const dashboardUrl = req.nextUrl.clone()
+    dashboardUrl.pathname = `/${resolveLocale(req)}/dashboard`
+    return NextResponse.redirect(dashboardUrl)
+  }
+
   // 1. Skip static assets, API routes, AI routes (no locale, no auth check needed)
   // /ai/* paths are excluded from locale redirect already handled below
 

@@ -1,73 +1,54 @@
 import React from "react";
 
 /**
- * FramedQuote — pull quote with open bracket corners, centered text.
- *
- * Usage in .mdx:
- *
- * <FramedQuote author="John Johnson">
- *   First, solve the problem. Then, write the code.
- * </FramedQuote>
+ * FramedQuote — premium pull quote with beautiful corner frames, centered text.
  */
-export default function FramedQuote({ children, author }) {
+export default function FramedQuote({
+  children,
+  author,
+}: {
+  children: React.ReactNode;
+  author?: string;
+}) {
   return (
-    <blockquote
-      style={{
-        margin: 0,
-        position: "relative",
-        padding: "1.25rem 1.5rem",
-      }}
-    >
+    <blockquote className="relative my-8 px-8 py-6 bg-slate-50/70 border border-slate-100 rounded-2xl max-w-2xl mx-auto">
+      {/* Top Left Corner */}
       <svg
-        width="20"
-        height="20"
+        width="24"
+        height="24"
         aria-hidden="true"
-        style={{ position: "absolute", top: 0, left: 0 }}
+        className="absolute top-3 left-3 text-slate-400"
       >
         <path
-          d="M0 20 L0 0 L20 0"
-          stroke="var(--border-strong)"
-          strokeWidth="1.5"
-          fill="none"
-        />
-      </svg>
-      <svg
-        width="20"
-        height="20"
-        aria-hidden="true"
-        style={{ position: "absolute", bottom: 0, right: 0 }}
-      >
-        <path
-          d="M20 0 L20 20 L0 20"
-          stroke="var(--border-strong)"
-          strokeWidth="1.5"
+          d="M0 24 L0 0 L24 0"
+          stroke="currentColor"
+          strokeWidth="2"
           fill="none"
         />
       </svg>
 
-      <p
-        style={{
-          fontFamily: "var(--font-voice)",
-          fontSize: "17px",
-          lineHeight: 1.55,
-          color: "var(--text-primary)",
-          margin: 0,
-          textAlign: "center",
-        }}
+      {/* Bottom Right Corner */}
+      <svg
+        width="24"
+        height="24"
+        aria-hidden="true"
+        className="absolute bottom-3 right-3 text-slate-400"
       >
+        <path
+          d="M24 0 L24 24 L0 24"
+          stroke="currentColor"
+          strokeWidth="2"
+          fill="none"
+        />
+      </svg>
+
+      <div className="text-center text-slate-800 text-[17px] sm:text-lg leading-relaxed font-serif italic px-4">
         {children}
-      </p>
+      </div>
 
       {author && (
-        <p
-          style={{
-            fontSize: "12px",
-            color: "var(--text-muted)",
-            margin: "12px 0 0",
-            textAlign: "center",
-          }}
-        >
-          {author}
+        <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-500 mt-4 not-italic">
+          — {author}
         </p>
       )}
     </blockquote>
