@@ -589,7 +589,11 @@ export default function ArticlePage({
               </div>
 
               {/* Headline */}
-              <h1 className={`${serifFont.className} ${banglaFont.className} text-3xl md:text-4xl font-bold text-gray-900 leading-tight`}>
+              <h1 className={` text-3xl md:text-4xl font-bold text-gray-900 leading-tight`} style = {
+  {
+    fontFamily: "var(--font-serif) , var(--font-bangla)"
+  }
+}>
                 {article.title}
               </h1>
 
