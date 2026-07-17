@@ -612,11 +612,11 @@ export default function ArticlePage({
               </p>
 
               {/* ── Author + meta row (NO BORDER) ── */}
-              <div className="flex items-center justify-between gap-4 py-4 mb-8 flex-wrap">
+              <div className="flex items-center justify-between gap-4 py-3 mb-6 flex-wrap">
                 <div className="flex items-center gap-2">
                   {/* Author Avatar */}
                   <Link href={`/${authorSlug}`} className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-gray-300">
+                    <div className="w-6 h-6 rounded-full bg-gray-300">
                     
                     </div>
                   </Link>
@@ -624,7 +624,7 @@ export default function ArticlePage({
                   <div>
                     <Link 
                       href={`/author/${article.author_id}`}
-                      className="text-md text-gray-900 hover:text-red-600 transition-colors"
+                      className={serifFont.className + "  text-sm text-gray-900 hover:text-red-600 transition-colors font-bold"}
                     >
                       by {article.author}
                     </Link>
@@ -645,12 +645,13 @@ export default function ArticlePage({
               </div>
 
               {/* ── Hero image ── */}
-              {!hasFirstImage(article.content) && (
+              {!hasFirstImage(article.content) || article.image.length > 0 && (
                 <div className="mb-8">
-                  <div className="relative w-full aspect-video overflow-hidden bg-gray-100 rounded-lg">
+                  <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
                     <Image
-                      src={article.image || 'https://placehold.co/1200x675/efeff1/6b7280?text=No+Image'}
+                      src={article.image}
                       alt={article.title}
+                      placeholder='blur'
                       fill
                       className="object-cover"
                       priority

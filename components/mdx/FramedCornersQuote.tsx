@@ -11,7 +11,7 @@ export default function FramedQuote({
   author?: string;
 }) {
   return (
-    <blockquote className="relative my-8 px-8 py-6 bg-slate-50/70 border border-slate-100 rounded-2xl max-w-2xl mx-auto">
+    <blockquote className="relative my-8 px-8 py-6 max-w-2xl mx-auto">
       {/* Top Left Corner */}
       <svg
         width="24"
