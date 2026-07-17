@@ -101,5 +101,8 @@
   #post-title {
     font-family: var(--font-serif) , var(--font-bangla-logo);
   }
+  #deva {
+    font-family: var("--font-deva");
+  }
 }
 

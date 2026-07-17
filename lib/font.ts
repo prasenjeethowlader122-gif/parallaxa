@@ -83,6 +83,17 @@ export const monoFont = localFont({
   variable: '--font-mono'
 })
 
+export const devanagari = localFont({
+  src: [
+    {
+      path: '../public/local/font/bbc/Jaini-Regular.ttf',
+      style: 'normal',
+      weight: '400'
+    }
+  ],
+  variable: '--font-deva'
+})
+
 // Compatibility exports for existing code
 export const spacegrotesk = sansFont
 export const Fugaz = serifFont
