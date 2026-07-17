@@ -370,10 +370,10 @@ export default function HomeClient({ sections = [] }: HomeClientProps) {
                       <div className="flex items-center justify-between mb-4 pb-4 border-b">
                         <h2 className="text-2xl font-bold text-foreground">{section.title}</h2>
                         {
-                          section.articles.length > section.limit_count && (
-                        <div className='flex items-center justify-end gap-2'>
+                          section.articles.length && (
+                        <Link href = {section.type==='category' ? `/category/${section.category_id}: '/'`} className='flex items-center justify-end gap-2'>
                           <h5>See More</h5>
-                        </div>
+                        </Link>
                           )
                         }
                         

@@ -4,6 +4,7 @@ import { sql } from './index';
 export interface HomeSection {
   id: number;
   title: string;
+  
   type: 'latest' | 'category' | 'featured' | 'trending';
   category_id?: number | null;
   layout: 'grid' | 'list' | 'slider';
