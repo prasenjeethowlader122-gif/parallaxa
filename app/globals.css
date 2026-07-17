@@ -98,5 +98,8 @@
     font-family: var(--font-sans),var(--font-bangla);
     @apply bg-background text-foreground;
   }
+  #post-title {
+    font-family: var(--font-serif) , var(--font-bangla);
+  }
 }
 

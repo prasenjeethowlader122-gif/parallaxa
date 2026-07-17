@@ -73,7 +73,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
              
-              <h3 className={`${serifFont.className} ${banglaFont.className} text-primary-foreground text-lg  leading-tight line-clamp-3`}>
+              <h3 id='post-title' className={` text-primary-foreground text-lg  leading-tight line-clamp-3`}>
 {article.title}
               </h3>
             
@@ -110,7 +110,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               </span>
           
             </div>
-            <h3 className={`${serifFont.className} ${banglaFont.className} text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-sm`}>
+            <h3 id='post-title' className={` text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-sm`}>
               {article.title}
             </h3>
             <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{article.description}</p>
@@ -155,7 +155,7 @@ export function NewsCard({ article, variant = 'default', className }: NewsCardPr
               <span className="text-xs font-bold text-red-600">🔥 Trending</span>
             )}
           </div>
-          <h3 className={`${serifFont.className} ${banglaFont.className} text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-base`}>
+          <h3 id='post-title' className={` text-foreground line-clamp-2 group-hover:text-red-600 transition-colors text-base`}>
             {article.title}
           </h3>
           <p className="text-sm text-gray-600 line-clamp-2">{article.description}</p>

@@ -154,18 +154,27 @@ const mdComponents: Components = {
   
   },
   table: ({ children }) => (
-    <div className="overflow-x-auto my-6 rounded-xl border border-gray-200 max-w-full">
-      <table className="min-w-full text-sm">{children}</table>
-    </div>
+    <div className="overflow-x-auto my-6 max-w-full">
+    <table className="w-full text-sm border-collapse">{children}</table>
+  </div>
   ),
-  thead: ({ children }) => <thead className="bg-gray-50 text-gray-500">{children}</thead>,
-  tbody: ({ children }) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
-  tr: ({ children }) => <tr className="hover:bg-gray-50 transition-colors">{children}</tr>,
+  thead: ({ children }) => (
+    <thead className="border-b border-gray-300">{children}</thead>
+  ),
+  tbody: ({ children }) => <tbody>{children}</tbody>,
+  tr: ({ children }) => (
+    <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+    {children}
+  </tr>
+  ),
   th: ({ children }) => (
-    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide whitespace-nowrap">{children}</th>
+    <th className="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-wide text-gray-500 whitespace-nowrap">
+    {children}
+  </th>
   ),
-  td: ({ children }) => <td className="px-4 py-3 text-gray-700">{children}</td>,
-  hr: () => <hr className="my-8 border-gray-200" />,
+  td: ({ children }) => (
+    <td className="px-4 py-3 text-gray-800 tabular-nums">{children}</td>
+  ),hr: () => <hr className="my-8 border-gray-200" />,
   strong: ({ children }) => <strong className="font-bold text-gray-900">{children}</strong>,
   em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
   a: ({ href, children }) => {
