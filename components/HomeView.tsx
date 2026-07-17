@@ -369,6 +369,14 @@ export default function HomeClient({ sections = [] }: HomeClientProps) {
                     <div className="lg:col-span-2">
                       <div className="flex items-center justify-between mb-4 pb-4 border-b">
                         <h2 className="text-2xl font-bold text-foreground">{section.title}</h2>
+                        {
+                          section.articles.length > section.limit_count && (
+                        <div className='flex items-center justify-end gap-2'>
+                          <h5>See More</h5>
+                        </div>
+                          )
+                        }
+                        
                       </div>
 
                       <div className="space-y-6">

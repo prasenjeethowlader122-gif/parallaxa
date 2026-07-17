@@ -99,7 +99,7 @@
     @apply bg-background text-foreground;
   }
   #post-title {
-    font-family: var(--font-serif) , var(--font-bangla);
+    font-family: var(--font-serif) , var(--font-banglaLogo);
   }
 }
 

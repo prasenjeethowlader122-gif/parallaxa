@@ -580,7 +580,7 @@ export default function ArticlePage({
               <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <Link
                   href={`/category/${article.category}`}
-                  className="text-[10px] font-semibold text-red-600 uppercase tracking-wider border border-red-200 px-2.5 py-1 rounded-sm hover:bg-red-50 transition-colors"
+                  className="text-[10px] font-semibold text-red-600 uppercase tracking-wider py-1  hover:bg-red-50 transition-colors"
                 >
                   {article.category}
                 </Link>
@@ -598,11 +598,8 @@ export default function ArticlePage({
               </div>
 
               {/* Headline */}
-              <h1 className={` text-3xl md:text-4xl font-bold text-gray-900 leading-tight`} style = {
-  {
-    fontFamily: "var(--font-serif) , var(--font-bangla)"
-  }
-}>
+              <h1 className={` text-3xl md:text-4xl font-bold text-gray-900 leading-tight`} style = {{
+              fontFamily: "var(--font-serif) , var(--font-banglaLogo)"}}>
                 {article.title}
               </h1>
 
@@ -675,7 +672,7 @@ export default function ArticlePage({
               )}
 
               {/* ── Article body ── */}
-              <article className="py-6 overflow-hidden break-words [&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:text-5xl [&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:mr-3 [&>p:first-of-type]:first-letter:mt-2">
+              <article className="py-6 pt-3 overflow-hidden break-words [&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:text-5xl [&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:mr-3 [&>p:first-of-type]:first-letter:px-2 [&>p:first-of-type]:first-letter:mt-2">
                 <ArticleMarkdown content={article.content} dbBlocks={dbBlocks} />
               </article>
 
@@ -694,9 +691,9 @@ export default function ArticlePage({
 
               {/* ── Bottom share bar ── */}
               <div className="no-print pt-6 pb-4 border-t border-gray-100">
-                <div className="flex items-center gap-4">
+                <div className="flex w-full items-center gap-4">
                   <span className="text-sm font-medium text-gray-900 tracking-widest whitespace-nowrap">Share it</span>
-                  <div className="flex items-center gap-2 border border-gray-200 rounded-full p-1">
+                  <div className="flex flex-1 items-center justify-between gap-2 rounded-full w-full p-1">
                     <button
                       onClick={handleShareTwitter}
                       className="flex items-center gap-1.5 p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"

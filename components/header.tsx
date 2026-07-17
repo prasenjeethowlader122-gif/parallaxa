@@ -585,7 +585,7 @@ export function Header({
             </nav>
 
             {session && (
-              <div className="grid grid-cols-2 gap-px bg-stone-200 mt-3 mb-2 border-t border-stone-300">
+              <div className="grid grid-cols-2 gap-px  mt-3 mb-2 border-t border-gray-100">
                 <Link
                   href={`/${locale}/write`}
                   onClick={() => setIsMenuOpen(false)}
